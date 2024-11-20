@@ -1,1 +1,6 @@
-*.pk3
+build.pk3
+PaK3
+PaK3/
+.vscode/
+.directory
+package-lock.json
