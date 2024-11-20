@@ -12,13 +12,12 @@ local copy = FangsHeist.require "Modules/Libraries/copy"
 local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"
 
 local orig_net = FangsHeist.require "Modules/Variables/net"
+local orig_plyr = FangsHeist.require "Modules/Variables/player"
 local orig_hud = FangsHeist.require "Modules/Variables/hud"
 
 // Initalize player.
 function FangsHeist.initPlayer(p)
-	p.heist = {}
-	p.heist.scraps = 0
-	p.heist.spectator = false
+	p.heist = copy(orig_plyr)
 end
 
 function FangsHeist.initMode()
@@ -32,6 +31,7 @@ end
 
 function FangsHeist.loadMap()
 	local signpost = false
+	local exit_gate = false
 
 	for thing in mapthings.iterate do
 		if thing.type == 501
@@ -40,16 +40,28 @@ function FangsHeist.loadMap()
 
 			local x = thing.x*FU
 			local y = thing.y*FU
-			local z = spawnpos.getThingSpawnHeight(MT_THOK, thing, x, y)
+			local z = spawnpos.getThingSpawnHeight(MT_FH_SIGN, thing, x, y)
 			local a = FixedAngle(thing.angle*FU)
 
 			local sign = P_SpawnMobj(x, y, z, MT_FH_SIGN)
-			sign.fuse = -1
-			sign.tics = -1
-			sign.state = S_SIGN
 			sign.angle = a
 
+			FangsHeist.Net.sign = sign
+
 			print "Spawned sign!"
+		end
+
+		if thing.type == 1
+		and not exit_gate then
+			exit_gate = true
+
+			local x = thing.x*FU
+			local y = thing.y*FU
+			local z = spawnpos.getThingSpawnHeight(MT_FH_SIGN, thing, x, y)
+			local a = FixedAngle(thing.angle*FU)
+
+			FangsHeist.defineExit(x, y, z, a)
+			print "Spawned exit gate!"
 		end
 	end
 end

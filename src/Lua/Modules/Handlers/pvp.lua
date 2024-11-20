@@ -65,8 +65,8 @@ function module.isPlayerHittable(p, sp)
 	local dist = R_PointToDist2(p.mo.x, p.mo.y, sp.mo.x, sp.mo.y)
 	local heightdist = abs(p.mo.z-sp.mo.z)
 
-	if heightdist <= max(p.mo.height, sp.mo.height)
-	and dist <= (p.mo.radius+sp.mo.radius) then
+	if heightdist <= max(p.mo.height, sp.mo.height)*3/2
+	and dist <= (p.mo.radius+sp.mo.radius)*3/2 then
 		return true
 	end
 
@@ -79,11 +79,13 @@ function module.handlePVP()
 	for p in players.iterate do
 		if not FangsHeist.isPlayerAlive(p) then continue end
 		if not module.canHitPlayers(p) then continue end
+		if p.heist and p.heist.exiting then continue end
 
 		for sp in players.iterate do
 			if sp == p then continue end
 			if not FangsHeist.isPlayerAlive(sp) then continue end
 			if P_PlayerInPain(sp) then continue end
+			if sp.heist and sp.heist.exiting then continue end
 
 			if not module.isPlayerHittable(p, sp) then continue end
 

@@ -23,3 +23,4 @@ dofile "Hooks/Player"
 dofile "Hooks/Game"
 
 dofile "Objects/Signpost"
+dofile "Objects/Exit"

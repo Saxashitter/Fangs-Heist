@@ -1,6 +1,8 @@
 local UNGRABBED_FLAGS = MF_BOUNCE
 local GRABBED_FLAGS = MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY
 
+local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"
+
 mobjinfo[freeslot "MT_FH_SIGN"] = {
 	spawnstate = S_SIGN,
 	flags = UNGRABBED_FLAGS,
@@ -23,9 +25,10 @@ function FangsHeist.giveSignTo(p) // somewhat of a wrapper function for scripts 
 	return true
 end
 
-local function manage_picked(sign)
-	sign.hold_tween = min($+(FU/10), FU)
-	sign.flags = GRABBED_FLAGS
+function FangsHeist.teleportSign()
+	local sign = FangsHeist.Net.sign
+
+	if not (sign and sign.valid and sign.holder and sign.holder.valid) then return end
 
 	local pos = {
 		x = ease.outquad(sign.hold_tween, sign.hold_pos.x, sign.holder.x),
@@ -42,8 +45,41 @@ local function manage_picked(sign)
 		pos.z)
 end
 
+function FangsHeist.respawnSign()
+	if (FangsHeist.Net.sign
+	and FangsHeist.Net.sign.valid) then
+		P_RemoveMobj(FangsHeist.Net.sign)
+	end
+
+	local signpost_pos
+
+	for thing in mapthings.iterate do
+		if thing.type == 501
+		and not signpost_pos then
+			local x = thing.x*FU
+			local y = thing.y*FU
+			local z = spawnpos.getThingSpawnHeight(MT_FH_SIGN, thing, x, y)
+			local a = FixedAngle(thing.angle*FU)
+
+			signpost_pos = {x, y, z, a}
+			break
+		end
+	end
+
+	local sign = P_SpawnMobj(signpost_pos[1], signpost_pos[2], signpost_pos[3], MT_FH_SIGN)
+	sign.a = signpost_pos[4]
+
+	FangsHeist.Net.sign = sign
+	print "Sign is back!"
+end
+
+local function manage_picked(sign)
+	sign.hold_tween = min($+(FU/10), FU)
+	sign.flags = GRABBED_FLAGS
+end
+
 local function blacklist(p)
-	return P_PlayerInPain(p)
+	return P_PlayerInPain(p) or (p.heist and p.heist.exiting)
 end
 
 local function manage_unpicked(sign)
@@ -64,8 +100,6 @@ end
 addHook("MobjSpawn", function(sign)
 	sign.hold_tween = 0
 	sign.hold_pos = {}
-
-	FangsHeist.Net.sign = sign
 end, MT_FH_SIGN)
 
 addHook("MobjThinker", function(sign)

@@ -23,6 +23,10 @@ addHook("PlayerThink", function(p)
 			end
 		end
 	end
+
+	if not (p.heist.exiting) then
+		p.score = FangsHeist.returnProfit(p)
+	end
 end)
 
 local function return_score(mo)
