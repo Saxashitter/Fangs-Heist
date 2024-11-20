@@ -1,7 +1,7 @@
 states[freeslot "S_FH_PANIC"] = {
 	sprite = SPR_PLAY,
 	frame = SPR2_CNT1,
-	tics = 2,
+	tics = 4,
 	nextstate = S_FH_PANIC
 }
 
