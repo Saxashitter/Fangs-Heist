@@ -14,6 +14,15 @@ local function select_player(sign, p)
 	sign.hold_pos = {x = sign.x, y = sign.y, z = sign.z}
 end
 
+function FangsHeist.giveSignTo(p) // somewhat of a wrapper function for scripts to access
+	local sign = FangsHeist.Net.sign
+
+	if not (sign and sign.valid) then return false end
+
+	select_player(sign, p)
+	return true
+end
+
 local function manage_picked(sign)
 	sign.hold_tween = min($+(FU/10), FU)
 	sign.flags = GRABBED_FLAGS

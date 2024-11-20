@@ -1,4 +1,6 @@
-return function()
+local module = {}
+
+function module.think()
 	if not FangsHeist.Net.escape then
 		return
 	end
@@ -10,3 +12,8 @@ return function()
 		print "Times up! Spawn Eggman and have him chase every player down."
 	end
 end
+
+function module.manageEscape(p)
+end
+
+return module

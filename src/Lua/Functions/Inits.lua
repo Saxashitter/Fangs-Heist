@@ -26,7 +26,7 @@ function FangsHeist.initMode()
 	FangsHeist.HUD = copy(orig_hud)
 
 	for p in players.iterate do
-		FangsHeist.initPlayer()
+		FangsHeist.initPlayer(p)
 	end
 end
 
