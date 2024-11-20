@@ -1,7 +1,18 @@
+local files = {}
+// Used internally to get modules from the mod.
+function FangsHeist.require(path)
+	if not (files[path]) then
+		files[path] = dofile(path)
+	end
+
+	return files[path]
+end
+
 local copy = FangsHeist.require "Modules/Libraries/copy"
 local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"
 
 local orig_net = FangsHeist.require "Modules/Variables/net"
+local orig_hud = FangsHeist.require "Modules/Variables/hud"
 
 // Initalize player.
 function FangsHeist.initPlayer(p)
@@ -12,6 +23,7 @@ end
 
 function FangsHeist.initMode()
 	FangsHeist.Net = copy(orig_net)
+	FangsHeist.HUD = copy(orig_hud)
 
 	for p in players.iterate do
 		FangsHeist.initPlayer()

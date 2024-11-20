@@ -14,9 +14,10 @@ rawset(_G, "FangsHeist", {Net = {}, HUD = {}})
 // FANGS HEIGHT IS BY SAXASHITTER
 // OFFICIAL SEQUEL TO NICK'S PIZZA TIME!
 
+dofile "Functions/Inits"
 dofile "Functions/Getters"
 dofile "Functions/Checks"
-dofile "Functions/Inits"
+dofile "Functions/Starters"
 
 dofile "Hooks/Player"
 dofile "Hooks/Game"

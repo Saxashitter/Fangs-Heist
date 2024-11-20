@@ -1,4 +1,4 @@
-local UNGRABBED_FLAGS = 0
+local UNGRABBED_FLAGS = MF_BOUNCE
 local GRABBED_FLAGS = MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY
 
 mobjinfo[freeslot "MT_FH_SIGN"] = {
@@ -47,6 +47,9 @@ local function manage_unpicked(sign)
 	local selected_player = nearby[P_RandomRange(1, #nearby)]
 
 	select_player(sign, selected_player)
+	if not (FangsHeist.Net.escape) then
+		FangsHeist.startEscape()
+	end
 end
 
 addHook("MobjSpawn", function(sign)

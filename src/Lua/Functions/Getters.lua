@@ -1,13 +1,3 @@
-local files = {}
-// Used internally to get modules from the mod.
-function FangsHeist.require(path)
-	if not (files[path]) then
-		files[path] = dofile(path)
-	end
-
-	return files[path]
-end
-
 // Get players nearby, mainly used for pickup-ables.
 function FangsHeist.getNearbyPlayers(mobj, distscale, blacklist)
 	if not (distscale) then distscale = FU*3/2 end

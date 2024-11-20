@@ -1,3 +1,10 @@
+states[freeslot "S_FH_PANIC"] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_CNT1,
+	tics = 2,
+	nextstate = S_FH_PANIC
+}
+
 // Handle player hook.
 addHook("PlayerThink", function(p)
 	if not FangsHeist.isMode() then return end
@@ -6,7 +13,16 @@ addHook("PlayerThink", function(p)
 		FangsHeist.initPlayer(p)
 	end
 
-	print(FangsHeist.returnProfit(p))
+	if FangsHeist.Net.escape then
+		if p.mo.state == S_PLAY_STND then
+			p.mo.state = S_FH_PANIC
+		end
+		if p.mo.state == S_FH_PANIC then
+			if FixedHypot(p.rmomx, p.rmomy) then
+				p.mo.state = S_PLAY_WALK
+			end
+		end
+	end
 end)
 
 local function return_score(mo)

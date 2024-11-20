@@ -1,4 +1,4 @@
 return {
-	signpost_taken = false,
+	escape = false,
 	time_left = 60*TICRATE,
 }

@@ -1,3 +1,6 @@
+local escape = FangsHeist.require "Modules/Handlers/escape"
+local music = FangsHeist.require "Modules/Handlers/music"
+
 // Mode initialization.
 addHook("MapChange", do
 	FangsHeist.initMode()
@@ -9,4 +12,13 @@ addHook("MapLoad", do
 	end
 
 	FangsHeist.loadMap()
+end)
+
+addHook("ThinkFrame", do
+	if not FangsHeist.isMode() then
+		return
+	end
+
+	escape()
+	music()
 end)
