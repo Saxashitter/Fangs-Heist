@@ -19,12 +19,10 @@ function module.hitPriority(p, sp)
 	local diff = abs(airspeed1-airspeed2)
 
 	if diff < 16*FU then
-		print"Resolving via speed"
 		if speed1 >= speed2 then
 			priority = $+1
 		end
 	else
-		print"Resolving via air momentum"
 		if abs(airspeed1) >= abs(airspeed2) then
 			priority = $+1
 		end

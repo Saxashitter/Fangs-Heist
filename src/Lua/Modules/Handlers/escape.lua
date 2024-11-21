@@ -1,5 +1,3 @@
-local orig_plyr = FangsHeist.require "Modules/Variables/player"
-
 local function module()
 	if not FangsHeist.Net.escape then
 		return
@@ -29,13 +27,11 @@ local function module()
 		end
 
 		if not FangsHeist.isPlayerAtGate(p) then
-			p.heist.exit_time = orig_plyr.exit_time
 			continue
 		end
 
-		p.heist.exit_time = max(0, $-1)
-
-		if not (p.heist.exit_time) then
+		if p.cmd.buttons & BT_ATTACK
+		and not (p.lastbuttons & BT_ATTACK) then
 			p.heist.exiting = true
 			p.heist.saved_profit = FangsHeist.returnProfit(p)
 

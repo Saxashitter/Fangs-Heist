@@ -1,4 +1,4 @@
 return {
 	escape = false,
-	time_left = 60*TICRATE,
+	time_left = (120+30)*TICRATE,
 }

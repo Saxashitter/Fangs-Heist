@@ -4,6 +4,5 @@ return {
 
 	spectator = false,
 
-	exiting = false,
-	exit_time = 3*TICRATE
+	exiting = false
 }

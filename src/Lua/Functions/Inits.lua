@@ -25,7 +25,16 @@ function FangsHeist.initMode()
 	FangsHeist.HUD = copy(orig_hud)
 
 	for p in players.iterate do
+		p.camerascale = FU
 		FangsHeist.initPlayer(p)
+	end
+
+	for _,obj in ipairs(FangsHeist.Objects) do
+		local object = obj[2]
+
+		if object.init then
+			object.init()
+		end
 	end
 end
 
