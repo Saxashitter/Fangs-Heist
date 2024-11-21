@@ -1,6 +1,7 @@
 local escape = FangsHeist.require "Modules/Handlers/escape"
 local music = FangsHeist.require "Modules/Handlers/music"
 local pvp = FangsHeist.require "Modules/Handlers/pvp"
+local dialouge = FangsHeist.require "Modules/Handlers/dialouge"
 
 // Mode initialization.
 addHook("MapChange", do
