@@ -18,6 +18,7 @@ local orig_hud = FangsHeist.require "Modules/Variables/hud"
 // Initalize player.
 function FangsHeist.initPlayer(p)
 	p.heist = copy(orig_plyr)
+	p.heist.spectator = FangsHeist.Net.escape
 end
 
 function FangsHeist.initMode()

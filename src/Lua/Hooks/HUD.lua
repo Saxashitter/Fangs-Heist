@@ -64,6 +64,9 @@ local function addHud(name)
 	if obj then
 		obj.draw = make_wrapper(obj)
 	end
+	if obj.init then
+		obj.init()
+	end
 
 	table.insert(FangsHeist.Objects, {name, obj or {}, hudtype or "game"})
 end
