@@ -29,7 +29,7 @@ local function draw_sign(v, sign, mo, x, y)
 			y - 3*FU - 8*FU*2 - arrow.height*arrow_scale,
 			arrow_scale,
 			arrow,
-			V_SNAPTOLEFT|V_SNAPTOTOP,
+			V_SNAPTOLEFT|V_SNAPTOTOP|alpha,
 			v.getColormap(nil, sign.holder.color))
 		return
 	end
@@ -40,7 +40,7 @@ local function draw_sign(v, sign, mo, x, y)
 		y - 8*FU*2 - arrow.height*arrow_scale,
 		arrow_scale,
 		arrow,
-		V_SNAPTOLEFT|V_SNAPTOTOP)
+		V_SNAPTOLEFT|V_SNAPTOTOP|alpha)
 end
 
 function module.draw(v,p,c)
