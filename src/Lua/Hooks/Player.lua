@@ -13,6 +13,12 @@ addHook("PlayerThink", function(p)
 		FangsHeist.initPlayer(p)
 	end
 
+	p.spectator = p.heist.spectator
+
+	if p.heist.spectator then
+		return
+	end
+
 	if FangsHeist.Net.escape then
 		if p.mo.state == S_PLAY_STND then
 			p.mo.state = S_FH_PANIC
@@ -48,3 +54,11 @@ addHook("MobjDeath", function(t,i,s)
 
 	s.player.heist.scraps = $+return_score(t)
 end)
+
+addHook("MobjDeath", function(t,i,s)
+	if not FangsHeist.isMode() then return end
+	if not (t and t.player and t.player.heist) then return end
+
+	t.player.heist.spectator = true
+	t.player.spectator = true
+end, MT_PLAYER)

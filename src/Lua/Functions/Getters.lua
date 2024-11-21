@@ -51,3 +51,32 @@ function FangsHeist.returnProfit(p)
 
 	return profit
 end
+
+function FangsHeist.playerCount()
+	local count = {
+		total = 0,
+		alive = 0,
+		exiting = 0,
+		dead = 0
+	}
+
+	for p in players.iterate do
+		count.total = $+1
+
+		if not (FangsHeist.isPlayerAlive(p)
+		and p.heist
+		and not p.heist.spectator) then
+			count.dead = $+1
+			continue
+		end
+
+		if p.heist.exiting then
+			count.exiting = $+1
+			continue
+		end
+
+		count.alive = $+1
+	end
+
+	return count
+end

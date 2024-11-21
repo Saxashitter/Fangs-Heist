@@ -108,3 +108,4 @@ end)
 addHud "exittext"
 addHud "timer"
 addHud "escapetext"
+addHud "leftscores"

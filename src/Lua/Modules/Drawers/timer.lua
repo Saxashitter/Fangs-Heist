@@ -17,7 +17,7 @@ function module.draw(v)
 	local bar = v.cachePatch"FH_BAR"
 	local bar2 = v.cachePatch"FH_FULL_BAR"
 	local time_scale = FixedDiv(orig_net.time_left-FangsHeist.Net.time_left, orig_net.time_left)
-	local scale = FU
+	local scale = FU*4/6
 
 	local draw_x = x-(bar.width*scale/2)
 	if FangsHeist.Net.escape then
@@ -34,7 +34,7 @@ function module.draw(v)
 	local time = FangsHeist.Net.time_left
 	local str = string.format("%02d:%02d", G_TicsToMinutes(time), G_TicsToSeconds(time))
 
-	text.draw(v, x, y, FixedDiv(21, 14), str, "TMRFT", "center", V_SNAPTOBOTTOM)
+	text.draw(v, x, y, FixedMul(FixedDiv(21, 14), scale), str, "TMRFT", "center", V_SNAPTOBOTTOM)
 end
 
 return module

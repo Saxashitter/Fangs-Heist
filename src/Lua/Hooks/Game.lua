@@ -42,4 +42,10 @@ addHook("ThinkFrame", do
 	music()
 	pvp.handlePVP()
 	FangsHeist.teleportSign()
+
+	local count = FangsHeist.playerCount()
+
+	if count.alive == 0 then
+		G_ExitLevel()
+	end
 end)
