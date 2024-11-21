@@ -44,7 +44,9 @@ function module.draw(v)
 	local plyrs = {}
 
 	for p,obj in pairs(savedplyrs) do
-		if not (FangsHeist.isPlayerAlive(p)
+		if not (p
+			and p.valid
+			and FangsHeist.isPlayerAlive(p)
 			and p.heist) then
 				savedplyrs[p] = nil
 				continue

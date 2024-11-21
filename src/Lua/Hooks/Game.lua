@@ -1,7 +1,7 @@
 local escape = FangsHeist.require "Modules/Handlers/escape"
 local music = FangsHeist.require "Modules/Handlers/music"
 local pvp = FangsHeist.require "Modules/Handlers/pvp"
-local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
+// local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 
 // Mode initialization.
 addHook("MapChange", do
@@ -43,7 +43,7 @@ addHook("ThinkFrame", do
 	music()
 	pvp.handlePVP()
 	FangsHeist.teleportSign()
-	dialogue.tick()
+	// dialogue.tick()
 
 	local count = FangsHeist.playerCount()
 
