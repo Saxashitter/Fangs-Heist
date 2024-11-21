@@ -2,7 +2,7 @@ G_AddGametype({
     name = "Fang's Heist",
     identifier = "FANGSHEIST",
     typeoflevel = TOL_COOP,
-    rules = GTR_FRIENDLYFIRE|GTR_SPAWNINVUL|GTR_DEATHPENALTY|GTR_SPAWNENEMIES,
+    rules = GTR_FRIENDLYFIRE|GTR_SPAWNINVUL|GTR_DEATHPENALTY|GTR_SPAWNENEMIES|GTR_TEAMFLAGS,
     intermissiontype = int_match,
     headerleftcolor = 222,
     headerrightcolor = 84,

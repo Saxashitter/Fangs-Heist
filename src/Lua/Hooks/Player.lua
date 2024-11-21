@@ -19,6 +19,12 @@ addHook("PlayerThink", function(p)
 		return
 	end
 
+	if FangsHeist.playerHasSign(p) then
+		p.gotflag = 1
+	else
+		p.gotflag = 0
+	end
+
 	if FangsHeist.Net.escape then
 		if p.mo.state == S_PLAY_STND then
 			p.mo.state = S_FH_PANIC
