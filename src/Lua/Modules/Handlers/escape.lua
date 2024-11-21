@@ -25,14 +25,13 @@ local function handleEggman()
 			local sign = FangsHeist.Net.sign
 			local eggman = P_SpawnMobj(sign.x, sign.y, sign.z, MT_THOK)
 
-			eggman.state = S_EGGMOBILE_STND
-			eggman.fuse = -1
-			eggman.tics = -1
-
 			FangsHeist.Net.eggman = eggman
 	end
 
 	local eggman = FangsHeist.Net.eggman
+	eggman.state = S_EGGMOBILE_STND
+	eggman.fuse = -1
+	eggman.tics = -1
 
 	if not (eggman.target
 		and eggman.target.valid

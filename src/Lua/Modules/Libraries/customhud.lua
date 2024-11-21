@@ -4,80 +4,8 @@
 -- USAGE: Main part of customhud is the ability to creating and overwriting existing HUD items, and adding support for other HUD modifications.
 -- This helps sort out HUD conflicts that are otherwise impossible to detect without the use of this library.
 
-local VERSIONNUM = {2, 0};
-
-local function warn(str)
-	print("\131WARNING: \128"..str);
-end
-
-local function notice(str)
-	print("\x83NOTICE: \x80"..str);
-end
-
+-- modified to be modular by saxa lmfao
 local customhud = {}
-
-if (rawget(_G, "customhud")) then
-	local oldnum = customhud.GetVersionNum();
-	local numlength = max(#VERSIONNUM, #oldnum);
-
-	local loadednum = "";
-	local newnum = "";
-
-	local oldvers = false;
-
-	for i = 1,numlength
-		local num1 = oldnum[i];
-		local num2 = VERSIONNUM[i];
-
-		if (num1 == nil) then
-			num1 = 0;
-		end
-		if (num2 == nil) then
-			num2 = 0;
-		end
-
-		if (loadednum == "") then
-			loadednum = "v"..num1;
-		else
-			loadednum = $1.."."..num1;
-		end
-
-		if (newnum == "") then
-			newnum = "v"..num2;
-		else
-			newnum = $1.."."..num2;
-		end
-
-		if (num1 < num2) then
-			oldvers = true;
-		elseif (num1 > num2) then
-			break;
-		end
-	end
-
-	if (oldvers == false) then
-		-- Existing version is OK
-		return;
-	end
-	
-	customhud = rawget(_G, "customhud")
-	return customhud
-end
-
-local customhud = {}
-
-function customhud.GetVersionNum()
-	-- Make sure you cannot overwrite the version number by copying it into another table
-	-- That'd be really silly :V
-	local tempNum = {};
-
-	for k,v in ipairs(VERSIONNUM)
-		tempNum[k] = v;
-	end
-
-	return tempNum;
-end
-
 local huditems = {};
 
 local hooktypes = {
@@ -313,7 +241,7 @@ function customhud.SetupItem(itemName, modName, itemFunc, hook, layer)
 	return true;
 end
 
-local function RunCustomHooks(hook, v, ...)
+local function RunCustomHooks(hook, ...)
 	if (huditems[hook] == nil) then
 		return;
 	end
@@ -333,29 +261,29 @@ local function RunCustomHooks(hook, v, ...)
 		end
 
 		local arg = {...};
-		func(v, unpack(arg));
+		func(unpack(arg));
 	end
 end
 
-hud.add(function(v, player, camera)
-	RunCustomHooks("game", v, player, camera);
-	RunCustomHooks("gameandscores", v);
+addHook("HUD", function(...)
+	RunCustomHooks("game", ...);
+	RunCustomHooks("gameandscores", "game", ...);
 end, "game");
 
-hud.add(function(v)
-	RunCustomHooks("scores", v);
-	RunCustomHooks("gameandscores", v);
+addHook("HUD", function(...)
+	RunCustomHooks("scores", ...);
+	RunCustomHooks("gameandscores", "scores", ...);
 end, "scores");
 
-hud.add(function(v)
+addHook("HUD", function(...)
 	RunCustomHooks("title", v);
 end, "title");
 
-hud.add(function(v, player, ticker, endtime)
+addHook("HUD", function(...)
 	RunCustomHooks("titlecard", v, player, ticker, endtime);
 end, "titlecard");
 
-hud.add(function(v)
+addHook("HUD", function(...)
 	RunCustomHooks("intermission", v);
 end, "intermission");
 

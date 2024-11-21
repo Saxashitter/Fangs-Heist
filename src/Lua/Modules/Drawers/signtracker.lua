@@ -9,7 +9,6 @@ function module.init()
 end
 
 local function draw_sign(v, sign, mo, x, y)
-	alpha = 0
 	if alpha == 10 then return end
 
 	local alpha = V_10TRANS*alpha

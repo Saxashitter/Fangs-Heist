@@ -66,6 +66,8 @@ function FangsHeist.spawnSign()
 		end
 	end
 
+	if not (signpost_pos) then return end
+
 	local sign = P_SpawnMobj(signpost_pos[1], signpost_pos[2], signpost_pos[3], MT_FH_SIGN)
 
 	local board = P_SpawnMobjFromMobj(sign, 0, 0, 0, MT_OVERLAY)

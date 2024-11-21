@@ -1,6 +1,7 @@
 local escape = FangsHeist.require "Modules/Handlers/escape"
 local music = FangsHeist.require "Modules/Handlers/music"
 local pvp = FangsHeist.require "Modules/Handlers/pvp"
+local orig_net = FangsHeist.require "Modules/Variables/net"
 // local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 
 // Mode initialization.
@@ -39,6 +40,22 @@ addHook("ThinkFrame", do
 		return
 	end
 
+	if FangsHeist.Net.game_over then
+		FangsHeist.Net.game_over_ticker = max(0, $-1)
+
+		local t = orig_net.game_over_ticker-FangsHeist.Net.game_over_ticker
+
+		if t == 10 then
+			S_ChangeMusic("YOKADI", true)
+		end
+
+		if not (FangsHeist.Net.game_over_ticker) then
+			G_ExitLevel()
+		end
+
+		return
+	end
+
 	escape()
 	music()
 	pvp.handlePVP()
@@ -48,6 +65,6 @@ addHook("ThinkFrame", do
 	local count = FangsHeist.playerCount()
 
 	if count.alive == 0 then
-		G_ExitLevel()
+		FangsHeist.startIntermission()
 	end
 end)

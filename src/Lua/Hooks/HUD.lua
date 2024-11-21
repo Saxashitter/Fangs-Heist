@@ -51,10 +51,10 @@ local function make_wrapper(object)
 	if not (object and object.draw) then return end
 	local draw = object.draw
 
-	return function(v,p,c)
-		if not (p and p.heist) then return end
+	return function(...)
+		if not (displayplayer and displayplayer.heist) then return end
 
-		draw(v,p,c)
+		draw(...)
 	end
 end
 
@@ -82,7 +82,7 @@ addHook("HUD", function(v,p,c)
 				if (is_hud_modded(name)
 				and not customhud.ItemExists(name))
 				or not is_hud_modded(name) then
-					customhud.SetupItem(name, MOD_NAME, object.draw, hudtype, i)
+					customhud.SetupItem(name, MOD_NAME, object.draw, hudtype)
 					continue
 				end
 
@@ -94,7 +94,7 @@ addHook("HUD", function(v,p,c)
 		return
 	end
 
-	if WAS_FH
+	if WAS_FH then
 		for i,data in ipairs(FangsHeist.Objects) do
 			if not is_hud_modded(data[1]) then
 				customhud.SetupItem(data[1], "vanilla")
@@ -117,3 +117,4 @@ addHud "timer"
 addHud "escapetext"
 addHud "leftscores"
 addHud "dialogue"
+addHud "intermission"
