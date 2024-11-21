@@ -16,6 +16,7 @@ text.draw = function(v, x, y, scale, str, font, align, flags, color)
 
 	local SPACE_SPACING = 4
 	local width = 0
+	local height = 0
 
 	for i = 1,#str do
 		local cut = string.sub(str, i, i)
@@ -29,13 +30,14 @@ text.draw = function(v, x, y, scale, str, font, align, flags, color)
 
 	for k,v in pairs(graphics) do
 		width = $+(v.width*scale)
+		height = max($, v.height*scale)
 	end
 
 	if align == "center" then
-		x = $-(width/2)
+		x = $-width/2
 	end
 	if align == "right" then
-		x = $-(width)
+		x = $-width
 	end
 
 	for i = 1,#str do
@@ -46,7 +48,9 @@ text.draw = function(v, x, y, scale, str, font, align, flags, color)
 			continue
 		end
 
-		v.drawScaled(x, y, scale, graphic, flags, color)
+		local y_offset = -((graphic.height*scale)-height)/2
+
+		v.drawScaled(x, y+y_offset, scale, graphic, flags, color)
 		x = $+(graphic.width*scale)
 	end
 end

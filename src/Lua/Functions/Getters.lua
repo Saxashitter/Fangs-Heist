@@ -45,6 +45,10 @@ end
 function FangsHeist.returnProfit(p)
 	if not (p and p.heist) then return 0 end
 
+	if p.heist.exiting then
+		return p.heist.saved_profit
+	end
+
 	local profit = 0
 
 	if FangsHeist.playerHasSign(p)

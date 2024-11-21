@@ -12,6 +12,8 @@ local function draw_sign(v, sign, mo, x, y)
 
 	local alpha = V_10TRANS*alpha
 	local sign_spr = v.getSpritePatch(SPR_SIGN, G, 0)
+	local arrow = v.cachePatch("FH_ARROW"..(leveltime/2 % 6))
+	local arrow_scale = FU/2
 	local dist = R_PointToDist2(mo.x, mo.y, sign.x, sign.y)
 
 	local holder = sign.holder
@@ -23,12 +25,22 @@ local function draw_sign(v, sign, mo, x, y)
 		v.drawScaled(x, y, FU/4, plyr_spr, V_SNAPTOLEFT|V_SNAPTOTOP|alpha, color)
 		v.drawScaled(x, y - 3*FU, FU/4, sign_spr, V_SNAPTOLEFT|V_SNAPTOTOP|alpha)
 		v.drawString(x, y - 3*FU - 8*FU*2, tostring(dist/FU).." FU", V_SNAPTOLEFT|V_SNAPTOTOP|alpha, "thin-fixed-center")
-
+		v.drawScaled(x - arrow.width*arrow_scale/2,
+			y - 3*FU - 8*FU*2 - arrow.height*arrow_scale,
+			arrow_scale,
+			arrow,
+			V_SNAPTOLEFT|V_SNAPTOTOP,
+			v.getColormap(nil, sign.holder.color))
 		return
 	end
 
 	v.drawScaled(x, y, FU/4, sign_spr, V_SNAPTOLEFT|V_SNAPTOTOP|alpha)
 	v.drawString(x, y - 8*FU*2, tostring(dist/FU).." FU", V_SNAPTOLEFT|V_SNAPTOTOP|alpha, "thin-fixed-center")
+	v.drawScaled(x - arrow.width*arrow_scale/2,
+		y - 8*FU*2 - arrow.height*arrow_scale,
+		arrow_scale,
+		arrow,
+		V_SNAPTOLEFT|V_SNAPTOTOP)
 end
 
 function module.draw(v,p,c)

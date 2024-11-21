@@ -2,7 +2,7 @@ local module = {}
 
 local savedplyrs = {}
 
-local SCORE_Y = 58*FU
+local SCORE_Y = 50*FU
 local SCORE_X = 16*FU
 
 local function make_sort_object(p)

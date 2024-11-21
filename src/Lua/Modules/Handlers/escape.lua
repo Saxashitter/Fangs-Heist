@@ -115,8 +115,8 @@ local function module()
 
 		if p.cmd.buttons & BT_ATTACK
 		and not (p.lastbuttons & BT_ATTACK) then
-			p.heist.exiting = true
 			p.heist.saved_profit = FangsHeist.returnProfit(p)
+			p.heist.exiting = true
 
 			if FangsHeist.playerHasSign(p) then
 				FangsHeist.respawnSign(p)
