@@ -62,3 +62,7 @@ addHook("MobjDeath", function(t,i,s)
 	t.player.heist.spectator = true
 	t.player.spectator = true
 end, MT_PLAYER)
+
+addHook("AbilitySpecial", function (p)
+	return FangsHeist.playerHasSign(p)
+end)
