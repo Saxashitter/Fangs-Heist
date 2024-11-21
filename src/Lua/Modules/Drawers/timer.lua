@@ -3,17 +3,62 @@ local module = {}
 local orig_net = FangsHeist.require "Modules/Variables/net"
 local text = FangsHeist.require "Modules/Libraries/text"
 
+local APPEARANCE_TIME = 3*TICRATE
+
 local x
 local y
 local alpha
+local ticker
+local took
+local warning_active
+
+function FangsHeist.doSignpostWarning(_took)
+	took = (_took)
+	ticker = 0
+	alpha = 10
+	warning_active = true
+end
 
 function module.init()
 	y = 200*FU
 	x = 160*FU
 	alpha = 0
+	ticker = 0
+	took = false
+	warning_active = false
 end
 
 function module.draw(v)
+	if warning_active then
+		ticker = $+1
+
+		if ticker < APPEARANCE_TIME then
+			alpha = max(0, $-1)
+		else
+			alpha = min($+1, 10)
+			if alpha == 10 then
+				warning_active = false
+			end
+		end
+
+		local warning
+		if not took then
+			warning = v.cachePatch("FH_SIGNPOST_TAKEN")
+		else
+			warning = v.cachePatch("FH_TOOK_SIGNPOST")
+		end
+
+		local scale = FU/2
+
+		if alpha ~= 10 then
+			v.drawScaled(x-(warning.width*scale/2),
+				y-(warning.height*scale),
+				scale,
+				warning,
+				V_SNAPTOBOTTOM|(V_10TRANS*alpha))
+		end
+	end
+
 	local bar = v.cachePatch"FH_BAR"
 	local bar2 = v.cachePatch"FH_FULL_BAR"
 	local time_scale = FixedDiv(orig_net.time_left-FangsHeist.Net.time_left, orig_net.time_left)

@@ -105,7 +105,9 @@ addHook("HUD", function(v,p,c)
 	WAS_FH = false
 end)
 
+addHud "signtracker"
 addHud "exittext"
 addHud "timer"
 addHud "escapetext"
 addHud "leftscores"
+addHud "dialogue"

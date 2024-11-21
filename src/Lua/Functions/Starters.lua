@@ -4,4 +4,6 @@ function FangsHeist.startEscape()
 
 	FangsHeist.Net.escape = true
 	S_StartSound(nil, sfx_gogogo)
+
+	FangsHeist.doSignpostWarning(FangsHeist.playerHasSign(displayplayer))
 end

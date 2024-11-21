@@ -1,3 +1,5 @@
+local orig = FangsHeist.require "Modules/Variables/net"
+
 // Get players nearby, mainly used for pickup-ables.
 function FangsHeist.getNearbyPlayers(mobj, distscale, blacklist)
 	if not (distscale) then distscale = FU*3/2 end
@@ -34,6 +36,9 @@ end
 function FangsHeist.playerHasSign(p)
 	return (FangsHeist.Net.sign
 		and FangsHeist.Net.sign.valid
+		and p
+		and p.mo
+		and p.mo.valid
 		and FangsHeist.Net.sign.holder == p.mo)
 end
 
@@ -79,4 +84,19 @@ function FangsHeist.playerCount()
 	end
 
 	return count
+end
+
+local HURRY_LENGTH = 2693
+
+// Check if the time is in the "Hurry Up" segment.
+function FangsHeist.isHurryUp()
+	if not FangsHeist.Net.escape then
+		return false
+	end
+
+	if (orig.time_left-FangsHeist.Net.time_left)*MUSICRATE/TICRATE > HURRY_LENGTH then
+		return false
+	end
+
+	return true
 end

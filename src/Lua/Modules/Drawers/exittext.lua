@@ -20,7 +20,7 @@ function module.draw(v, p)
 
 	local flags = V_SNAPTOBOTTOM|(V_10TRANS*alpha)
 
-	v.drawString(160, 180, "PRESS FIRE TO EXIT", flags, "center")
+	v.drawString(160, 170, "PRESS FIRE TO EXIT", flags, "center")
 end
 
 return module

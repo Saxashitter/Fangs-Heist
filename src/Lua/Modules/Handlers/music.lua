@@ -1,13 +1,18 @@
 return function()
 	local song = nil
+	local loop = true
 
 	if FangsHeist.Net.escape then
-		song = "THCUAG"
+		song = FangsHeist.isHurryUp() and "HURRUP" or "THCUAG"
+		if FangsHeist.isHurryUp() then
+			loop = false
+		end
+		
 	end
 
 	if song
 	and mapmusname ~= song then
 		mapmusname = song
-		S_ChangeMusic(song, true)
+		S_ChangeMusic(song, loop)
 	end
 end

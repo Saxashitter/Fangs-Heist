@@ -15,7 +15,6 @@ local function select_player(sign, p)
 	sign.holder = p.mo
 	sign.hold_pos = {x = sign.x, y = sign.y, z = sign.z}
 	if sign.bustmo and sign.bustmo.valid then
-		print("changing bust")
 		sign.bustmo.skin = p.mo.skin
 		sign.bustmo.color = p.skincolor
 		sign.bustmo.state = S_PLAY_SIGN
