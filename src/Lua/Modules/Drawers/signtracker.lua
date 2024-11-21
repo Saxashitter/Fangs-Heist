@@ -1,6 +1,7 @@
 local module = {}
 
 local sglib = FangsHeist.require "Modules/Libraries/sglib"
+local fracformat = FangsHeist.require "Modules/Libraries/fracformat"
 local alpha = 10
 
 function module.init()
@@ -8,6 +9,7 @@ function module.init()
 end
 
 local function draw_sign(v, sign, mo, x, y)
+	alpha = 0
 	if alpha == 10 then return end
 
 	local alpha = V_10TRANS*alpha
@@ -22,13 +24,13 @@ local function draw_sign(v, sign, mo, x, y)
 
 		v.drawScaled(x, y, FU/4, plyr_spr, V_SNAPTOLEFT|V_SNAPTOTOP|alpha, color)
 		v.drawScaled(x, y - 3*FU, FU/4, sign_spr, V_SNAPTOLEFT|V_SNAPTOTOP|alpha)
-		v.drawString(x, y - 3*FU - 8*FU*2, tostring(dist/FU).." FU", V_SNAPTOLEFT|V_SNAPTOTOP|alpha, "thin-fixed-center")
+		v.drawString(x, y - 3*FU - 8*FU*2, fracformat(dist), V_ALLOWLOWERCASE|V_SNAPTOLEFT|V_SNAPTOTOP|alpha, "thin-fixed-center")
 
 		return
 	end
 
 	v.drawScaled(x, y, FU/4, sign_spr, V_SNAPTOLEFT|V_SNAPTOTOP|alpha)
-	v.drawString(x, y - 8*FU*2, tostring(dist/FU).." FU", V_SNAPTOLEFT|V_SNAPTOTOP|alpha, "thin-fixed-center")
+	v.drawString(x, y - 8*FU*2, fracformat(dist), V_ALLOWLOWERCASE|V_SNAPTOLEFT|V_SNAPTOTOP|alpha, "thin-fixed-center")
 end
 
 function module.draw(v,p,c)
