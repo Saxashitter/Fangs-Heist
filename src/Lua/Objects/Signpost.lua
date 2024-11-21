@@ -14,6 +14,12 @@ local function select_player(sign, p)
 	sign.hold_tween = 0
 	sign.holder = p.mo
 	sign.hold_pos = {x = sign.x, y = sign.y, z = sign.z}
+	if sign.bustmo and sign.bustmo.valid then
+		print("changing bust")
+		sign.bustmo.skin = p.mo.skin
+		sign.bustmo.color = p.skincolor
+		sign.bustmo.state = S_PLAY_SIGN
+	end
 end
 
 function FangsHeist.giveSignTo(p) // somewhat of a wrapper function for scripts to access
@@ -45,14 +51,9 @@ function FangsHeist.teleportSign()
 		pos.z)
 end
 
-function FangsHeist.respawnSign()
-	if (FangsHeist.Net.sign
-	and FangsHeist.Net.sign.valid) then
-		P_RemoveMobj(FangsHeist.Net.sign)
-	end
-
+--[[@return mobj_t]]
+function FangsHeist.spawnSign()
 	local signpost_pos
-
 	for thing in mapthings.iterate do
 		if thing.type == 501
 		and not signpost_pos then
@@ -67,15 +68,39 @@ function FangsHeist.respawnSign()
 	end
 
 	local sign = P_SpawnMobj(signpost_pos[1], signpost_pos[2], signpost_pos[3], MT_FH_SIGN)
-	sign.a = signpost_pos[4]
+
+	local board = P_SpawnMobjFromMobj(sign, 0, 0, 0, MT_OVERLAY)
+	board.target = sign
+	board.state = S_SIGNBOARD
+	board.movedir = ANGLE_90
+	sign.boardmo = board
+
+	local bust = P_SpawnMobjFromMobj(board, 0, 0, 0, MT_OVERLAY)
+	bust.target = board
+	bust.state = S_EGGMANSIGN
+	sign.bustmo = bust
 
 	FangsHeist.Net.sign = sign
+
+	return sign
+end
+
+function FangsHeist.respawnSign()
+	if (FangsHeist.Net.sign
+	and FangsHeist.Net.sign.valid) then
+		--TODO destroy both parts of the sign
+		P_RemoveMobj(FangsHeist.Net.sign)
+	end
+
+	FangsHeist.spawnSign()
+
 	print "Sign is back!"
 end
 
 local function manage_picked(sign)
 	sign.hold_tween = min($+(FU/10), FU)
 	sign.flags = GRABBED_FLAGS
+	sign.angle = sign.holder.angle
 end
 
 local function blacklist(p)
@@ -85,6 +110,8 @@ end
 local function manage_unpicked(sign)
 	sign.flags = UNGRABBED_FLAGS
 	sign.hold_tween = 0
+
+	sign.angle = $ + ANG2
 
 	local nearby = FangsHeist.getNearbyPlayers(sign, nil, blacklist)
 	if not (#nearby) then return end
