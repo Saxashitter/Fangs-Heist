@@ -1,12 +1,14 @@
+local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
+
 local fangdiag = {}
 
-fangdiag.portrait = "FH_DIAG_FANG"
+fangdiag.portrait = "FH_DIALOGUE_FANG_DEFAULT"
 
 fangdiag["escapestart_nosign"] = {
-	"EY! SOMEONE TOOK THE SIGNPOST! DON'T LEAVE WITHOUT IT! DO YA KNOW HOW VALUABLE IT IS!?",
-	"HEY! GET THAT SIGNPOST! SOMEBODY TOOK IT FROM YA!",
-	"WHAT DO YA THINK YOU'RE DOIN, SLOWPOKE!? GET MY SIGN!",
-	"IF YA DON'T GET MY SIGN, I'LL RIP THE FUR OFF OF YA. GET IT! NOW!"
+	"EY! Someone took the signpost! Don't you DARE leave without it! Do ya know how valuable it is!?",
+	"HEY! Get that signpost!",
+	"What do ya think you're doin, slowpoke!? Get my sign!",
+	"If ya don't get my sign, I'll rip the fur off of ya. Get it! NOW!"
 }
 
 fangdiag["escapestart_sign"] = {
@@ -16,13 +18,14 @@ fangdiag["escapestart_sign"] = {
 }
 
 fangdiag["start"] = {
-	"Alright, your mission is simple. Get me my money, and I'll consider sharing it with ya."
+	"I got a client who wants some goods real bad. Get a good supply, and I'll give you a cut.",
+	"Alright, your mission is simple. Get me my money, and I'll consider sharing it with ya.",
 }
 
 fangdiag["death"] = {
-	"NO! NO, NO, NO!! WE LOST 'EM!",
-	"DAAAAAAH!! I'LL NEVER GET MY MONEY!!",
-	"Aw... There goes those sweet artifacts."
+	"NO! No, no, no!! We lost 'em!",
+	"DAAAAAAH!! Now I'll never get my money!!",
+	"Aw... There go those sweet profits."
 }
 
 return fangdiag

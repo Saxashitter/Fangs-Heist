@@ -2,7 +2,7 @@ local escape = FangsHeist.require "Modules/Handlers/escape"
 local music = FangsHeist.require "Modules/Handlers/music"
 local pvp = FangsHeist.require "Modules/Handlers/pvp"
 local orig_net = FangsHeist.require "Modules/Variables/net"
-// local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
+local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 
 // Mode initialization.
 addHook("MapChange", do
@@ -19,6 +19,7 @@ addHook("MapLoad", do
 	end
 
 	FangsHeist.loadMap()
+	dialogue.startFangPreset("start")
 end)
 
 addHook("PreThinkFrame", do
@@ -39,6 +40,8 @@ addHook("ThinkFrame", do
 	if not FangsHeist.isMode() then
 		return
 	end
+
+	dialogue.tick()
 
 	if FangsHeist.Net.game_over then
 		FangsHeist.Net.game_over_ticker = max(0, $-1)
