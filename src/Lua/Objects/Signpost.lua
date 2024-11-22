@@ -33,6 +33,25 @@ end
 function FangsHeist.teleportSign()
 	local sign = FangsHeist.Net.sign
 
+	if sign
+	and sign.valid then
+		if sign.holder
+		and sign.holder.valid
+		and displayplayer
+		and displayplayer.valid
+		and displayplayer.mo
+		and displayplayer.mo.valid
+		and sign.holder == displayplayer.mo then
+			sign.frame = $|FF_TRANS80
+			sign.boardmo.frame = $|FF_TRANS80
+			sign.bustmo.frame = $|FF_TRANS80
+		else
+			sign.frame = $ & ~FF_TRANS80
+			sign.boardmo.frame = $ & ~FF_TRANS80
+			sign.bustmo.frame = $ & ~FF_TRANS80
+		end
+	end
+
 	if not (sign and sign.valid and sign.holder and sign.holder.valid) then return end
 
 	local pos = {
@@ -44,6 +63,7 @@ function FangsHeist.teleportSign()
 	sign.momx = 0
 	sign.momy = 0
 	sign.momz = 0
+
 	P_MoveOrigin(sign,
 		pos.x,
 		pos.y,

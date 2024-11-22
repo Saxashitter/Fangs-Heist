@@ -1,8 +1,25 @@
 local module = {}
 // General PVP handler.
 
+local STR_CAN_ATTACK = STR_PUNCH|STR_ATTACK|STR_STOMP|STR_GLIDE|STR_MELEE|STR_STOMP
+
 function module.canHitPlayers(p)
-	return	p.pflags & (PF_SPINNING|PF_JUMPED)
+	local isAttacking = false
+
+	if p.powers[pw_strong] & STR_CAN_ATTACK then
+		isAttacking = true
+	end
+
+	if not (p.pflags & PF_NOJUMPDAMAGE)
+	and p.pflags & PF_JUMPED then
+		isAttacking = true
+	end
+
+	if p.pflags & PF_SPINNING then
+		isAttacking = true
+	end
+
+	return isAttacking
 	and 	module.isPlayerAttackable(p)
 	or		module.isPlayerForcedToAttack(p)
 end
@@ -28,6 +45,19 @@ function module.hitPriority(p, sp)
 
 	local diff = abs(airspeed1-airspeed2)
 
+	if p.pflags & PF_SPINNING then
+		priority = 1
+	end
+	if p.pflags & PF_STARTDASH then
+		priority = 2
+	end
+	if p.pflags & PF_JUMPED then
+		priority = 3
+	end
+	if p.powers[pw_strong] & STR_CAN_ATTACK then
+		priority = 5
+	end
+
 	if diff < 16*FU then
 		if speed1 >= speed2 then
 			priority = $+1
@@ -38,21 +68,10 @@ function module.hitPriority(p, sp)
 		end
 	end
 
-	if p.pflags & PF_SPINNING then
-		priority = $+1
-	end
-	if p.pflags & PF_STARTDASH then
-		priority = $+1
-	end
-
 	return priority
 end
 
 function module.damagePlayer(p, ap) // ap: attacking player
-	if FangsHeist.playerHasSign(p) then
-		FangsHeist.giveSignTo(ap)
-	end
-
 	if not (ap.pflags & PF_SPINNING)
 	or ap.pflags & PF_STARTDASH then
 		P_DamageMobj(p.mo, ap.mo, ap.mo)
@@ -87,12 +106,13 @@ function module.handlePVP()
 	for p in players.iterate do
 		if not FangsHeist.isPlayerAlive(p) then continue end
 		if not module.canHitPlayers(p) then continue end
+		if not module.isPlayerAttackable(p) then continue end
 		if p.heist and p.heist.exiting then continue end
 
 		for sp in players.iterate do
 			if sp == p then continue end
 			if not FangsHeist.isPlayerAlive(sp) then continue end
-			if P_PlayerInPain(sp) then continue end
+			if not module.isPlayerAttackable(sp) then continue end
 			if sp.heist and sp.heist.exiting then continue end
 
 			if not module.isPlayerHittable(p, sp) then continue end
