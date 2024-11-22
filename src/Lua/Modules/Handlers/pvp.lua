@@ -2,7 +2,17 @@ local module = {}
 // General PVP handler.
 
 function module.canHitPlayers(p)
-	return p.pflags & (PF_SPINNING|PF_JUMPED)
+	return	p.pflags & (PF_SPINNING|PF_JUMPED)
+	and 	module.isPlayerAttackable(p)
+	or		module.isPlayerForcedToAttack(p)
+end
+
+function module.isPlayerAttackable(p)
+	return not P_PlayerInPain(p) and not (p.powers[pw_flashing])
+end
+
+function module.isPlayerForcedToAttack(p)
+	return (p.powers[pw_invulnerability])
 end
 
 function module.hitPriority(p, sp)
@@ -95,6 +105,11 @@ function module.handlePVP()
 		local p = attacks[1]
 		local sp = attacks[2]
 
+		if module.isPlayerForcedToAttack(sp)
+		and module.isPlayerForcedToAttack(p) then
+			continue
+		end
+
 		if not module.canHitPlayers(sp) then
 			module.damagePlayer(sp, p)
 			continue
@@ -103,12 +118,14 @@ function module.handlePVP()
 		local priority1 = module.hitPriority(p, sp)
 		local priority2 = module.hitPriority(sp, p)
 
-		if priority1 > priority2 then
+		if priority1 > priority2
+		or module.isPlayerForcedToAttack(sp) then
 			module.damagePlayer(sp, p)
 			continue
 		end
 
-		if priority2 > priority1 then
+		if priority2 > priority1
+		or module.isPlayerForcedToAttack(p) then
 			module.damagePlayer(p, sp)
 			continue
 		end

@@ -43,16 +43,24 @@ function FangsHeist.loadMap()
 	if FangsHeist.spawnSign() then
 		print "Spawned sign!"
 	end
+
+	local exit = false
 	for thing in mapthings.iterate do
-		if thing.type == 1 then
+		if thing.mobj
+		and thing.mobj.valid
+		and thing.mobj.type == MT_ATTRACT_BOX then
+			P_RemoveMobj(thing.mobj)
+		end
+
+		if thing.type == 1
+		and not exit then
 			local x = thing.x*FU
 			local y = thing.y*FU
 			local z = spawnpos.getThingSpawnHeight(MT_FH_SIGN, thing, x, y)
 			local a = FixedAngle(thing.angle*FU)
 
 			FangsHeist.defineExit(x, y, z, a)
-			print "Spawned exit gate!"
-			break
+			exit = true
 		end
 	end
 end
