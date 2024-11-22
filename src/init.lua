@@ -23,5 +23,6 @@ dofile "Hooks/Player"
 dofile "Hooks/Game"
 dofile "Hooks/HUD"
 
+dofile "Objects/Treasures"
 dofile "Objects/Signpost"
 dofile "Objects/Exit"

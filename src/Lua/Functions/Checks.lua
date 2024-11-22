@@ -1,5 +1,5 @@
 function FangsHeist.isMode()
-	return gametype == GT_FANGSHEIST
+	return gametype == GT_FANGSHEIST or not multiplayer
 end
 
 function FangsHeist.isPlayerAlive(p)

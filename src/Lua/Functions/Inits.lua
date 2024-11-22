@@ -39,17 +39,31 @@ function FangsHeist.initMode()
 	end
 end
 
+local treasure_things = {
+	[312] = true,
+	[409] = true
+}
+
 function FangsHeist.loadMap()
-	if FangsHeist.spawnSign() then
-		print "Spawned sign!"
-	end
+	FangsHeist.spawnSign()
 
 	local exit = false
+	local treasure_spawns = {}
+
 	for thing in mapthings.iterate do
 		if thing.mobj
 		and thing.mobj.valid
-		and thing.mobj.type == MT_ATTRACT_BOX then
+		and (thing.mobj.type == MT_ATTRACT_BOX
+		or thing.mobj.type == MT_1UP_BOX) then
 			P_RemoveMobj(thing.mobj)
+		end
+
+		if treasure_things[thing.type] then
+			table.insert(treasure_spawns, {
+				x = thing.x*FU,
+				y = thing.y*FU,
+				z = spawnpos.getThingSpawnHeight(thing.type, thing, thing.x*FU, thing.y*FU)
+			})
 		end
 
 		if thing.type == 1
@@ -62,5 +76,17 @@ function FangsHeist.loadMap()
 			FangsHeist.defineExit(x, y, z, a)
 			exit = true
 		end
+	end
+
+	for i = 1,5 do
+		if not (#treasure_spawns) then
+			break
+		end
+
+		local choice = P_RandomRange(1, #FangsHeist.treasures)
+		local thing = treasure_spawns[choice]
+
+		FangsHeist.defineTreasure(thing.x, thing.y, thing.z)
+		table.remove(treasure_spawns, choice)
 	end
 end

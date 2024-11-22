@@ -16,8 +16,11 @@ addHook("PlayerThink", function(p)
 	p.spectator = p.heist.spectator
 
 	if p.heist.spectator then
+		p.heist.treasure_time = 0
 		return
 	end
+
+	p.heist.treasure_time = max(0, $-1)
 
 	if FangsHeist.Net.escape then
 		if p.mo.state == S_PLAY_STND then
@@ -53,6 +56,13 @@ addHook("MobjDeath", function(t,i,s)
 	if not (s and s.player and s.player.heist) then return end
 
 	s.player.heist.scraps = $+return_score(t)
+
+	if t.flags & MF_ENEMY then
+		s.player.heist.enemies = $+1
+	end
+	if t.flags & MF_MONITOR then
+		s.player.heist.monitors = $+1
+	end
 end)
 
 addHook("MobjDeath", function(t,i,s)

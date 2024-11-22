@@ -59,9 +59,21 @@ function module.draw(v)
 		local y = pos.y+12*FU
 
 		v.drawString(x, y, p.name, V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_ALLOWLOWERCASE|V_YELLOWMAP, "fixed-center")
-		v.drawString(x, y + 16*FU, "Profit: "..tostring(FangsHeist.returnProfit(p)), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
-		v.drawString(x, y + 16*FU + 8*FU, "Enemies: "..tostring(p.heist.scraps), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
-		v.drawString(x, y + 16*FU + 16*FU, "Rings: "..tostring(p.rings), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
+		y = $+16*FU
+	
+		v.drawString(x, y, "Profit: "..tostring(FangsHeist.returnProfit(p)), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
+		y = $+8*FU
+	
+		v.drawString(x, y, "Enemies: "..tostring(p.heist.enemies), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
+		y = $+8*FU
+
+		v.drawString(x, y, "Monitors: "..tostring(p.heist.monitors), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
+		y = $+8*FU
+
+		v.drawString(x, y, "Treasures: "..tostring(p.heist.treasures), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
+		y = $+8*FU
+
+		v.drawString(x, y, "Rings: "..tostring(p.rings), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
 	end
 end
 

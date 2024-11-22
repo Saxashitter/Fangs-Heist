@@ -57,6 +57,7 @@ function FangsHeist.returnProfit(p)
 
 	profit = $+p.heist.scraps
 	profit = $+(8*p.rings)
+	profit = $+(100*p.heist.treasures)
 
 	return profit
 end

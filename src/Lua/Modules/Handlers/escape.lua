@@ -25,13 +25,22 @@ local function handleEggman()
 			local sign = FangsHeist.Net.sign
 			local eggman = P_SpawnMobj(sign.x, sign.y, sign.z, MT_THOK)
 
+			eggman.fuse = -1
+			eggman.tics = -1
+			eggman.flags = $|MF_NOTHINK|MF_NOBLOCKMAP
+
 			FangsHeist.Net.eggman = eggman
 	end
 
 	local eggman = FangsHeist.Net.eggman
-	eggman.state = S_EGGMOBILE_STND
+
+	eggman.flags = $|MF_NOTHINK|MF_NOBLOCKMAP
 	eggman.fuse = -1
 	eggman.tics = -1
+
+	if eggman.state ~= S_EGGMOBILE_STND then
+		eggman.state = S_EGGMOBILE_STND
+	end
 
 	if not (eggman.target
 		and eggman.target.valid
@@ -43,6 +52,7 @@ local function handleEggman()
 				return
 			end
 
+			print "change target"
 			eggman.target = p.mo
 	end
 
@@ -112,14 +122,11 @@ local function module()
 			continue
 		end
 
-		if p.cmd.buttons & BT_ATTACK
-		and not (p.lastbuttons & BT_ATTACK) then
-			p.heist.saved_profit = FangsHeist.returnProfit(p)
-			p.heist.exiting = true
+		p.heist.saved_profit = FangsHeist.returnProfit(p)
+		p.heist.exiting = true
 
-			if FangsHeist.playerHasSign(p) then
-				FangsHeist.respawnSign(p)
-			end
+		if FangsHeist.playerHasSign(p) then
+			FangsHeist.respawnSign(p)
 		end
 	end
 end
