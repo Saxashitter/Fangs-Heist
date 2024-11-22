@@ -13,6 +13,10 @@ addHook("PlayerThink", function(p)
 		FangsHeist.initPlayer(p)
 	end
 
+	if p.skinflags & SF_DASHMODE then
+		p.skinflags = $ & ~SF_DASHMODE
+	end
+
 	p.spectator = p.heist.spectator
 
 	if p.heist.spectator then
