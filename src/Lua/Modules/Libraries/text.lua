@@ -1,9 +1,12 @@
 local text = {}
 
 local patches = {}
-local get_patch = function(v, patch)
+local function get_patch(v, patch)
 	if not patches[patch] then
-		patches[patch] = v.cachePatch(patch) or v.cachePatch("MISSING")
+		patches[patch] = v.cachePatch(patch)
+		if patch ~= "MISSING" and patches[patch] == get_patch(v, "MISSING") then
+			patches[patch] = nil
+		end
 	end
 
 	return patches[patch]
@@ -16,13 +19,13 @@ text.draw = function(v, x, y, scale, str, font, align, flags, color)
 
 	local SPACE_SPACING = 4
 	local width = 0
-	local height = 0
 
 	for i = 1,#str do
 		local cut = string.sub(str, i, i)
 
 		if cut == " " then // space lol
 			width = $+(SPACE_SPACING*scale)
+			continue
 		end
 
 		graphics[i] = get_patch(v, string.format(font.."%03d", cut:byte()))
@@ -30,7 +33,6 @@ text.draw = function(v, x, y, scale, str, font, align, flags, color)
 
 	for k,v in pairs(graphics) do
 		width = $+(v.width*scale)
-		height = max($, v.height*scale)
 	end
 
 	if align == "center" then
@@ -48,9 +50,9 @@ text.draw = function(v, x, y, scale, str, font, align, flags, color)
 			continue
 		end
 
-		local y_offset = -((graphic.height*scale)-height)/2
+		-- local y_offset = -((graphic.height*scale)-height)/2
 
-		v.drawScaled(x, y+y_offset, scale, graphic, flags, color)
+		v.drawScaled(x, y, scale, graphic, flags, color)
 		x = $+(graphic.width*scale)
 	end
 end
