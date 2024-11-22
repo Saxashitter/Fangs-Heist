@@ -23,3 +23,7 @@ function FangsHeist.startIntermission()
 
 	FangsHeist.Net.game_over = true
 end
+
+COM_AddCommand("fh_endgame", function(p)
+	FangsHeist.startIntermission()
+end)

@@ -16,11 +16,16 @@ local lastside
 local forwardmove
 local lastforward
 
+local scroll
+local scale
+
 local states = {
 	FangsHeist.require"Modules/Handlers/Intermission/personalstats",
 	FangsHeist.require"Modules/Handlers/Intermission/winners",
 	FangsHeist.require"Modules/Handlers/Intermission/vote"
 }
+
+FangsHeist.INTER_START_DELAY = 15
 
 function module.init()
 	alpha = 0
@@ -33,6 +38,8 @@ function module.init()
 	lastside = 0
 	forwardmove = 0
 	lastforward = 0
+	scroll = 0
+	scale = FU*2
 end
 
 // UNEXPECTED HOOK GRAAAAHHH
@@ -63,12 +70,12 @@ local function draw_bg(v)
 	if statealpha == 10 then return end
 
 	local bg = v.cachePatch"FH_PINK_SCROLL"
-	local scroll = (leveltime % bg.width*16)*FU/16
 	local scale = FU*2
+	scroll = $-(FU/2) % (bg.width*scale)
 	local transp = V_10TRANS*statealpha
 
-	local x = FixedMul(-scroll, scale)
-	local y = FixedMul(-scroll, scale)
+	local x = scroll
+	local y = scroll
 
 	local original_x = x
 
@@ -85,13 +92,30 @@ end
 local function draw_intermission(v)
 	if statealpha == 10 then return end
 
+	local x = FixedMul(x, FixedDiv(v.width()*FU/v.dupx(), 320*FU))
+
+	scale = ease.linear(FU/15, $, FU)
+
+	local warp = vwarp(v, {
+		transp = statealpha,
+		xorigin = (v.width()*FU/v.dupx())/2,
+		yorigin = (v.height()*FU/v.dupy())/2,
+		xscale = scale,
+		yscale = scale
+	})
+	draw_bg(warp)
+
 	for i,state in ipairs(states) do
 		local warp = vwarp(v, {
 			transp = statealpha,
-			xoffset = -x + (v.width()*FU/v.dupx())*(i-1)
+			xoffset = -x + (v.width()*FU/v.dupx())*(i-1),
+			xorigin = (v.width()*FU/v.dupx())/2,
+			yorigin = (v.height()*FU/v.dupy())/2,
+			xscale = scale,
+			yscale = scale
 		})
 
-		if (i-1) == current then
+		if i == current then
 			state.think({
 				buttons = buttons;
 				sidemove = sidemove;
@@ -105,8 +129,29 @@ local function draw_intermission(v)
 	end
 end
 
+local function draw_tabs(v)
+	if statealpha == 10 then return end
+
+	local alpha = statealpha*V_10TRANS
+
+	local tab_patch = v.cachePatch"FH_INTER_TAB"
+	local dist = (tab_patch.width-16)*FU
+
+	v.drawString(0, tab_patch.height*FU, "Weapon Prev & Next", V_SNAPTOLEFT|V_SNAPTOTOP|alpha, "thin-fixed")
+
+	for i,state in ipairs(states) do
+		local x = (-16*FU)+dist*(i-1)
+		v.drawScaled(x, 0, FU, tab_patch, V_SNAPTOLEFT|V_SNAPTOTOP|alpha)
+		v.drawString(x+16*FU,
+			4*FU,
+			state.name,
+			V_SNAPTOLEFT|V_SNAPTOTOP|alpha|(current == i and V_YELLOWMAP or 0),
+			"thin-fixed")
+	end
+end
+
 local function manage_intermission(v)
-	local target_x = (v.width()*FU/v.dupx())*(current-1)
+	local target_x = (320*FU)*(current-1)
 
 	if statealpha == 10 then
 		x = target_x
@@ -125,7 +170,7 @@ local function manage_intermission(v)
 	end
 
 	current = max(1, min($+select, #states))
-	target_x = (v.width()*FU/v.dupx())*(current-1)
+	target_x = (320*FU)*(current-1)
 
 	x = ease.linear(FU/5, $, target_x)
 end
@@ -134,14 +179,14 @@ function module.draw(renderer, v)
 	if not FangsHeist.Net.game_over then return end
 
 	alpha = min($+1, 10)
-	if alpha == 10 then
+	if FangsHeist.Net.game_over_ticker >= FangsHeist.INTER_START_DELAY then
 		statealpha = max(0, $-1)
 	end
 
 	manage_fade_screen(v)
 	manage_intermission(v)
-	draw_bg(v)
 	draw_intermission(v)
+	draw_tabs(v)
 end
 
 return module,"gameandscores"

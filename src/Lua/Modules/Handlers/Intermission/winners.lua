@@ -1,9 +1,11 @@
 local module = {}
 
+module.name = "Winners"
+
 local POSITION_DATA = {
-	{x = 160*FU, y = 100*FU},
-	{x = 160*FU-100*FU, y = 110*FU},
-	{x = 160*FU+100*FU, y = 120*FU}
+	{x = 160*FU, y = 110*FU, patch = "FH_PODIUM_FIRST"},
+	{x = 160*FU-100*FU, y = 120*FU, patch = "FH_PODIUM_SECOND"},
+	{x = 160*FU+100*FU, y = 130*FU, patch = "FH_PODIUM_THIRD"}
 }
 
 function module.think(p) // runs when selected
@@ -16,10 +18,11 @@ local profit_sort = function(a, b)
 	return profit1 > profit2
 end
 
-function module.draw(v, width, height)
-	v.drawString(160, 4, "WINNERS", V_SNAPTOTOP, "center")
-
+function module.draw(v)
 	local plyrs = {}
+
+	local width = v.width()*FU/v.dupx()
+	local height = v.height()*FU/v.dupy()
 
 	for p in players.iterate do
 		if not (FangsHeist.isPlayerAlive(p) and p.heist) then
@@ -44,10 +47,14 @@ function module.draw(v, width, height)
 		local stnd = v.getSprite2Patch(p.skin, SPR2_STND, false, A, 1)
 		local color = v.getColormap(p.skin, p.skincolor)
 
+		local podium = v.cachePatch(pos.patch)
+		local podium_scale = FU*6/8
+
 		local mult = FixedDiv(width, 320*FU)
 		local x = FixedMul(pos.x, mult)
 
-		v.drawScaled(x, pos.y, FU, stnd, V_SNAPTOBOTTOM|V_SNAPTOLEFT, color)
+		v.drawScaled(x-podium.width*podium_scale/2, 200*FU-podium.height*podium_scale, podium_scale, podium, V_SNAPTOBOTTOM|V_SNAPTOLEFT)
+		v.drawScaled(x, pos.y, FU*6/8, stnd, V_SNAPTOBOTTOM|V_SNAPTOLEFT, color)
 
 		local y = pos.y+12*FU
 

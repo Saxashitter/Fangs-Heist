@@ -41,15 +41,15 @@ addHook("ThinkFrame", do
 	end
 
 	if FangsHeist.Net.game_over then
-		FangsHeist.Net.game_over_ticker = max(0, $-1)
+		FangsHeist.Net.game_over_ticker = max(0, $+1)
 
-		local t = orig_net.game_over_ticker-FangsHeist.Net.game_over_ticker
+		local t = FangsHeist.Net.game_over_ticker
 
-		if t == 10 then
+		if t == FangsHeist.INTER_START_DELAY then
 			S_ChangeMusic("YOKADI", true)
 		end
 
-		if not (FangsHeist.Net.game_over_ticker) then
+		if t >= FangsHeist.INTER_START_DELAY+FangsHeist.Net.game_over_length then
 			G_ExitLevel()
 		end
 
@@ -64,7 +64,8 @@ addHook("ThinkFrame", do
 
 	local count = FangsHeist.playerCount()
 
-	if count.alive == 0 and FangsHeist.Net.escape then
+	if count.alive == 0
+	//and FangsHeist.Net.escape then
 		FangsHeist.startIntermission()
 	end
 end)
