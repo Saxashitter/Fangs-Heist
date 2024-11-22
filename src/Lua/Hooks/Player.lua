@@ -57,6 +57,7 @@ end)
 
 addHook("MobjDeath", function(t,i,s)
 	if not FangsHeist.isMode() then return end
+	if not FangsHeist.Net.escape then return end
 	if not (t and t.player and t.player.heist) then return end
 
 	t.player.heist.spectator = true

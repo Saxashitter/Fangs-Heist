@@ -64,7 +64,7 @@ addHook("ThinkFrame", do
 
 	local count = FangsHeist.playerCount()
 
-	if count.alive == 0 then
+	if count.alive == 0 and FangsHeist.Net.escape then
 		FangsHeist.startIntermission()
 	end
 end)
