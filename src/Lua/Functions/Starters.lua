@@ -1,3 +1,5 @@
+local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
+
 sfxinfo[freeslot "sfx_gogogo"].caption = "G-G-G-G-GO! GO! GO!"
 function FangsHeist.startEscape()
 	if FangsHeist.Net.escape then return end
@@ -7,6 +9,12 @@ function FangsHeist.startEscape()
 
 	FangsHeist.changeBlocks()
 	FangsHeist.doSignpostWarning(FangsHeist.playerHasSign(displayplayer))
+
+	if FangsHeist.playerHasSign(consoleplayer) then
+		dialogue.startFangPreset("escapestart_sign")
+	else
+		dialogue.startFangPreset("escapestart_nosign")
+	end
 end
 
 function FangsHeist.startIntermission()

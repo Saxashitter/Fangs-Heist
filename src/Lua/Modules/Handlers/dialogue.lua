@@ -1,5 +1,6 @@
 local copy = FangsHeist.require "Modules/Libraries/copy"
 local VWarp = FangsHeist.require "Modules/Libraries/vwarp"
+local fangdiag = FangsHeist.require "Modules/Variables/fang_diag"
 
 -- Fang's Heist TaLKing Fang
 freeslot("sfx_fhtlkf")
@@ -13,7 +14,7 @@ local get_patch = function(v, patch)
 	return patches[patch]
 end
 
-local BOXSIZE = 150
+local BOXSIZE = 200
 local SLIDEAMT = 15
 
 local function isInvisChar(char)
@@ -27,16 +28,40 @@ local function isInvisChar(char)
     return false
 end
 
+--[[@param v videolib]]
+local function textWrap(v, str, maxwidth, type)
+    local queue = ""
+    local line = ""
+    
+    for word in str:gmatch("%S+") do
+        local newline = word
+        if #line then
+            newline = line + " " + word
+        end
+        if v.stringWidth(newline, 0, type) > maxwidth then
+            queue = $ + line + "\n"
+            line = word
+        else
+            line = newline
+        end
+    end
+    if #line then
+        queue = $ + line
+    end
+    return queue
+end
+
+local randSeed = 0
 local snap = V_SNAPTOBOTTOM|V_SNAPTORIGHT
 local DIALOGUE;
 DIALOGUE = {
     tick = function ()
-        if leveltime == 10 then
-            DIALOGUE.startDialogue({
-                icon = "FH_DIALOGUE_FANG_DEFAULT",
-                text = "hey yo! i want you to\ngimme some stuff,\nalright?"
-            })
-        end
+        -- if leveltime == 10 then
+        --     DIALOGUE.startDialogue({
+        --         icon = "FH_DIALOGUE_FANG_DEFAULT",
+        --         text = "hey yo! i want you to\ngimme some stuff,\nalright?"
+        --     })
+        -- end
 
         if leveltime <= 1 then return end
 
@@ -78,16 +103,33 @@ DIALOGUE = {
     end,
     state = nil,
     startDialogue = function (prompt)
+        local slide = SLIDEAMT
+        if DIALOGUE.state then
+            slide = DIALOGUE.state.slide
+        end
         DIALOGUE.state = {
             icon = prompt.icon or "FH_DIALOGUE_FANG_DEFAULT",
             text = prompt.text or "hi\nmom\nlol",
             next = prompt.next,
+            needsWrap = prompt.needsWrap,
             textprogress = 0,
             textprogbeat = 0,
-            slide = SLIDEAMT
+            slide = slide
         }
     end,
+    startFangPreset = function (name)
+        print("Fang preset " .. name)
+        local data = {
+            icon = fangdiag.portrait,
+            text = fangdiag[name][(randSeed % #fangdiag[name]) + 1],
+            needsWrap = true
+        }
+        DIALOGUE.startDialogue(data)
+        print(fangdiag[name])
+        print(DIALOGUE.state)
+    end,
     drawhud = function (truev)
+        randSeed = truev.RandomFixed()
         local ds = DIALOGUE.state
         if not ds then return end
         --[[@type videolib]]
@@ -95,6 +137,12 @@ DIALOGUE = {
             xoffset = (DIALOGUE.state.slide*DIALOGUE.state.slide)*FU,
             yoffset = -8*FU
         })
+
+        if ds.needsWrap then
+            ds.needsWrap = false
+            ds.text = textWrap(v, $, BOXSIZE - 48, "thin")
+        end
+
 		local diag_box = get_patch(truev, "FH_DIALOGUE_BOX_BG")
 		local diag_outline = get_patch(truev, "FH_DIALOGUE_BOX_OUTLINE")
 

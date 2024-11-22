@@ -1,3 +1,5 @@
+local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
+
 states[freeslot "S_FH_PANIC"] = {
 	sprite = SPR_PLAY,
 	frame = SPR2_CNT1,
@@ -8,6 +10,7 @@ states[freeslot "S_FH_PANIC"] = {
 // Handle player hook.
 addHook("PlayerThink", function(p)
 	if not FangsHeist.isMode() then return end
+	if not (p and p.valid) then return end
 
 	if not (p and p.heist) then
 		FangsHeist.initPlayer(p)
@@ -72,6 +75,10 @@ addHook("MobjDeath", function(t,i,s)
 
 	t.player.heist.spectator = true
 	t.player.spectator = true
+
+	if t.player == consoleplayer then
+		dialogue.startFangPreset("death")
+	end
 end, MT_PLAYER)
 
 addHook("MobjDamage", function(t,i,s)
