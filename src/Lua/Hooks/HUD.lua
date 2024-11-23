@@ -73,21 +73,19 @@ end
 
 addHook("HUD", function(v,p,c)
 	if FangsHeist.isMode() then
-		if not WAS_FH then
-			for i, data in ipairs(FangsHeist.Objects) do
-				local name = data[1]
-				local object = data[2]
-				local hudtype = data[3]
+		for i, data in ipairs(FangsHeist.Objects) do
+			local name = data[1]
+			local object = data[2]
+			local hudtype = data[3]
 
-				if (is_hud_modded(name)
-				and not customhud.ItemExists(name))
-				or not is_hud_modded(name) then
-					customhud.SetupItem(name, MOD_NAME, object.draw, hudtype)
-					continue
-				end
-
-				customhud.enable(name)
+			if (is_hud_modded(name)
+			and not customhud.ItemExists(name))
+			or not is_hud_modded(name) then
+				customhud.SetupItem(name, MOD_NAME, object.draw, hudtype)
+				continue
 			end
+
+			customhud.enable(name)
 		end
 		
 		WAS_FH = true
