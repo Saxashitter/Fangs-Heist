@@ -100,23 +100,12 @@ end
 
 // Returns -1 if the player isn't placed anywhere.
 function FangsHeist.getPlayerPlacement(p)
-	local plyrs = {}
+	local placement = 1
 
-	for plyr in players.iterate do
-		if not FangsHeist.isPlayerAlive(plyr) then
-			continue
-		end
-
-		table.insert(plyrs, plyr)
+	if not FangsHeist.isPlayerAlive(p) then
+		return -1
 	end
 
-	table.sort(plyrs, score_sort)
-
-	for i,plyr in pairs(plyrs) do
-		if plyr == p then
-			return i
-		end
-	end
-
-	return -1
+	placement = FangsHeist.Net.placements[#p].place
+	return placement
 end

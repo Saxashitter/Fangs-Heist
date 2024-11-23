@@ -3,7 +3,7 @@ return function()
 	local loop = true
 
 	if FangsHeist.Net.escape then
-		song = FangsHeist.isHurryUp() and "HURRUP" or "KARKUR"
+		song = FangsHeist.isHurryUp() and "HURRUP" or "SPRHRO"
 		if FangsHeist.isHurryUp() then
 			loop = false
 		end

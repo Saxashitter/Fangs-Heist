@@ -8,5 +8,7 @@ return {
 	game_over_ticker = 0,
 	game_over_length = 20*TICRATE,
 
+	placements = {},
+
 	treasures = {}
 }
