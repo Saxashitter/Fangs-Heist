@@ -25,6 +25,8 @@ addHook("PlayerThink", function(p)
 		return
 	end
 
+	p.charflags = $ & ~SF_DASHMODE
+
 	p.heist.treasure_time = max(0, $-1)
 
 	if FangsHeist.Net.escape
