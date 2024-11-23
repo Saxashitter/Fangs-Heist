@@ -27,7 +27,8 @@ addHook("PreThinkFrame", do
 	end
 
 	for p in players.iterate do
-		if (p.heist and p.heist.exiting) then
+		if (p.heist and p.heist.exiting)
+		or FangsHeist.Net.game_over then
 			p.cmd.buttons = 0
 			p.cmd.forwardmove = 0
 			p.cmd.sidemove = 0
@@ -68,7 +69,7 @@ addHook("ThinkFrame", do
 	local count = FangsHeist.playerCount()
 
 	if count.alive == 0
-	//and FangsHeist.Net.escape then
+	and FangsHeist.Net.escape then
 		FangsHeist.startIntermission()
 	end
 end)
