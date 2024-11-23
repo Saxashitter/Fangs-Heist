@@ -1,4 +1,4 @@
-local customhud = FangsHeist.require"Modules/Libraries/customhud"
+FangsHeist.require"Modules/Libraries/customhud"
 
 -- Should match hud_disable_options in lua_hudlib.c
 -- taken from customhud

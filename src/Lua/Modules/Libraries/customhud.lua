@@ -4,8 +4,77 @@
 -- USAGE: Main part of customhud is the ability to creating and overwriting existing HUD items, and adding support for other HUD modifications.
 -- This helps sort out HUD conflicts that are otherwise impossible to detect without the use of this library.
 
--- modified to be modular by saxa lmfao
-local customhud = {}
+local VERSIONNUM = {2, 0};
+
+local function warn(str)
+	print("\131WARNING: \128"..str);
+end
+
+local function notice(str)
+	print("\x83NOTICE: \x80"..str);
+end
+
+if (rawget(_G, "customhud")) then
+	local oldnum = customhud.GetVersionNum();
+	local numlength = max(#VERSIONNUM, #oldnum);
+
+	local loadednum = "";
+	local newnum = "";
+
+	local oldvers = false;
+
+	for i = 1,numlength
+		local num1 = oldnum[i];
+		local num2 = VERSIONNUM[i];
+
+		if (num1 == nil) then
+			num1 = 0;
+		end
+		if (num2 == nil) then
+			num2 = 0;
+		end
+
+		if (loadednum == "") then
+			loadednum = "v"..num1;
+		else
+			loadednum = $1.."."..num1;
+		end
+
+		if (newnum == "") then
+			newnum = "v"..num2;
+		else
+			newnum = $1.."."..num2;
+		end
+
+		if (num1 < num2) then
+			oldvers = true;
+		elseif (num1 > num2) then
+			break;
+		end
+	end
+
+	if (oldvers == false) then
+		-- Existing version is OK
+		return;
+	end
+
+	notice("An old version of customhud was detected ("..loadednum.."). Switching to newer ("..newnum.."), errors may occur.");
+end
+
+rawset(_G, "customhud", {});
+
+function customhud.GetVersionNum()
+	-- Make sure you cannot overwrite the version number by copying it into another table
+	-- That'd be really silly :V
+	local tempNum = {};
+
+	for k,v in ipairs(VERSIONNUM)
+		tempNum[k] = v;
+	end
+
+	return tempNum;
+end
+
 local huditems = {};
 
 local hooktypes = {
@@ -220,7 +289,7 @@ function customhud.SetupItem(itemName, modName, itemFunc, hook, layer)
 	end
 
 	if (itemFunc != nil) then
-		-- Change the function it uses
+		// Change the function it uses
 		item.funcs[modName] = itemFunc;
 	end
 	item.type = modName;
@@ -241,7 +310,7 @@ function customhud.SetupItem(itemName, modName, itemFunc, hook, layer)
 	return true;
 end
 
-local function RunCustomHooks(hook, ...)
+local function RunCustomHooks(hook, v, ...)
 	if (huditems[hook] == nil) then
 		return;
 	end
@@ -261,29 +330,29 @@ local function RunCustomHooks(hook, ...)
 		end
 
 		local arg = {...};
-		func(unpack(arg));
+		func(v, unpack(arg));
 	end
 end
 
-addHook("HUD", function(...)
-	RunCustomHooks("game", ...);
-	RunCustomHooks("gameandscores", "game", ...);
+hud.add(function(v, player, camera)
+	RunCustomHooks("game", v, player, camera);
+	RunCustomHooks("gameandscores", v);
 end, "game");
 
-addHook("HUD", function(...)
-	RunCustomHooks("scores", ...);
-	RunCustomHooks("gameandscores", "scores", ...);
+hud.add(function(v)
+	RunCustomHooks("scores", v);
+	RunCustomHooks("gameandscores", v);
 end, "scores");
 
-addHook("HUD", function(...)
+hud.add(function(v)
 	RunCustomHooks("title", v);
 end, "title");
 
-addHook("HUD", function(...)
+hud.add(function(v, player, ticker, endtime)
 	RunCustomHooks("titlecard", v, player, ticker, endtime);
 end, "titlecard");
 
-addHook("HUD", function(...)
+hud.add(function(v)
 	RunCustomHooks("intermission", v);
 end, "intermission");
 
@@ -618,5 +687,3 @@ function customhud.CustomNum(v, x, y, num, fontName, padding, flags, align, scal
 
 	return customhud.CustomFontString(v, x, y, str, fontName, flags, align, scale, color);
 end
-
-return customhud
