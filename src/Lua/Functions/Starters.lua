@@ -9,12 +9,6 @@ function FangsHeist.startEscape()
 
 	FangsHeist.changeBlocks()
 	FangsHeist.doSignpostWarning(FangsHeist.playerHasSign(displayplayer))
-
-	if FangsHeist.playerHasSign(consoleplayer) then
-		dialogue.startFangPreset("escapestart_sign")
-	else
-		dialogue.startFangPreset("escapestart_nosign")
-	end
 end
 
 function FangsHeist.startIntermission()

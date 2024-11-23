@@ -1,5 +1,7 @@
 local module = {}
 
+local text = FangsHeist.require"Modules/Libraries/text"
+
 module.name = "Winners"
 
 local POSITION_DATA = {
@@ -16,6 +18,19 @@ local profit_sort = function(a, b)
 	local profit2 = FangsHeist.returnProfit(b)
 
 	return profit1 > profit2
+end
+
+local TRIM_LENGTH = 12
+local function trim(str)
+	if #str > TRIM_LENGTH then
+		local trim = string.sub(str, 1, TRIM_LENGTH-3)
+
+		trim = $.."..."
+
+		return trim
+	end
+
+	return str
 end
 
 function module.draw(v)
@@ -35,7 +50,18 @@ function module.draw(v)
 	table.sort(plyrs, profit_sort)
 
 	if not (#plyrs) then
-		v.drawString(160, 100, "EVERYONE DIED!", 0, "center")
+		print "draw funny"
+		text.draw(v,
+			160*FU,
+			100*FU - 21*FU/2,
+			FU,
+			"NO WINNERS!!",
+			"FHFNT",
+			"center",
+			0,
+			v.getColormap(nil, SKINCOLOR_CYAN)
+		)
+		return
 	end
 
 	for i = 1,3 do
@@ -53,12 +79,23 @@ function module.draw(v)
 		local mult = FixedDiv(width, 320*FU)
 		local x = FixedMul(pos.x, mult)
 
+		local name = (trim(p.name)):upper()
+
 		v.drawScaled(x-podium.width*podium_scale/2, 200*FU-podium.height*podium_scale, podium_scale, podium, V_SNAPTOBOTTOM|V_SNAPTOLEFT)
 		v.drawScaled(x, pos.y, FU*6/8, stnd, V_SNAPTOBOTTOM|V_SNAPTOLEFT, color)
 
 		local y = pos.y+12*FU
+		local f = V_SNAPTOBOTTOM|V_SNAPTOLEFT
+		// 21*FU
 
-		v.drawString(x, y, p.name, V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_ALLOWLOWERCASE|V_YELLOWMAP, "fixed-center")
+		text.draw(v,
+			x, y,
+			FU*6/9,
+			name,
+			"FHFNT",
+			"center",
+			f,
+			v.getColormap(nil, p.skincolor))
 		y = $+16*FU
 	
 		v.drawString(x, y, "Profit: "..tostring(FangsHeist.returnProfit(p)), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")

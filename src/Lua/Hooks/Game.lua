@@ -19,7 +19,6 @@ addHook("MapLoad", do
 	end
 
 	FangsHeist.loadMap()
-	dialogue.startFangPreset("start")
 end)
 
 addHook("PreThinkFrame", do

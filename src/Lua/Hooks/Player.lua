@@ -1,5 +1,9 @@
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 
+FangsHeist.panicBlacklist = {
+	takisthefox = true
+}
+
 states[freeslot "S_FH_PANIC"] = {
 	sprite = SPR_PLAY,
 	frame = SPR2_CNT1,
@@ -25,7 +29,8 @@ addHook("PlayerThink", function(p)
 
 	p.heist.treasure_time = max(0, $-1)
 
-	if FangsHeist.Net.escape then
+	if FangsHeist.Net.escape
+	and not FangsHeist.panicBlacklist[p.mo.skin] then
 		if p.mo.state == S_PLAY_STND then
 			p.mo.state = S_FH_PANIC
 		end
@@ -75,10 +80,6 @@ addHook("MobjDeath", function(t,i,s)
 
 	t.player.heist.spectator = true
 	t.player.spectator = true
-
-	if t.player == consoleplayer then
-		dialogue.startFangPreset("death")
-	end
 end, MT_PLAYER)
 
 addHook("MobjDamage", function(t,i,s)

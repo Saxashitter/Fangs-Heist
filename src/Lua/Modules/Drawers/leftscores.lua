@@ -13,6 +13,10 @@ local function make_sort_object(p)
 	}
 end
 
+local function sort_plyrs(a, b)
+	return FangsHeist.getPlayerPlacement(a.plyr) < FangsHeist.getPlayerPlacement(b.plyr)
+end
+
 local function get_profit(p)
 	if not (p.heist.exiting) then
 		return FangsHeist.returnProfit(p)
@@ -21,11 +25,11 @@ local function get_profit(p)
 	return p.heist.saved_profit
 end
 
-local function score_sort(a, b)
-	local score1 = get_profit(a.plyr)
-	local score2 = get_profit(b.plyr)
-
-	return score1 > score2
+local function valid(p)
+	return p
+	and p.valid
+	and FangsHeist.isPlayerAlive(p)
+	and FangsHeist.getPlayerPlacement(p) ~= -1
 end
 
 function module.init()
@@ -34,8 +38,7 @@ end
 
 function module.draw(v)
 	for p in players.iterate do
-		if FangsHeist.isPlayerAlive(p)
-			and p.heist
+		if valid(p)
 			and not savedplyrs[p] then
 				savedplyrs[p] = make_sort_object(p)
 		end
@@ -44,10 +47,7 @@ function module.draw(v)
 	local plyrs = {}
 
 	for p,obj in pairs(savedplyrs) do
-		if not (p
-			and p.valid
-			and FangsHeist.isPlayerAlive(p)
-			and p.heist) then
+		if not (valid(p)) then
 				savedplyrs[p] = nil
 				continue
 		end
@@ -55,7 +55,7 @@ function module.draw(v)
 		table.insert(plyrs, obj)
 	end
 
-	table.sort(plyrs, score_sort)
+	table.sort(plyrs, sort_plyrs)
 
 	for i,obj in pairs(plyrs) do
 		local target_y = (10*FU)*(i-1)

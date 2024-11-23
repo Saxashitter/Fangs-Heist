@@ -1,6 +1,7 @@
 return {
 	scraps = 0,
 	saved_profit = 0,
+	had_sign = false,
 
 	death_time = 5*TICRATE,
 

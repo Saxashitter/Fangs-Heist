@@ -83,7 +83,7 @@ function FangsHeist.loadMap()
 			break
 		end
 
-		local choice = P_RandomRange(1, #FangsHeist.treasures)
+		local choice = P_RandomRange(1, #treasure_spawns)
 		local thing = treasure_spawns[choice]
 
 		FangsHeist.defineTreasure(thing.x, thing.y, thing.z)

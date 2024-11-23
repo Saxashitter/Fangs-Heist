@@ -1,5 +1,5 @@
 local orig_plyr = FangsHeist.require"Modules/Variables/player"
-
+local dialogue = FangsHeist.require"Modules/Handlers/dialogue"
 local function valid_player(p)
 	return p and p.mo and p.mo.health and p.heist and not p.heist.spectator and not p.heist.exiting
 end
@@ -51,8 +51,6 @@ local function handleEggman()
 			if not p then
 				return
 			end
-
-			print "change target"
 			eggman.target = p.mo
 	end
 
@@ -78,7 +76,8 @@ local function handleEggman()
 	P_MoveOrigin(eggman,
 		ease.linear(FU-(t/5), eggman.x, x),
 		ease.linear(FU-(t/5), eggman.y, y),
-		ease.linear(FU/5, eggman.z, z))
+		ease.linear(FU/5, eggman.z, z)
+	)
 
 	eggman.angle = R_PointToAngle2(eggman.x, eggman.y, p.mo.x, p.mo.y)
 
@@ -95,6 +94,11 @@ local function module()
 	end
 
 	FangsHeist.Net.time_left = max(0, $-1)
+	if FangsHeist.Net.time_left <= 30*TICRATE
+	and not FangsHeist.Net.hurry_up then
+		dialogue.startFangPreset("hurryup")
+		FangsHeist.Net.hurry_up = true
+	end
 
 	if not (FangsHeist.Net.time_left) then
 		handleEggman()
@@ -102,7 +106,7 @@ local function module()
 
 	if not (FangsHeist.Net.sign
 		and FangsHeist.Net.sign.valid) then
-			return
+			FangsHeist.spawnSign()
 	end
 
 	local exit = FangsHeist.Net.exit
@@ -126,6 +130,7 @@ local function module()
 		p.heist.exiting = true
 
 		if FangsHeist.playerHasSign(p) then
+			p.heist.had_sign = true
 			FangsHeist.respawnSign(p)
 		end
 	end

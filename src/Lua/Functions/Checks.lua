@@ -1,5 +1,5 @@
 function FangsHeist.isMode()
-	return gametype == GT_FANGSHEIST or not multiplayer
+	return gametype == GT_FANGSHEIST or (gamestate == GS_LEVEL and not multiplayer)
 end
 
 function FangsHeist.isPlayerAlive(p)
@@ -18,4 +18,19 @@ function FangsHeist.isPlayerAtGate(p)
 	end
 	
 	return false
+end
+
+local HURRY_LENGTH = 2693
+
+// Check if the time is in the "Hurry Up" segment.
+function FangsHeist.isHurryUp()
+	if not FangsHeist.Net.escape then
+		return false
+	end
+
+	if (orig.time_left-FangsHeist.Net.time_left)*MUSICRATE/TICRATE > HURRY_LENGTH then
+		return false
+	end
+
+	return true
 end

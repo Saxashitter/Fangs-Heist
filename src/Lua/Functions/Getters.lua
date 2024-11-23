@@ -91,17 +91,32 @@ function FangsHeist.playerCount()
 	return count
 end
 
-local HURRY_LENGTH = 2693
+local function score_sort(a, b)
+	local score1 = FangsHeist.returnProfit(a)
+	local score2 = FangsHeist.returnProfit(b)
 
-// Check if the time is in the "Hurry Up" segment.
-function FangsHeist.isHurryUp()
-	if not FangsHeist.Net.escape then
-		return false
+	return score1 > score2
+end
+
+// Returns -1 if the player isn't placed anywhere.
+function FangsHeist.getPlayerPlacement(p)
+	local plyrs = {}
+
+	for plyr in players.iterate do
+		if not FangsHeist.isPlayerAlive(plyr) then
+			continue
+		end
+
+		table.insert(plyrs, plyr)
 	end
 
-	if (orig.time_left-FangsHeist.Net.time_left)*MUSICRATE/TICRATE > HURRY_LENGTH then
-		return false
+	table.sort(plyrs, score_sort)
+
+	for i,plyr in pairs(plyrs) do
+		if plyr == p then
+			return i
+		end
 	end
 
-	return true
+	return -1
 end
