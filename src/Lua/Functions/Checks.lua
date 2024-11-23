@@ -1,3 +1,5 @@
+local orig = FangsHeist.require "Modules/Variables/net"
+
 function FangsHeist.isMode()
 	return gametype == GT_FANGSHEIST or (gamestate == GS_LEVEL and not multiplayer)
 end

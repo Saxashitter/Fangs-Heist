@@ -20,8 +20,6 @@ addHook("PlayerThink", function(p)
 		FangsHeist.initPlayer(p)
 	end
 
-	p.spectator = p.heist.spectator
-
 	if p.heist.spectator then
 		p.heist.treasure_time = 0
 		return
@@ -43,6 +41,25 @@ addHook("PlayerThink", function(p)
 
 	if not (p.heist.exiting) then
 		p.score = FangsHeist.returnProfit(p)
+	end
+end)
+
+addHook("ThinkFrame", do
+	if not FangsHeist.isMode() then return end
+
+	for p in players.iterate do
+		if not (p and p.heist) then continue end
+
+		if p.heist.spectator then
+			if p.mo then
+				if p.mo.health then
+					p.spectator = true
+				end
+				continue
+			end
+
+			p.spectator = true
+		end
 	end
 end)
 
@@ -79,7 +96,6 @@ addHook("MobjDeath", function(t,i,s)
 	if not (t and t.player and t.player.heist) then return end
 
 	t.player.heist.spectator = true
-	t.player.spectator = true
 end, MT_PLAYER)
 
 addHook("MobjDamage", function(t,i,s)

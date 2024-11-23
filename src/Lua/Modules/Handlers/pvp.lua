@@ -33,42 +33,31 @@ function module.isPlayerForcedToAttack(p)
 end
 
 function module.hitPriority(p, sp)
-	local priority = 0
+	/*
+	CURRENT SYSTEM:
+		Spindash > Roll
+		Jump > Spindash & Melee
+		Melee > Spindash & Roll
+	*/
 
-	local speed1 = FixedHypot(p.mo.momx, p.mo.momy)
-	local speed2 = FixedHypot(sp.mo.momx, sp.mo.momy)
-	// we want to account for the actual speed that the player is going
-	// not the players rmomx and rmomy
-
-	local airspeed1 = p.mo.momz
-	local airspeed2 = sp.mo.momz
-
-	local diff = abs(airspeed1-airspeed2)
-
-	if p.pflags & PF_SPINNING then
-		priority = 1
-	end
-	if p.pflags & PF_STARTDASH then
-		priority = 2
-	end
-	if p.pflags & PF_JUMPED then
-		priority = 3
-	end
-	if p.powers[pw_strong] & STR_CAN_ATTACK then
-		priority = 5
+	if p.pflags & PF_STARTDASH
+	and sp.pflags & PF_SPINNING then
+		return 1
 	end
 
-	if diff < 16*FU then
-		if speed1 >= speed2 then
-			priority = $+1
-		end
-	else
-		if abs(airspeed1) >= abs(airspeed2) then
-			priority = $+1
-		end
+	if not (p.pflags & PF_SPINNING)
+	and p.pflags & PF_JUMPED
+	and (sp.pflags & PF_STARTDASH or sp.powers[pw_strong] & STR_CAN_ATTACK) then 
+		return 1
 	end
 
-	return priority
+	if p.powers[pw_strong] & STR_CAN_ATTACK
+	and sp.pflags & PF_SPINNING|PF_STARTDASH
+	and not (sp.pflags & PF_JUMPED) then
+		return 1
+	end
+
+	return 0
 end
 
 function module.damagePlayer(p, ap) // ap: attacking player
@@ -102,20 +91,26 @@ end
 
 function module.handlePVP()
 	local attackables = {}
+	local addedIntoAttacks = {}
 
 	for p in players.iterate do
 		if not FangsHeist.isPlayerAlive(p) then continue end
 		if not module.canHitPlayers(p) then continue end
 		if not module.isPlayerAttackable(p) then continue end
 		if p.heist and p.heist.exiting then continue end
+		if addedIntoAttacks[p] then continue end
+
+		addedIntoAttacks[p] = true
 
 		for sp in players.iterate do
 			if sp == p then continue end
 			if not FangsHeist.isPlayerAlive(sp) then continue end
 			if not module.isPlayerAttackable(sp) then continue end
 			if sp.heist and sp.heist.exiting then continue end
-
 			if not module.isPlayerHittable(p, sp) then continue end
+			if addedIntoAttacks[sp] then continue end
+
+			addedIntoAttacks[sp] = true
 
 			table.insert(attackables, {p, sp})
 		end

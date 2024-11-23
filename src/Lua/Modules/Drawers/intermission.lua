@@ -175,7 +175,7 @@ local function manage_intermission(v)
 	x = ease.linear(FU/5, $, target_x)
 end
 
-function module.draw(renderer, v)
+function module.draw(v)
 	if not FangsHeist.Net.game_over then return end
 
 	alpha = min($+1, 10)
