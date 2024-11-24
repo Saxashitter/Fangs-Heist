@@ -101,11 +101,11 @@ end
 // Returns -1 if the player isn't placed anywhere.
 function FangsHeist.getPlayerPlacement(p)
 	local placement = 1
+	placement = FangsHeist.Net.placements[#p]
 
-	if not FangsHeist.isPlayerAlive(p) then
+	if not (FangsHeist.isPlayerAlive(p) and placement) then
 		return -1
 	end
 
-	placement = FangsHeist.Net.placements[#p].place
-	return placement
+	return placement.place
 end

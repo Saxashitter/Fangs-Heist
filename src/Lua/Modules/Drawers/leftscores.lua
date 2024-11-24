@@ -13,6 +13,8 @@ function module.draw(v)
 		local placement = data.place
 		local p = data.p
 
+		if not (p and p.valid) then continue end
+
 		local target_y = (10*FU)*(placement-1)
 
 		if placement > 3 then continue end

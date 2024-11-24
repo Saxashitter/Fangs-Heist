@@ -10,7 +10,7 @@ function module.canHitPlayers(p)
 		isAttacking = true
 	end
 
-	if not (p.pflags & PF_NOJUMPDAMAGE)
+	if (not (p.pflags & PF_NOJUMPDAMAGE) or p.charflags & SF_MARIODAMAGE)
 	and p.pflags & PF_JUMPED then
 		isAttacking = true
 	end
@@ -32,6 +32,37 @@ function module.isPlayerForcedToAttack(p)
 	return (p.powers[pw_invulnerability])
 end
 
+local function get_damage_data(p, sp)
+	local jumpDamage = false
+	local spinDamage = false
+	local spindashDamage = false
+	local meleeDamage = false
+
+	if p.pflags & PF_JUMPED then
+		jumpDamage = true
+	end
+
+	if p.pflags & PF_SPINNING then
+		jumpDamage = false
+		spinDamage = true
+	end
+
+	if p.pflags & PF_STARTDASH then
+		jumpDamage = false
+		spinDamage = false
+		spindashDamage = true
+	end
+
+	if p.powers[pw_strong] & STR_CAN_ATTACK then
+		jumpDamage = false
+		spinDamage = false
+		spindashDamage = false
+		meleeDamage = true
+	end
+
+	return jumpDamage, spinDamage, spindashDamage, meleeDamage
+end
+
 function module.hitPriority(p, sp)
 	/*
 	CURRENT SYSTEM:
@@ -40,20 +71,21 @@ function module.hitPriority(p, sp)
 		Melee > Spindash & Roll
 	*/
 
-	if p.pflags & PF_STARTDASH
-	and sp.pflags & PF_SPINNING then
+	local jump1, spin1, spindash1, melee1 = get_damage_data(p, sp)
+	local jump2, spin2, spindash2, melee2 = get_damage_data(sp, p)
+
+	if spindash1
+	and spin2 then
 		return 1
 	end
 
-	if not (p.pflags & PF_SPINNING)
-	and p.pflags & PF_JUMPED
-	and (sp.pflags & PF_STARTDASH or sp.powers[pw_strong] & STR_CAN_ATTACK) then 
+	if jump1
+	and (spindash2 or melee2) then 
 		return 1
 	end
 
-	if p.powers[pw_strong] & STR_CAN_ATTACK
-	and sp.pflags & PF_SPINNING|PF_STARTDASH
-	and not (sp.pflags & PF_JUMPED) then
+	if melee1
+	and (spin2 or spindash2) then
 		return 1
 	end
 
@@ -81,8 +113,8 @@ function module.isPlayerHittable(p, sp)
 	local dist = R_PointToDist2(p.mo.x, p.mo.y, sp.mo.x, sp.mo.y)
 	local heightdist = abs(p.mo.z-sp.mo.z)
 
-	if heightdist <= max(p.mo.height, sp.mo.height)*3/2
-	and dist <= (p.mo.radius+sp.mo.radius)*3/2 then
+	if heightdist <= max(p.mo.height, sp.mo.height)
+	and dist <= (p.mo.radius+sp.mo.radius) then
 		return true
 	end
 
@@ -145,10 +177,23 @@ function module.handlePVP()
 			continue
 		end
 
-		local dp = attacks[P_RandomRange(1, #attacks)]
-		local ap = (dp == sp) and p or sp
+		local angle = R_PointToAngle2(p.mo.x, p.mo.y, sp.mo.x, sp.mo.y)
+		local diff = FixedDiv(p.mo.z-sp.mo.z, max(p.mo.height, sp.mo.height))
 
-		module.damagePlayer(dp, ap, ap)
+		local speed1 = FixedHypot(p.mo.momx, p.mo.momy)
+		local speed2 = FixedHypot(sp.mo.momx, sp.mo.momy)
+
+		P_InstaThrust(p.mo, angle+ANGLE_180, FixedMul(speed1, diff))
+		P_InstaThrust(sp.mo, angle, FixedMul(speed2, diff))
+
+		p.mo.momz = 12*diff
+		sp.mo.momz = -12*diff
+
+		S_StartSound(p.mo, sfx_s1c3)
+		S_StartSound(sp.mo, sfx_s1c3)
+
+		p.powers[pw_flashing] = TICRATE
+		sp.powers[pw_flashing] = TICRATE
 	end
 end
 
