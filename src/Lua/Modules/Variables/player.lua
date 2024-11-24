@@ -13,7 +13,16 @@ return {
 	treasure_name = "",
 	treasure_desc = "",
 
+	conscious_meter = FU,
+	conscious_meter_heal = 30*TICRATE,
+	conscious_meter_reduce = 2*TICRATE,
+
 	spectator = false,
+
+	lastbuttons = 0,
+	buttons = 0,
+	sidemove = 0,
+	forwardmove = 0,
 
 	exiting = false
 }

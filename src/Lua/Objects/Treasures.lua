@@ -5,7 +5,7 @@ freeslot "SPR_TRES"
 
 FangsHeist.treasures = {
 	{
-		name = "Benjamin Medallion",
+		name = "Franklin Badge",
 		desc = "This MIGHT have been used in a kite experiment.",
 		frame = A
 	};
@@ -16,14 +16,44 @@ FangsHeist.treasures = {
 	};
 	{
 		name = "Rainy Ukelele",
-		desc = "And his music was... Electric.",
+		desc = "...And his music was electric.",
 		frame = C
 	};
 	{
 		name = "Jet Lotus",
 		desc = "He's RAMPING!!",
 		frame = D
-	}
+	};
+	{
+		name = "Tempest Ribbon",
+		desc = "In a world of glass, the girl faced endless conflict.",
+		frame = E
+	};
+	{
+		name = "Fatalis Ribbon",
+		desc = "In a world of glass, the girl was shrouded in unyielding light.",
+		frame = F
+	};
+	{
+		name = "Galactic Talisman",
+		desc = "A symbol for cool guys and intergalactic armies alike!",
+		frame = G
+	};
+	{
+		name = "Writer's Mask",
+		desc = "I just can't GET ENUF!",
+		frame = H
+	};
+	{
+		name = "Strongest Plush",
+		desc = "Baka! Baka!",
+		frame = I
+	};
+	{
+		name = "Saint's Knife",
+		desc = "The Fickle Princess left the Hero with nothing but hate in his heart.",
+		frame = J
+	};
 }
 
 local function set_mobj_to_data(mobj, data)

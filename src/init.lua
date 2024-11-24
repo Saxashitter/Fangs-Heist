@@ -9,7 +9,7 @@ G_AddGametype({
 	description = "w.i.p mode, sequel to nick's pizza time"
 })
 
-rawset(_G, "FangsHeist", {Net = {}, HUD = {}, Objects = {}})
+rawset(_G, "FangsHeist", {Net = {}, HUD = {}, Objects = {}, onHook = {}})
 
 // FANGS HEIGHT IS BY SAXASHITTER
 // OFFICIAL SEQUEL TO NICK'S PIZZA TIME!
@@ -26,3 +26,5 @@ dofile "Hooks/HUD"
 dofile "Objects/Treasures"
 dofile "Objects/Signpost"
 dofile "Objects/Exit"
+
+dofile "modsupport"

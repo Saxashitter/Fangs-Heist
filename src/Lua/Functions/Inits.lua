@@ -87,6 +87,7 @@ function FangsHeist.loadMap()
 		local thing = treasure_spawns[choice]
 
 		FangsHeist.defineTreasure(thing.x, thing.y, thing.z)
+		print "I-YI CAPTAIN"
 		table.remove(treasure_spawns, choice)
 	end
 end

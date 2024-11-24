@@ -1,4 +1,5 @@
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
+local orig = FangsHeist.require"Modules/Variables/player"
 
 sfxinfo[freeslot "sfx_gogogo"].caption = "G-G-G-G-GO! GO! GO!"
 function FangsHeist.startEscape()
@@ -65,6 +66,19 @@ function FangsHeist.changeBlocks()
 			end
 			side.midtexture = R_TextureNumForName(oppositeface)
 		end
+	end
+end
+
+function FangsHeist.makePlayerConscious(p)
+	if not p.heist then return end
+
+	p.heist.conscious_meter_heal = orig.conscious_meter_heal
+	p.heist.conscious_meter = FU
+
+
+	if p.mo.health then
+		p.powers[pw_flashing] = TICRATE
+		p.mo.state = S_PLAY_STND
 	end
 end
 

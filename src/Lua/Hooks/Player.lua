@@ -1,4 +1,5 @@
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
+local conscious = FangsHeist.require "Modules/Handlers/conscious"
 
 FangsHeist.panicBlacklist = {
 	takisthefox = true
@@ -43,6 +44,10 @@ addHook("PlayerThink", function(p)
 
 	if not (p.heist.exiting) then
 		p.score = FangsHeist.returnProfit(p)
+	end
+
+	if not (p.heist.conscious_meter) then
+		conscious(p)
 	end
 end)
 
@@ -100,33 +105,86 @@ addHook("MobjDeath", function(t,i,s)
 	t.player.heist.spectator = true
 end, MT_PLAYER)
 
-addHook("MobjDamage", function(t,i,s)
+addHook("ShouldDamage", function(t,i,s)
 	if not FangsHeist.isMode() then return end
 	if not (t and t.player and t.player.heist) then return end
-	if not (s and s.player and s.player.heist) then return end
 
-	if not FangsHeist.playerHasSign(t.player) then return end
+	if t.player.heist.exiting then
+		return false
+	end
 
-	if FangsHeist.playerHasSign(t.player) then
-		FangsHeist.giveSignTo(s.player)
+	if t.player.heist.conscious_meter == 0 then
+		if not (s and s.player and s.player.heist) then
+			return false
+		end
+
+		return true
 	end
 end, MT_PLAYER)
 
-function FangsHeist.canUseAbility(p)
-	if not FangsHeist.isMode() then
+addHook("TouchSpecial", function(s,t)
+	if not FangsHeist.isMode() then return end
+	if not (t and t.player and t.player.heist) then return end
+
+	if FangsHeist.isPlayerUnconscious(t.player) then
 		return true
 	end
 
-	if not (p and p.heist) then
+	t.player.heist.conscious_meter = min($+FU/8, FU)
+end, MT_RING)
+
+addHook("TouchSpecial", function(s,t)
+	if not FangsHeist.isMode() then return end
+	if not (t and t.player and t.player.heist) then return end
+
+	if FangsHeist.isPlayerUnconscious(t.player) then
 		return true
 	end
+end, MT_FLINGRING)
 
-	if not FangsHeist.playerHasSign(p) then
-		return true
+addHook("MobjDamage", function(t,i,s,dmg,dt)
+	if not FangsHeist.isMode() then return end
+	if not (t and t.player and t.player.heist) then return end
+
+	if s
+	and s.player
+	and s.player.heist
+	and FangsHeist.playerHasSign(t.player) then
+		FangsHeist.giveSignTo(s.player)
 	end
 
-	return false
-end
+	if dt & DMG_DEATHMASK then return end
+	if t.player.powers[pw_shield] then return end
+	if not t.player.rings then return end
+
+	t.player.heist.conscious_meter = max(0, $-FU/4)
+
+	local rings_spill = min(5, t.player.rings)
+
+	S_StartSound(t, sfx_s3kb9)
+
+	if not t.player.heist.conscious_meter then
+		rings_spill = min(25, t.player.rings)
+
+		if s
+		and s.player then
+			s.player.rings = $+rings_spill
+		end
+	else
+		P_PlayerRingBurst(t.player, rings_spill)
+	end
+	
+	t.player.rings = $-rings_spill
+	t.player.powers[pw_shield] = 0
+
+	if not FangsHeist.isPlayerUnconscious(t.player) then
+		P_DoPlayerPain(t.player, s, i)
+	else
+		t.player.powers[pw_flashing] = TICRATE/3
+	end
+
+	return true
+end, MT_PLAYER)
 
 // UNUSED
 local function thokNerf(p)

@@ -25,7 +25,8 @@ function module.canHitPlayers(p)
 end
 
 function module.isPlayerAttackable(p)
-	return not P_PlayerInPain(p) and not (p.powers[pw_flashing])
+	return (not P_PlayerInPain(p) or FangsHeist.isPlayerUnconscious(p))
+		and not (p.powers[pw_flashing])
 end
 
 function module.isPlayerForcedToAttack(p)
@@ -93,13 +94,7 @@ function module.hitPriority(p, sp)
 end
 
 function module.damagePlayer(p, ap) // ap: attacking player
-	if not (ap.pflags & PF_SPINNING)
-	or ap.pflags & PF_STARTDASH then
-		P_DamageMobj(p.mo, ap.mo, ap.mo)
-		return
-	end
-
-	local launch_speed = FixedHypot(ap.mo.momx, ap.mo.momy)
+	local launch_speed = max(8*FU, FixedHypot(ap.mo.momx, ap.mo.momy))
 	local launch_angle = R_PointToAngle2(0,0,ap.mo.momx, ap.mo.momy)
 
 	P_DamageMobj(p.mo, ap.mo, ap.mo)
@@ -119,6 +114,30 @@ function module.isPlayerHittable(p, sp)
 	end
 
 	return false
+end
+
+local function launch_players(p, sp, launch1, launch2)
+	if launch1 == nil then
+		launch1 = true
+	end
+	if launch2 == nil then
+		launch2 = true
+	end
+	local angle = R_PointToAngle2(p.mo.x, p.mo.y, sp.mo.x, sp.mo.y)
+	local diff = FixedDiv(p.mo.z-sp.mo.z, max(p.mo.height, sp.mo.height))
+
+	local speed1 = FixedHypot(p.mo.momx, p.mo.momy)
+	local speed2 = FixedHypot(sp.mo.momx, sp.mo.momy)
+
+	if launch1 then
+		P_InstaThrust(p.mo, angle+ANGLE_180, FixedMul(speed1, diff))
+		p.mo.momz = 12*diff
+	end
+
+	if launch2 then
+		P_InstaThrust(sp.mo, angle, FixedMul(speed2, diff))
+		sp.mo.momz = -12*diff
+	end
 end
 
 function module.handlePVP()
@@ -157,7 +176,11 @@ function module.handlePVP()
 			continue
 		end
 
-		if not module.canHitPlayers(sp) then
+		if not module.canHitPlayers(sp)
+		or FangsHeist.isPlayerUnconscious(sp) then
+			if FangsHeist.isPlayerUnconscious(sp) then
+				launch_players(p, sp, true, false)
+			end
 			module.damagePlayer(sp, p)
 			continue
 		end
@@ -177,20 +200,17 @@ function module.handlePVP()
 			continue
 		end
 
-		local angle = R_PointToAngle2(p.mo.x, p.mo.y, sp.mo.x, sp.mo.y)
-		local diff = FixedDiv(p.mo.z-sp.mo.z, max(p.mo.height, sp.mo.height))
-
-		local speed1 = FixedHypot(p.mo.momx, p.mo.momy)
-		local speed2 = FixedHypot(sp.mo.momx, sp.mo.momy)
-
-		P_InstaThrust(p.mo, angle+ANGLE_180, FixedMul(speed1, diff))
-		P_InstaThrust(sp.mo, angle, FixedMul(speed2, diff))
-
-		p.mo.momz = 12*diff
-		sp.mo.momz = -12*diff
-
 		S_StartSound(p.mo, sfx_s1c3)
 		S_StartSound(sp.mo, sfx_s1c3)
+
+		local x = p.mo.x-(p.mo.x-sp.mo.x)
+		local y = p.mo.y-(p.mo.y-sp.mo.y)
+		local z = p.mo.z-(p.mo.z-sp.mo.z)
+
+		local thok = P_SpawnMobj(x,y,z, MT_THOK)
+		thok.color = SKINCOLOR_RED
+
+		launch_players(p, sp)
 
 		p.powers[pw_flashing] = TICRATE
 		sp.powers[pw_flashing] = TICRATE

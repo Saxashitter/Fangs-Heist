@@ -22,6 +22,22 @@ function FangsHeist.isPlayerAtGate(p)
 	return false
 end
 
+function FangsHeist.canUseAbility(p)
+	if not FangsHeist.isMode() then
+		return true
+	end
+
+	if not (p and p.heist) then
+		return true
+	end
+
+	if not FangsHeist.playerHasSign(p) then
+		return true
+	end
+
+	return false
+end
+
 local HURRY_LENGTH = 2693
 
 // Check if the time is in the "Hurry Up" segment.
@@ -35,4 +51,8 @@ function FangsHeist.isHurryUp()
 	end
 
 	return true
+end
+
+function FangsHeist.isPlayerUnconscious(p)
+	return p and p.heist and not (p.heist.conscious_meter)
 end

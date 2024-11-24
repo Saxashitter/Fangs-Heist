@@ -27,7 +27,16 @@ addHook("PreThinkFrame", do
 	end
 
 	for p in players.iterate do
-		if (p.heist and p.heist.exiting)
+		if not p.heist then continue end
+
+		p.heist.lastbuttons = p.heist.buttons
+
+		p.heist.buttons = p.cmd.buttons
+		p.heist.forwardmove = p.cmd.forwardmove
+		p.heist.sidemove = p.cmd.sidemove
+
+		if p.heist.exiting
+		or not (p.heist.conscious_meter)
 		or FangsHeist.Net.game_over then
 			p.cmd.buttons = 0
 			p.cmd.forwardmove = 0
