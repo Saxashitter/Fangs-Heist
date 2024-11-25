@@ -50,7 +50,6 @@ function module.draw(v)
 	table.sort(plyrs, profit_sort)
 
 	if not (#plyrs) then
-		print "draw funny"
 		text.draw(v,
 			160*FU,
 			100*FU - 21*FU/2,

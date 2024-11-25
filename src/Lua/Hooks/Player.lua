@@ -237,7 +237,7 @@ addHook("TouchSpecial", function(s,t)
 		return true
 	end
 
-	t.player.heist.conscious_meter = min($+FU/5, FU)
+	t.player.heist.conscious_meter = min($+FU/16, FU)
 end, MT_RING)
 
 addHook("TouchSpecial", function(s,t)
@@ -264,7 +264,7 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if t.player.powers[pw_shield] then return end
 	if not t.player.rings then return end
 
-	t.player.heist.conscious_meter = max(0, $-FU/2)
+	t.player.heist.conscious_meter = max(0, $-FU/3)
 
 	local rings_spill = min(5, t.player.rings)
 
