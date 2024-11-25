@@ -157,7 +157,7 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if t.player.powers[pw_shield] then return end
 	if not t.player.rings then return end
 
-	t.player.heist.conscious_meter = max(0, $-FU/4)
+	t.player.heist.conscious_meter = max(0, $-FU/2)
 
 	local rings_spill = min(5, t.player.rings)
 
