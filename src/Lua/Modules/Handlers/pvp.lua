@@ -10,9 +10,10 @@ function module.canHitPlayers(p)
 		isAttacking = true
 	end
 
-	if (not (p.pflags & PF_NOJUMPDAMAGE) or p.charflags & SF_MARIODAMAGE)
-	and p.pflags & PF_JUMPED then
-		isAttacking = true
+	if p.pflags & PF_JUMPED then
+		if not (p.pflags & PF_NOJUMPDAMAGE) then
+			isAttacking = true
+		end
 	end
 
 	if p.pflags & PF_SPINNING then
@@ -39,13 +40,14 @@ local function get_damage_data(p, sp)
 	local spindashDamage = false
 	local meleeDamage = false
 
-	if p.pflags & PF_JUMPED then
-		jumpDamage = true
-	end
 
 	if p.pflags & PF_SPINNING then
-		jumpDamage = false
 		spinDamage = true
+	end
+
+	if p.pflags & PF_JUMPED then
+		spinDamage = false
+		jumpDamage = true
 	end
 
 	if p.pflags & PF_STARTDASH then
@@ -82,12 +84,12 @@ function module.hitPriority(p, sp)
 
 	if jump1
 	and (spindash2 or melee2) then 
-		return 1
+		return 2
 	end
 
 	if melee1
 	and (spin2 or spindash2) then
-		return 1
+		return 3
 	end
 
 	return 0
