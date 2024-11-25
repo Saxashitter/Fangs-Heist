@@ -13,6 +13,9 @@ return {
 	treasure_name = "",
 	treasure_desc = "",
 
+	picked_up_player = nil,
+	picked_up_by = nil,
+
 	conscious_meter = FU,
 	conscious_meter_heal = 30*TICRATE,
 	conscious_meter_reduce = 2*TICRATE,

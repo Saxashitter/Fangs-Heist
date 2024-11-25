@@ -21,13 +21,14 @@ function module.canHitPlayers(p)
 	end
 
 	return isAttacking
-	and 	module.isPlayerAttackable(p)
-	or		module.isPlayerForcedToAttack(p)
+	and module.isPlayerAttackable(p)
+	or module.isPlayerForcedToAttack(p)
 end
 
 function module.isPlayerAttackable(p)
-	return (not P_PlayerInPain(p) or FangsHeist.isPlayerUnconscious(p))
-		and not (p.powers[pw_flashing])
+	return (not P_PlayerInPain(p)
+	or (FangsHeist.isPlayerUnconscious(p)) and not FangsHeist.isPlayerPickedUp(p))
+	and not (p.powers[pw_flashing])
 end
 
 function module.isPlayerForcedToAttack(p)
@@ -70,6 +71,7 @@ function module.hitPriority(p, sp)
 	/*
 	CURRENT SYSTEM:
 		Spindash > Roll
+		Roll > Jump
 		Jump > Spindash & Melee
 		Melee > Spindash & Roll
 	*/
@@ -82,14 +84,19 @@ function module.hitPriority(p, sp)
 		return 1
 	end
 
+	if spin1
+	and jump2 then
+		return 2
+	end
+
 	if jump1
 	and (spindash2 or melee2) then 
-		return 2
+		return 3
 	end
 
 	if melee1
 	and (spin2 or spindash2) then
-		return 3
+		return 4
 	end
 
 	return 0
@@ -128,16 +135,16 @@ local function launch_players(p, sp, launch1, launch2)
 	local angle = R_PointToAngle2(p.mo.x, p.mo.y, sp.mo.x, sp.mo.y)
 	local diff = FixedDiv(p.mo.z-sp.mo.z, max(p.mo.height, sp.mo.height))
 
-	local speed1 = FixedHypot(p.mo.momx, p.mo.momy)
-	local speed2 = FixedHypot(sp.mo.momx, sp.mo.momy)
+	local speed1 = max(12*FU, FixedHypot(p.mo.momx, p.mo.momy))
+	local speed2 = max(12*FU, FixedHypot(sp.mo.momx, sp.mo.momy))
 
 	if launch1 then
-		P_InstaThrust(p.mo, angle+ANGLE_180, FixedMul(speed1, diff))
+		P_InstaThrust(p.mo, angle+ANGLE_180, FixedMul(speed2, diff))
 		p.mo.momz = 12*diff
 	end
 
 	if launch2 then
-		P_InstaThrust(sp.mo, angle, FixedMul(speed2, diff))
+		P_InstaThrust(sp.mo, angle, FixedMul(speed1, diff))
 		sp.mo.momz = -12*diff
 	end
 end
@@ -181,7 +188,7 @@ function module.handlePVP()
 		if not module.canHitPlayers(sp)
 		or FangsHeist.isPlayerUnconscious(sp) then
 			if FangsHeist.isPlayerUnconscious(sp) then
-				launch_players(p, sp, true, false)
+				launch_players(p, sp, true, true)
 			end
 			module.damagePlayer(sp, p)
 			continue

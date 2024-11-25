@@ -56,3 +56,6 @@ end
 function FangsHeist.isPlayerUnconscious(p)
 	return p and p.heist and not (p.heist.conscious_meter)
 end
+function FangsHeist.isPlayerPickedUp(p)
+	return FangsHeist.isPlayerUnconscious(p) and p.heist.picked_up_by and p.heist.picked_up_by.valid
+end
