@@ -41,6 +41,8 @@ end
 
 local treasure_things = {
 	[312] = true,
+	[402] = true,
+	[408] = true,
 	[409] = true
 }
 
@@ -54,7 +56,8 @@ function FangsHeist.loadMap()
 		if thing.mobj
 		and thing.mobj.valid
 		and (thing.mobj.type == MT_ATTRACT_BOX
-		or thing.mobj.type == MT_1UP_BOX) then
+		or thing.mobj.type == MT_1UP_BOX
+		or thing.mobj.type == MT_INVULN_BOX) then
 			P_RemoveMobj(thing.mobj)
 		end
 

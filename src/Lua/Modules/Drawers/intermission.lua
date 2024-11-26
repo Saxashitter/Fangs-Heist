@@ -69,24 +69,31 @@ end
 local function draw_bg(v)
 	if statealpha == 10 then return end
 
-	local bg = v.cachePatch"FH_PINK_SCROLL"
-	local scale = FU*2
-	scroll = $-(FU/2) % (bg.width*scale)
-	local transp = V_10TRANS*statealpha
+	local bg = v.cachePatch"FH_INTER_BG"
 
-	local x = scroll
-	local y = scroll
+	local xs = FU
+	local ys = FU
 
-	local original_x = x
+	local sw = v.width()*FU/v.dupx()
+	local sh = v.height()*FU/v.dupy()
 
-	while y < v.height()*FU/v.dupy() do
-		while x < v.width()*FU/v.dupx() do
-			v.drawScaled(x, y, scale, bg, V_SNAPTOTOP|V_SNAPTOLEFT|transp)
-			x = $+bg.width*scale
-		end
-		x = original_x
-		y = $+bg.height*scale
+	local sws = FixedDiv(sw, 320*FU)
+	local shs = FixedDiv(sh, 200*FU)
+
+	if sw > bg.width*FU then
+		xs = sws
+		ys = sws
+	else
+		xs = shs
+		ys = shs
 	end
+
+	v.drawStretched(sw/2 - bg.width*xs/2,
+		sh/2 - bg.height*ys/2,
+		xs,
+		ys,
+		bg,
+		V_SNAPTOLEFT|V_SNAPTOTOP)
 end
 
 local function draw_intermission(v)
