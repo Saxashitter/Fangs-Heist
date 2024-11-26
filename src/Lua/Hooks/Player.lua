@@ -29,11 +29,11 @@ addHook("PlayerThink", function(p)
 	p.charflags = $ & ~SF_DASHMODE
 	p.heist.treasure_time = max(0, $-1)
 
-	if leveltime % TICRATE == 0 then
+	/*if leveltime % TICRATE == 0 then
 		local count = #p.heist.treasures
 
 		p.heist.generated_profit = $+7*count
-	end
+	end*/
 
 	if FangsHeist.Net.escape
 	and not FangsHeist.panicBlacklist[p.mo.skin] then
@@ -278,6 +278,13 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if not (t and t.player and t.player.heist) then return end
 
 	for _,tres in pairs(t.player.heist.treasures) do
+		if not (tres.mobj.valid) then continue end
+
+		local angle = FixedAngle(P_RandomRange(1, 360)*FU)
+
+		P_InstaThrust(tres.mobj, angle, 12*FU)
+		P_SetObjectMomZ(tres.mobj, 4*FU)
+
 		tres.mobj.target = nil
 	end
 	t.player.heist.treasures = {}

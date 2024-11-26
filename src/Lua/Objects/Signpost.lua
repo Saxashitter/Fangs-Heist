@@ -58,7 +58,8 @@ function FangsHeist.teleportSign()
 	local pos = {
 		x = ease.outquad(sign.hold_tween, sign.hold_pos.x, sign.holder.x),
 		y = ease.outquad(sign.hold_tween, sign.hold_pos.y, sign.holder.y),
-		z = ease.outquad(sign.hold_tween, sign.hold_pos.z, sign.holder.z+sign.holder.height),
+		z = ease.outquad(sign.hold_tween, sign.hold_pos.z,
+			sign.holder.z+sign.holder.height+(24*FU*#sign.holder.player.heist.treasures)),
 	}
 
 	sign.momx = 0

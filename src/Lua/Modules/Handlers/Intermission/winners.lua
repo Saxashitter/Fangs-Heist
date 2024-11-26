@@ -106,7 +106,7 @@ function module.draw(v)
 		v.drawString(x, y, "Monitors: "..tostring(p.heist.monitors), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
 		y = $+8*FU
 
-		v.drawString(x, y, "Treasures: "..tostring(p.heist.treasures), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
+		v.drawString(x, y, "Treasures: "..tostring(#p.heist.treasures), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
 		y = $+8*FU
 
 		v.drawString(x, y, "Rings: "..tostring(p.rings), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")

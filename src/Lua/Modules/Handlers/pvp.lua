@@ -136,7 +136,7 @@ function module.bouncePlayers(p, sp)
 
 	if not P_PlayerInPain(sp)
 	and sp.mo.health then
-		P_InstaThrust(sp.mo, angle, FixedMul(speed1, FU-abs(diff)))
+		P_InstaThrust(sp.mo, angle+ANGLE_180, FixedMul(speed1, FU-abs(diff)))
 		sp.mo.momz = 5*diff
 	end
 	if not P_PlayerInPain(p)

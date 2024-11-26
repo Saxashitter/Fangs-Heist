@@ -44,13 +44,12 @@ function module.draw(v,p,c)
 
 	for sp in players.iterate do
 		if not FangsHeist.isPlayerAlive(sp) then continue end
-		if not isSpecial(p) then continue end
+		if not isSpecial(sp) then continue end
 
 		if p == sp then continue end
 		if P_CheckSight(p.mo, sp.mo) then continue end
 
 		local result = sglib.ObjectTracking(v,p,c,sp.mo)
-
 		if not result.onScreen then continue end
 
 		draw_player(v, sp, p.mo, result.x, result.y)

@@ -114,7 +114,7 @@ local function manage_picked(tres)
 	P_MoveOrigin(mobj,
 		target.x,
 		target.y,
-		(target.z+target.height)+(16*FU*(mobj.index-1)))
+		(target.z+target.height)+(24*FU*(mobj.index-1)))
 end
 
 function FangsHeist.manageTreasures()
