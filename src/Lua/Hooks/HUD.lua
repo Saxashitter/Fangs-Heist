@@ -107,6 +107,7 @@ addHook("HUD", function(v,p,c)
 end)
 
 addHud "signtracker"
+addHud "treasuretracker"
 addHud "rings"
 addHud "score"
 addHud "time"

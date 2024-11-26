@@ -2,38 +2,17 @@ local module = {}
 
 local sglib = FangsHeist.require "Modules/Libraries/sglib"
 local fracformat = FangsHeist.require "Modules/Libraries/fracformat"
-local alpha = 10
 
 function module.init()
-	alpha = 10
 end
 
 local function draw_sign(v, sign, mo, x, y)
-	if alpha == 10 then return end
 
-	local alpha = V_10TRANS*alpha
+	local alpha = 0
 	local sign_spr = v.getSpritePatch(SPR_SIGN, G, 0)
 	local arrow = v.cachePatch("FH_ARROW"..(leveltime/2 % 6))
 	local arrow_scale = FU/2
 	local dist = R_PointToDist2(mo.x, mo.y, sign.x, sign.y)
-
-	local holder = sign.holder
-
-	if holder then
-		local plyr_spr = v.getSprite2Patch(sign.holder.skin, SPR2_SIGN, false, A, 0)
-		local color = v.getColormap(sign.holder.skin, sign.holder.color)
-
-		v.drawScaled(x, y, FU/4, plyr_spr, alpha, color)
-		v.drawScaled(x, y - 3*FU, FU/4, sign_spr, alpha)
-		v.drawScaled(x - arrow.width*arrow_scale/2,
-			y - 3*FU - 8*FU*2 - arrow.height*arrow_scale,
-			arrow_scale,
-			arrow,
-			alpha,
-			v.getColormap(nil, sign.holder.color))
-		v.drawString(x, y - 3*FU - 8*FU*2, fracformat(dist), V_ALLOWLOWERCASE|alpha, "thin-fixed-center")
-		return
-	end
 
 	v.drawScaled(x, y, FU/4, sign_spr, alpha)
 	v.drawScaled(x - arrow.width*arrow_scale/2,
@@ -50,15 +29,8 @@ function module.draw(v,p,c)
 	local mo = p.realmo
 	local sign = FangsHeist.Net.sign
 
-	if not (mo and mo.valid and sign and sign.valid) then
-		alpha = 10
+	if not (mo and mo.valid and sign and sign.valid and not (sign.holder and sign.holder.valid)) then
 		return
-	end
-
-	if P_CheckSight(mo, sign) then
-		alpha = min($+1, 10)
-	else
-		alpha = max(0, $-1)
 	end
 
 	local track = sglib.ObjectTracking(v,p,c, sign)

@@ -109,7 +109,7 @@ addHook("ThinkFrame", do
 	escape()
 	music()
 	FangsHeist.manageTreasures()
-	pvp.handlePVP()
+	pvp.tick()
 	FangsHeist.teleportSign()
 	// dialogue.tick()
 

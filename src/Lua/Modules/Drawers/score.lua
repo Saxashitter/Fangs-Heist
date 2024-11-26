@@ -27,7 +27,7 @@ function module.draw(v, p)
 
 	text.draw(v,
 		10*FU + profit_patch.width*scale/2,
-		10*FU + y - 9*FU,
+		14*FU + y - 9*FU,
 		scale,
 		"$"..tostring(profit),
 		"PRTFT",

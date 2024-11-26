@@ -3,6 +3,9 @@
 
 freeslot "SPR_TRES"
 
+local UNGRABBED_FLAGS = 0
+local GRABBED_FLAGS = MF_NOTHINK|MF_NOGRAVITY|MF_NOCLIP|MF_NOCLIPHEIGHT
+
 FangsHeist.treasures = {
 	{
 		name = "Franklin Badge",
@@ -76,44 +79,63 @@ function FangsHeist.defineTreasure(x, y, z)
 	set_mobj_to_data(treasure, FangsHeist.treasures[choice])
 end
 
-function FangsHeist.manageTreasures()
+local function manage_unpicked(tres)
+	local mobj = tres.mobj
+	local data = tres.data
+
 	for p in players.iterate do
-		if not (FangsHeist.isPlayerAlive(p)) then continue end
+		if not FangsHeist.isPlayerAlive(p) then continue end
+		if P_PlayerInPain(p) then continue end
 
-		local remove = {}
+		local dist = R_PointToDist2(mobj.x, mobj.y, p.mo.x, p.mo.y)
+		local heightdist = abs(p.mo.z-mobj.z)
 
-		for _,tres in pairs(FangsHeist.Net.treasures) do
-			local mobj = tres.mobj
-			local data = tres.data
-
-			local dist = R_PointToDist2(p.mo.x, p.mo.y, mobj.x, mobj.y)
-			local heightdist = abs(p.mo.z-mobj.z)
-
-			if dist > 64*FU
-			or heightdist > 64*FU then
-				continue
-			end
-
-			p.heist.treasure_name = data.name
-			p.heist.treasure_desc = data.desc
-			p.heist.treasure_time = 3*TICRATE
-			p.heist.treasures = $+1
-			S_StartSound(p.mo, sfx_kc30)
-
-			table.insert(remove, tres)
+		if dist > 64*FU
+		or heightdist > 64*FU then
+			continue
 		end
 
-		for _,i in pairs(remove) do
-			for k,tres in pairs(FangsHeist.Net.treasures) do
-				if tres == i then
-					if tres.mobj and tres.mobj.valid then
-						P_RemoveMobj(tres.mobj)
-					end
+		S_StartSound(p.mo, sfx_kc30)
 
-					table.remove(FangsHeist.Net.treasures, k)
-					break
-				end
-			end
+		table.insert(p.heist.treasures, tres)
+		mobj.target = p.mo
+		mobj.index = #p.heist.treasures
+
+		break
+	end
+end
+
+local function manage_picked(tres)
+	local mobj = tres.mobj
+	local data = tres.data
+
+	local target = mobj.target
+
+	P_MoveOrigin(mobj,
+		target.x,
+		target.y,
+		(target.z+target.height)+(16*FU*(mobj.index-1)))
+end
+
+function FangsHeist.manageTreasures()
+	for _,tres in pairs(FangsHeist.Net.treasures) do
+		local mobj = tres.mobj
+		local data = tres.data
+
+		if mobj.target
+		and not (mobj.target.valid
+		and mobj.target.player
+		and FangsHeist.isPlayerAlive(mobj.target.player)) then
+			mobj.target = nil
 		end
+
+		if not mobj.target then
+			mobj.flags = UNGRABBED_FLAGS
+			manage_unpicked(tres)
+			continue
+		end
+
+		mobj.flags = GRABBED_FLAGS
+		manage_picked(tres)
 	end
 end

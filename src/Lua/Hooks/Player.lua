@@ -27,8 +27,13 @@ addHook("PlayerThink", function(p)
 	end
 
 	p.charflags = $ & ~SF_DASHMODE
-
 	p.heist.treasure_time = max(0, $-1)
+
+	if leveltime % TICRATE == 0 then
+		local count = #p.heist.treasures
+
+		p.heist.generated_profit = $+7*count
+	end
 
 	if FangsHeist.Net.escape
 	and not FangsHeist.panicBlacklist[p.mo.skin] then
@@ -40,6 +45,12 @@ addHook("PlayerThink", function(p)
 				p.mo.state = S_PLAY_WALK
 			end
 		end
+	end
+
+	if (FangsHeist.isPlayerUnconscious(p)
+	and P_IsObjectOnGround(p.mo))
+	or not FangsHeist.isPlayerUnconscious(p) then
+		p.heist.thrower = nil
 	end
 
 	if not (p.heist.exiting) then
@@ -62,10 +73,12 @@ end
 
 local function put_down_player(p)
 	local sp = p.heist.picked_up_player
-	local angle = p.drawangle
+	local angle = p.mo.angle
 
-	P_InstaThrust(sp.mo, angle, max(8*FU, FixedHypot(p.mo.momx, p.mo.momy)))
+	P_InstaThrust(sp.mo, angle, max(16*FU, FixedHypot(p.mo.momx, p.mo.momy)*3/2))
 	P_SetObjectMomZ(sp.mo, 2*FU)
+
+	sp.heist.thrower = p
 
 	remove_carry_vars(p)
 end
@@ -249,22 +262,52 @@ addHook("TouchSpecial", function(s,t)
 	end
 end, MT_FLINGRING)
 
+local function thrown_body(i, s)
+	return s
+	and s.player
+	and FangsHeist.isPlayerAlive(s.player)
+	and s ~= i
+	and i
+	and i.player
+	and FangsHeist.isPlayerAlive(i.player)
+	and FangsHeist.isPlayerUnconscious(i.player)
+end
+
 addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if not FangsHeist.isMode() then return end
 	if not (t and t.player and t.player.heist) then return end
 
-	if s
-	and s.player
-	and s.player.heist
-	and FangsHeist.playerHasSign(t.player) then
-		FangsHeist.giveSignTo(s.player)
+	for _,tres in pairs(t.player.heist.treasures) do
+		tres.mobj.target = nil
 	end
+	t.player.heist.treasures = {}
 
 	if dt & DMG_DEATHMASK then return end
+
+	if s
+	and s.player
+	and s.player.heist then
+		if FangsHeist.playerHasSign(t.player) then
+			FangsHeist.giveSignTo(s.player)
+		end
+
+		if not (t.player.rings)
+		and not (t.player.powers[pw_shield]) then
+			s.player.heist.deadplayers = $+1
+		else
+			s.player.heist.hitplayers = $+1
+		end
+	end
+
 	if t.player.powers[pw_shield] then return end
 	if not t.player.rings then return end
 
-	t.player.heist.conscious_meter = max(0, $-FU/3)
+	if thrown_body(i, s)
+	or (s.player and FixedHypot(s.momx, s.momy) > 32*FU) then
+		t.player.heist.conscious_meter = 0
+	else
+		t.player.heist.conscious_meter = max(0, $-FU/3)
+	end
 
 	local rings_spill = min(5, t.player.rings)
 

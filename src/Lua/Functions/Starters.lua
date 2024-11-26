@@ -84,4 +84,4 @@ end
 
 COM_AddCommand("fh_endgame", function(p)
 	FangsHeist.startIntermission()
-end)
+end, COM_ADMIN)
