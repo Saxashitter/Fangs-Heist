@@ -88,15 +88,6 @@ end
 local function manage_unpicked(tres)
 	local mobj = tres.mobj
 	local data = tres.data
-	local spawn = tres.spawn
-
-	if not (mobj and mobj.valid) then
-		local treasure = spawn_mobj(spawn.x, spawn.y, spawn.z)
-		set_mobj_to_data(treasure, data)
-
-		tres.mobj = treasure
-		mobj = treasure
-	end
 
 	for p in players.iterate do
 		if not FangsHeist.isPlayerAlive(p) then continue end
@@ -142,9 +133,14 @@ function FangsHeist.manageTreasures()
 	for _,tres in pairs(FangsHeist.Net.treasures) do
 		local mobj = tres.mobj
 		local data = tres.data
+		local spawn = tres.spawn
 
 		if not (mobj and mobj.valid) then
-		
+			local treasure = spawn_mobj(spawn.x, spawn.y, spawn.z)
+			set_mobj_to_data(treasure, data)
+
+			tres.mobj = treasure
+			mobj = treasure
 		end
 
 		if mobj.target

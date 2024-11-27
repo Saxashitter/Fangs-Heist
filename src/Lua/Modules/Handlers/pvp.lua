@@ -302,11 +302,11 @@ function module.tick()
 			local dist = R_PointToDist2(p.mo.x, p.mo.y, sp.mo.x, sp.mo.y)
 			local height = abs(p.mo.z-sp.mo.z)
 
-			if dist > p.mo.radius+sp.mo.radius then
+			if dist > FixedMul(p.mo.radius+sp.mo.radius, FU+(FU*3/4)) then
 				continue
 			end
 
-			if height > max(p.mo.height, sp.mo.height) then
+			if height > FixedMul(max(p.mo.height, sp.mo.height, FU+(FU*3/4)) then
 				continue
 			end
 
