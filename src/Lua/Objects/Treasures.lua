@@ -103,7 +103,11 @@ local function manage_unpicked(tres)
 
 		S_StartSound(p.mo, sfx_kc30)
 
+		p.heist.treasure_name = data.name
+		p.heist.treasure_desc = data.desc
+		p.heist.treasure_time = 3*TICRATE
 		table.insert(p.heist.treasures, tres)
+
 		mobj.target = p.mo
 		mobj.index = #p.heist.treasures
 
@@ -121,6 +125,14 @@ local function manage_picked(tres)
 		target.x,
 		target.y,
 		(target.z+target.height)+(24*FU*(mobj.index-1)))
+
+	if displayplayer
+	and displayplayer.mo
+	and displayplayer.mo == target then
+		mobj.frame = $|FF_TRANS80
+	else
+		mobj.frame = $ & ~FF_TRANS80
+	end
 
 	if target.flags2 & MF2_DONTDRAW then
 		mobj.flags2 = $|MF2_DONTDRAW

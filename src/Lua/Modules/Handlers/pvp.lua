@@ -206,13 +206,15 @@ function module.bouncePlayers(p, sp)
 	local isPain2 = P_PlayerInPain(p) and not FangsHeist.isPlayerUnconscious(p)
 
 	if not isPain1
-	and sp.mo.health then
+	and sp.mo.health
+	and (sp.pflags & PF_SPINNING|PF_JUMPED) then
 		sp.mo.momx = momx2
 		sp.mo.momy = momy2
 		sp.mo.momz = momz2
 	end
 	if not isPain2
-	and p.mo.health then
+	and p.mo.health
+	and (p.pflags & PF_SPINNING|PF_JUMPED) then
 		p.mo.momx = momx1
 		p.mo.momy = momy1
 		p.mo.momz = momz1

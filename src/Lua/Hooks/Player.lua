@@ -225,16 +225,18 @@ addHook("MobjDeath", function(t,i,s)
 	t.player.heist.spectator = true
 end, MT_PLAYER)
 
-addHook("ShouldDamage", function(t,i,s)
+addHook("ShouldDamage", function(t,i,s,dmg,dt)
 	if not FangsHeist.isMode() then return end
 	if not (t and t.player and t.player.heist) then return end
+	
 
 	if t.player.heist.exiting then
 		return false
 	end
 
 	if t.player.heist.conscious_meter == 0 then
-		if not (s and s.player and s.player.heist) then
+		if not (s and s.player and s.player.heist)
+		and not (dt & DMG_DEATHMASK) then
 			return false
 		end
 
@@ -264,10 +266,12 @@ end, MT_FLINGRING)
 
 local function thrown_body(i, s)
 	return s
+	and s.valid
 	and s.player
 	and FangsHeist.isPlayerAlive(s.player)
 	and s ~= i
 	and i
+	and i.valid
 	and i.player
 	and FangsHeist.isPlayerAlive(i.player)
 	and FangsHeist.isPlayerUnconscious(i.player)
@@ -288,7 +292,6 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 		tres.mobj.target = nil
 	end
 	t.player.heist.treasures = {}
-	FangsHeist.startVoiceline(t.player, "pain")
 
 	if dt & DMG_DEATHMASK then return end
 
@@ -297,8 +300,6 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	and s.player.heist then
 		if FangsHeist.playerHasSign(t.player) then
 			FangsHeist.giveSignTo(s.player)
-		else
-			FangsHeist.startVoiceline(s.player, "hit")
 		end
 
 		if not (t.player.rings)
