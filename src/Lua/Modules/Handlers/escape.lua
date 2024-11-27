@@ -118,6 +118,7 @@ local function module()
 		if p.heist.exiting then
 			P_SetOrigin(p.mo, exit.x, exit.y, exit.z)
 			p.mo.flags2 = $|MF2_DONTDRAW
+			p.mo.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOTHINK
 			p.camerascale = FU*3
 			continue
 		end

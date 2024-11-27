@@ -75,12 +75,20 @@ function FangsHeist.teleportSign()
 		pos.z)
 end
 
+FangsHeist.signThings = {
+	[501] = true
+}
+
 --[[@return mobj_t]]
 function FangsHeist.spawnSign()
 	local signpost_pos
 	for thing in mapthings.iterate do
-		if thing.type == 501
+		if FangsHeist.signThings[thing.type]
 		and not signpost_pos then
+			if thing and thing.mobj and thing.mobj.valid then
+				P_RemoveMobj(thing.mobj)
+			end
+
 			local x = thing.x*FU
 			local y = thing.y*FU
 			local z = spawnpos.getThingSpawnHeight(MT_FH_SIGN, thing, x, y)

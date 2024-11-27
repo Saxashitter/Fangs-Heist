@@ -21,7 +21,8 @@ return {
 
 	conscious_meter = FU,
 	conscious_meter_heal = 30*TICRATE,
-	conscious_meter_reduce = 20,
+	conscious_meter_reduce = TICRATE,
+	conscious_meter_reduce_pick = TICRATE/2,
 
 	spectator = false,
 

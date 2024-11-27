@@ -16,7 +16,13 @@ return function(p)
 
 	if p.heist.buttons & BT_JUMP
 	and not (p.heist.lastbuttons & BT_JUMP) then
-		p.heist.conscious_meter_heal = max(0, $-p.heist.conscious_meter_reduce)
+		local reduce = p.heist.conscious_meter_reduce
+
+		if FangsHeist.isPlayerPickedUp(p) then
+			reduce = p.heist.conscious_meter_reduce_pick
+		end
+
+		p.heist.conscious_meter_heal = max(0, $-reduce)
 	end
 
 	if not (p.heist.conscious_meter_heal) then
