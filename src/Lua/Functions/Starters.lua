@@ -82,6 +82,58 @@ function FangsHeist.makePlayerConscious(p)
 	end
 end
 
+local function sac(name, caption)
+	local sfx = freeslot(name)
+
+	sfxinfo[sfx].caption = caption
+
+	return sfx
+end
+
+FangsHeist.voicelines = {
+	sonic = {
+		pain = {
+			sac("sfx_paiso1", "HM!");
+			sac("sfx_paiso2", "OH NO!");
+			sac("sfx_paiso3", "WOAH!");
+			sac("sfx_paiso4", "EuWOAH!")
+		},
+		signgot = {
+			sac("sfx_sgnso1", "Hey hey hey!");
+			sac("sfx_sgnso2", "Hooray!");
+			sac("sfx_sgnso3", "I better get outta here...");
+			sac("sfx_sgnso4", "Now this is more like it!");
+			sac("sfx_sgnso5", "I got it!!")
+		},
+		hit = {
+			sac("sfx__hitso1", "You're no match for me!"),
+			sac("sfx__hitso2", "Hey, this time you're not getting away!"),
+			sac("sfx__hitso3", "You had your fun, now it's my turn!"),
+			sac("sfx__hitso4", "Aw yeah!")
+		}
+	}
+}
+
+function FangsHeist.startVoiceline(p, sound)
+	if not (p and p.mo) then return end
+
+	if not FangsHeist.voicelines[p.mo.skin] then return end
+	if not FangsHeist.voicelines[p.mo.skin][sound] then return end
+
+	local data = FangsHeist.voicelines[p.mo.skin]
+	local sounds = FangsHeist.voicelines[p.mo.skin][sound]
+	local choice = P_RandomRange(1, #sounds)
+
+	// stop all sounds currently playing
+	for _,soundtbl in pairs(data) do
+		for _,sound in pairs(soundtbl) do
+			S_StopSoundByID(p.mo, sound)
+		end
+	end
+
+	S_StartSound(p.mo, sounds[choice])
+end
+
 COM_AddCommand("fh_endgame", function(p)
 	FangsHeist.startIntermission()
 end, COM_ADMIN)

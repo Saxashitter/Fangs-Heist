@@ -288,6 +288,7 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 		tres.mobj.target = nil
 	end
 	t.player.heist.treasures = {}
+	FangsHeist.startVoiceline(t.player, "pain")
 
 	if dt & DMG_DEATHMASK then return end
 
@@ -296,6 +297,8 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	and s.player.heist then
 		if FangsHeist.playerHasSign(t.player) then
 			FangsHeist.giveSignTo(s.player)
+		else
+			FangsHeist.startVoiceline(s.player, "hit")
 		end
 
 		if not (t.player.rings)

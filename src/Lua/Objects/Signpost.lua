@@ -12,6 +12,9 @@ mobjinfo[freeslot "MT_FH_SIGN"] = {
 
 local function select_player(sign, p)
 	S_StartSound(sign, sfx_lvpass)
+
+	FangsHeist.startVoiceline(p, "signgot")
+
 	sign.hold_tween = 0
 	sign.holder = p.mo
 	sign.hold_pos = {x = sign.x, y = sign.y, z = sign.z}
