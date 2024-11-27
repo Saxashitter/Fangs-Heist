@@ -306,7 +306,7 @@ function module.tick()
 				continue
 			end
 
-			if height > FixedMul(max(p.mo.height, sp.mo.height, FU+(FU*3/4)) then
+			if height > FixedMul(max(p.mo.height, sp.mo.height), FU+(FU*3/4)) then
 				continue
 			end
 
