@@ -4,6 +4,10 @@ local module = {}
 
 local STR_CAN_ATTACK = STR_PUNCH|STR_ATTACK|STR_STOMP|STR_GLIDE|STR_MELEE|STR_STOMP
 
+local function p_check(p)
+	return p and p.valid and FangsHeist.isPlayerAlive(p)
+end
+
 function module.canPlayerBeHit(p)
 	local invincible = p.powers[pw_flashing] or p.powers[pw_invulnerability]
 
@@ -12,7 +16,9 @@ function module.canPlayerBeHit(p)
 		and not (invincible)
 	end
 
-	return P_IsObjectOnGround(p.mo) and not (invincible)
+	return P_IsObjectOnGround(p.mo)
+	and not p_check(p.heist.thrower)
+	and not (invincible)
 end
 
 function module.canPlayerHitOthers(p)
@@ -41,7 +47,8 @@ function module.canPlayerHitOthers(p)
 	end
 
 	if not FangsHeist.isPlayerPickedUp(p)
-	and not P_IsObjectOnGround(p.mo)then
+	and not P_IsObjectOnGround(p.mo)
+	and p_check(p.heist.thrower) then
 		isAttacking = 2
 	end
 
@@ -187,21 +194,28 @@ end
 end*/
 
 function module.bouncePlayers(p, sp)
-	local angle = R_PointToAngle2(sp.mo.x, sp.mo.y, p.mo.x, p.mo.y)
-	local diff = FixedDiv(sp.mo.z-p.mo.z, max(p.mo.height, sp.mo.height))
+	local momx1 = sp.mo.momx
+	local momy1 = sp.mo.momy
+	local momz1 = sp.mo.momz
 
-	local speed1 = FixedHypot(p.mo.momx, p.mo.momy)
-	local speed2 = FixedHypot(sp.mo.momx, sp.mo.momy)
+	local momx2 = p.mo.momx
+	local momy2 = p.mo.momy
+	local momz2 = p.mo.momz
 
-	if not P_PlayerInPain(sp)
+	local isPain1 = P_PlayerInPain(sp) and not FangsHeist.isPlayerUnconscious(sp)
+	local isPain2 = P_PlayerInPain(p) and not FangsHeist.isPlayerUnconscious(p)
+
+	if not isPain1
 	and sp.mo.health then
-		P_InstaThrust(sp.mo, angle+ANGLE_180, FixedMul(speed1, FU-abs(diff)))
-		sp.mo.momz = 5*diff
+		sp.mo.momx = momx2
+		sp.mo.momy = momy2
+		sp.mo.momz = momz2
 	end
-	if not P_PlayerInPain(p)
+	if not isPain2
 	and p.mo.health then
-		P_InstaThrust(p.mo, angle, FixedMul(speed2, FU-abs(diff)))
-		p.mo.momz = -5*diff
+		p.mo.momx = momx1
+		p.mo.momy = momy1
+		p.mo.momz = momz1
 	end
 end
 
@@ -209,9 +223,7 @@ function module.damagePlayer(p, ap) // ap: attacking player
 	local i = ap.mo
 	local s = ap.mo
 
-	if ap.heist.thrower
-	and ap.heist.thrower.valid
-	and FangsHeist.isPlayerAlive(ap.heist.thrower) then
+	if p_check(ap.heist.thrower) then
 		s = ap.heist.thrower.mo
 	end
 	P_DamageMobj(p.mo, ap.mo, s)

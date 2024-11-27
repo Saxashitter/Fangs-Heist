@@ -316,7 +316,7 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	or (s.player and FixedHypot(s.momx, s.momy) > 32*FU) then
 		t.player.heist.conscious_meter = 0
 	else
-		t.player.heist.conscious_meter = max(0, $-FU/3)
+		t.player.heist.conscious_meter = 0 //max(0, $-FU/3)
 	end
 
 	local rings_spill = min(5, t.player.rings)
