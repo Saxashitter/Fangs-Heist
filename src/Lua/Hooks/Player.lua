@@ -1,6 +1,8 @@
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 local conscious = FangsHeist.require "Modules/Handlers/conscious"
 
+local fang = FangsHeist.require "Modules/Movesets/fang"
+
 FangsHeist.panicBlacklist = {
 	takisthefox = true
 }
@@ -28,6 +30,10 @@ addHook("PlayerThink", function(p)
 
 	p.charflags = $ & ~SF_DASHMODE
 	p.heist.treasure_time = max(0, $-1)
+
+	if fang.isGunslinger(p) then
+		fang.playerThinker(p)
+	end
 
 	if leveltime % TICRATE*5 == 0 then
 		local count = #p.heist.treasures
@@ -356,6 +362,12 @@ local function thokNerf(p)
 	P_SpawnThokMobj(p)
 	S_StartSound(p.mo, sfx_thok)
 end
+
+addHook("ShieldSpecial", function(p)
+	if fang.isGunslinger(p) then
+		return true
+	end
+end)
 
 addHook("AbilitySpecial", function (p)
 	if FangsHeist.canUseAbility(p)
