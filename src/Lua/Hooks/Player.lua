@@ -240,6 +240,7 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 
 	if t.player.heist.conscious_meter == 0 then
 		if not (s and s.player and s.player.heist)
+		and t.player.rings
 		and not (dt & DMG_DEATHMASK) then
 			return false
 		end
