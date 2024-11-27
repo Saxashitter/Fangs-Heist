@@ -119,7 +119,8 @@ FangsHeist.voicelines = {
 			sac("sfx__hitso1", "You're no match for me!"),
 			sac("sfx__hitso2", "Hey, this time you're not getting away!"),
 			sac("sfx__hitso3", "You had your fun, now it's my turn!"),
-			sac("sfx__hitso4", "Aw yeah!")
+			sac("sfx__hitso4", "Aw yeah!"),
+			sac("sfx__hitso5", "What's that smell? Smells like trash.")
 		}
 	}
 }
