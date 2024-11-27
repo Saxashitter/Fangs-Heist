@@ -1,5 +1,6 @@
 return {
 	escape = false,
+	escape_theme = "SPRHRO",
 	time_left = (3*60)*TICRATE,
 	hurry_up = false,
 	its_over = false,

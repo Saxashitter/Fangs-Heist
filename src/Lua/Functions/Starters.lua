@@ -2,10 +2,20 @@ local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 local orig = FangsHeist.require"Modules/Variables/player"
 
 sfxinfo[freeslot "sfx_gogogo"].caption = "G-G-G-G-GO! GO! GO!"
+
+FangsHeist.escapeThemes = {
+	"SPRHRO",
+	"THECUR",
+	"WILFOR"
+}
 function FangsHeist.startEscape()
 	if FangsHeist.Net.escape then return end
 
+	local choice = P_RandomRange(1, #FangsHeist.escapeThemes)
+
 	FangsHeist.Net.escape = true
+	FangsHeist.Net.escape_theme = FangsHeist.escapeThemes[choice]
+
 	S_StartSound(nil, sfx_gogogo)
 
 	FangsHeist.changeBlocks()
