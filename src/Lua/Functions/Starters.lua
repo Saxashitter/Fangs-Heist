@@ -6,7 +6,8 @@ sfxinfo[freeslot "sfx_gogogo"].caption = "G-G-G-G-GO! GO! GO!"
 FangsHeist.escapeThemes = {
 	"SPRHRO",
 	"THECUR",
-	"WILFOR"
+	"WILFOR",
+	"LUNCLO"
 }
 function FangsHeist.startEscape()
 	if FangsHeist.Net.escape then return end
