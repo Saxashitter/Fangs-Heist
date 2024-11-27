@@ -89,6 +89,8 @@ local function manage_unpicked(tres)
 	local mobj = tres.mobj
 	local data = tres.data
 
+	mobj.frame = $ & ~FF_TRANS80
+
 	for p in players.iterate do
 		if not FangsHeist.isPlayerAlive(p) then continue end
 		if P_PlayerInPain(p) then continue end

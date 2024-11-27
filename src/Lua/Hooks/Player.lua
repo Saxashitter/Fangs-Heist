@@ -29,11 +29,11 @@ addHook("PlayerThink", function(p)
 	p.charflags = $ & ~SF_DASHMODE
 	p.heist.treasure_time = max(0, $-1)
 
-	/*if leveltime % TICRATE == 0 then
+	if leveltime % TICRATE*5 == 0 then
 		local count = #p.heist.treasures
 
-		p.heist.generated_profit = $+7*count
-	end*/
+		p.heist.generated_profit = min(1000, $+4*count)
+	end
 
 	if FangsHeist.Net.escape
 	and not FangsHeist.panicBlacklist[p.mo.skin] then
@@ -207,8 +207,6 @@ addHook("MobjDeath", function(t,i,s)
 
 	if not (s and s.player and s.player.heist) then return end
 
-	s.player.heist.scraps = $+return_score(t)
-
 	if t.flags & MF_ENEMY then
 		s.player.heist.enemies = $+1
 	end
@@ -314,7 +312,7 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if not t.player.rings then return end
 
 	if thrown_body(i, s)
-	or (s.player and FixedHypot(s.momx-t.momx, s.momy-t.momx) > 16*FU) then
+	or (s.player and FixedHypot(s.momx-t.momx, s.momy-t.momy) > 20*FU) then
 		t.player.heist.conscious_meter = 0
 	else
 		t.player.heist.conscious_meter = max(0, $-FU/3)
