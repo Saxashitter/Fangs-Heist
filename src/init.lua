@@ -9,7 +9,7 @@ G_AddGametype({
 	description = "w.i.p mode, sequel to nick's pizza time"
 })
 
-rawset(_G, "FangsHeist", {Net = {}, HUD = {}, Objects = {}, onHook = {}})
+rawset(_G, "FangsHeist", {Net = {}, HUD = {}, Objects = {}, Save = {}})
 
 // FANGS HEIGHT IS BY SAXASHITTER
 // OFFICIAL SEQUEL TO NICK'S PIZZA TIME!

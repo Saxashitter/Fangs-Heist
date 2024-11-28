@@ -4,7 +4,7 @@
 local module = {}
 
 //Define air shooting sprites
-freeslot("SPR2_FAIR","S_PLAY_AIRFIRE1","S_PLAY_AIRFIRE2")
+freeslot("SPR2_FAIR","S_PLAY_AIRFIRE1","S_PLAY_AIRFIRE2","S_PLAY_AIRKICK")
 states[S_PLAY_AIRFIRE1] = {
         sprite = SPR_PLAY,
         frame = SPR2_FAIR,
@@ -15,12 +15,21 @@ states[S_PLAY_AIRFIRE2] = {
         frame = SPR2_FAIR,
         tics = -1,
 }
+states[S_PLAY_AIRKICK] = {
+        sprite = SPR_PLAY,
+        frame = SPR2_FALL,
+        tics = -1,
+}
 
 local refiretime = 24
 local airstate1 = S_PLAY_AIRFIRE1
 local airstate2 = S_PLAY_AIRFIRE2
 module.isGunslinger = function(player)
 	return skins[player.skin].ability2 == CA2_GUNSLINGER
+end
+module.isBounce = function(player)
+	// this wont actually be a bounce, but rather a spinning kick that fang can use for pvp
+	return skins[player.skin].ability == CA_BOUNCE
 end
 
 local function newGunLook(player) 
@@ -118,6 +127,7 @@ local function newGunslinger(player)
 	
 	//State: ready to gunsling
 	if not ((player.pflags & (PF_SLIDING|PF_BOUNCING|PF_THOKKED)) or (player.exiting) or (P_PlayerInPain(player)))
+	and not (player.powers[pw_flashing])
 	and not (player.weapondelay)
 	and not (player.panim == PA_ABILITY2)
 	and (player.pflags&PF_JUMPED or onground)
@@ -141,8 +151,8 @@ local function newGunslinger(player)
 			else*/
 				bullet = P_SpawnPointMissile(
 					mo,
-					mo.x + P_ReturnThrustX(nil, mo.angle, FRACUNIT),
-					mo.y + P_ReturnThrustY(nil, mo.angle, FRACUNIT),
+					mo.x + P_ReturnThrustX(nil, mo.angle, FRACUNIT*10),
+					mo.y + P_ReturnThrustY(nil, mo.angle, FRACUNIT*10),
 					zpos(mo, player.revitem),
 					player.revitem,
 					mo.x, mo.y, zpos(mo, player.revitem)
@@ -150,6 +160,9 @@ local function newGunslinger(player)
 
 				if (bullet and bullet.valid)
 					bullet.flags = $1 & ~MF_NOGRAVITY
+					bullet.momx = $*3/2
+					bullet.momy = $*3/2
+					bullet.momz = 2*FU*P_MobjFlip(bullet)
 				end
 			// end
 			player.drawangle = mo.angle
@@ -157,7 +170,9 @@ local function newGunslinger(player)
 			//Air function
 			if not(P_IsObjectOnGround(mo))
 				player.pflags = $|PF_THOKKED
-				P_SetObjectMomZ(mo,FRACUNIT*4)
+				if not FangsHeist.playerHasSign(player) then
+					P_SetObjectMomZ(mo,max(mo.momz*P_MobjFlip(mo)*5/4, FRACUNIT*4))
+				end
 				P_SetMobjStateNF(mo,airstate1)
 				player.mo.sprite2 = SPR2_FAIR
 				player.airgun = true
@@ -233,7 +248,10 @@ end
 
 //Main body for popgun firing control	
 module.playerThinker = function(player)
-	if not(module.isGunslinger(player)) return end
+	if not(module.isGunslinger(player) and FangsHeist.isPlayerAlive(player))
+		player.airgun = false
+		return end
+
 	//Disallow native CA2_GUNSLINGER functionality
 	if player.charability2 == CA2_GUNSLINGER
 		player.charability2 = CA2_NONE 
@@ -247,7 +265,6 @@ module.playerThinker = function(player)
 	//Unable to use gun during certain states
 	if player.powers[pw_nocontrol]
 	or player.powers[pw_carry]
-	or player.actionstate
 	or player.pflags&PF_SPINNING
 		player.airgun = false
 	return end
@@ -261,6 +278,32 @@ module.playerThinker = function(player)
 	if (player.mo.state == S_PLAY_AIRFIRE2) then
 		player.mo.frame = 1
 	end
+end
+
+module.kickThinker = function(player)
+	if not(module.isBounce(player)) return end
+	if not(FangsHeist.isPlayerAlive(player)) return end
+
+	if player.mo.state == S_PLAY_AIRKICK then
+		local gravity = P_GetMobjGravity(player.mo)
+
+		player.powers[pw_strong] = $|STR_ATTACK
+		player.mo.momz = $-gravity/2
+		player.drawangle = player.mo.angle + FixedAngle(((leveltime*45/2)%360)*FU)
+		if not (leveltime % 3) then
+			P_SpawnGhostMobj(player.mo)
+		end
+	else
+		player.powers[pw_strong] = $ & ~STR_ATTACK
+	end
+end
+
+module.doAirKick = function(player)
+	player.mo.state = S_PLAY_AIRKICK
+	player.pflags = $ & ~(PF_JUMPED|PF_STARTJUMP)
+	P_SetObjectMomZ(player.mo, 3*FU)
+	S_StartSound(player.mo, sfx_spndsh)
+	player.pflags = $|PF_THOKKED
 end
 
 return module

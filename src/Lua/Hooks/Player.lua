@@ -2,6 +2,7 @@ local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 local conscious = FangsHeist.require "Modules/Handlers/conscious"
 
 local fang = FangsHeist.require "Modules/Movesets/fang"
+local sonic = FangsHeist.require "Modules/Movesets/sonic"
 
 FangsHeist.panicBlacklist = {
 	takisthefox = true
@@ -31,9 +32,11 @@ addHook("PlayerThink", function(p)
 	p.charflags = $ & ~SF_DASHMODE
 	p.heist.treasure_time = max(0, $-1)
 
-	if fang.isGunslinger(p) then
-		fang.playerThinker(p)
-	end
+	sonic.thokThinker(p)
+
+	fang.playerThinker(p)
+	fang.kickThinker(p)
+
 
 	if leveltime % TICRATE*5 == 0 then
 		local count = #p.heist.treasures
@@ -238,12 +241,23 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 		return false
 	end
 
-	if t.player.heist.conscious_meter == 0 then
-		if not (s and s.player and s.player.heist)
-		and t.player.rings
-		and not (dt & DMG_DEATHMASK) then
+	if i
+	and i.valid
+	and i.type == MT_CORK then
+		if t.player.powers[pw_flashing] then
 			return false
 		end
+		if t.player.powers[pw_invulnerability] then
+			return false
+		end
+	end
+
+	if t.player.heist.conscious_meter == 0 then
+		if not (s and s.player and s.player.heist and not (dt & DMG_DEATHMASK)) then
+			return false
+		end
+
+		if t.player.rings then return false end
 
 		return true
 	end
@@ -319,7 +333,7 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if not t.player.rings then return end
 
 	if thrown_body(i, s)
-	or (s.player and FixedHypot(s.momx-t.momx, s.momy-t.momy) > 20*FU) then
+	or (s == i and s.player and FixedHypot(s.momx-t.momx, s.momy-t.momy) > 40*FU) then
 		t.player.heist.conscious_meter = 0
 	else
 		t.player.heist.conscious_meter = max(0, $-FU/3)
@@ -365,6 +379,8 @@ local function thokNerf(p)
 end
 
 addHook("ShieldSpecial", function(p)
+	if not FangsHeist.isMode() then return end
+
 	if fang.isGunslinger(p) then
 		return true
 	end
@@ -374,8 +390,18 @@ addHook("AbilitySpecial", function (p)
 	if FangsHeist.canUseAbility(p)
 	and FangsHeist.isPlayerAlive(p)
 	and not (p.pflags & PF_THOKKED)
-	and p.charability == CA_THOK then
-		p.charability = CA_DOUBLEJUMP
+	and sonic.isThok(p) then
+		p.actionspd = 34*FU
+		sonic.doThok(p)
+		return true
+	end
+
+	if FangsHeist.canUseAbility(p)
+	and FangsHeist.isPlayerAlive(p)
+	and not (p.pflags & PF_THOKKED)
+	and fang.isBounce(p) then
+		fang.doAirKick(p)
+		return true
 	end
 
 	return not FangsHeist.canUseAbility(p)

@@ -7,12 +7,19 @@ FangsHeist.escapeThemes = {
 	"SPRHRO",
 	"THECUR",
 	"WILFOR",
+	"LUNCLO",
+	"LUNCLO",
 	"LUNCLO"
 }
 function FangsHeist.startEscape()
 	if FangsHeist.Net.escape then return end
 
 	local choice = P_RandomRange(1, #FangsHeist.escapeThemes)
+
+	while FangsHeist.Save.escape == FangsHeist.escapeThemes[choice] do
+		choice = P_RandomRange(1, #FangsHeist.escapeThemes)
+	end
+	FangsHeist.Save.escape = FangsHeist.escapeThemes[choice]
 
 	FangsHeist.Net.escape = true
 	FangsHeist.Net.escape_theme = FangsHeist.escapeThemes[choice]

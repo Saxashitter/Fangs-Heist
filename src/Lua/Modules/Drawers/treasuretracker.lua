@@ -48,6 +48,7 @@ function module.draw(v,p,c)
 
 		if p == sp then continue end
 		if P_CheckSight(p.mo, sp.mo) then continue end
+		if sp.heist.exiting then continue end
 
 		local result = sglib.ObjectTracking(v,p,c,sp.mo)
 		if not result.onScreen then continue end

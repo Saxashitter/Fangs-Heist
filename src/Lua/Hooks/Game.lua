@@ -11,6 +11,7 @@ end)
 
 addHook("NetVars", function(n)
 	FangsHeist.Net = n($)
+	FangsHeist.Save = n($)
 end)
 
 addHook("MapLoad", do
