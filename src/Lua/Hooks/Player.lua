@@ -1,6 +1,4 @@
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
-local conscious = FangsHeist.require "Modules/Handlers/conscious"
-
 local fang = FangsHeist.require "Modules/Movesets/fang"
 local sonic = FangsHeist.require "Modules/Movesets/sonic"
 
@@ -56,80 +54,11 @@ addHook("PlayerThink", function(p)
 		end
 	end
 
-	if (FangsHeist.isPlayerUnconscious(p)
-	and P_IsObjectOnGround(p.mo))
-	or not FangsHeist.isPlayerUnconscious(p) then
-		p.heist.thrower = nil
-	end
-
 	if not (p.heist.exiting) then
 		p.score = FangsHeist.returnProfit(p)
 	end
 end)
 
-local function remove_carry_vars(p)
-	local sp = p.heist.picked_up_player
-
-	if sp and sp.valid and sp.heist then
-		sp.heist.picked_up_by = nil
-	end
-	p.heist.picked_up_player = nil
-end
-
-local function put_down_player(p)
-	local sp = p.heist.picked_up_player
-	local angle = p.mo.angle
-
-	P_InstaThrust(sp.mo, angle, max(16*FU, FixedHypot(p.mo.momx, p.mo.momy)*3/2))
-	P_SetObjectMomZ(sp.mo, 2*FU)
-
-	sp.heist.thrower = p
-
-	remove_carry_vars(p)
-end
-
-local function manage_player_carry(p)
-	local sp = p.heist.picked_up_player
-
-	local sp = p.heist.picked_up_player
-	local angle = p.drawangle
-
-	sp.drawangle = angle
-
-	P_MoveOrigin(sp.mo,
-		p.mo.x,
-		p.mo.y,
-		p.mo.z+p.mo.height)
-
-	sp.mo.momx = 0
-	sp.mo.momy = 0
-	sp.mo.momz = 0
-end
-
-local function find_player_to_carry(p)
-	if not (p.cmd.buttons & BT_ATTACK and not (p.lastbuttons & BT_ATTACK)) then
-		return
-	end
-
-	for sp in players.iterate do
-		if not FangsHeist.isPlayerAlive(sp) then continue end
-		if not FangsHeist.isPlayerUnconscious(sp) then continue end
-		if FangsHeist.isPlayerPickedUp(sp) then continue end
-
-		local dist = R_PointToDist2(p.mo.x, p.mo.y, sp.mo.x, sp.mo.y)
-		local heightdist = abs(p.mo.height-sp.mo.height)
-
-		if dist > p.mo.radius+sp.mo.radius
-		or heightdist > max(p.mo.height, sp.mo.height) then
-			continue
-		end
-
-		sp.heist.picked_up_by = p
-		p.heist.picked_up_player = sp
-
-		break
-	end
-end
 
 addHook("ThinkFrame", do
 	if not FangsHeist.isMode() then return end
@@ -147,50 +76,6 @@ addHook("ThinkFrame", do
 
 			p.spectator = true
 			continue
-		end
-
-		// CARRYING!!!!!
-		if p.heist.picked_up_by then
-			local sp = p.heist.picked_up_by
-			remove_carry_vars(p)
-
-			if not (sp and sp.valid and FangsHeist.isPlayerAlive(sp) and not FangsHeist.isPlayerUnconscious(sp)) then
-				p.heist.picked_up_by = nil
-	
-				if sp and sp.valid and sp.heist then
-					sp.heist.picked_up_player = nil
-				end
-			else
-				continue
-			end
-		end
-
-
-		if not FangsHeist.isPlayerAlive(p) then
-			remove_carry_vars(p)
-			continue
-		end
-
-		if P_PlayerInPain(p) then
-			remove_carry_vars(p)
-			continue
-		end
-
-		local sp = p.heist.picked_up_player
-
-		if not (sp
-		and sp.valid
-		and FangsHeist.isPlayerAlive(sp)
-		and FangsHeist.isPlayerUnconscious(sp)) then
-			remove_carry_vars(p)
-			find_player_to_carry(p)
-			continue
-		end
-
-		manage_player_carry(p)
-		if p.cmd.buttons & BT_ATTACK
-		and not (p.lastbuttons & BT_ATTACK) then
-			put_down_player(p)
 		end
 	end
 end)
@@ -249,37 +134,6 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 	end
 end, MT_PLAYER)
 
-addHook("TouchSpecial", function(s,t)
-	if not FangsHeist.isMode() then return end
-	if not (t and t.player and t.player.heist) then return end
-
-	if FangsHeist.isPlayerUnconscious(t.player) then
-		return true
-	end
-end, MT_RING)
-
-addHook("TouchSpecial", function(s,t)
-	if not FangsHeist.isMode() then return end
-	if not (t and t.player and t.player.heist) then return end
-
-	if FangsHeist.isPlayerUnconscious(t.player) then
-		return true
-	end
-end, MT_FLINGRING)
-
-local function thrown_body(i, s)
-	return s
-	and s.valid
-	and s.player
-	and FangsHeist.isPlayerAlive(s.player)
-	and s ~= i
-	and i
-	and i.valid
-	and i.player
-	and FangsHeist.isPlayerAlive(i.player)
-	and FangsHeist.isPlayerUnconscious(i.player)
-end
-
 addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if not FangsHeist.isMode() then return end
 	if not (t and t.player and t.player.heist) then return end
@@ -326,11 +180,7 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	t.player.rings = $-rings_spill
 	t.player.powers[pw_shield] = 0
 
-	if not FangsHeist.isPlayerUnconscious(t.player) then
-		P_DoPlayerPain(t.player, s, i)
-	else
-		t.player.powers[pw_flashing] = TICRATE
-	end
+	P_DoPlayerPain(t.player, s, i)
 
 	return true
 end, MT_PLAYER)

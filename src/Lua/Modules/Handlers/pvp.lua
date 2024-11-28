@@ -11,44 +11,28 @@ end
 function module.canPlayerBeHit(p)
 	local invincible = p.powers[pw_flashing] or p.powers[pw_invulnerability]
 
-	if not FangsHeist.isPlayerUnconscious(p) then
-		return not P_PlayerInPain(p)
-		and not (invincible)
-	end
-
-	return P_IsObjectOnGround(p.mo)
-	and not p_check(p.heist.thrower)
+	return not P_PlayerInPain(p)
 	and not (invincible)
 end
 
 function module.canPlayerHitOthers(p)
 	local isAttacking = 0
 
-	if not FangsHeist.isPlayerUnconscious(p) then
-		if p.powers[pw_strong] & STR_CAN_ATTACK then
-			isAttacking = 1
-		end
-
-		if p.pflags & PF_JUMPED then
-			if not (p.pflags & PF_NOJUMPDAMAGE) then
-				isAttacking = 1
-			end
-		end
-
-		if p.pflags & PF_SPINNING then
-			isAttacking = 1
-		end
-
-		if p.powers[pw_invulnerability] then
-			isAttacking = 2
-		end
-
-		return isAttacking
+	if p.powers[pw_strong] & STR_CAN_ATTACK then
+		isAttacking = 1
 	end
 
-	if not FangsHeist.isPlayerPickedUp(p)
-	and not P_IsObjectOnGround(p.mo)
-	and p_check(p.heist.thrower) then
+	if p.pflags & PF_JUMPED then
+		if not (p.pflags & PF_NOJUMPDAMAGE) then
+			isAttacking = 1
+		end
+	end
+
+	if p.pflags & PF_SPINNING then
+		isAttacking = 1
+	end
+
+	if p.powers[pw_invulnerability] then
 		isAttacking = 2
 	end
 
@@ -60,7 +44,6 @@ local function get_damage_data(p, sp)
 	local spinDamage = false
 	local spindashDamage = false
 	local meleeDamage = false
-	local unconscious = false
 
 	if p.pflags & PF_SPINNING then
 		spinDamage = true
@@ -84,15 +67,7 @@ local function get_damage_data(p, sp)
 		meleeDamage = true
 	end
 
-	if FangsHeist.isPlayerUnconscious(p) then
-		jumpDamage = false
-		spinDamage = false
-		spindashDamage = false
-		meleeDamage = false
-		unconscious = true
-	end
-
-	return jumpDamage, spinDamage, spindashDamage, meleeDamage, unconscious
+	return jumpDamage, spinDamage, spindashDamage, meleeDamage
 end
 
 // COPIED FROM BATTLEMOD
@@ -202,8 +177,8 @@ function module.bouncePlayers(p, sp)
 	local momy2 = p.mo.momy
 	local momz2 = p.mo.momz
 
-	local isPain1 = P_PlayerInPain(sp) and not FangsHeist.isPlayerUnconscious(sp)
-	local isPain2 = P_PlayerInPain(p) and not FangsHeist.isPlayerUnconscious(p)
+	local isPain1 = P_PlayerInPain(sp)
+	local isPain2 = P_PlayerInPain(p)
 
 	if not isPain1
 	and sp.mo.health
@@ -225,16 +200,13 @@ function module.damagePlayer(p, ap) // ap: attacking player
 	local i = ap.mo
 	local s = ap.mo
 
-	if p_check(ap.heist.thrower) then
-		s = ap.heist.thrower.mo
-	end
 	P_DamageMobj(p.mo, ap.mo, s)
 
 	module.bouncePlayers(p, ap)
 end
 
 local valid = function(p)
-	return (not P_PlayerInPain(p) or FangsHeist.isPlayerUnconscious(p))
+	return not P_PlayerInPain(p)
 	and FangsHeist.isPlayerAlive(p)
 	and p.mo.health
 	and not p.heist.exiting
@@ -277,15 +249,6 @@ local function determine_attack(data)
 	sp.powers[pw_flashing] = TICRATE/3
 end
 
-local function conscious_throw_check(p, sp)
-	if FangsHeist.isPlayerUnconscious(p)
-	and p.heist.thrower == sp then
-		return true
-	end
-
-	return false
-end
-
 function module.tick()
 	local attacks = {}
 
@@ -309,11 +272,6 @@ function module.tick()
 			end
 
 			if height > FixedMul(max(p.mo.height, sp.mo.height), FU+(FU*3/4)) then
-				continue
-			end
-
-			if conscious_throw_check(p, sp)
-			or conscious_throw_check(sp, p) then
 				continue
 			end
 
