@@ -26,7 +26,7 @@ function module.init()
 end
 
 function module.draw(v,p)
-	if p.spectator then return end
+	/*if p.spectator then return end
 
 	local meter = v.cachePatch"FH_CONSCIOUS_METER"
 	local fill1 = v.cachePatch"FH_CONSCIOUS_FILL1"
@@ -84,7 +84,7 @@ function module.draw(v,p)
 		v.drawString(160, 100-30, "SPAM JUMP!", 0, "center")
 		v.drawString(160, 100-20, "GET UP!", 0, "center")
 		v.drawString(160-2, 100-10, p.heist.conscious_meter_heal/TICRATE, V_YELLOWMAP, "center")
-	end
+	end*/
 end
 
 return module

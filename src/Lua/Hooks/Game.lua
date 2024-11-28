@@ -36,12 +36,12 @@ addHook("PreThinkFrame", do
 		p.heist.forwardmove = p.cmd.forwardmove
 		p.heist.sidemove = p.cmd.sidemove
 
-		if p.heist.exiting
-		or not (p.heist.conscious_meter)
-		or FangsHeist.Net.game_over then
-			p.cmd.buttons = 0
-			p.cmd.forwardmove = 0
-			p.cmd.sidemove = 0
+		if FangsHeist.isPlayerAlive(p) then
+			if p.heist.exiting then
+				p.cmd.buttons = 0
+				p.cmd.forwardmove = 0
+				p.cmd.sidemove = 0
+			end
 		end
 	end
 end)

@@ -65,10 +65,6 @@ addHook("PlayerThink", function(p)
 	if not (p.heist.exiting) then
 		p.score = FangsHeist.returnProfit(p)
 	end
-
-	if not (p.heist.conscious_meter) then
-		conscious(p)
-	end
 end)
 
 local function remove_carry_vars(p)
@@ -251,16 +247,6 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 			return false
 		end
 	end
-
-	if t.player.heist.conscious_meter == 0 then
-		if not (s and s.player and s.player.heist and not (dt & DMG_DEATHMASK)) then
-			return false
-		end
-
-		if t.player.rings then return false end
-
-		return true
-	end
 end, MT_PLAYER)
 
 addHook("TouchSpecial", function(s,t)
@@ -270,8 +256,6 @@ addHook("TouchSpecial", function(s,t)
 	if FangsHeist.isPlayerUnconscious(t.player) then
 		return true
 	end
-
-	t.player.heist.conscious_meter = min($+FU/16, FU)
 end, MT_RING)
 
 addHook("TouchSpecial", function(s,t)
@@ -332,27 +316,12 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if t.player.powers[pw_shield] then return end
 	if not t.player.rings then return end
 
-	if thrown_body(i, s)
-	or (s == i and s.player and FixedHypot(s.momx-t.momx, s.momy-t.momy) > 40*FU) then
-		t.player.heist.conscious_meter = 0
-	else
-		t.player.heist.conscious_meter = max(0, $-FU/3)
-	end
 
 	local rings_spill = min(5, t.player.rings)
 
 	S_StartSound(t, sfx_s3kb9)
 
-	if not t.player.heist.conscious_meter then
-		rings_spill = min(25, t.player.rings)
-
-		if s
-		and s.player then
-			s.player.rings = $+rings_spill
-		end
-	else
-		P_PlayerRingBurst(t.player, rings_spill)
-	end
+	P_PlayerRingBurst(t.player, rings_spill)
 	
 	t.player.rings = $-rings_spill
 	t.player.powers[pw_shield] = 0
@@ -391,7 +360,7 @@ addHook("AbilitySpecial", function (p)
 	and FangsHeist.isPlayerAlive(p)
 	and not (p.pflags & PF_THOKKED)
 	and sonic.isThok(p) then
-		p.actionspd = 34*FU
+		p.actionspd = 40*FU
 		sonic.doThok(p)
 		return true
 	end

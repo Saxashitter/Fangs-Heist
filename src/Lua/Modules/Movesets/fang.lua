@@ -17,8 +17,9 @@ states[S_PLAY_AIRFIRE2] = {
 }
 states[S_PLAY_AIRKICK] = {
         sprite = SPR_PLAY,
-        frame = SPR2_FALL,
-        tics = -1,
+        frame = SPR2_ROLL,
+        tics = 3,
+		nextstate = S_PLAY_AIRKICK
 }
 
 local refiretime = 24
@@ -160,8 +161,8 @@ local function newGunslinger(player)
 
 				if (bullet and bullet.valid)
 					bullet.flags = $1 & ~MF_NOGRAVITY
-					bullet.momx = $*3/2
-					bullet.momy = $*3/2
+					bullet.momx = $*3/5
+					bullet.momy = $*3/5
 					bullet.momz = 2*FU*P_MobjFlip(bullet)
 				end
 			// end
@@ -169,9 +170,12 @@ local function newGunslinger(player)
 			S_StartSoundAtVolume(mo,sfx_s1c4,150)
 			//Air function
 			if not(P_IsObjectOnGround(mo))
-				player.pflags = $|PF_THOKKED
+				player.pflags = $|PF_THOKKED & ~PF_JUMPED|PF_STARTJUMP
 				if not FangsHeist.playerHasSign(player) then
-					P_SetObjectMomZ(mo,max(mo.momz*P_MobjFlip(mo)*5/4, FRACUNIT*4))
+					P_SetObjectMomZ(mo,max(mo.momz*P_MobjFlip(mo)*5/4, FRACUNIT*6))
+					if mo.momz*P_MobjFlip(mo) > FRACUNIT*10 then
+						player.pflags = $|PF_JUMPED|PF_STARTJUMP
+					end
 				end
 				P_SetMobjStateNF(mo,airstate1)
 				player.mo.sprite2 = SPR2_FAIR

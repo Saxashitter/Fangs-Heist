@@ -17,14 +17,18 @@ module.thokThinker = function(player)
         player.airstoptics = 0
     end
 
+    if player.antistoptime then
+        player.antistoptime = $ - 1
+    end
+
     if (player.cmd.buttons & BT_JUMP) and player.hold and (player.pflags & PF_THOKKED) 
     and not P_IsObjectOnGround(player.mo) then
-        P_InstaThrust(player.mo, player.holdangle or player.mo.angle, player.actionspd)
         player.airstoptics = 0
     end
     
     if (player.lastbuttons & BT_JUMP) and not (player.cmd.buttons & BT_JUMP) 
-    and player.hold and (player.pflags & PF_THOKKED) then
+    and player.hold and (player.pflags & PF_THOKKED) 
+    and not player.antistoptime then
         S_StartSound(player.mo, sfx_3db16)
         P_SpawnMobjFromMobj(player.mo, 0, 0, 0, MT_THOK)
         player.airstoptics = 10
@@ -36,8 +40,8 @@ module.thokThinker = function(player)
     end
 
     if player.airstoptics then
-        player.mo.momx = FixedDiv($, FU + FU/5)
-        player.mo.momy = FixedDiv($, FU + FU/5)
+        player.mo.momx = FixedDiv($, FU + FU/10)
+        player.mo.momy = FixedDiv($, FU + FU/10)
         --player.mo.momz = FixedDiv($, FU + FU/10)
         
         player.airstoptics = $ - 1
@@ -47,9 +51,10 @@ end
 module.doThok = function(player)
 	if not (player.pflags & PF_THOKKED) then
 		player.hold = true
-		player.holdangle = player.mo.angle
 		S_StartSound(player.mo, sfx_thok)
 		P_SpawnMobjFromMobj(player.mo, 0, 0, 0, MT_THOK)
+		P_InstaThrust(player.mo, player.mo.angle, player.actionspd)
+		player.antistoptime = 10
 		
 
 		player.pflags = $ | PF_THOKKED
