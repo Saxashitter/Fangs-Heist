@@ -3,15 +3,6 @@
 
 local _addHook = addHook
 
-local old_pain = P_PlayerInPain
-rawset(_G, "P_PlayerInPain", function(p)
-	if not (FangsHeist.isMode() and p and p.heist) then
-		return old_pain(p)
-	end
-
-	return old_pain(p) or FangsHeist.isPlayerUnconscious(p)
-end)
-
 local function getReplacementFunc(name, func, ...)
 	if name == "AbilitySpecial" then
 		return function(p)
