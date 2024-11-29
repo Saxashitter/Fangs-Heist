@@ -4,12 +4,12 @@ local orig = FangsHeist.require"Modules/Variables/player"
 sfxinfo[freeslot "sfx_gogogo"].caption = "G-G-G-G-GO! GO! GO!"
 
 FangsHeist.escapeThemes = {
-	"SPRHRO",
-	"THECUR",
-	"WILFOR",
-	"LUNCLO",
-	"LUNCLO",
-	"LUNCLO"
+	{"SPRHRO", true},
+	{"THECUR", false},
+	{"WILFOR", true},
+	{"LUNCLO", true},
+	{"LUNCLO", true},
+	{"LUNCLO", true}
 }
 function FangsHeist.startEscape()
 	if FangsHeist.Net.escape then return end
@@ -23,6 +23,7 @@ function FangsHeist.startEscape()
 
 	FangsHeist.Net.escape = true
 	FangsHeist.Net.escape_theme = FangsHeist.escapeThemes[choice]
+	FangsHeist.Net.escape_choice = choice
 
 	S_StartSound(nil, sfx_gogogo)
 
@@ -85,6 +86,24 @@ function FangsHeist.changeBlocks()
 			side.midtexture = R_TextureNumForName(oppositeface)
 		end
 	end
+end
+
+function FangsHeist.assignTeam(inviter, invited)
+	if not (inviter.heist.team) then
+		local team_value = 1
+
+		for p in players.iterate do
+			if not (p and p.heist and p.heist.team) then
+				continue
+			end
+
+			team_value = max($, p.heist.team+1)
+		end
+
+		inviter.heist.team = team_value
+	end
+
+	invited.heist.team = team_value
 end
 
 function FangsHeist.makePlayerConscious(p)

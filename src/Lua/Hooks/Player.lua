@@ -1,6 +1,5 @@
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 local fang = FangsHeist.require "Modules/Movesets/fang"
-local sonic = FangsHeist.require "Modules/Movesets/sonic"
 
 FangsHeist.panicBlacklist = {
 	takisthefox = true
@@ -29,8 +28,6 @@ addHook("PlayerThink", function(p)
 
 	p.charflags = $ & ~SF_DASHMODE
 	p.heist.treasure_time = max(0, $-1)
-
-	sonic.thokThinker(p)
 
 	fang.playerThinker(p)
 	fang.kickThinker(p)
@@ -208,11 +205,8 @@ end)
 addHook("AbilitySpecial", function (p)
 	if FangsHeist.canUseAbility(p)
 	and FangsHeist.isPlayerAlive(p)
-	and not (p.pflags & PF_THOKKED)
-	and sonic.isThok(p) then
+	and not (p.pflags & PF_THOKKED) then
 		p.actionspd = 40*FU
-		sonic.doThok(p)
-		return true
 	end
 
 	if FangsHeist.canUseAbility(p)

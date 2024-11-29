@@ -52,7 +52,7 @@ function module.draw(v)
 
 		if alpha ~= 10 then
 			v.drawScaled(x-(warning.width*scale/2),
-				y-(warning.height*scale),
+				y-2*FU-warning.height*scale,
 				scale,
 				warning,
 				V_SNAPTOBOTTOM|(V_10TRANS*alpha))
@@ -65,8 +65,9 @@ function module.draw(v)
 	local scale = FU*4/6
 
 	local draw_x = x-(bar.width*scale/2)
-	if FangsHeist.Net.escape then
-		y = ease.linear(FU/3, $, 180*FU)
+	if FangsHeist.Net.escape
+	and not FangsHeist.isHurryUp() then
+		y = ease.linear(FU/6, $, 180*FU)
 	end
 
 	v.drawScaled(draw_x, y, scale, bar, V_SNAPTOBOTTOM)

@@ -46,6 +46,12 @@ function FangsHeist.isHurryUp()
 		return false
 	end
 
+	local choice = FangsHeist.Net.escape_choice or 1
+
+	if not (FangsHeist.escapeThemes[choice][2]) then
+		return false
+	end
+
 	if (orig.time_left-FangsHeist.Net.time_left)*MUSICRATE/TICRATE > HURRY_LENGTH then
 		return false
 	end

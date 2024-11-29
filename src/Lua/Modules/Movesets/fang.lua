@@ -170,8 +170,9 @@ local function newGunslinger(player)
 			S_StartSoundAtVolume(mo,sfx_s1c4,150)
 			//Air function
 			if not(P_IsObjectOnGround(mo))
-				player.pflags = $|PF_THOKKED & ~PF_JUMPED|PF_STARTJUMP
+				player.pflags = $|PF_THOKKED
 				if not FangsHeist.playerHasSign(player) then
+					p.pflags = $ & ~PF_JUMPED|PF_STARTJUMP
 					P_SetObjectMomZ(mo,max(mo.momz*P_MobjFlip(mo)*5/4, FRACUNIT*6))
 					if mo.momz*P_MobjFlip(mo) > FRACUNIT*10 then
 						player.pflags = $|PF_JUMPED|PF_STARTJUMP

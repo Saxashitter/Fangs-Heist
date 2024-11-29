@@ -4,6 +4,8 @@ return {
 	generated_profit = 0,
 	had_sign = false,
 
+	team = 0,
+
 	death_time = 5*TICRATE,
 
 	enemies = 0,
