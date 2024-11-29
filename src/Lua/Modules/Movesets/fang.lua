@@ -17,9 +17,8 @@ states[S_PLAY_AIRFIRE2] = {
 }
 states[S_PLAY_AIRKICK] = {
         sprite = SPR_PLAY,
-        frame = SPR2_ROLL,
-        tics = 3,
-		nextstate = S_PLAY_AIRKICK
+        frame = SPR2_FALL,
+        tics = -1
 }
 
 local refiretime = 24
@@ -172,7 +171,7 @@ local function newGunslinger(player)
 			if not(P_IsObjectOnGround(mo))
 				player.pflags = $|PF_THOKKED
 				if not FangsHeist.playerHasSign(player) then
-					p.pflags = $ & ~PF_JUMPED|PF_STARTJUMP
+					player.pflags = $ & ~PF_JUMPED|PF_STARTJUMP
 					P_SetObjectMomZ(mo,max(mo.momz*P_MobjFlip(mo)*5/4, FRACUNIT*6))
 					if mo.momz*P_MobjFlip(mo) > FRACUNIT*10 then
 						player.pflags = $|PF_JUMPED|PF_STARTJUMP
@@ -293,7 +292,8 @@ module.kickThinker = function(player)
 		local gravity = P_GetMobjGravity(player.mo)
 
 		player.powers[pw_strong] = $|STR_ATTACK
-		player.mo.momz = $-gravity/2
+		player.pflags = $|PF_JUMPED
+		player.mo.momz = $-(gravity/3)
 		player.drawangle = player.mo.angle + FixedAngle(((leveltime*45/2)%360)*FU)
 		if not (leveltime % 3) then
 			P_SpawnGhostMobj(player.mo)
@@ -306,7 +306,7 @@ end
 module.doAirKick = function(player)
 	player.mo.state = S_PLAY_AIRKICK
 	player.pflags = $ & ~(PF_JUMPED|PF_STARTJUMP)
-	P_SetObjectMomZ(player.mo, 3*FU)
+	P_SetObjectMomZ(player.mo, 6*FU)
 	S_StartSound(player.mo, sfx_spndsh)
 	player.pflags = $|PF_THOKKED
 end

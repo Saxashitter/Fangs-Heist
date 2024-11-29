@@ -88,36 +88,6 @@ function FangsHeist.changeBlocks()
 	end
 end
 
-function FangsHeist.assignTeam(inviter, invited)
-	if not (inviter.heist.team) then
-		local team_value = 1
-
-		for p in players.iterate do
-			if not (p and p.heist and p.heist.team) then
-				continue
-			end
-
-			team_value = max($, p.heist.team+1)
-		end
-
-		inviter.heist.team = team_value
-	end
-
-	invited.heist.team = team_value
-end
-
-function FangsHeist.makePlayerConscious(p)
-	if not p.heist then return end
-
-	p.heist.conscious_meter_heal = orig.conscious_meter_heal
-	p.heist.conscious_meter = FU
-
-	if p.mo.health then
-		p.powers[pw_flashing] = TICRATE
-		p.mo.state = S_PLAY_STND
-	end
-end
-
 local function sac(name, caption)
 	local sfx = freeslot(name)
 

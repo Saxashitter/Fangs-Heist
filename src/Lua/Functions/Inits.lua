@@ -12,6 +12,7 @@ local copy = FangsHeist.require "Modules/Libraries/copy"
 local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"
 
 local orig_net = FangsHeist.require "Modules/Variables/net"
+local orig_save = FangsHeist.require "Modules/Variables/save"
 local orig_plyr = FangsHeist.require "Modules/Variables/player"
 local orig_hud = FangsHeist.require "Modules/Variables/hud"
 
@@ -90,7 +91,6 @@ function FangsHeist.loadMap()
 		local thing = treasure_spawns[choice]
 
 		FangsHeist.defineTreasure(thing.x, thing.y, thing.z)
-		print "I-YI CAPTAIN"
 		table.remove(treasure_spawns, choice)
 	end
 end
