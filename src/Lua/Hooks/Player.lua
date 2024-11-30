@@ -1,6 +1,9 @@
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 local fang = FangsHeist.require "Modules/Movesets/fang"
 
+local ringsling = FangsHeist.require "Modules/Handlers/ringsling"
+local weaponmenu = FangsHeist.require"Modules/Handlers/weaponmenu"
+
 FangsHeist.panicBlacklist = {
 	takisthefox = true
 }
@@ -32,6 +35,18 @@ addHook("PlayerThink", function(p)
 	fang.playerThinker(p)
 	fang.kickThinker(p)
 
+	if p.heist.weapon
+	and p.mo.health
+	and not P_PlayerInPain(p)
+	and p.rings
+	and p.cmd.buttons & BT_ATTACK
+	and not (p.lastbuttons & BT_ATTACK) then
+		ringsling.fireRing(p, p.heist.weapon)
+	end
+
+	if p.heist.weapon_cooldown then
+		p.heist.weapon_cooldown = max(0, $-1)
+	end
 
 	if leveltime % TICRATE*5 == 0 then
 		local count = #p.heist.treasures
@@ -50,6 +65,8 @@ addHook("PlayerThink", function(p)
 			end
 		end
 	end
+
+	weaponmenu(p)
 
 	if not (p.heist.exiting) then
 		p.score = FangsHeist.returnProfit(p)
@@ -205,6 +222,7 @@ end)
 addHook("AbilitySpecial", function (p)
 	if FangsHeist.canUseAbility(p)
 	and FangsHeist.isPlayerAlive(p)
+	and p.charability == CA_THOK
 	and not (p.pflags & PF_THOKKED) then
 		p.actionspd = 40*FU
 	end

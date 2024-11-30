@@ -41,7 +41,9 @@ function FangsHeist.initMode()
 end
 
 local treasure_things = {
-	[312] = true,
+	[312] = true
+}
+local bean_things = {
 	[402] = true,
 	[408] = true,
 	[409] = true
@@ -52,6 +54,7 @@ function FangsHeist.loadMap()
 
 	local exit = false
 	local treasure_spawns = {}
+	local bean_spawns = {}
 
 	for thing in mapthings.iterate do
 		if thing.mobj
@@ -64,6 +67,14 @@ function FangsHeist.loadMap()
 
 		if treasure_things[thing.type] then
 			table.insert(treasure_spawns, {
+				x = thing.x*FU,
+				y = thing.y*FU,
+				z = spawnpos.getThingSpawnHeight(thing.type, thing, thing.x*FU, thing.y*FU)
+			})
+		end
+
+		if bean_things[thing.type] then
+			table.insert(bean_spawns, {
 				x = thing.x*FU,
 				y = thing.y*FU,
 				z = spawnpos.getThingSpawnHeight(thing.type, thing, thing.x*FU, thing.y*FU)
@@ -92,5 +103,13 @@ function FangsHeist.loadMap()
 
 		FangsHeist.defineTreasure(thing.x, thing.y, thing.z)
 		table.remove(treasure_spawns, choice)
+	end
+
+	if #bean_spawns then
+		local choice = P_RandomRange(1, #bean_spawns)
+		local thing = bean_spawns[choice]
+
+		FangsHeist.defineBean(thing.x, thing.y, thing.z)
+		print("WE SPAWNED BEAN")
 	end
 end

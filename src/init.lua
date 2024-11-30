@@ -26,5 +26,6 @@ dofile "Hooks/HUD"
 dofile "Objects/Treasures"
 dofile "Objects/Signpost"
 dofile "Objects/Exit"
+dofile "Objects/Bean"
 
 dofile "modsupport"

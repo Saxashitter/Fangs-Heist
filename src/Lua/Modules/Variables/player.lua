@@ -18,9 +18,13 @@ return {
 	treasure_name = "",
 	treasure_desc = "",
 
-	picked_up_player = nil,
-	picked_up_by = nil,
+	weapon_hud = false,
+	weapon_selected = 1,
 
+	weapon = nil,
+	weapon_cooldown = 0,
+
+	// UNUSED MECHANIC
 	conscious_meter = FU,
 	conscious_meter_heal = 30*TICRATE,
 	conscious_meter_reduce = TICRATE,
