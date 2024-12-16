@@ -1,6 +1,5 @@
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 local orig = FangsHeist.require"Modules/Variables/player"
-local ringsling = FangsHeist.require"Modules/Handlers/ringsling"
 
 sfxinfo[freeslot "sfx_gogogo"].caption = "G-G-G-G-GO! GO! GO!"
 
@@ -88,13 +87,6 @@ function FangsHeist.changeBlocks()
 	end
 end
 
-function FangsHeist.giveWeapon(p, type)
-	if not (FangsHeist.isPlayerAlive(p) and ringsling.rings[type]) then return end
-
-	print("It worked!")
-	p.heist.weapon = type
-end
-
 local function sac(name, caption)
 	local sfx = freeslot(name)
 
@@ -102,15 +94,6 @@ local function sac(name, caption)
 
 	return sfx
 end
-
-COM_AddCommand("fh_openmenu", function(p)
-	if not FangsHeist.isPlayerAlive(p) then return end
-
-	p.heist.weapon_hud = true
-end)
-COM_AddCommand("fh_giveweapon", function(p, type)
-	FangsHeist.giveWeapon(p, type)
-end, COM_ADMIN)
 
 COM_AddCommand("fh_endgame", function(p)
 	FangsHeist.startIntermission()

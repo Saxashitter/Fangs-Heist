@@ -1,4 +1,6 @@
 return {
+	gametype = 0,
+
 	escape = false,
 	escape_theme = "SPRHRO",
 	escape_choice = 1,

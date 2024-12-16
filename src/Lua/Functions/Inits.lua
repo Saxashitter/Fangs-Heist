@@ -22,9 +22,22 @@ function FangsHeist.initPlayer(p)
 	p.heist.spectator = FangsHeist.Net.escape
 end
 
-function FangsHeist.initMode()
+function FangsHeist.initMode(map)
 	FangsHeist.Net = copy(orig_net)
 	FangsHeist.HUD = copy(orig_hud)
+	FangsHeist.Net.gametype = tonumber(mapheaderinfo[map].fh_gametype) or 0
+
+	local data = FangsHeist.getTypeData()
+	if data.start_timer then
+		local choice = P_RandomRange(1, #FangsHeist.escapeThemes)
+
+		while FangsHeist.Save.escape == FangsHeist.escapeThemes[choice] do
+			choice = P_RandomRange(1, #FangsHeist.escapeThemes)
+		end
+		FangsHeist.Save.escape = FangsHeist.escapeThemes[choice]
+		FangsHeist.Net.escape_theme = FangsHeist.escapeThemes[choice]
+		FangsHeist.Net.escape_choice = choice
+	end
 
 	for p in players.iterate do
 		p.camerascale = FU
@@ -50,11 +63,14 @@ local bean_things = {
 }
 
 function FangsHeist.loadMap()
-	FangsHeist.spawnSign()
+	local data = FangsHeist.getTypeData()
+
+	if data.escape then
+		FangsHeist.spawnSign()
+	end
 
 	local exit = false
 	local treasure_spawns = {}
-	local bean_spawns = {}
 
 	for thing in mapthings.iterate do
 		if thing.mobj
@@ -67,14 +83,6 @@ function FangsHeist.loadMap()
 
 		if treasure_things[thing.type] then
 			table.insert(treasure_spawns, {
-				x = thing.x*FU,
-				y = thing.y*FU,
-				z = spawnpos.getThingSpawnHeight(thing.type, thing, thing.x*FU, thing.y*FU)
-			})
-		end
-
-		if bean_things[thing.type] then
-			table.insert(bean_spawns, {
 				x = thing.x*FU,
 				y = thing.y*FU,
 				z = spawnpos.getThingSpawnHeight(thing.type, thing, thing.x*FU, thing.y*FU)
@@ -103,13 +111,5 @@ function FangsHeist.loadMap()
 
 		FangsHeist.defineTreasure(thing.x, thing.y, thing.z)
 		table.remove(treasure_spawns, choice)
-	end
-
-	if #bean_spawns then
-		local choice = P_RandomRange(1, #bean_spawns)
-		local thing = bean_spawns[choice]
-
-		FangsHeist.defineBean(thing.x, thing.y, thing.z)
-		print("WE SPAWNED BEAN")
 	end
 end

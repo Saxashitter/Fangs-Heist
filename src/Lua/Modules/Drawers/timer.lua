@@ -29,6 +29,8 @@ function module.init()
 end
 
 function module.draw(v)
+	local data = FangsHeist.getTypeData()
+
 	if warning_active then
 		ticker = $+1
 
@@ -65,8 +67,9 @@ function module.draw(v)
 	local scale = FU*4/6
 
 	local draw_x = x-(bar.width*scale/2)
-	if FangsHeist.Net.escape
-	and not FangsHeist.isHurryUp() then
+	if (FangsHeist.Net.escape
+	and not FangsHeist.isHurryUp())
+	or data.start_timer then
 		y = ease.linear(FU/6, $, 180*FU)
 	end
 

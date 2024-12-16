@@ -5,8 +5,8 @@ local orig_net = FangsHeist.require "Modules/Variables/net"
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 
 // Mode initialization.
-addHook("MapChange", do
-	FangsHeist.initMode()
+addHook("MapChange", function(map)
+	FangsHeist.initMode(map)
 end)
 
 addHook("NetVars", function(n)
@@ -51,6 +51,7 @@ addHook("ThinkFrame", do
 	if not FangsHeist.isMode() then
 		return
 	end
+	local data = FangsHeist.getTypeData()
 
 	dialogue.tick()
 
@@ -108,7 +109,12 @@ addHook("ThinkFrame", do
 		return
 	end
 
-	escape()
+	if data.escape then
+		escape()
+	elseif data.start_timer then
+		FangsHeist.Net.time_left = max(0, $-1)
+	end
+
 	music()
 	FangsHeist.manageTreasures()
 	pvp.tick()

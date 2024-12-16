@@ -1,9 +1,6 @@
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 local fang = FangsHeist.require "Modules/Movesets/fang"
 
-local ringsling = FangsHeist.require "Modules/Handlers/ringsling"
-local weaponmenu = FangsHeist.require"Modules/Handlers/weaponmenu"
-
 FangsHeist.panicBlacklist = {
 	takisthefox = true
 }
@@ -29,23 +26,25 @@ addHook("PlayerThink", function(p)
 		return
 	end
 
+	local data = FangsHeist.getTypeData()
+
 	p.charflags = $ & ~SF_DASHMODE
 	p.heist.treasure_time = max(0, $-1)
 
 	fang.playerThinker(p)
 	fang.kickThinker(p)
 
-	if p.heist.weapon
-	and p.mo.health
-	and not P_PlayerInPain(p)
-	and p.rings
-	and p.cmd.buttons & BT_ATTACK
-	and not (p.lastbuttons & BT_ATTACK) then
-		ringsling.fireRing(p, p.heist.weapon)
-	end
-
-	if p.heist.weapon_cooldown then
-		p.heist.weapon_cooldown = max(0, $-1)
+	if data.bullet_mode then
+		if p.cmd.buttons & BT_ATTACK
+		and not (p.lastbuttons & BT_ATTACK) then
+			local ring = P_SpawnPlayerMissile(p.mo, MT_REDRING)
+			if ring and ring.valid then
+				local speed = 24
+				ring.momx = FixedMul(speed*cos(ring.angle), cos(p.aiming))
+				ring.momy = FixedMul(speed*sin(ring.angle), cos(p.aiming))
+				ring.momz = speed*sin(p.aiming)
+			end
+		end
 	end
 
 	if leveltime % TICRATE*5 == 0 then
@@ -65,8 +64,6 @@ addHook("PlayerThink", function(p)
 			end
 		end
 	end
-
-	weaponmenu(p)
 
 	if not (p.heist.exiting) then
 		p.score = FangsHeist.returnProfit(p)

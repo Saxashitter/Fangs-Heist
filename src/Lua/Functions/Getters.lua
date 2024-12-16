@@ -1,5 +1,14 @@
 local orig = FangsHeist.require "Modules/Variables/net"
 
+function FangsHeist.getTypeData()
+	if FangsHeist.GameTypes[FangsHeist.Net.gametype] then
+		print"mhm"
+		return FangsHeist.GameTypes[FangsHeist.Net.gametype]
+	end
+
+	return FangsHeist.GameTypes[0]
+end
+
 // Get players nearby, mainly used for pickup-ables.
 function FangsHeist.getNearbyPlayers(mobj, distscale, blacklist)
 	if not (distscale) then distscale = FU*3/2 end
