@@ -2,7 +2,6 @@ local orig = FangsHeist.require "Modules/Variables/net"
 
 function FangsHeist.getTypeData()
 	if FangsHeist.GameTypes[FangsHeist.Net.gametype] then
-		print"mhm"
 		return FangsHeist.GameTypes[FangsHeist.Net.gametype]
 	end
 

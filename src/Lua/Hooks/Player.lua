@@ -1,5 +1,5 @@
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
-local fang = FangsHeist.require "Modules/Movesets/fang"
+local movement = FangsHeist.require "Modules/Handlers/movement"
 
 FangsHeist.panicBlacklist = {
 	takisthefox = true
@@ -28,11 +28,9 @@ addHook("PlayerThink", function(p)
 
 	local data = FangsHeist.getTypeData()
 
-	p.charflags = $ & ~SF_DASHMODE
 	p.heist.treasure_time = max(0, $-1)
 
-	fang.playerThinker(p)
-	fang.kickThinker(p)
+	movement.runMovement(p)
 
 	if data.bullet_mode then
 		if p.cmd.buttons & BT_ATTACK
@@ -90,6 +88,14 @@ addHook("ThinkFrame", do
 		end
 	end
 end)
+
+addHook("MobjMoveCollide", function(mo, spring)
+	if not FangsHeist.isMode() then
+		return
+	end
+
+	movement.springCols(mo, spring)
+end, MT_PLAYER)
 
 local function return_score(mo)
 	if mo.flags & MF_MONITOR then
@@ -208,28 +214,12 @@ local function thokNerf(p)
 	S_StartSound(p.mo, sfx_thok)
 end
 
-addHook("ShieldSpecial", function(p)
-	if not FangsHeist.isMode() then return end
-
-	if fang.isGunslinger(p) then
-		return true
-	end
-end)
-
 addHook("AbilitySpecial", function (p)
 	if FangsHeist.canUseAbility(p)
 	and FangsHeist.isPlayerAlive(p)
 	and p.charability == CA_THOK
 	and not (p.pflags & PF_THOKKED) then
 		p.actionspd = 40*FU
-	end
-
-	if FangsHeist.canUseAbility(p)
-	and FangsHeist.isPlayerAlive(p)
-	and not (p.pflags & PF_THOKKED)
-	and fang.isBounce(p) then
-		fang.doAirKick(p)
-		return true
 	end
 
 	return not FangsHeist.canUseAbility(p)
