@@ -1,9 +1,11 @@
-local WALK_SPEED = 16*FU
-local RUN_SPEED = 32*FU
+local WALK_SPEED = 20*FU
+local RUNSTART_SPEED = 10*FU
+local RUN_SPEED = 35*FU
 local RUN_ANIM = 25*FU
 local RUN_SLOWDOWN = 20
-local ACCEL_SPEED = FU/12
-local RUN_PREP = 8
+local ACCEL_SPEED = FU
+local DECEL_SPEED = FU/16
+local RUN_PREP = 40
 
 local module = {}
 
@@ -107,17 +109,27 @@ local function walk(p)
 	p.camerascale = ease.linear(FU/10, $, FU)
 
 	if p.cmd.sidemove or p.cmd.forwardmove then
-		local speedx = P_ReturnThrustX(p.mo, angle, WALK_SPEED)
-		local speedy = P_ReturnThrustY(p.mo, angle, WALK_SPEED)
-	
-		p.drawangle = angle
-		p.heist.move.momx = ease.linear(ACCEL_SPEED, $, speedx)
-		p.heist.move.momy = ease.linear(ACCEL_SPEED, $, speedy)
-	else
-		p.heist.move.momx = ease.linear(ACCEL_SPEED, $, 0)
-		p.heist.move.momy = ease.linear(ACCEL_SPEED, $, 0)
+		local accelx = P_ReturnThrustX(p.mo, angle, ACCEL_SPEED)
+		local accely = P_ReturnThrustY(p.mo, angle, ACCEL_SPEED)
 
-		if FixedHypot(p.heist.move.momx, p.heist.move.momy) < 5*p.mo.scale then
+		p.drawangle = angle
+
+		p.heist.move.momx = $+accelx
+		p.heist.move.momy = $+accely
+
+		local speed = FixedHypot(p.heist.move.momx, p.heist.move.momy)
+
+		if speed > WALK_SPEED then
+			local factor = FixedDiv(WALK_SPEED,speed)
+
+			p.heist.move.momx = FixedMul($,factor)
+			p.heist.move.momy = FixedMul($,factor)
+		end
+	else
+		p.heist.move.momx = ease.linear(DECEL_SPEED, $, 0)
+		p.heist.move.momy = ease.linear(DECEL_SPEED, $, 0)
+
+		if FixedHypot(p.heist.move.momx, p.heist.move.momy) < p.mo.scale then
 			p.heist.move.momx = 0
 			p.heist.move.momy = 0
 		end
@@ -132,32 +144,27 @@ local function run(p)
 	local m = p.heist.move
 	p.camerascale = ease.linear(FU/10, $, FU*2)
 
+	local speed = RUN_SPEED
+	if m.runstart then
+		local t = RUN_PREP-m.runstart
+		speed = RUNSTART_SPEED+ FixedMul(RUN_SPEED-RUNSTART_SPEED, FixedDiv(t, RUN_PREP))
+	end
+	m.runstart = max(0, $-1)
+
 	if p.cmd.sidemove or p.cmd.forwardmove then
 		local turn = player_moveangle(p)
 
-		m.runangle = L_TurnAngle($, turn, FU/70)
+		m.runangle = L_TurnAngle($, turn, FU/55)
 	end
 
-	m.momx = P_ReturnThrustX(p.mo, m.runangle, RUN_SPEED)
-	m.momy = P_ReturnThrustY(p.mo, m.runangle, RUN_SPEED)
+	m.momx = P_ReturnThrustX(p.mo, m.runangle, speed)
+	m.momy = P_ReturnThrustY(p.mo, m.runangle, speed)
 
 	p.mo.momx = p.cmomx+p.heist.move.momx
 	p.mo.momy = p.cmomy+p.heist.move.momy
+
 	P_MovePlayer(p)
 	p.drawangle = m.runangle
-end
-
-local function runprep(p)
-	local m = p.heist.move
-
-	m.momx = -6*cos(p.drawangle)
-	m.momy = -6*sin(p.drawangle)
-
-	m.runstart = max(0, $-1)
-
-	p.mo.momx = p.cmomx+p.heist.move.momx
-	p.mo.momy = p.cmomy+p.heist.move.momy
-	P_MovePlayer(p)
 end
 
 local function runslow(p)
@@ -210,13 +217,20 @@ function module.runMovement(p)
 	end
 
 	local runPress = (p.cmd.buttons & BT_SPIN)
+	if FangsHeist.playerHasSign(p) then
+		runPress = false
+	end
 
 	if not m.run
 	and P_IsObjectOnGround(p.mo)
 	and runPress then
 	-- and not (m.runslow) then
 		m.run = true
+		m.runstart = RUN_PREP
 		m.runangle = R_PointToAngle2(0,0,p.mo.momx,p.mo.momy)
+		if not (p.mo.momx or p.mo.momy) then
+			m.runangle = p.mo.angle
+		end
 	end
 
 	if m.run
@@ -225,7 +239,6 @@ function module.runMovement(p)
 	-- and not (m.runstart) then
 		m.run = false
 		m.runslow = RUN_SLOWDOWN
-		m.runstart = RUN_PREP
 	end
 
 	manage_footsteps(p)

@@ -15,6 +15,7 @@ rawset(_G, "FangsHeist", {Net = {}, HUD = {}, Objects = {}, Save = {}})
 // OFFICIAL SEQUEL TO NICK'S PIZZA TIME!
 
 dofile "gametypes"
+dofile "files"
 
 dofile "Functions/Inits"
 dofile "Functions/Getters"

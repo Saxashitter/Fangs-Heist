@@ -22,6 +22,7 @@ local scale
 local states = {
 	FangsHeist.require"Modules/Handlers/Intermission/personalstats",
 	FangsHeist.require"Modules/Handlers/Intermission/winners",
+	FangsHeist.require"Modules/Handlers/Intermission/highscores",
 	FangsHeist.require"Modules/Handlers/Intermission/vote"
 }
 

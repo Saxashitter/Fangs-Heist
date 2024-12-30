@@ -177,22 +177,40 @@ function module.bouncePlayers(p, sp)
 	local momy2 = p.mo.momy
 	local momz2 = p.mo.momz
 
+	local angle = R_PointToAngle2(p.mo.x, p.mo.y, sp.mo.x, sp.mo.y)
+
 	local isPain1 = P_PlayerInPain(sp)
 	local isPain2 = P_PlayerInPain(p)
 
 	if not isPain1
-	and sp.mo.health
-	and (sp.pflags & PF_SPINNING|PF_JUMPED) then
-		sp.mo.momx = momx2
-		sp.mo.momy = momy2
-		sp.mo.momz = momz2
+	and sp.mo.health then
+		local angle = angle+ANGLE_180
+		if sp.heist.move then
+			sp.heist.move.momx = -16*cos(angle)
+			sp.heist.move.momy = -16*sin(angle)
+			sp.heist.move.jump = false
+			sp.heist.move.run = false
+		else
+			sp.mo.momx = -16*cos(angle)
+			sp.mo.momy = -16*sin(angle)
+		end
+		sp.pflags = $ & ~PF_JUMPED|PF_STARTJUMP
+		sp.mo.momz = 0
 	end
 	if not isPain2
 	and p.mo.health
 	and (p.pflags & PF_SPINNING|PF_JUMPED) then
-		p.mo.momx = momx1
-		p.mo.momy = momy1
-		p.mo.momz = momz1
+		if p.heist.move then
+			p.heist.move.momx = -16*cos(angle)
+			p.heist.move.momy = -16*sin(angle)
+			p.heist.move.jump = false
+			p.heist.move.run = false
+		else
+			p.mo.momx = -16*cos(angle)
+			p.mo.momy = -16*sin(angle)
+		end
+		p.pflags = $ & ~PF_JUMPED|PF_STARTJUMP
+		p.mo.momz = 0
 	end
 end
 

@@ -121,3 +121,14 @@ function FangsHeist.getPlayerPlacement(p)
 
 	return placement.place
 end
+
+// Used for loading colors from files.
+function FangsHeist.getColorByName(name)
+	for i = 1,#skincolors do
+		if skincolors[i] and skincolors[i].name == name then
+			return i
+		end
+	end
+
+	return SKINCOLOR_BLUE
+end

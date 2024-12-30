@@ -30,9 +30,50 @@ function FangsHeist.startEscape()
 	FangsHeist.doSignpostWarning(FangsHeist.playerHasSign(displayplayer))
 end
 
+local function profsort(a, b)
+	return a[4] > b[4]
+end
+
 function FangsHeist.startIntermission()
 	if FangsHeist.Net.game_over then
 		return
+	end
+
+	local scores = FangsHeist.Save.ServerScores
+	if not scores[gamemap] then
+		scores[gamemap] = {}
+	end
+
+	for p in players.iterate do
+		if not FangsHeist.isPlayerAlive(p)
+		or not p.heist then
+			continue
+		end
+
+		table.insert(scores[gamemap], {
+			p.mo.skin,
+			skincolors[p.mo.color].name,
+			p.name,
+			FangsHeist.returnProfit(p)
+		})
+	end
+
+	table.sort(scores[gamemap], profsort)
+
+	if #scores[gamemap] > 12 then
+		for i = 12,#scores[gamemap] do
+			scores[gamemap][i] = nil
+		end
+	end
+
+	if isserver
+	or isdedicatedserver then
+		local f = io.openlocal("client/FangsHeist/serverScores.txt", "w+")
+		if f then
+			f:write(FangsHeist.ServerScoresToString())
+			f:flush()
+			f:close()
+		end
 	end
 
 	S_FadeMusic(0, MUSICRATE/2)
