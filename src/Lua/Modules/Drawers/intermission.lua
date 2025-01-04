@@ -32,7 +32,6 @@ function module.init()
 	alpha = 0
 	statealpha = 10
 	current = 2
-	x = 0
 	buttons = 0
 	lastbuttons = 0
 	sidemove = 0
@@ -100,8 +99,6 @@ end
 local function draw_intermission(v)
 	if statealpha == 10 then return end
 
-	local x = FixedMul(x, FixedDiv(v.width()*FU/v.dupx(), 320*FU))
-
 	scale = ease.linear(FU/15, $, FU)
 
 	local warp = vwarp(v, {
@@ -113,26 +110,17 @@ local function draw_intermission(v)
 	})
 	draw_bg(warp)
 
-	for i,state in ipairs(states) do
-		local warp = vwarp(v, {
-			transp = statealpha,
-			xoffset = -x + (v.width()*FU/v.dupx())*(i-1),
-			xorigin = (v.width()*FU/v.dupx())/2,
-			yorigin = (v.height()*FU/v.dupy())/2,
-			xscale = scale,
-			yscale = scale
-		})
+	local state = states[current]
 
-		if i == current then
-			state.think({
-				buttons = buttons;
-				sidemove = sidemove;
-				forwardmove = forwardmove;
-				lastbuttons = lastbuttons;
-				lastside = lastside;
-				lastforward = lastforward
-			}, v.width()*FU/v.dupx(), v.height()*FU/v.dupy())
-		end
+	if state then
+		state.think({
+			buttons = buttons;
+			sidemove = sidemove;
+			forwardmove = forwardmove;
+			lastbuttons = lastbuttons;
+			lastside = lastside;
+			lastforward = lastforward
+		}, v.width()*FU/v.dupx(), v.height()*FU/v.dupy())
 		state.draw(warp, v.width()*FU/v.dupx(), v.height()*FU/v.dupy())
 	end
 end
@@ -159,10 +147,7 @@ local function draw_tabs(v)
 end
 
 local function manage_intermission(v)
-	local target_x = (320*FU)*(current-1)
-
 	if statealpha == 10 then
-		x = target_x
 		return
 	end
 
@@ -178,9 +163,6 @@ local function manage_intermission(v)
 	end
 
 	current = max(1, min($+select, #states))
-	target_x = (320*FU)*(current-1)
-
-	x = ease.linear(FU/5, $, target_x)
 end
 
 function module.draw(v)

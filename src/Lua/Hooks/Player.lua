@@ -29,9 +29,7 @@ addHook("PlayerThink", function(p)
 	local data = FangsHeist.getTypeData()
 
 	p.heist.treasure_time = max(0, $-1)
-
-	movement.runMovement(p)
-
+	p.dashmode = 0
 	if data.bullet_mode then
 		if p.cmd.buttons & BT_ATTACK
 		and not (p.lastbuttons & BT_ATTACK) then
@@ -48,7 +46,20 @@ addHook("PlayerThink", function(p)
 	if leveltime % TICRATE*5 == 0 then
 		local count = #p.heist.treasures
 
-		p.heist.generated_profit = min(1000, $+4*count)
+		p.heist.generated_profit = min(500, $+12*count)
+	end
+
+	local spindash_limit = 45*FU
+	if FangsHeist.playerHasSign(p) then
+		p.heist.corrected_speed = false
+		p.normalspeed = min(24*FU, $)
+		p.mindash = min($, spindash_limit)
+		p.maxdash = min($, spindash_limit)
+	elseif not p.heist.corrected_speed then
+		p.heist.corrected_speed = true
+		p.normalspeed = skins[p.skin].normalspeed
+		p.mindash = skins[p.skin].mindash
+		p.maxdash = skins[p.skin].maxdash
 	end
 
 	if FangsHeist.Net.escape

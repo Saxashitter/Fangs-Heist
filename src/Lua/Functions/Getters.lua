@@ -60,7 +60,7 @@ function FangsHeist.returnProfit(p)
 	local profit = 0
 
 	if FangsHeist.playerHasSign(p)
-		profit = $+1000
+		profit = $+1500
 	end
 
 

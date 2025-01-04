@@ -3,8 +3,8 @@ local RUNSTART_SPEED = 10*FU
 local RUN_SPEED = 35*FU
 local RUN_ANIM = 25*FU
 local RUN_SLOWDOWN = 20
-local ACCEL_SPEED = FU
-local DECEL_SPEED = FU/16
+local ACCEL_SPEED = FU*3/2
+local DECEL_SPEED = FU/5
 local RUN_PREP = 40
 
 local module = {}
@@ -112,6 +112,11 @@ local function walk(p)
 		local accelx = P_ReturnThrustX(p.mo, angle, ACCEL_SPEED)
 		local accely = P_ReturnThrustY(p.mo, angle, ACCEL_SPEED)
 
+		if not P_IsObjectOnGround(p.mo) then
+			accelx = $/2
+			accely = $/2
+		end
+
 		p.drawangle = angle
 
 		p.heist.move.momx = $+accelx
@@ -126,8 +131,14 @@ local function walk(p)
 			p.heist.move.momy = FixedMul($,factor)
 		end
 	else
-		p.heist.move.momx = ease.linear(DECEL_SPEED, $, 0)
-		p.heist.move.momy = ease.linear(DECEL_SPEED, $, 0)
+		local decel = DECEL_SPEED
+
+		if not P_IsObjectOnGround(p.mo) then
+			decel = $/2
+		end
+
+		p.heist.move.momx = ease.linear(decel, $, 0)
+		p.heist.move.momy = ease.linear(decel, $, 0)
 
 		if FixedHypot(p.heist.move.momx, p.heist.move.momy) < p.mo.scale then
 			p.heist.move.momx = 0
@@ -147,7 +158,7 @@ local function run(p)
 	local speed = RUN_SPEED
 	if m.runstart then
 		local t = RUN_PREP-m.runstart
-		speed = RUNSTART_SPEED+ FixedMul(RUN_SPEED-RUNSTART_SPEED, FixedDiv(t, RUN_PREP))
+		speed = RUNSTART_SPEED + FixedMul(RUN_SPEED-RUNSTART_SPEED, FixedDiv(t, RUN_PREP))
 	end
 	m.runstart = max(0, $-1)
 
