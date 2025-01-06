@@ -21,6 +21,8 @@ local function select_player(sign, p)
 		sign.bustmo.color = p.skincolor
 		sign.bustmo.state = S_PLAY_SIGN
 	end
+
+	p.powers[pw_flashing] = TICRATE
 end
 
 function FangsHeist.giveSignTo(p) // somewhat of a wrapper function for scripts to access
@@ -136,7 +138,7 @@ local function manage_picked(sign)
 end
 
 local function blacklist(p)
-	return P_PlayerInPain(p) or (p.heist and p.heist.exiting)
+	return P_PlayerInPain(p) or (p.heist and p.heist.exiting) or p.powers[pw_flashing]
 end
 
 local function manage_unpicked(sign)

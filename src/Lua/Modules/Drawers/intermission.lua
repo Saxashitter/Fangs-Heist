@@ -40,6 +40,12 @@ function module.init()
 	lastforward = 0
 	scroll = 0
 	scale = FU*2
+
+	for _,state in pairs(states) do
+		if state.init then
+			state.init()
+		end
+	end
 end
 
 // UNEXPECTED HOOK GRAAAAHHH
@@ -96,6 +102,25 @@ local function draw_bg(v)
 		V_SNAPTOLEFT|V_SNAPTOTOP)
 end
 
+// sucks to suck but how else am i gonna do this
+addHook("PostThinkFrame", do
+	if not FangsHeist.isMode() then return end
+	if not FangsHeist.Net.game_over then return end
+	if statealpha == 10 then return end
+
+	local state = states[current]
+	if not state then return end
+
+	state.think({
+		buttons = buttons;
+		sidemove = sidemove;
+		forwardmove = forwardmove;
+		lastbuttons = lastbuttons;
+		lastside = lastside;
+		lastforward = lastforward
+	})
+end)
+
 local function draw_intermission(v)
 	if statealpha == 10 then return end
 
@@ -113,15 +138,7 @@ local function draw_intermission(v)
 	local state = states[current]
 
 	if state then
-		state.think({
-			buttons = buttons;
-			sidemove = sidemove;
-			forwardmove = forwardmove;
-			lastbuttons = lastbuttons;
-			lastside = lastside;
-			lastforward = lastforward
-		}, v.width()*FU/v.dupx(), v.height()*FU/v.dupy())
-		state.draw(warp, v.width()*FU/v.dupx(), v.height()*FU/v.dupy())
+		state.draw(warp, consoleplayer)
 	end
 end
 

@@ -27,6 +27,11 @@ function FangsHeist.startEscape()
 	S_StartSound(nil, sfx_gogogo)
 
 	FangsHeist.changeBlocks()
+	local data = mapheaderinfo[gamemap]
+	if data.fh_escapelinedef then
+		P_LinedefExecute(tonumber(data.fh_escapelinedef))
+	end
+
 	FangsHeist.doSignpostWarning(FangsHeist.playerHasSign(displayplayer))
 end
 
@@ -37,6 +42,34 @@ end
 function FangsHeist.startIntermission()
 	if FangsHeist.Net.game_over then
 		return
+	end
+
+	// map vote for the funny
+	local maps = 0
+	local checkedMaps = {}
+	while maps < 3 and #checkedMaps < 1024 do
+		local map = P_RandomRange(1, 1024)
+		checkedMaps[map] = true
+		if not mapheaderinfo[map] then continue end
+
+		local data = mapheaderinfo[map]
+
+		local mapWasIn = false
+		for _,oldmap in ipairs(FangsHeist.Net.map_choices) do
+			if map == oldmap.map then mapWasIn = true break end
+		end
+		if mapWasIn then continue end
+
+		if not (data.typeoflevel & (TOL_RACE|TOL_HEIST)) then
+			continue
+		end
+		if data.bonustype then continue end
+
+		table.insert(FangsHeist.Net.map_choices, {
+			map = map,
+			votes = 0
+		})
+		maps = $+1
 	end
 
 	local scores = FangsHeist.Save.ServerScores
@@ -139,3 +172,21 @@ end
 COM_AddCommand("fh_endgame", function(p)
 	FangsHeist.startIntermission()
 end, COM_ADMIN)
+
+COM_AddCommand("fh_votemap", function(p, map)
+	if not FangsHeist.isMode() then return end
+	if not FangsHeist.Net.game_over then return end
+	if not (p and p.heist) then return end
+
+	local map = tonumber(map)
+	if not FangsHeist.Net.map_choices[map] then
+		return
+	end
+
+	if p.heist.voted then
+		FangsHeist.Net.map_choices[p.heist.voted].votes = $-1
+	end
+
+	p.heist.voted = map
+	FangsHeist.Net.map_choices[map].votes = $+1
+end)

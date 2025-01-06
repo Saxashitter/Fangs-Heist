@@ -1,308 +1,131 @@
 local module = {}
-// General PVP handler.
-// PVP REWRITE #2
+// PVP rewrite #3, this time we aren't gonna have a Battlemod like system.
 
-local STR_CAN_ATTACK = STR_PUNCH|STR_ATTACK|STR_STOMP|STR_GLIDE|STR_MELEE|STR_STOMP
+local ATTACK_COOLDOWN = TICRATE
+local ATTACK_TIME = G
 
-local function p_check(p)
-	return p and p.valid and FangsHeist.isPlayerAlive(p)
+states[freeslot "S_FH_INSTASHIELD"] = {
+	sprite = freeslot"SPR_TWSP",
+	frame = A|FF_ANIMATE|FF_FULLBRIGHT,
+	tics = G,
+	var1 = G,
+	var2 = 1
+}
+
+mobjinfo[freeslot "MT_FH_INSTASHIELD"] = {
+	radius = 64*FU,
+	height = 64*FU,
+	spawnstate = S_FH_INSTASHIELD,
+	flags = MF_NOGRAVITY|MF_SCENERY|MF_NOCLIPHEIGHT|MF_NOCLIP
+}
+
+local function doAttack(p)
+	p.heist.attack_cooldown = ATTACK_COOLDOWN
+	p.heist.attack_time = ATTACK_TIME
+
+	local shield = P_SpawnMobjFromMobj(p.mo, 0,0,0, MT_FH_INSTASHIELD)
+	shield.target = p.mo
+
+	S_StartSound(p.mo, sfx_s3k42)
+
+	if not (p.powers[pw_strong] & STR_ATTACK) then
+		p.powers[pw_strong] = $|STR_ATTACK|STR_HEAVY
+		p.heist.strongAdded = true
+	end
+
 end
 
-function module.canPlayerBeHit(p)
-	local invincible = p.powers[pw_flashing] or p.powers[pw_invulnerability]
-
-	return not P_PlayerInPain(p)
-	and not (invincible)
+local function playerCheck(p)
+	return p and FangsHeist.isPlayerAlive(p) and not P_PlayerInPain(p)
 end
 
-function module.canPlayerHitOthers(p)
-	local isAttacking = 0
-
-	if p.powers[pw_strong] & STR_CAN_ATTACK then
-		isAttacking = 1
-	end
-
-	if p.pflags & PF_JUMPED then
-		if not (p.pflags & PF_NOJUMPDAMAGE) then
-			isAttacking = 1
-		end
-	end
-
-	if p.pflags & PF_SPINNING then
-		isAttacking = 1
-	end
-
-	if p.powers[pw_invulnerability] then
-		isAttacking = 2
-	end
-
-	return isAttacking
-end
-
-local function get_damage_data(p, sp)
-	local jumpDamage = false
-	local spinDamage = false
-	local spindashDamage = false
-	local meleeDamage = false
-
-	if p.pflags & PF_SPINNING then
-		spinDamage = true
-	end
-
-	if p.pflags & PF_JUMPED then
-		spinDamage = false
-		jumpDamage = true
-	end
-
-	if p.pflags & PF_STARTDASH then
-		jumpDamage = false
-		spinDamage = false
-		spindashDamage = true
-	end
-
-	if p.powers[pw_strong] & STR_CAN_ATTACK then
-		jumpDamage = false
-		spinDamage = false
-		spindashDamage = false
-		meleeDamage = true
-	end
-
-	return jumpDamage, spinDamage, spindashDamage, meleeDamage
-end
-
-// COPIED FROM BATTLEMOD
-module.getPriority = function(player)
-	local grounded = P_IsObjectOnGround(player.mo)
-	local pflags = player.pflags
-	local abil1 = player.charability
-	local abil2 = player.charability2
-	local anim1 = (player.panim == PA_ABILITY)
-	local anim2 = (player.panim == PA_ABILITY2)
-	local thokked = pflags&PF_THOKKED
-	local shieldability = pflags&PF_SHIELDABILITY
-	local shield =  player.powers[pw_shield]&SH_NOSTACK
-	
-	local spinjump = (pflags&PF_JUMPED and not(pflags&PF_NOJUMPDAMAGE))
-	local spindash = pflags&PF_SPINNING and pflags&PF_STARTDASH
-	local spinning = pflags&PF_SPINNING
-	
-	local super = (player.powers[pw_super])
-	local invstar = (player.powers[pw_invulnerability])
-	local homing = (player.homing)
-	local bubble = (shield==SH_BUBBLEWRAP)
-	local flame = (shield==SH_FLAMEAURA)
-	local elemental = (shield==SH_ELEMENTAL)
-	local attr = (shield==SH_ATTRACT)
-	
-	local sonicthokked = (abil1 == CA_THOK and thokked)
-	local knuckles = (abil1 == CA_GLIDEANDCLIMB)
-	local flying = (abil1 ==CA_FLY and player.panim == PA_ABILITY)
-	local gliding = pflags&PF_GLIDING
-	local twinspin = (abil1 == CA_TWINSPIN and anim1)
-	local melee = (abil2 ==CA2_MELEE and anim2)
-	local tailbounce = pflags&PF_BOUNCING
-	local dashing = player.dashmode > 3*TICRATE and not(player.pflags&PF_STARTDASH)
-	local prepdash = player.dashmode > 3*TICRATE and player.pflags&PF_STARTDASH
-	
-	// this part is by me, im dealing with my own stuff
-	/* System:
-			Spindash = 1
-			Jump = 2
-			Melee = 3
-			Roll = 4
-	*/
-	local attacking = melee
-	or tailbounce
-	or twinspin
-	or gliding
-
-	if invstar
-	or super then
-		return 5
-	end
-
-	if spindash then
-		return 1
-	end
-	if attacking then
-		return 3
-	end
-	if spinjump then
-		return 2
-	end
-	if roll then
-		return 4
-	end
-
-	return 0
-end
-
-/*function module.getPriority(p, sp)
-	local jump1, spin1, spindash1, melee1, unconscious1 = get_damage_data(p, sp)
-	local jump2, spin2, spindash2, melee2, unconscious2 = get_damage_data(sp, p)
-
-	if unconscious1 then
-		return 5
-	end
-
-	if spindash1
-	and spin2 then
-		return 1
-	end
-
-	if spin1
-	and jump2 then
-		return 2
-	end
-
-	if jump1
-	and (spindash2 or melee2) then 
-		return 3
-	end
-
-	if melee1
-	and (spin2 or spindash2) then
-		return 4
-	end
-
-	return 0
-end*/
-
-function module.bouncePlayers(p, sp)
-	local momx1 = sp.mo.momx
-	local momy1 = sp.mo.momy
-	local momz1 = sp.mo.momz
-
-	local momx2 = p.mo.momx
-	local momy2 = p.mo.momy
-	local momz2 = p.mo.momz
-
+local function bouncePlayer(p, sp, stopAttack)
 	local angle = R_PointToAngle2(p.mo.x, p.mo.y, sp.mo.x, sp.mo.y)
 
-	local isPain1 = P_PlayerInPain(sp)
-	local isPain2 = P_PlayerInPain(p)
+	P_InstaThrust(p.mo, angle, -12*FU)
+	p.mo.momz = 0
 
-	if not isPain1
-	and sp.mo.health then
-		local angle = angle+ANGLE_180
-		if sp.heist.move then
-			sp.heist.move.momx = -16*cos(angle)
-			sp.heist.move.momy = -16*sin(angle)
-			sp.heist.move.jump = false
-			sp.heist.move.run = false
-		else
-			sp.mo.momx = -16*cos(angle)
-			sp.mo.momy = -16*sin(angle)
+	if not P_IsObjectOnGround(p.mo) then
+		p.mo.state = S_PLAY_FALL
+		p.pflags = $|PF_JUMPED|PF_THOKKED
+	end
+
+	if stopAttack then
+		p.heist.attack_time = 0
+		if p.heist.strongAdded then
+			p.powers[pw_strong] = $ & ~(STR_HEAVY|STR_ATTACK)
+			p.heist.strongAdded = false
 		end
-		sp.pflags = $ & ~PF_JUMPED|PF_STARTJUMP
-		sp.mo.momz = 0
 	end
-	if not isPain2
-	and p.mo.health
-	and (p.pflags & PF_SPINNING|PF_JUMPED) then
-		if p.heist.move then
-			p.heist.move.momx = -16*cos(angle)
-			p.heist.move.momy = -16*sin(angle)
-			p.heist.move.jump = false
-			p.heist.move.run = false
-		else
-			p.mo.momx = -16*cos(angle)
-			p.mo.momy = -16*sin(angle)
+end
+
+local function attackPlayers(p)
+	for sp in players.iterate do
+		if not playerCheck(sp) then continue end
+		if sp == p then continue end
+		if sp.powers[pw_flashing]
+		or sp.powers[pw_invulnerability] then
+			continue
 		end
-		p.pflags = $ & ~PF_JUMPED|PF_STARTJUMP
-		p.mo.momz = 0
+
+		local distXY = FixedHypot(p.mo.x-sp.mo.x, p.mo.y-sp.mo.y)
+		local distZ = abs(p.mo.z-sp.mo.z)
+
+		if distXY > FixedMul(p.mo.radius+sp.mo.radius, FU*3) then continue end
+		if distZ > max(p.mo.height, sp.mo.height)*2 then continue end
+
+		if sp.heist.attack_time then
+			bouncePlayer(p, sp, true)
+			bouncePlayer(sp, p, true)
+			S_StartSound(p.mo, sfx_s3k7b)
+			S_StartSound(sp.mo, sfx_s3k7b)
+			continue
+		end
+
+		P_DamageMobj(sp.mo, p.mo, p.mo)
+		bouncePlayer(p, sp)
 	end
 end
 
-function module.damagePlayer(p, ap) // ap: attacking player
-	local i = ap.mo
-	local s = ap.mo
-
-	P_DamageMobj(p.mo, ap.mo, s)
-
-	module.bouncePlayers(p, ap)
-end
-
-local valid = function(p)
-	return not P_PlayerInPain(p)
-	and FangsHeist.isPlayerAlive(p)
-	and p.mo.health
-	and not p.heist.exiting
-end
-
-local function determine_attack(data)
-	local p = data.players[1]
-	local sp = data.players[2]
-
-	local attack_priority = module.canPlayerHitOthers(p)
-	local attack_priority2 = module.canPlayerHitOthers(sp)
-
-	if attack_priority > attack_priority2 then
-		module.damagePlayer(sp, p)
+addHook("MobjThinker", function(mo)
+	if not playerCheck(mo.target.player) then
+		P_RemoveMobj(mo)
 		return
 	end
 
-	if attack_priority2 > attack_priority then
-		module.damagePlayer(p, sp)
-		return
-	end
-
-	local priority1 = module.getPriority(p)
-	local priority2 = module.getPriority(sp)
-
-	if priority1 > priority2 then
-		module.damagePlayer(sp, p)
-		return
-	end
-
-	if priority2 > priority1 then
-		module.damagePlayer(p, sp)
-		return
-	end
-
-	module.bouncePlayers(p, sp)
-	S_StartSound(p.mo, sfx_s1b4)
-	S_StartSound(sp.mo, sfx_s1b4)
-	p.powers[pw_flashing] = TICRATE/3
-	sp.powers[pw_flashing] = TICRATE/3
-end
+	P_MoveOrigin(mo,
+		mo.target.x,
+		mo.target.y,
+		mo.target.z)
+end, MT_FH_INSTASHIELD)
 
 function module.tick()
-	local attacks = {}
-
 	for p in players.iterate do
-		if not valid(p) then continue end
-		if not module.canPlayerHitOthers(p) then continue end
-		if attacks[p] then continue end
-
-		for sp in players.iterate do
-			if not valid(sp) then continue end
-			if not module.canPlayerBeHit(sp) then continue end
-			if attacks[sp] then continue end
-
-			if p == sp then continue end
-
-			local dist = R_PointToDist2(p.mo.x, p.mo.y, sp.mo.x, sp.mo.y)
-			local height = abs(p.mo.z-sp.mo.z)
-
-			if dist > FixedMul(p.mo.radius+sp.mo.radius, FU+(FU*3/4)) then
-				continue
-			end
-
-			if height > FixedMul(max(p.mo.height, sp.mo.height), FU+(FU*3/4)) then
-				continue
-			end
-
-			attacks[sp] = {players = {p, sp}, handled = false}
-			attacks[p] = attacks[sp]
+		if p.heist
+		and not (p.heist.shield and p.heist.shield.valid) then
+			p.heist.shield = nil
 		end
-	end
+	
+		if not playerCheck(p) then continue end
 
-	for _,attack in pairs(attacks) do
-		if attack.handled then continue end
+		p.heist.attack_cooldown = max(0, $-1)
+		p.heist.attack_time = max(0, $-1)
 
-		determine_attack(attack)
-		attack.handled = true
+		if not p.heist.attack_time and p.heist.strongAdded then
+			p.powers[pw_strong] = $ & ~(STR_HEAVY|STR_ATTACK)
+			p.heist.strongAdded = false
+		end
+
+		if not (p.heist.shield)
+		and p.cmd.buttons & BT_ATTACK
+		and not (p.lastbuttons & BT_ATTACK)
+		and not (p.heist.attack_cooldown) then
+			doAttack(p)
+		end
+
+		if p.heist.attack_time then
+			attackPlayers(p)
+		end
 	end
 end
 

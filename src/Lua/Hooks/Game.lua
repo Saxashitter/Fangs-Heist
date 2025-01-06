@@ -44,6 +44,11 @@ addHook("PreThinkFrame", do
 				p.cmd.sidemove = 0
 			end
 		end
+		if FangsHeist.Net.game_over then
+			p.cmd.buttons = 0
+			p.cmd.sidemove = 0
+			p.cmd.forwardmove = 0
+		end
 	end
 end)
 
@@ -103,6 +108,17 @@ addHook("ThinkFrame", do
 		end
 
 		if t >= FangsHeist.INTER_START_DELAY+FangsHeist.Net.game_over_length then
+			local map = 1
+			local votes = -1
+
+			for i,selmap in pairs(FangsHeist.Net.map_choices) do
+				if selmap.votes > votes then
+					map = selmap.map
+					votes = selmap.votes
+				end
+			end
+
+			G_SetCustomExitVars(map)
 			G_ExitLevel()
 		end
 

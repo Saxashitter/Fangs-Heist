@@ -6,6 +6,9 @@ return {
 
 	team = 0,
 
+	attack_cooldown = 0,
+	attack_time = 0,
+
 	death_time = 5*TICRATE,
 
 	enemies = 0,
@@ -23,6 +26,8 @@ return {
 
 	weapon = nil,
 	weapon_cooldown = 0,
+
+	voted = 0,
 
 	// UNUSED MECHANIC
 	conscious_meter = FU,

@@ -152,7 +152,7 @@ DIALOGUE = {
         local talking = (ds.textprogress <= #(ds.text)) and (ds.textprogbeat <= 0)
         local avatar = get_patch(truev, ds.icon+(talking and "2" or "1"))
 
-        v.draw(319, 199, avatar)
+        v.draw(319, 199, avatar, V_SNAPTOBOTTOM|V_SNAPTORIGHT)
         v.drawString(
             320-BOXSIZE+6, 200-40+4,
             string.sub(ds.text, 1, ds.textprogress),

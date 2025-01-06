@@ -108,6 +108,7 @@ end)
 
 addHud "signtracker"
 addHud "treasuretracker"
+addHud "controls"
 addHud "lives"
 addHud "rings"
 addHud "score"

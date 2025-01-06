@@ -1,7 +1,7 @@
 G_AddGametype({
     name = "Fang's Heist",
     identifier = "FANGSHEIST",
-    typeoflevel = TOL_COOP,
+    typeoflevel = freeslot"TOL_HEIST"|TOL_RACE,
     intermissiontype = int_none,
     rules = GTR_FRIENDLYFIRE|GTR_SPAWNINVUL|GTR_DEATHPENALTY|GTR_SPAWNENEMIES,
     headerleftcolor = 222,

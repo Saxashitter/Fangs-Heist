@@ -93,6 +93,7 @@ local function manage_unpicked(tres)
 
 	for p in players.iterate do
 		if not FangsHeist.isPlayerAlive(p) then continue end
+		if p.powers[pw_flashing] then continue end
 		if P_PlayerInPain(p) then continue end
 
 		local dist = R_PointToDist2(mobj.x, mobj.y, p.mo.x, p.mo.y)
