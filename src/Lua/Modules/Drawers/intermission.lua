@@ -142,6 +142,22 @@ local function draw_intermission(v)
 	end
 end
 
+local function calc_tab_order(selected, count)
+	local l = {}
+	if selected > 1 then
+		for i=1,(selected-1) do
+			table.insert(l, i)
+		end
+	end
+	if selected < count then
+		for i=count,(selected+1),-1 do
+			table.insert(l, i)
+		end
+	end
+	table.insert(l, selected)
+	return l
+end
+
 local function draw_tabs(v)
 	if statealpha == 10 then return end
 
@@ -152,14 +168,17 @@ local function draw_tabs(v)
 
 	v.drawString(0, tab_patch.height*FU, "Weapon Prev & Next", V_SNAPTOLEFT|V_SNAPTOTOP|alpha, "thin-fixed")
 
-	for i,state in ipairs(states) do
-		local x = (-16*FU)+dist*(i-1)
+	local tabOrder = calc_tab_order(current, #states)
+	local xorigin = 160*FU - (dist*(#states-1))/2
+	for _,i in ipairs(tabOrder) do
+		local state = states[i]
+		local x = xorigin+dist*(i-1)
 		v.drawScaled(x, 0, FU, tab_patch, V_SNAPTOLEFT|V_SNAPTOTOP|alpha)
-		v.drawString(x+16*FU,
+		v.drawString(x,
 			4*FU,
 			state.name,
-			V_SNAPTOLEFT|V_SNAPTOTOP|alpha|(current == i and V_YELLOWMAP or 0),
-			"thin-fixed")
+			V_ALLOWLOWERCASE|V_SNAPTOLEFT|V_SNAPTOTOP|alpha|(current == i and V_YELLOWMAP or 0),
+			"thin-fixed-center")
 	end
 end
 
