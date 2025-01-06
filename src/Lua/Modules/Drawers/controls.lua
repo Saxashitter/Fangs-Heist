@@ -2,7 +2,7 @@ local module = {}
 
 function module.init() end
 function module.draw(v,p)
-	if not FangsHeist.isPlayerAlive(p) then return end
+	if true then return end
 
 	local x = 4
 	local y = 200-12

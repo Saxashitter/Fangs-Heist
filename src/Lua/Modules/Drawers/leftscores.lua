@@ -1,6 +1,6 @@
 local module = {}
 
-local SCORE_Y = 50*FU
+local SCORE_Y = 72*FU
 local SCORE_X = 16*FU
 
 function module.init()
