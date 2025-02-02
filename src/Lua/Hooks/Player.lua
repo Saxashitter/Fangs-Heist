@@ -232,6 +232,8 @@ addHook("AbilitySpecial", function (p)
 	and not (p.pflags & PF_THOKKED) then
 		p.actionspd = 40*FU
 	end
-
-	return not FangsHeist.canUseAbility(p)
+	
+	if p.charability ~= CA_TWINSPIN then
+		return not FangsHeist.canUseAbility(p)
+	end
 end)
