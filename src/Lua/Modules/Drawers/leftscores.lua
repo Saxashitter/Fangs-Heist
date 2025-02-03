@@ -1,7 +1,6 @@
 local module = {}
 
 local SCORE_Y = 50*FU
-local SCORE_X = 16*FU
 
 function module.init()
 end
@@ -10,6 +9,7 @@ function module.draw(v)
 	for _,data in pairs(FangsHeist.Net.placements) do
 		local placement = data.place
 		local p = data.p
+		local SCORE_X = 16*FU
 
 		if not (p and p.valid) then continue end
 
@@ -17,37 +17,58 @@ function module.draw(v)
 
 		if placement > 3 then continue end
 
-		local life = v.getSprite2Patch(p.skin,
-			SPR2_LIFE, false, A, 0)
-
 		local scale = FU/2
 		local profit = FangsHeist.returnProfit(p)
 
-		v.drawScaled(SCORE_X+life.leftoffset*scale,
-			SCORE_Y+target_y+life.topoffset*scale-(2*scale),
-			scale,
-			life,
-			V_SNAPTOTOP|V_SNAPTOLEFT,
-			v.getColormap(nil, p.skincolor))
+		for p,_ in pairs(p.heist.team) do
+			if not (p and p ~= "leader" and p.valid) then continue end
+			local life = v.getSprite2Patch(p.skin,
+				SPR2_LIFE, false, A, 0)
+	
+			v.drawScaled(SCORE_X+life.leftoffset*scale,
+				SCORE_Y+target_y+life.topoffset*scale-(2*scale),
+				scale,
+				life,
+				V_SNAPTOTOP|V_SNAPTOLEFT,
+				v.getColormap(nil, p.skincolor))
+	
+			SCORE_X = $+2*FU+life.width*scale
+		end
 
-		v.drawString(SCORE_X+10*FU,
+		local name = p.name
+		if FangsHeist.getTeamLength(p) then
+			name = "TEAM "..$
+		end
+
+		v.drawString(SCORE_X,
 			SCORE_Y+target_y,
-			p.name,
-			V_SNAPTOLEFT|V_SNAPTOTOP|(p == displayplayer and V_YELLOWMAP or 0),
+			name,
+			V_SNAPTOLEFT|V_SNAPTOTOP|(displayplayer.heist and FangsHeist.partOfTeam(displayplayer, p) and V_YELLOWMAP or 0),
 			"thin-fixed")
 
 		local str_width = v.stringWidth(p.name, 0, "thin")
 
-		v.drawString(SCORE_X+12*FU+str_width*FU,
+		v.drawString(SCORE_X+2*FU+str_width*FU,
 			SCORE_Y+target_y,
 			profit,
 			V_SNAPTOLEFT|V_SNAPTOTOP|V_GREENMAP,
 			"thin-fixed")
 
-		if not FangsHeist.playerHasSign(p) then continue end
+		local sign = false
+		for sp,_ in pairs(p.heist.team) do
+			if sp == "leader" then continue end
+			if not (sp and sp.valid) then continue end
+
+			sign = FangsHeist.playerHasSign(sp)
+			if sign then
+				break
+			end
+		end
+
+		if not sign then continue end
 		local str_width2 = v.stringWidth(tostring(profit), 0, "thin")
 
-		v.drawString(SCORE_X+14*FU+str_width*FU+str_width2*FU,
+		v.drawString(SCORE_X+4*FU+str_width*FU+str_width2*FU,
 			SCORE_Y+target_y,
 			"SIGN",
 			V_SNAPTOTOP|V_SNAPTOLEFT,

@@ -12,6 +12,28 @@ local function get_patch(v, patch)
 	return patches[patch]
 end
 
+text.width = function(v, font, str, scale)
+	local graphics = {}
+	local width = 0
+
+	for i = 1,#str do
+		local cut = string.sub(str, i, i)
+
+		if cut == " " then // space lol
+			width = $+(4*scale)
+			continue
+		end
+
+		graphics[i] = get_patch(v, string.format(font.."%03d", cut:byte()))
+	end
+
+	for k,v in pairs(graphics) do
+		width = $+(v.width*scale)
+	end
+
+	return width
+end
+
 text.draw = function(v, x, y, scale, str, font, align, flags, color)
 	local graphics = {}
 

@@ -40,7 +40,9 @@ function module.draw(v)
 	local height = v.height()*FU/v.dupy()
 
 	for p in players.iterate do
-		if not (FangsHeist.isPlayerAlive(p) and p.heist) then
+		if not (FangsHeist.isPlayerAlive(p)
+		and p.heist
+		and p.heist.team.leader == p) then
 			continue
 		end
 

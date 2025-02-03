@@ -1,26 +1,131 @@
+MainCfg
+TitleMap = 0
+NumDemos = 0
+GameData = fangsheist.dat
+
+Clear All
+
+Unlockable 2
+Unlockable 3
+Unlockable 23
+
 Level 1
-TypeOfLevel = Heist
 Levelname = Greenflower
 Act = 1
 Keywords = GFZ1
 Music = GFZ1
+TypeOfLevel = Heist
 NextLevel = 2
+SkyNum = 1
+NoVisitNeeded = true
+RecordAttack = true
+SaveGame = true
+SkyboxScale = 64
+FlickyList = Bluebird,Chipmunk
+SelectHeading = Supported Maps
+#Flicky selection is final.
+
+Level 2
+Levelname = Greenflower
+Act = 2
+Keywords = GFZ2
+Music = GFZ2
+TypeOfLevel = Heist
+NextLevel = 3
+SkyNum = 1
+NoVisitNeeded = true
+RecordAttack = true
+SaveGame = true
+SkyboxScale = 64
+FlickyList = Bluebird,Chipmunk
+SelectHeading = Supported Maps
+#see act 1
+
+Level 3
+Levelname = Greenflower
+Act = 3
+Keywords = GFZ3
+Music = THECUR
+MusicPostBoss = GFZ1
+TypeOfLevel = Heist
+NextLevel = 4
 SkyNum = 1
 RecordAttack = true
 LevelSelect = 1
 SaveGame = true
-FlickyList = Rabbit,Chicken
+SkyboxScale = 64
+BonusType = Boss
+FlickyList = Bluebird,Chipmunk
+StartRings = 10
+ForceResetMusic = On
+WarningTitle = true
+Lua.FH_Boss = true
+#see act 1
 
 Level 4
-TypeOfLevel = Heist
-Lua.FH_EscapeLinedef = 148
 Levelname = Techno Hill
 Act = 1
+Lua.FH_EscapeLinedef = 148
 Keywords = THZ1
 Music = THZ1
+TypeOfLevel = Heist
 NextLevel = 5
 SkyNum = 4
+NoVisitNeeded = true
 RecordAttack = true
-LevelSelect = 1
 SaveGame = true
 FlickyList = Rabbit,Chicken
+SelectHeading = Supported Maps
+#Flicky selection is final.
+
+Level 30
+Levelname = Frozen Hillside
+Act = 0
+Keywords = FHZ
+Music = FHZ
+NextLevel = 1100
+RecordAttack = true
+TypeOfLevel = Heist
+SkyNum = 30
+NoVisitNeeded = true
+SelectHeading = Supported Maps
+Weather = 2
+FlickyList = Penguin,Seal
+
+Level 33
+levelname = Techno Legacy
+Keywords = TLZ
+subtitle = Original Techno Hill 2 Design
+act = 0
+music = THZALT
+NoVisitNeeded = true
+TypeOfLevel = Heist
+nextlevel = 1
+RecordAttack = true
+skynum = 1
+SelectHeading = Supported Maps
+weather = 0
+
+Level 41
+Levelname = Aerial Garden
+Keywords = AGZ
+Music = AGZ
+TypeOfLevel = Heist
+NextLevel = 42
+SkyNum = 40
+NoVisitNeeded = true
+RecordAttack = true
+SelectHeading = Supported Maps
+SaveGame = true
+FlickyList = Puffin,Dove
+#Flicky selection is final.
+
+Level Z0
+Levelname = Tutorial
+NoVisitNeeded = true
+Act = 0
+Music = TUTORL
+NextLevel = 1
+TypeOfLevel = Heist
+SelectHeading = Supported Maps
+SkyNum = 99

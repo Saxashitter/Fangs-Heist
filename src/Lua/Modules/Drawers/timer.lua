@@ -63,13 +63,14 @@ function module.draw(v)
 
 	local bar = v.cachePatch"FH_BAR"
 	local bar2 = v.cachePatch"FH_FULL_BAR"
-	local time_scale = FixedDiv(orig_net.time_left-FangsHeist.Net.time_left, orig_net.time_left)
+	local time_scale = FixedDiv(FangsHeist.Net.max_time_left-FangsHeist.Net.time_left, FangsHeist.Net.max_time_left)
 	local scale = FU*4/6
 
 	local draw_x = x-(bar.width*scale/2)
+
 	if (FangsHeist.Net.escape
 	and not FangsHeist.isHurryUp())
-	or data.start_timer then
+	or FangsHeist.Net.is_boss then
 		y = ease.linear(FU/6, $, 180*FU)
 	end
 

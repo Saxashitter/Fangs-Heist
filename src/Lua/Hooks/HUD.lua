@@ -34,6 +34,8 @@ local defaultitems = {
 	{"intermissionemeralds", "intermission"},
 }
 
+customhud.SetupFont("CSFNT")
+
 local function is_hud_modded(name)
 	for k,v in ipairs(defaultitems) do
 		if name == v[1] then
@@ -120,3 +122,4 @@ addHud "discord"
 addHud "leftscores"
 addHud "intermission"
 addHud "dialogue"
+addHud "pregame"

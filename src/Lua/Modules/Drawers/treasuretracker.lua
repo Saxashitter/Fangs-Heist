@@ -3,7 +3,7 @@ local module = {}
 local sglib = FangsHeist.require "Modules/Libraries/sglib"
 local fracformat = FangsHeist.require "Modules/Libraries/fracformat"
 
-local function draw_player(v, p, mo, x, y)
+local function draw_player(v, p, tp, mo, x, y)
 	local arrow = v.cachePatch("FH_ARROW"..(leveltime/2 % 6))
 	local arrow_scale = FU/2
 	local dist = R_PointToDist2(mo.x, mo.y, p.mo.x, p.mo.y)
@@ -22,6 +22,10 @@ local function draw_player(v, p, mo, x, y)
 		v.drawString(x, y, "SIGN", 0, "thin-fixed-center")
 		y = $-8*FU
 	end
+	if FangsHeist.partOfTeam(tp, p) then
+		v.drawString(x, y, "TEAM", 0, "thin-fixed-center")
+		y = $-8*FU
+	end
 
 	v.drawString(x, y, fracformat(dist), V_ALLOWLOWERCASE, "thin-fixed-center")
 	y = $-arrow.height*arrow_scale
@@ -34,8 +38,10 @@ local function draw_player(v, p, mo, x, y)
 		v.getColormap(nil, p.mo.color))
 end
 
-local function isSpecial(p)
-	return #p.heist.treasures or FangsHeist.playerHasSign(p)
+local function isSpecial(p, sp)
+	return #sp.heist.treasures
+	or FangsHeist.playerHasSign(sp)
+	or (p and p.heist and FangsHeist.partOfTeam(p, sp))
 end
 
 function module.init() end
@@ -44,7 +50,7 @@ function module.draw(v,p,c)
 
 	for sp in players.iterate do
 		if not FangsHeist.isPlayerAlive(sp) then continue end
-		if not isSpecial(sp) then continue end
+		if not isSpecial(p, sp) then continue end
 
 		if p == sp then continue end
 		if P_CheckSight(p.mo, sp.mo) then continue end
@@ -53,7 +59,7 @@ function module.draw(v,p,c)
 		local result = sglib.ObjectTracking(v,p,c,sp.mo)
 		if not result.onScreen then continue end
 
-		draw_player(v, sp, p.mo, result.x, result.y)
+		draw_player(v, sp, p, p.mo, result.x, result.y)
 	end
 end
 

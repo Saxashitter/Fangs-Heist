@@ -33,6 +33,10 @@ addHook("PreThinkFrame", do
 		p.heist.lastbuttons = p.heist.buttons
 
 		p.heist.buttons = p.cmd.buttons
+
+		p.heist.lastforw = p.heist.forwardmove
+		p.heist.lastside = p.heist.sidemove
+
 		p.heist.forwardmove = p.cmd.forwardmove
 		p.heist.sidemove = p.cmd.sidemove
 
@@ -44,7 +48,8 @@ addHook("PreThinkFrame", do
 				p.cmd.sidemove = 0
 			end
 		end
-		if FangsHeist.Net.game_over then
+		if FangsHeist.Net.game_over
+		or FangsHeist.Net.pregame then
 			p.cmd.buttons = 0
 			p.cmd.sidemove = 0
 			p.cmd.forwardmove = 0
@@ -61,10 +66,14 @@ addHook("ThinkFrame", do
 	dialogue.tick()
 
 	FangsHeist.Net.placements = {}
+
 	for i = 0,31 do
 		local p = players[i]
 
-		if not (p and p.valid and FangsHeist.isPlayerAlive(p)) then
+		if not (p
+		and p.valid
+		and FangsHeist.isPlayerAlive(p)
+		and p.heist.team.leader == p) then
 			FangsHeist.Net.placements[i] = nil
 			continue
 		end
@@ -97,14 +106,56 @@ addHook("ThinkFrame", do
 		end
 	end
 
+	if FangsHeist.Net.pregame then
+		if S_MusicName() ~= "FINDAY" then
+			S_ChangeMusic("FINDAY", true)
+		end
+
+		FangsHeist.Net.pregame_time = max(0, $-1)
+		local count = 0
+		local confirmcount = 0
+	
+		for p in players.iterate do
+			if p and p.heist then
+				count = $+1
+				if p.heist.confirmed_skin then
+					confirmcount = $+1
+				end
+			end
+		end
+	
+		if confirmcount == count then
+			FangsHeist.Net.pregame_time = 0
+		end
+	
+		if FangsHeist.Net.pregame_time == 0 then
+			FangsHeist.Net.pregame = false
+			S_ChangeMusic(mapmusname, true)
+
+			for p in players.iterate do
+				if p and p.heist then
+					p.heist.invites = {}
+				end
+			end
+		else
+			return
+		end
+	end
+
+
 	if FangsHeist.Net.game_over then
+		if FangsHeist.Net.end_anim then
+			FangsHeist.Net.end_anim = max(0, $-1)
+			return
+		end
+
 		FangsHeist.Net.game_over_ticker = max(0, $+1)
 
 		local t = FangsHeist.Net.game_over_ticker
 
 		if t == FangsHeist.INTER_START_DELAY then
-			S_ChangeMusic("YOKADI", true)
-			mapmusname = "YOKADI"
+			S_ChangeMusic("KINPRI", true)
+			mapmusname = "KINPRI"
 		end
 
 		if t >= FangsHeist.INTER_START_DELAY+FangsHeist.Net.game_over_length then
@@ -125,10 +176,27 @@ addHook("ThinkFrame", do
 		return
 	end
 
-	if data.escape then
-		escape()
-	elseif data.start_timer then
+	if FangsHeist.Net.is_boss then
+		print "boss code"
 		FangsHeist.Net.time_left = max(0, $-1)
+
+		local playerCount = 0
+		for p in players.iterate do
+			if FangsHeist.isPlayerAlive(p) then
+				playerCount = $+1
+			end
+		end
+
+		if FangsHeist.Net.time_left == 0 or not (playerCount) then
+			for p in players.iterate do
+				if p.mo and p.mo.health then
+					P_DamageMobj(p.mo, nil, nil, 999, DMG_INSTAKILL)
+				end
+			end
+			FangsHeist.startIntermission()
+		end
+	else
+		escape()
 	end
 
 	music()
