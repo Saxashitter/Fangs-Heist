@@ -89,12 +89,14 @@ addHook("PlayerThink", function(p)
 		p.runspeed = min(16*FU, $)
 		p.mindash = min($, spindash_limit)
 		p.maxdash = min($, spindash_limit)
+		p.jumpfactor = max(FU, $)
 	elseif not p.heist.corrected_speed then
 		p.heist.corrected_speed = true
 		p.normalspeed = skins[p.skin].normalspeed
 		p.mindash = skins[p.skin].mindash
 		p.maxdash = skins[p.skin].maxdash
 		p.runspeed = skins[p.skin].runspeed
+		p.jumpfactor = skins[p.skin].jumpfactor
 	end
 
 	if FangsHeist.Net.escape
