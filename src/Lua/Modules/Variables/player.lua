@@ -4,10 +4,14 @@ return {
 	generated_profit = 0,
 	had_sign = false,
 
-	team = 0,
+	team = {},
+	invites = {},
 
 	attack_cooldown = 0,
 	attack_time = 0,
+	block_time = 0,
+	block_cooldown = 0,
+	blocking = false,
 
 	death_time = 5*TICRATE,
 
@@ -41,6 +45,11 @@ return {
 	buttons = 0,
 	sidemove = 0,
 	forwardmove = 0,
+	lastforw = 0,
+	lastside = 0,
+
+	locked_skin = 0, -- sonic probably
+	confirmed_skin = 0,
 
 	exiting = false
 }

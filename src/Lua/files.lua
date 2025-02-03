@@ -78,3 +78,12 @@ end
 if not makeFile("serverScores", FangsHeist.ServerScoresToString()) then
 	FangsHeist.FileToServerScores()
 end
+
+addHook("PlayerQuit", function(p)
+	// Safety check to prevent keeping scores from other players.
+
+	if p == consoleplayer
+	and not (isserver or isdedicatedserver) then
+		FangsHeist.FileToServerScores()
+	end
+end)

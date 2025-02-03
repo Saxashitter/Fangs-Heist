@@ -1,6 +1,7 @@
 local module = {}
 
 local vwarp = FangsHeist.require"Modules/Libraries/vwarp"
+local text = FangsHeist.require"Modules/Libraries/text"
 
 local alpha
 local statealpha
@@ -19,6 +20,8 @@ local lastforward
 local scroll
 local scale
 
+local shakeFactor
+
 local states = {
 	FangsHeist.require"Modules/Handlers/Intermission/personalstats",
 	FangsHeist.require"Modules/Handlers/Intermission/winners",
@@ -29,6 +32,7 @@ local states = {
 FangsHeist.INTER_START_DELAY = 15
 
 function module.init()
+	shakeFactor = 12*FU
 	alpha = 0
 	statealpha = 10
 	current = 2
@@ -202,8 +206,21 @@ local function manage_intermission(v)
 end
 
 function module.draw(v)
-	if not FangsHeist.Net.game_over then return end
+	if not (FangsHeist.Net.game_over) then return end
 
+	text.draw(v,
+		160*FU + v.RandomRange(-shakeFactor, shakeFactor),
+		100*FU - 21*FU + v.RandomRange(-shakeFactor, shakeFactor),
+		FU*2,
+		"GAME!",
+		"FHFNT",
+		"center",
+		0,
+		v.getColormap(nil, SKINCOLOR_RED)
+	)
+	shakeFactor = max(0, $-FU*3/2)
+
+	if FangsHeist.Net.end_anim then return end
 	alpha = min($+1, 10)
 	if FangsHeist.Net.game_over_ticker >= FangsHeist.INTER_START_DELAY then
 		statealpha = max(0, $-1)

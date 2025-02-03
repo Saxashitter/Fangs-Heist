@@ -1,3 +1,5 @@
+local time = (3*60)*TICRATE
+
 return {
 	gametype = 0,
 
@@ -5,7 +7,8 @@ return {
 	escape_theme = "SPRHRO",
 	escape_choice = 1,
 
-	time_left = (3*60)*TICRATE,
+	time_left = time,
+	max_time_left = time,
 	hurry_up = false,
 	its_over = false,
 
@@ -14,6 +17,10 @@ return {
 	game_over = false,
 	game_over_ticker = 0,
 	game_over_length = 20*TICRATE,
+	end_anim = 0,
+
+	pregame = true,
+	pregame_time = 30*TICRATE,
 
 	placements = {},
 	treasures = {}

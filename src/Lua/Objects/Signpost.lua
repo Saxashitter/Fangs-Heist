@@ -22,7 +22,10 @@ local function select_player(sign, p)
 		sign.bustmo.state = S_PLAY_SIGN
 	end
 
-	p.powers[pw_flashing] = TICRATE
+	p.powers[pw_flashing] = TICRATE*2
+	if p == displayplayer then
+		FangsHeist.doSignpostWarning(FangsHeist.playerHasSign(displayplayer))
+	end
 end
 
 function FangsHeist.giveSignTo(p) // somewhat of a wrapper function for scripts to access

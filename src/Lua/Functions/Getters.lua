@@ -50,26 +50,65 @@ function FangsHeist.playerHasSign(p)
 		and FangsHeist.Net.sign.holder == p.mo)
 end
 
-function FangsHeist.returnProfit(p)
+function FangsHeist.partOfTeam(p, sp)
+	return p and p.heist and p.heist.team[sp]
+end
+
+function FangsHeist.getTeamLength(p)
+	if not (p and p.heist) then return 0 end
+
+	local length = 0
+
+	for sp,_ in pairs(p.heist.team) do
+		if sp ~= p
+		and sp ~= "leader" then
+			length = $+1
+		end
+	end
+
+	return length
+end
+
+function FangsHeist.returnProfit(p, personal)
 	if not (p and p.heist) then return 0 end
 
 	if p.heist.exiting then
 		return p.heist.saved_profit
 	end
+	if not FangsHeist.isPlayerAlive(p) then
+		return 0
+	end
 
 	local profit = 0
 
-	if FangsHeist.playerHasSign(p)
+	if FangsHeist.playerHasSign(p) then
 		profit = $+1500
 	end
 
+	local div = 1
+	local length = FangsHeist.getTeamLength(p)
+	if length then
+		for i = 1,length do
+			div = $+1
+		end
+	end
 
-	profit = $+28*p.heist.hitplayers
-	profit = $+50*p.heist.deadplayers
-	profit = $+12*p.heist.monitors
-	profit = $+35*p.heist.enemies
-	profit = $+p.heist.generated_profit
-	profit = $+8*p.rings
+	profit = $+(28*p.heist.hitplayers/div)
+	profit = $+(50*p.heist.deadplayers/div)
+	profit = $+(12*p.heist.monitors/div)
+	profit = $+(35*p.heist.enemies/div)
+	profit = $+p.heist.generated_profit -- TODO: work on a way to cap treasures while teaming
+	profit = $+(8*p.rings/div)
+
+	if not personal then
+		for sp,k in pairs(p.heist.team) do
+			if p == sp then continue end
+			if sp == "leader" then continue end
+			if not (sp and sp.valid) then continue end
+
+			profit = $+FangsHeist.returnProfit(sp, true)
+		end
+	end
 
 	return profit
 end

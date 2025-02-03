@@ -20,12 +20,22 @@ local orig_hud = FangsHeist.require "Modules/Variables/hud"
 function FangsHeist.initPlayer(p)
 	p.heist = copy(orig_plyr)
 	p.heist.spectator = FangsHeist.Net.escape
+	p.heist.locked_skin = p.skin
+	p.heist.team[p] = true
+	p.heist.team.leader = p
 end
 
 function FangsHeist.initMode(map)
 	FangsHeist.Net = copy(orig_net)
 	FangsHeist.HUD = copy(orig_hud)
+
 	FangsHeist.Net.gametype = tonumber(mapheaderinfo[map].fh_gametype) or 0
+	FangsHeist.Net.is_boss = string.lower(mapheaderinfo[map].fh_boss or "") == "true"
+
+	if FangsHeist.Net.is_boss then
+		FangsHeist.Net.time_left = ((2*60)*TICRATE)+(20*TICRATE)
+		FangsHeist.Net.max_time_left = ((2*60)*TICRATE)+(20*TICRATE)
+	end
 
 	local data = FangsHeist.getTypeData()
 	if data.start_timer then

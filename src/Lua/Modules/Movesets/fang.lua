@@ -284,31 +284,4 @@ module.playerThinker = function(player)
 	end
 end
 
-module.kickThinker = function(player)
-	if not(module.isBounce(player)) return end
-	if not(FangsHeist.isPlayerAlive(player)) return end
-
-	if player.mo.state == S_PLAY_AIRKICK then
-		local gravity = P_GetMobjGravity(player.mo)
-
-		player.powers[pw_strong] = $|STR_ATTACK
-		player.pflags = $|PF_JUMPED
-		player.mo.momz = $-(gravity/3)
-		player.drawangle = player.mo.angle + FixedAngle(((leveltime*45/2)%360)*FU)
-		if not (leveltime % 3) then
-			P_SpawnGhostMobj(player.mo)
-		end
-	else
-		player.powers[pw_strong] = $ & ~STR_ATTACK
-	end
-end
-
-module.doAirKick = function(player)
-	player.mo.state = S_PLAY_AIRKICK
-	player.pflags = $ & ~(PF_JUMPED|PF_STARTJUMP)
-	P_SetObjectMomZ(player.mo, 6*FU)
-	S_StartSound(player.mo, sfx_spndsh)
-	player.pflags = $|PF_THOKKED
-end
-
 return module

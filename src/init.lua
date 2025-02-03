@@ -1,7 +1,7 @@
 G_AddGametype({
     name = "Fang's Heist",
     identifier = "FANGSHEIST",
-    typeoflevel = freeslot"TOL_HEIST"|TOL_RACE,
+    typeoflevel = freeslot"TOL_HEIST",
     intermissiontype = int_none,
     rules = GTR_FRIENDLYFIRE|GTR_SPAWNINVUL|GTR_DEATHPENALTY|GTR_SPAWNENEMIES,
     headerleftcolor = 222,
@@ -25,10 +25,15 @@ dofile "Functions/Starters"
 dofile "Hooks/Player"
 dofile "Hooks/Game"
 dofile "Hooks/HUD"
+dofile "Hooks/Titlescreen"
 
+dofile "Objects/Exit"
 dofile "Objects/Treasures"
 dofile "Objects/Signpost"
-dofile "Objects/Exit"
 dofile "Objects/Bean"
+dofile "Objects/Tails"
+
+dofile "Objects/Bosses/GFZ3 Eggman"
+dofile "Objects/Bosses/Missile"
 
 dofile "modsupport"

@@ -1,6 +1,8 @@
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 local movement = FangsHeist.require "Modules/Handlers/movement"
 
+local fang = FangsHeist.require "Modules/Movesets/fang"
+
 FangsHeist.panicBlacklist = {
 	takisthefox = true
 }
@@ -19,6 +21,37 @@ addHook("PlayerThink", function(p)
 
 	if not (p and p.heist) then
 		FangsHeist.initPlayer(p)
+	end
+
+	for sp,_ in pairs(p.heist.team) do
+		if sp == "leader" then continue end
+
+		if not (sp and sp.valid and sp.heist) then
+			p.heist.team[sp] = nil
+			if p.heist.team.leader == sp then
+				p.heist.team.leader = p
+			end
+		end
+	end
+
+	if FangsHeist.Net.pregame
+	and not p.heist.confirmed_skin then
+		local deadzone = 10
+		if abs(p.heist.sidemove) >= deadzone
+		and abs(p.heist.lastside) < deadzone then
+			local sign = p.heist.sidemove >= 0 and 1 or -1
+	
+			p.heist.locked_skin = max(0, min($+sign, #skins-1))
+		end
+
+		if p.heist.buttons & BT_JUMP
+		and not (p.heist.lastbuttons & BT_JUMP) then
+			p.heist.confirmed_skin = true
+		end
+	end
+
+	if p.skin ~= p.heist.locked_skin then
+		R_SetPlayerSkin(p, p.heist.locked_skin)
 	end
 
 	if p.heist.spectator then
@@ -53,6 +86,7 @@ addHook("PlayerThink", function(p)
 	if FangsHeist.playerHasSign(p) then
 		p.heist.corrected_speed = false
 		p.normalspeed = min(24*FU, $)
+		p.runspeed = min(16*FU, $)
 		p.mindash = min($, spindash_limit)
 		p.maxdash = min($, spindash_limit)
 	elseif not p.heist.corrected_speed then
@@ -60,6 +94,7 @@ addHook("PlayerThink", function(p)
 		p.normalspeed = skins[p.skin].normalspeed
 		p.mindash = skins[p.skin].mindash
 		p.maxdash = skins[p.skin].maxdash
+		p.runspeed = skins[p.skin].runspeed
 	end
 
 	if FangsHeist.Net.escape
@@ -73,6 +108,8 @@ addHook("PlayerThink", function(p)
 			end
 		end
 	end
+
+	fang.playerThinker(p)
 
 	if not (p.heist.exiting) then
 		p.score = FangsHeist.returnProfit(p)
@@ -99,14 +136,6 @@ addHook("ThinkFrame", do
 		end
 	end
 end)
-
-addHook("MobjMoveCollide", function(mo, spring)
-	if not FangsHeist.isMode() then
-		return
-	end
-
-	movement.springCols(mo, spring)
-end, MT_PLAYER)
 
 local function return_score(mo)
 	if mo.flags & MF_MONITOR then
@@ -135,7 +164,7 @@ end)
 
 addHook("MobjDeath", function(t,i,s)
 	if not FangsHeist.isMode() then return end
-	if not FangsHeist.Net.escape then return end
+	if not (FangsHeist.Net.escape or FangsHeist.Net.is_boss) then return end
 	if not (t and t.player and t.player.heist) then return end
 
 	t.player.heist.spectator = true
