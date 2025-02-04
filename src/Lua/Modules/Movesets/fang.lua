@@ -127,7 +127,7 @@ local function newGunslinger(player)
 	
 	//State: ready to gunsling
 	if not ((player.pflags & (PF_SLIDING|PF_BOUNCING|PF_THOKKED)) or (player.exiting) or (P_PlayerInPain(player)))
-	and not (player.powers[pw_flashing])
+	--and not (player.powers[pw_flashing]) -- i HATE player.powers[pw_flashing] >:( -pac
 	and not (player.weapondelay)
 	and not (player.panim == PA_ABILITY2)
 	and (player.pflags&PF_JUMPED or onground)

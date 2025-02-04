@@ -46,7 +46,7 @@ function module.draw(v)
 			V_SNAPTOLEFT|V_SNAPTOTOP|(displayplayer.heist and FangsHeist.partOfTeam(displayplayer, p) and V_YELLOWMAP or 0),
 			"thin-fixed")
 
-		local str_width = v.stringWidth(p.name, 0, "thin")
+		local str_width = v.stringWidth(name, 0, "thin")
 
 		v.drawString(SCORE_X+2*FU+str_width*FU,
 			SCORE_Y+target_y,
