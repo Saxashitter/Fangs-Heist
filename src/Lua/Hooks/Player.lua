@@ -54,6 +54,9 @@ addHook("PlayerThink", function(p)
 			and not (p.heist.lastbuttons & BT_JUMP) then
 				p.heist.confirmed_skin = true
 			end
+		elseif (p.heist.buttons & BT_SPIN)
+		and not (p.heist.lastbuttons & BT_SPIN) then
+			p.heist.confirmed_skin = false
 		end
 		
 		local showhud = CV_FindVar("showhud")
@@ -280,3 +283,16 @@ addHook("AbilitySpecial", function (p)
 		return not FangsHeist.canUseAbility(p)
 	end
 end)
+
+-- added this to Player.lua
+-- since its technically a player thing soo
+-- -pac
+addHook("MobjCollide", function(pmo, mo)
+	if not (mo.flags & MF_MISSILE)
+	or not (mo.target and mo.target.valid)
+	or not (mo.target.player and mo.target.player.valid) then return end
+	
+	local p = pmo.player
+	if FangsHeist.partOfTeam(p, mo.target.player)
+	or p.heist.blocking then return false end
+end, MT_PLAYER)
