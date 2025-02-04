@@ -92,39 +92,11 @@ SelectHeading = Supported Maps
 Weather = 2
 FlickyList = Penguin,Seal
 
-Level 33
-levelname = Techno Legacy
-Keywords = TLZ
-subtitle = Original Techno Hill 2 Design
-act = 0
-music = THZALT
-NoVisitNeeded = true
-TypeOfLevel = Heist
-nextlevel = 1
-RecordAttack = true
-skynum = 1
-SelectHeading = Supported Maps
-weather = 0
-
-Level 41
-Levelname = Aerial Garden
-Keywords = AGZ
-Music = AGZ
-TypeOfLevel = Heist
-NextLevel = 42
-SkyNum = 40
-NoVisitNeeded = true
-RecordAttack = true
-SelectHeading = Supported Maps
-SaveGame = true
-FlickyList = Puffin,Dove
-#Flicky selection is final.
-
 Level Z0
 Levelname = Tutorial
 NoVisitNeeded = true
 Act = 0
-Music = TUTORL
+Music = _TITLE
 NextLevel = 1
 TypeOfLevel = Heist
 SelectHeading = Supported Maps

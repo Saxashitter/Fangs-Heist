@@ -109,12 +109,12 @@ local function draw_cs(v,p)
 
 	customhud.CustomFontString(v,
 		x,
-		100*FU-radius/2,
+		100*FU-(radius/2)+(20*scale/2),
 		skin.realname:upper(),
 		"CSFNT",
 		V_SNAPTOLEFT|f,
 		"left",
-		FU,
+		scale,
 		skin.prefcolor
 	)
 end

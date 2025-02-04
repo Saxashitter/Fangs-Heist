@@ -1,0 +1,23 @@
+special move concepts:
+
+sonic - sonic locks onto a player and homing attacks into them
+this can easily be blocked or parried, but its a really quick move
+
+tails - tails can tackle enemies/allies and fly with them
+the enemy/ally will be stunned for a second
+
+if tails presses fire he will slam the player into the ground
+if tails presses toss flag he will throw the player far out
+
+knuckles - knuckles will grab a boulder from the ground and throw it
+this cant be blocked but it can be parried by attacking it before it hits you
+
+amy - amy will use her hammer to dig opponents into the ground
+
+funnily enough, only sonic can parry it. if he does, sonic will grab amys hammer and dig her into the ground instead
+
+fang - fang will call a miniature airstrike on an opponent
+
+itll be a small toy plane with a toy tails flying it, and itll drop small bombs
+
+metal sonic - he will unleash a blast
