@@ -32,6 +32,14 @@ function FangsHeist.initMode(map)
 	FangsHeist.Net.gametype = tonumber(mapheaderinfo[map].fh_gametype) or 0
 	FangsHeist.Net.is_boss = string.lower(mapheaderinfo[map].fh_boss or "") == "true"
 
+	local info = mapheaderinfo[map]
+	if info.fh_escapetheme then
+		FangsHeist.Net.escape_theme = info.fh_escapetheme
+	end
+	if info.fh_escapehurryup then
+		FangsHeist.Net.escape_hurryup = info.fh_escapehurryup:lower() == "true"
+	end
+
 	if FangsHeist.Net.is_boss then
 		FangsHeist.Net.time_left = ((2*60)*TICRATE)+(20*TICRATE)
 		FangsHeist.Net.max_time_left = ((2*60)*TICRATE)+(20*TICRATE)

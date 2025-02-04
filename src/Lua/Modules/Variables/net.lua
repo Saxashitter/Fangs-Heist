@@ -5,7 +5,7 @@ return {
 
 	escape = false,
 	escape_theme = "SPRHRO",
-	escape_choice = 1,
+	escape_hurryup = true,
 
 	time_left = time,
 	max_time_left = time,

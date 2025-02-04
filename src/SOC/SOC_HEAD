@@ -91,6 +91,8 @@ NoVisitNeeded = true
 SelectHeading = Supported Maps
 Weather = 2
 FlickyList = Penguin,Seal
+Lua.FH_EscapeTheme = LOSWIN
+Lua.FH_EscapeHurryUp = false
 
 Level Z0
 Levelname = Tutorial
@@ -101,3 +103,5 @@ NextLevel = 1
 TypeOfLevel = Heist
 SelectHeading = Supported Maps
 SkyNum = 99
+Lua.FH_EscapeTheme = YOKADI
+Lua.FH_EscapeHurryUp = false

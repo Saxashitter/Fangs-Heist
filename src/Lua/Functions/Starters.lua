@@ -14,23 +14,7 @@ FangsHeist.escapeThemes = {
 function FangsHeist.startEscape()
 	if FangsHeist.Net.escape then return end
 
-	local songs = {} -- bullshit, ik, but the original way i did it resynchs
-	for i = 1,#FangsHeist.escapeThemes do
-		songs[i] = i
-	end
-
-	--[[if FangsHeist.Save.escape_choice then
-		print("remove "..FangsHeist.Save.escape_choice)
-		table.remove(songs, FangsHeist.Save.escape_choice)
-	end]]
-
-	local choice = songs[P_RandomRange(1, #songs)]
-
-	FangsHeist.Save.escape = FangsHeist.escapeThemes[choice]
-	FangsHeist.Save.escape_choice = choice
-
 	FangsHeist.Net.escape = true
-	FangsHeist.Net.escape_theme = FangsHeist.escapeThemes[choice]
 
 	if mapheaderinfo[gamemap].fh_escapetime
 	and tonumber(mapheaderinfo[gamemap].fh_escapetime) then

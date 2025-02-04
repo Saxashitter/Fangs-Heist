@@ -46,9 +46,7 @@ function FangsHeist.isHurryUp()
 		return false
 	end
 
-	local choice = FangsHeist.Net.escape_choice or 1
-
-	if not (FangsHeist.escapeThemes[choice][2]) then
+	if not FangsHeist.Net.escape_hurryup then
 		return false
 	end
 
