@@ -34,19 +34,31 @@ addHook("PlayerThink", function(p)
 		end
 	end
 
-	if FangsHeist.Net.pregame
-	and not p.heist.confirmed_skin then
-		local deadzone = 10
-		if abs(p.heist.sidemove) >= deadzone
-		and abs(p.heist.lastside) < deadzone then
-			local sign = p.heist.sidemove >= 0 and 1 or -1
-	
-			p.heist.locked_skin = max(0, min($+sign, #skins-1))
-		end
+	if FangsHeist.Net.pregame then
+		if not p.heist.confirmed_skin then
+			local deadzone = 10
+			if abs(p.heist.sidemove) >= deadzone
+			and abs(p.heist.lastside) < deadzone then
+				local sign = p.heist.sidemove >= 0 and 1 or -1
+				
+				--p.heist.locked_skin = max(0, min($+sign, #skins-1))
+				p.heist.locked_skin = $+sign
+				if p.heist.locked_skin < 0 then
+					p.heist.locked_skin = #skins-1
+				elseif p.heist.locked_skin > #skins-1
+					p.heist.locked_skin = 0
+				end
+			end
 
-		if p.heist.buttons & BT_JUMP
-		and not (p.heist.lastbuttons & BT_JUMP) then
-			p.heist.confirmed_skin = true
+			if p.heist.buttons & BT_JUMP
+			and not (p.heist.lastbuttons & BT_JUMP) then
+				p.heist.confirmed_skin = true
+			end
+		end
+		
+		local showhud = CV_FindVar("showhud")
+		if showhud.value == 0 then -- if the hud isn't being shown
+			CV_StealthSet(showhud, 1) -- then force it to show :P
 		end
 	end
 
@@ -89,12 +101,14 @@ addHook("PlayerThink", function(p)
 		p.runspeed = min(16*FU, $)
 		p.mindash = min($, spindash_limit)
 		p.maxdash = min($, spindash_limit)
+		p.jumpfactor = max(FU, $) -- makes characters like knux jump higher, while others like amy still have their bigger jump height
 	elseif not p.heist.corrected_speed then
 		p.heist.corrected_speed = true
 		p.normalspeed = skins[p.skin].normalspeed
 		p.mindash = skins[p.skin].mindash
 		p.maxdash = skins[p.skin].maxdash
 		p.runspeed = skins[p.skin].runspeed
+		p.jumpfactor = skins[p.skin].jumpfactor
 	end
 
 	if FangsHeist.Net.escape
@@ -261,6 +275,8 @@ addHook("AbilitySpecial", function (p)
 	and not (p.pflags & PF_THOKKED) then
 		p.actionspd = 40*FU
 	end
-
-	return not FangsHeist.canUseAbility(p)
+	
+	if p.charability ~= CA_TWINSPIN then
+		return not FangsHeist.canUseAbility(p)
+	end
 end)
