@@ -20,8 +20,8 @@ function module.draw(v)
 		local scale = FU/2
 		local profit = FangsHeist.returnProfit(p)
 
-		for p,_ in pairs(p.heist.team) do
-			if not (p and p ~= "leader" and p.valid) then continue end
+		for p,_ in pairs(p.heist.team.players) do
+			if not (p and p.valid) then continue end
 			local life = v.getSprite2Patch(p.skin,
 				SPR2_LIFE, false, A, 0)
 	
@@ -55,8 +55,7 @@ function module.draw(v)
 			"thin-fixed")
 
 		local sign = false
-		for sp,_ in pairs(p.heist.team) do
-			if sp == "leader" then continue end
+		for sp,_ in pairs(p.heist.team.players) do
 			if not (sp and sp.valid) then continue end
 
 			sign = FangsHeist.playerHasSign(sp)

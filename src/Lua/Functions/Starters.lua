@@ -181,7 +181,7 @@ function FangsHeist.joinTeam(p, sp)
 	if sp.heist.team.leader == sp
 	and FangsHeist.getTeamLength(sp) > 0 then
 		local ps = {}
-		for k,v in pairs(sp.heist.team) do
+		for k,v in pairs(sp.heist.team.players) do
 			if k == sp then continue end
 
 			table.insert(ps, k)
@@ -189,8 +189,8 @@ function FangsHeist.joinTeam(p, sp)
 		sp.heist.team.leader = ps[P_RandomRange(1, #ps)]
 	end
 
-	sp.heist.team[sp] = nil
-	p.heist.team[sp] = true
+	sp.heist.team.players[sp] = nil
+	p.heist.team.players[sp] = true
 
 	sp.heist.team = p.heist.team
 end
@@ -232,7 +232,7 @@ COM_AddCommand("fh_jointeam", function(p, sp)
 		return
 	end
 
-	if p.heist.team[sp] then
+	if p.heist.team.players[sp] then
 		CONS_Printf(p, "This player is in your team.")
 		return
 	end
@@ -273,7 +273,7 @@ COM_AddCommand("fh_acceptrequest", function(p, sp)
 		return
 	end
 
-	--[[if not p.heist.invites[sp] then
+	if not p.heist.invites[sp] then
 		CONS_Printf(p, "This player never requested to join you.")
 		return
 	end
@@ -283,7 +283,7 @@ COM_AddCommand("fh_acceptrequest", function(p, sp)
 		CONS_Printf(p, "Your team is full.")
 		CONS_Printf(sp, "This player's team is full.")
 		return
-	end]]
+	end
 
 	FangsHeist.joinTeam(p, sp)
 	CONS_Printf(p, "Team successful.")

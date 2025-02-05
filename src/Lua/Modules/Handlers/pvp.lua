@@ -1,13 +1,13 @@
 local module = {}
 // PVP rewrite #3, this time we aren't gonna have a Battlemod like system.
 
-local ATTACK_COOLDOWN = TICRATE
-local ATTACK_TIME = G
-local BLOCK_COOLDOWN = 5
-local BLOCK_TIME = 5*TICRATE
-local BLOCK_DEPLETION = BLOCK_TIME/3
+rawset(_G, "FH_ATTACKCOOLDOWN", TICRATE)
+rawset(_G, "FH_ATTACKTIME", G)
+rawset(_G, "FH_BLOCKCOOLDOWN", 5)
+rawset(_G, "FH_BLOCKTIME", 5*TICRATE)
+rawset(_G, "FH_BLOCKDEPLETION", FH_BLOCKTIME/3)
 
-local STR_INSTSHIELD = STR_ATTACK|STR_BUST
+local STR_INSTASHIELD = STR_ATTACK|STR_BUST
 local STR_BLOCK = STR_HEAVY
 
 for i = 1,4 do
@@ -39,22 +39,25 @@ mobjinfo[freeslot "MT_FH_INSTASHIELD"] = {
 }
 
 local function doAttack(p)
-	p.heist.attack_cooldown = ATTACK_COOLDOWN
-	p.heist.attack_time = ATTACK_TIME
+	if FangsHeist.Characters[p.mo.skin]:onAttack(p) then
+		return
+	end
+	p.heist.attack_cooldown = FangsHeist.Characters[p.mo.skin].attackCooldown
+	p.heist.attack_time = FH_ATTACKTIME
 
 	local shield = P_SpawnMobjFromMobj(p.mo, 0,0,0, MT_FH_INSTASHIELD)
 	shield.target = p.mo
 
 	S_StartSound(p.mo, sfx_s3k42)
 
-	if not (p.powers[pw_strong] & STR_INSTSHIELD) then
-		p.powers[pw_strong] = $|STR_INSTSHIELD
+	if not (p.powers[pw_strong] & STR_INSTASHIELD) then
+		p.powers[pw_strong] = $|STR_INSTASHIELD
 		p.heist.strongAdded = true
 	end
 end
 
 local function playerCheck(p)
-	return p and FangsHeist.isPlayerAlive(p) and not P_PlayerInPain(p)
+	return p and FangsHeist.isPlayerAlive(p) and not P_PlayerInPain(p) and not p.heist.exiting
 end
 
 local function bouncePlayer(p, sp, stopAttack)
@@ -71,7 +74,7 @@ local function bouncePlayer(p, sp, stopAttack)
 	if stopAttack then
 		p.heist.attack_time = 0
 		if p.heist.strongAdded then
-			p.powers[pw_strong] = $ & ~STR_INSTSHIELD
+			p.powers[pw_strong] = $ & ~STR_INSTASHIELD
 			p.heist.strongAdded = false
 		end
 	end
@@ -83,6 +86,35 @@ local attackSounds = {
 	{sfx_dmga3, sfx_dmgb3},
 	{sfx_dmga4, sfx_dmgb4}
 }
+
+function FangsHeist.damagePlayer(p, sp, projectile)
+	if sp.heist.blocking then
+		sp.heist.block_time = min(FH_BLOCKTIME, $+FH_BLOCKDEPLETION)
+		if sp.heist.block_time == FH_BLOCKTIME then
+			if not projectile then
+				bouncePlayer(p, sp, false)
+			end
+			S_StartSound(sp.mo, sfx_fhbbre)
+		else
+			if not projectile then
+				bouncePlayer(p, sp, true)
+			end
+			S_StartSound(p.mo, sfx_s3k7b)
+			return
+		end
+	end
+
+	local tier = 1
+	local speed = FixedHypot(FixedHypot(p.mo.momx-sp.mo.momx, p.mo.momy-sp.mo.momy), p.mo.momz-sp.mo.momz)
+
+	tier = max(1, min(FixedDiv(speed, 10*FU)/FU, #attackSounds))
+
+	S_StartSound(p.mo, attackSounds[tier][P_RandomRange(1, 2)])
+	P_DamageMobj(sp.mo, (projectile and projectile.valid) and projectile or p.mo, p.mo)
+	if not projectile then
+		bouncePlayer(p, sp)
+	end
+end
 
 local function attackPlayers(p)
 	for sp in players.iterate do
@@ -111,26 +143,7 @@ local function attackPlayers(p)
 			continue
 		end
 
-		if sp.heist.blocking then
-			sp.heist.block_time = min(BLOCK_TIME, $+BLOCK_DEPLETION)
-			if sp.heist.block_time == BLOCK_TIME then
-				bouncePlayer(p, sp, false)
-				S_StartSound(sp.mo, sfx_fhbbre)
-			else
-				bouncePlayer(p, sp, true)
-				S_StartSound(p.mo, sfx_s3k7b)
-				continue
-			end
-		end
-
-		local tier = 1
-
-		local speed = FixedHypot(FixedHypot(p.mo.momx-sp.mo.momx, p.mo.momy-sp.mo.momy), p.mo.momz-sp.mo.momz)
-		tier = max(1, min(FixedDiv(speed, 10*FU)/FU, #attackSounds))
-
-		S_StartSound(p.mo, attackSounds[tier][P_RandomRange(1, 2)])
-		P_DamageMobj(sp.mo, p.mo, p.mo)
-		bouncePlayer(p, sp)
+		FangsHeist.damagePlayer(p, sp)
 	end
 end
 
@@ -143,7 +156,7 @@ local function manageBlock(p)
 			p.heist.blocking = true
 			p.powers[pw_strong] = $|STR_BLOCK
 			S_StartSound(p.mo, sfx_fhbonn)
-			p.heist.block_cooldown = BLOCK_COOLDOWN
+			p.heist.block_cooldown = FH_BLOCKCOOLDOWN
 		end
 	
 		if p.heist.blocking
@@ -151,7 +164,7 @@ local function manageBlock(p)
 			p.heist.blocking = false
 			p.powers[pw_strong] = $ & ~STR_BLOCK
 			S_StartSound(p.mo, sfx_fhboff)
-			p.heist.block_cooldown = BLOCK_COOLDOWN
+			p.heist.block_cooldown = FH_BLOCKCOOLDOWN
 		end
 	end
 
@@ -175,7 +188,7 @@ local function manageBlock(p)
 	if p.heist.blocking then
 		p.heist.blockMobj.color = p.mo.color
 	
-		local t = FixedDiv(p.heist.block_time, BLOCK_TIME*2)
+		local t = FixedDiv(p.heist.block_time, FH_BLOCKTIME*2)
 		local scale = FixedDiv(p.mo.height, 22*FU)
 
 		p.heist.blockMobj.scale = ease.linear(t, scale, 0)
@@ -184,7 +197,7 @@ local function manageBlock(p)
 		P_MoveOrigin(p.heist.blockMobj,
 			p.mo.x, p.mo.y, p.mo.z+z)
 	
-		p.heist.block_time = min(BLOCK_TIME, $+1)
+		p.heist.block_time = min(FH_BLOCKTIME, $+1)
 	else
 		if p.heist.blockMobj then
 			P_RemoveMobj(p.heist.blockMobj)
@@ -233,7 +246,7 @@ function module.tick()
 		p.heist.attack_time = max(0, $-1)
 
 		if not p.heist.attack_time and p.heist.strongAdded then
-			p.powers[pw_strong] = $ & ~STR_INSTSHIELD
+			p.powers[pw_strong] = $ & ~STR_INSTASHIELD
 			p.heist.strongAdded = false
 		end
 

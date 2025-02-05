@@ -51,7 +51,7 @@ function FangsHeist.playerHasSign(p)
 end
 
 function FangsHeist.partOfTeam(p, sp)
-	return p and p.heist and p.heist.team[sp]
+	return p and p.heist and p.heist.team.players[sp]
 end
 
 function FangsHeist.getTeamLength(p)
@@ -59,9 +59,8 @@ function FangsHeist.getTeamLength(p)
 
 	local length = 0
 
-	for sp,_ in pairs(p.heist.team) do
-		if sp ~= p
-		and sp ~= "leader" then
+	for sp,_ in pairs(p.heist.team.players) do
+		if sp ~= p then
 			length = $+1
 		end
 	end
@@ -101,9 +100,8 @@ function FangsHeist.returnProfit(p, personal)
 	profit = $+(8*p.rings/div)
 
 	if not personal then
-		for sp,k in pairs(p.heist.team) do
+		for sp,k in pairs(p.heist.team.players) do
 			if p == sp then continue end
-			if sp == "leader" then continue end
 			if not (sp and sp.valid) then continue end
 
 			profit = $+FangsHeist.returnProfit(sp, true)

@@ -1,1 +1,2 @@
 name = fang
+ability2 = CA_NONE

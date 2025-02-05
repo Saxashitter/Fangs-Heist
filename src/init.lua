@@ -16,6 +16,7 @@ rawset(_G, "FangsHeist", {Net = {}, HUD = {}, Objects = {}, Save = {}})
 
 dofile "gametypes"
 dofile "files"
+dofile "characters"
 
 dofile "Functions/Inits"
 dofile "Functions/Getters"
@@ -35,5 +36,7 @@ dofile "Objects/Tails"
 
 dofile "Objects/Bosses/GFZ3 Eggman"
 dofile "Objects/Bosses/Missile"
+
+dofile "Movesets/Fang"
 
 dofile "modsupport"

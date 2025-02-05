@@ -131,6 +131,7 @@ local function module()
 		p.heist.exiting = true
 
 		if FangsHeist.playerHasSign(p) then
+			p.heist.team.banked_sign = true
 			p.heist.had_sign = true
 			FangsHeist.respawnSign(p)
 		end

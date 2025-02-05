@@ -21,7 +21,7 @@ function FangsHeist.initPlayer(p)
 	p.heist = copy(orig_plyr)
 	p.heist.spectator = FangsHeist.Net.escape
 	p.heist.locked_skin = p.skin
-	p.heist.team[p] = true
+	p.heist.team.players[p] = true
 	p.heist.team.leader = p
 end
 

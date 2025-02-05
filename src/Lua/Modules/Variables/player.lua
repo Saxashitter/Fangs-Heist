@@ -4,7 +4,10 @@ return {
 	generated_profit = 0,
 	had_sign = false,
 
-	team = {},
+	team = {
+		players = {},
+		banked_sign = false
+	},
 	invites = {},
 
 	attack_cooldown = 0,

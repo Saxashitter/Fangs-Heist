@@ -141,7 +141,7 @@ local function manage_picked(sign)
 end
 
 local function blacklist(p)
-	return P_PlayerInPain(p) or (p.heist and p.heist.exiting) or p.powers[pw_flashing]
+	return P_PlayerInPain(p) or (p.heist and (p.heist.exiting or p.heist.team.banked_sign)) or p.powers[pw_flashing]
 end
 
 local function manage_unpicked(sign)

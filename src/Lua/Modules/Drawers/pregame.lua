@@ -131,10 +131,16 @@ function module.draw(v,p)
 	local sh = v.height()*FU/v.dupy()
 	local f = alpha*V_10TRANS
 
+	local skin = displayplayer
+	and displayplayer.heist
+	and displayplayer.heist.locked_skin or 0
+
 	-- background
-	local patch = v.cachePatch("FH_PINK_SCROLL")
-	local y = -16*FU + (leveltime*FU/2) % (patch.height*FU)
-	local x = -16*FU + (leveltime*FU/2) % (patch.width*FU)
+	local patch = v.cachePatch(
+		FangsHeist.Characters[skins[skin].name].pregameBackground
+	)
+	local y = -patch.height*FU + (leveltime*FU/2) % (patch.height*FU)
+	local x = -patch.width*FU + (leveltime*FU/2) % (patch.width*FU)
 
 	while y < sh do
 		local x = x

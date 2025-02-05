@@ -1,8 +1,6 @@
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 local movement = FangsHeist.require "Modules/Handlers/movement"
 
-local fang = FangsHeist.require "Modules/Movesets/fang"
-
 FangsHeist.panicBlacklist = {
 	takisthefox = true
 }
@@ -21,17 +19,6 @@ addHook("PlayerThink", function(p)
 
 	if not (p and p.heist) then
 		FangsHeist.initPlayer(p)
-	end
-
-	for sp,_ in pairs(p.heist.team) do
-		if sp == "leader" then continue end
-
-		if not (sp and sp.valid and sp.heist) then
-			p.heist.team[sp] = nil
-			if p.heist.team.leader == sp then
-				p.heist.team.leader = p
-			end
-		end
 	end
 
 	if FangsHeist.Net.pregame then
@@ -126,8 +113,6 @@ addHook("PlayerThink", function(p)
 		end
 	end
 
-	fang.playerThinker(p)
-
 	if not (p.heist.exiting) then
 		p.score = FangsHeist.returnProfit(p)
 	end
@@ -191,7 +176,6 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 	if not FangsHeist.isMode() then return end
 	if not (t and t.player and t.player.heist) then return end
 	
-
 	if t.player.heist.exiting then
 		return false
 	end
@@ -288,11 +272,23 @@ end)
 -- since its technically a player thing soo
 -- -pac
 addHook("MobjCollide", function(pmo, mo)
+	if not FangsHeist.isMode() then return end
+
 	if not (mo.flags & MF_MISSILE)
 	or not (mo.target and mo.target.valid)
 	or not (mo.target.player and mo.target.player.valid) then return end
 	
 	local p = pmo.player
-	if FangsHeist.partOfTeam(p, mo.target.player)
-	or p.heist.blocking then return false end
+	if FangsHeist.partOfTeam(p, mo.target.player) then
+		return false
+	end
+	if p == mo.target.player then
+		return false
+	end
+
+	if mo.z > pmo.z+pmo.height then return false end
+	if pmo.z > mo.z+mo.height then return false end
+
+	FangsHeist.damagePlayer(mo.target.player, p, mo)
+	P_KillMobj(mo)
 end, MT_PLAYER)
