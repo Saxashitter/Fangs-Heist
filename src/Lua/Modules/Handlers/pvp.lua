@@ -60,7 +60,7 @@ local function playerCheck(p)
 	return p and FangsHeist.isPlayerAlive(p) and not P_PlayerInPain(p) and not p.heist.exiting
 end
 
-local function bouncePlayer(p, sp, stopAttack)
+function FangsHeist.bouncePlayers(p, sp, stopAttack)
 	local angle = R_PointToAngle2(p.mo.x, p.mo.y, sp.mo.x, sp.mo.y)
 
 	P_InstaThrust(p.mo, angle, -12*FU)
@@ -88,31 +88,20 @@ local attackSounds = {
 }
 
 function FangsHeist.damagePlayer(p, sp, projectile)
-	if sp.heist.blocking then
-		sp.heist.block_time = min(FH_BLOCKTIME, $+FH_BLOCKDEPLETION)
-		if sp.heist.block_time == FH_BLOCKTIME then
-			if not projectile then
-				bouncePlayer(p, sp, false)
-			end
-			S_StartSound(sp.mo, sfx_fhbbre)
-		else
-			if not projectile then
-				bouncePlayer(p, sp, true)
-			end
-			S_StartSound(p.mo, sfx_s3k7b)
-			return
-		end
-	end
-
 	local tier = 1
 	local speed = FixedHypot(FixedHypot(p.mo.momx-sp.mo.momx, p.mo.momy-sp.mo.momy), p.mo.momz-sp.mo.momz)
 
+	if not (projectile and projectile.valid) then
+		projectile = false
+	end
+
 	tier = max(1, min(FixedDiv(speed, 10*FU)/FU, #attackSounds))
 
-	S_StartSound(p.mo, attackSounds[tier][P_RandomRange(1, 2)])
-	P_DamageMobj(sp.mo, (projectile and projectile.valid) and projectile or p.mo, p.mo)
-	if not projectile then
-		bouncePlayer(p, sp)
+	if P_DamageMobj(sp.mo, (projectile and projectile.valid) and projectile or p.mo, p.mo) then
+		if not projectile then
+			S_StartSound(p.mo, attackSounds[tier][P_RandomRange(1, 2)])
+			FangsHeist.bouncePlayers(p, sp)
+		end
 	end
 end
 
@@ -136,8 +125,8 @@ local function attackPlayers(p)
 		if distZ > max(p.mo.height, sp.mo.height)*2 then continue end
 
 		if sp.heist.attack_time then
-			bouncePlayer(p, sp, true)
-			bouncePlayer(sp, p, true)
+			FangsHeist.bouncePlayers(p, sp, true)
+			FangsHeist.bouncePlayers(sp, p, true)
 			S_StartSound(p.mo, sfx_s3k7b)
 			S_StartSound(sp.mo, sfx_s3k7b)
 			continue

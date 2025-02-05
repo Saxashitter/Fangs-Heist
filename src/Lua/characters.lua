@@ -5,7 +5,10 @@ local DEFAULT = {
 	pregameBackground = "FH_PREGAME_UNKNOWN",
 	attackCooldown = TICRATE,
 
-	onAttack = function(self, p) end
+	onAttack = function(self, p) end,
+	isAttacking = function(self, p)
+		return p.heist.attack_time
+	end
 }
 
 rawset(_G, "FHD_EASY", 0)

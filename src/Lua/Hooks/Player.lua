@@ -190,6 +190,28 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 			return false
 		end
 	end
+
+	if s
+	and s.valid
+	and s.player
+	and s.player.heist then
+		if t.player.heist.blocking then
+			t.player.heist.block_time = min(FH_BLOCKTIME, $+FH_BLOCKDEPLETION)
+			if t.player.heist.block_time == FH_BLOCKTIME then
+				if i == s then
+					FangsHeist.bouncePlayers(s.player, t.player)
+				end
+				S_StartSound(t, sfx_fhbbre)
+				return true
+			else
+				if i == s then
+					FangsHeist.bouncePlayers(s.player, t.player, true)
+				end
+				S_StartSound(t, sfx_s3k7b)
+				return false
+			end
+		end
+	end
 end, MT_PLAYER)
 
 addHook("MobjDamage", function(t,i,s,dmg,dt)
@@ -285,10 +307,4 @@ addHook("MobjCollide", function(pmo, mo)
 	if p == mo.target.player then
 		return false
 	end
-
-	if mo.z > pmo.z+pmo.height then return false end
-	if pmo.z > mo.z+mo.height then return false end
-
-	FangsHeist.damagePlayer(mo.target.player, p, mo)
-	P_KillMobj(mo)
 end, MT_PLAYER)
