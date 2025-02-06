@@ -126,8 +126,7 @@ local function module()
 		if not FangsHeist.isPlayerAtGate(p) then
 			continue
 		end
-
-		p.heist.saved_profit = FangsHeist.returnProfit(p)
+		
 		p.heist.exiting = true
 
 		if FangsHeist.playerHasSign(p) then
