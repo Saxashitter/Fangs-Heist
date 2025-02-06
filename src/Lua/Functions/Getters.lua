@@ -70,20 +70,18 @@ end
 
 function FangsHeist.returnProfit(p, personal)
 	if not (p and p.heist) then return 0 end
-
-	if p.heist.exiting then
-		return p.heist.saved_profit
-	end
+	
 	if not FangsHeist.isPlayerAlive(p) then
 		return 0
 	end
-
+	
 	local profit = 0
-
-	if FangsHeist.playerHasSign(p) then
+	
+	if FangsHeist.playerHasSign(p)
+	or p.heist.had_sign then
 		profit = $+1500
 	end
-
+	
 	local div = 1
 	local length = FangsHeist.getTeamLength(p)
 	if length then

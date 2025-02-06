@@ -96,11 +96,17 @@ function FangsHeist.damagePlayer(p, sp, projectile)
 	end
 
 	tier = max(1, min(FixedDiv(speed, 10*FU)/FU, #attackSounds))
-
-	if P_DamageMobj(sp.mo, (projectile and projectile.valid) and projectile or p.mo, p.mo) then
+	
+	local teamCheck = FangsHeist.partOfTeam(p, sp) and FangsHeist.playerHasSign(sp)
+	if teamCheck
+	or P_DamageMobj(sp.mo, (projectile and projectile.valid) and projectile or p.mo, p.mo) then
 		if not projectile then
 			S_StartSound(p.mo, attackSounds[tier][P_RandomRange(1, 2)])
 			FangsHeist.bouncePlayers(p, sp)
+			if teamCheck then
+				P_DoPlayerPain(sp, (projectile and projectile.valid) and projectile or p.mo, p.mo)
+				FangsHeist.giveSignTo(p)
+			end
 		end
 	end
 end
@@ -131,7 +137,7 @@ local function attackPlayers(p)
 			S_StartSound(sp.mo, sfx_s3k7b)
 			continue
 		end
-
+		
 		FangsHeist.damagePlayer(p, sp)
 	end
 end
