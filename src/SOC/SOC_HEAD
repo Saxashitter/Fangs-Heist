@@ -105,3 +105,18 @@ SelectHeading = Supported Maps
 SkyNum = 99
 Lua.FH_EscapeTheme = YOKADI
 Lua.FH_EscapeHurryUp = false
+
+Level 33
+Levelname = FD Greenflower
+Act = 0
+Music = FDEMO1
+TypeOfLevel = Heist
+NextLevel = 1100
+SkyNum = 2
+LevelSelect = 2
+SelectHeading = Supported Maps
+NoVisitNeeded = true
+InterScreen = INTERSCR
+FlickyList = Demo
+Lua.FH_HellStage = true
+Lua.FH_EscapeTheme = FDSPHR

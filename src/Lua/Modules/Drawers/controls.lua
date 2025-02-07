@@ -8,23 +8,23 @@ function module.draw(v,p)
 	local y = 200-4
 	local f = V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_ALLOWLOWERCASE
 
-	local strData = {
-		{str = "[FIRE] - Attack", f = 0},
-		{str = "[FIRE NORMAL] - Block", f = 0}
-	}
+	local strData = {}
+	for k,ctrl in pairs(FangsHeist.Characters[p.mo.skin].controls) do
+		if not ctrl:visible(p) then
+			continue
+		end
 
-	if p.heist.attack_cooldown then
-		strData[1].str = "[FIRE] - Cooling down..."
-		strData[1].f = $|V_GRAYMAP
-	end
-	if p.heist.attack_cooldown
-	or p.heist.block_cooldown then
-		strData[2].str = "[FIRE NORMAL] - Cooling down..."
-		strData[2].f = $|V_GRAYMAP
-	end
+		local str = "["..ctrl.key.."] - "
+		local f = 0
 
-	if p.heist.blocking then
-		table.remove(strData, 1)
+		if ctrl:cooldown(p) then
+			str = $.."Cooling down..."
+			f = V_GRAYMAP
+		else
+			str = $..ctrl.name
+		end
+
+		table.insert(strData, {str = str, f = f})
 	end
 
 	y = $ - (8*#strData)

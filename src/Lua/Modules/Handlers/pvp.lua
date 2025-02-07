@@ -4,7 +4,7 @@ local module = {}
 rawset(_G, "FH_ATTACKCOOLDOWN", TICRATE)
 rawset(_G, "FH_ATTACKTIME", G)
 rawset(_G, "FH_BLOCKCOOLDOWN", 5)
-rawset(_G, "FH_BLOCKTIME", 5*TICRATE)
+rawset(_G, "FH_BLOCKTIME", 3*TICRATE)
 rawset(_G, "FH_BLOCKDEPLETION", FH_BLOCKTIME/3)
 
 local STR_INSTASHIELD = STR_ATTACK|STR_BUST
@@ -96,16 +96,13 @@ function FangsHeist.damagePlayer(p, sp, projectile)
 	end
 
 	tier = max(1, min(FixedDiv(speed, 10*FU)/FU, #attackSounds))
-	
-	local teamCheck = FangsHeist.partOfTeam(p, sp) and FangsHeist.playerHasSign(sp)
-	if teamCheck
-	or P_DamageMobj(sp.mo, (projectile and projectile.valid) and projectile or p.mo, p.mo) then
-		if not projectile then
-			S_StartSound(p.mo, attackSounds[tier][P_RandomRange(1, 2)])
-			FangsHeist.bouncePlayers(p, sp)
-			if teamCheck then
-				P_DoPlayerPain(sp, (projectile and projectile.valid) and projectile or p.mo, p.mo)
-				FangsHeist.giveSignTo(p)
+	local sound = attackSounds[tier][P_RandomRange(1, 2)]
+
+	if P_DamageMobj(sp.mo, projectile or p.mo, p.mo) then
+		if not FangsHeist.Characters[p.mo.skin]:onHit(p, sp, (projectile), sound) then
+			if not projectile then
+				S_StartSound(p.mo, sound)
+				FangsHeist.bouncePlayers(p, sp)
 			end
 		end
 	end
@@ -125,19 +122,30 @@ local function attackPlayers(p)
 		end
 
 		local distXY = FixedHypot(p.mo.x-sp.mo.x, p.mo.y-sp.mo.y)
-		local distZ = abs(p.mo.z-sp.mo.z)
 
-		if distXY > FixedMul(p.mo.radius+sp.mo.radius, FU*3) then continue end
-		if distZ > max(p.mo.height, sp.mo.height)*2 then continue end
+		local char1 = FangsHeist.Characters[p.mo.skin]
+		local char2 = FangsHeist.Characters[sp.mo.skin]
 
-		if sp.heist.attack_time then
+		local radius1 = fixmul(fixmul(p.mo.radius, p.mo.scale), char1.attackRange)
+		local radius2 = fixmul(fixmul(sp.mo.radius, sp.mo.scale), char2.damageRange)
+
+		if distXY > radius1+radius2 then continue end
+
+		local height1 = fixmul(p.mo.height, char1.attackZRange)
+		local height2 = fixmul(sp.mo.height, char2.damageZRange)
+
+		local z = abs((p.mo.z+p.mo.height/2)-(sp.mo.z+sp.mo.height/2))
+
+		if z > max(height1, height2) then continue end
+
+		if FangsHeist.Characters[sp.mo.skin]:isAttacking(sp) then
 			FangsHeist.bouncePlayers(p, sp, true)
 			FangsHeist.bouncePlayers(sp, p, true)
 			S_StartSound(p.mo, sfx_s3k7b)
 			S_StartSound(sp.mo, sfx_s3k7b)
 			continue
 		end
-		
+
 		FangsHeist.damagePlayer(p, sp)
 	end
 end
@@ -146,7 +154,6 @@ local function manageBlock(p)
 	if not (p.heist.block_cooldown) then
 		if not p.heist.blocking
 		and p.cmd.buttons & BT_FIRENORMAL
-		and not (p.lastbuttons & BT_FIRENORMAL)
 		and not (p.heist.attack_cooldown) then
 			p.heist.blocking = true
 			p.powers[pw_strong] = $|STR_BLOCK
@@ -236,8 +243,16 @@ function module.tick()
 			continue
 		end
 
+		if p.heist.attack_cooldown then
+			p.heist.attack_cooldown = max(0, $-1)
+
+			if not (p.heist.attack_cooldown) then
+				local ghost = P_SpawnGhostMobj(p.mo)
+				ghost.destscale = $*3
+			end
+		end
+
 		p.heist.block_cooldown = max(0, $-1)
-		p.heist.attack_cooldown = max(0, $-1)
 		p.heist.attack_time = max(0, $-1)
 
 		if not p.heist.attack_time and p.heist.strongAdded then
@@ -254,7 +269,7 @@ function module.tick()
 			doAttack(p)
 		end
 
-		if p.heist.attack_time then
+		if FangsHeist.Characters[p.mo.skin]:isAttacking(p) then
 			attackPlayers(p)
 		end
 	end

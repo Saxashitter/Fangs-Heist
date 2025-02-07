@@ -3,12 +3,43 @@ FangsHeist.Characters = {}
 local DEFAULT = {
 	difficulty = FHD_UNKNOWN,
 	pregameBackground = "FH_PREGAME_UNKNOWN",
+
 	attackCooldown = TICRATE,
+	attackRange = 2*FU,
+	attackZRange = 2*FU,
+
+	damageRange = tofixed("1.5"),
+	damageZRange = tofixed("1.5"),
 
 	onAttack = function(self, p) end,
+	onHit = function(self, p, sp, projectile) end,
+
 	isAttacking = function(self, p)
-		return p.heist.attack_time
-	end
+		return (p.heist.attack_time)
+	end,
+
+	controls = {
+		{
+			key = "FIRE",
+			name = "Attack",
+			cooldown = function(self, p)
+				return (p.heist.attack_cooldown)
+			end,
+			visible = function(self, p)
+				return not p.heist.blocking
+			end
+		},
+		{
+			key = "FIRE NORMAL",
+			name = "Block",
+			cooldown = function(self, p)
+				return (p.heist.attack_cooldown or p.heist.block_cooldown)
+			end,
+			visible = function(self, p)
+				return true
+			end
+		}
+	}
 }
 
 rawset(_G, "FHD_EASY", 0)
@@ -32,5 +63,4 @@ end
 FangsHeist.makeCharacter("sonic", {pregameBackground = "FH_PREGAME_SONIC"})
 FangsHeist.makeCharacter("tails", {pregameBackground = "FH_PREGAME_TAILS"})
 FangsHeist.makeCharacter("knuckles", {pregameBackground = "FH_PREGAME_KNUCKLES"})
-FangsHeist.makeCharacter("amy", {pregameBackground = "FH_PREGAME_AMY"})
 FangsHeist.makeCharacter("metalsonic", {pregameBackground = "FH_PREGAME_METAL"})

@@ -7,6 +7,9 @@ return {
 	escape_theme = "SPRHRO",
 	escape_hurryup = true,
 
+	hell_stage = false,
+	hell_stage_teleport = {},
+
 	time_left = time,
 	max_time_left = time,
 	hurry_up = false,

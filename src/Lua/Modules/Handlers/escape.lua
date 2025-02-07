@@ -109,6 +109,27 @@ local function module()
 			FangsHeist.spawnSign()
 	end
 
+	if FangsHeist.Net.hell_stage then
+		local sec = FangsHeist.Net.hell_stage_teleport.sector
+		local pos = FangsHeist.Net.hell_stage_teleport.pos
+
+		for p in players.iterate do
+			if (p and p.mo and p.mo.subsector.sector == sec) then
+				P_SetOrigin(p.mo,
+					pos.x,
+					pos.y,
+					pos.z
+				)
+
+				p.mo.angle = pos.a
+				p.drawangle = pos.a
+
+				S_StartSound(nil, sfx_mixup, p)
+				P_InstaThrust(p.mo, p.mo.angle, FixedHypot(p.rmomx, p.rmomy))
+			end
+		end
+	end
+
 	local exit = FangsHeist.Net.exit
 	exit.state = S_FH_EXIT_OPEN
 

@@ -14,6 +14,12 @@ rawset(_G, "FangsHeist", {Net = {}, HUD = {}, Objects = {}, Save = {}})
 // FANGS HEIGHT IS BY SAXASHITTER
 // OFFICIAL SEQUEL TO NICK'S PIZZA TIME!
 
+rawset(_G, "FH_ATTACKCOOLDOWN", TICRATE)
+rawset(_G, "FH_ATTACKTIME", G)
+rawset(_G, "FH_BLOCKCOOLDOWN", 5)
+rawset(_G, "FH_BLOCKTIME", 5*TICRATE)
+rawset(_G, "FH_BLOCKDEPLETION", FH_BLOCKTIME/3)
+
 dofile "gametypes"
 dofile "files"
 dofile "characters"
@@ -33,10 +39,12 @@ dofile "Objects/Treasures"
 dofile "Objects/Signpost"
 dofile "Objects/Bean"
 dofile "Objects/Tails"
+dofile "Objects/Hell Stage"
 
 dofile "Objects/Bosses/GFZ3 Eggman"
 dofile "Objects/Bosses/Missile"
 
 dofile "Movesets/Fang"
+dofile "Movesets/Amy"
 
 dofile "modsupport"

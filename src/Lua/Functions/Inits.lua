@@ -39,6 +39,10 @@ function FangsHeist.initMode(map)
 	if info.fh_escapehurryup then
 		FangsHeist.Net.escape_hurryup = info.fh_escapehurryup:lower() == "true"
 	end
+	if info.fh_hellstage
+	and info.fh_hellstage:lower() == "true" then
+		FangsHeist.Net.hell_stage = true
+	end
 
 	if FangsHeist.Net.is_boss then
 		FangsHeist.Net.time_left = ((2*60)*TICRATE)+(20*TICRATE)
@@ -81,13 +85,9 @@ local bean_things = {
 }
 
 function FangsHeist.loadMap()
-	local data = FangsHeist.getTypeData()
+	FangsHeist.spawnSign()
 
-	if data.escape then
-		FangsHeist.spawnSign()
-	end
-
-	local exit = false
+	local exit
 	local treasure_spawns = {}
 
 	for thing in mapthings.iterate do
@@ -99,24 +99,44 @@ function FangsHeist.loadMap()
 			P_RemoveMobj(thing.mobj)
 		end
 
+		if thing.type == 3844 then
+			exit = thing
+		end
+
+		if thing.type == 3842 then
+			FangsHeist.Net.hell_stage_teleport.pos = {
+				x = thing.x*FU,
+				y = thing.y*FU,
+				z = spawnpos.getThingSpawnHeight(MT_PLAYER, thing, thing.x*FU, thing.y*FU),
+				a = thing.angle*ANG1
+			}
+		end
+
+		if thing.type == 3843 then
+			FangsHeist.Net.hell_stage_teleport.sector = R_PointInSubsector(thing.x*FU, thing.y*FU).sector
+		end
+
 		if treasure_things[thing.type] then
 			table.insert(treasure_spawns, {
 				x = thing.x*FU,
 				y = thing.y*FU,
-				z = spawnpos.getThingSpawnHeight(thing.type, thing, thing.x*FU, thing.y*FU)
+				z = spawnpos.getThingSpawnHeight(MT_PLAYER, thing, thing.x*FU, thing.y*FU)
 			})
 		end
 
 		if thing.type == 1
-		and not exit then
-			local x = thing.x*FU
-			local y = thing.y*FU
-			local z = spawnpos.getThingSpawnHeight(MT_FH_SIGN, thing, x, y)
-			local a = FixedAngle(thing.angle*FU)
-
-			FangsHeist.defineExit(x, y, z, a)
-			exit = true
+		and exit == nil then
+			exit = thing
 		end
+	end
+
+	if exit then
+		local x = exit.x*FU
+		local y = exit.y*FU
+		local z = spawnpos.getThingSpawnHeight(MT_PLAYER, exit, x, y)
+		local a = FixedAngle(exit.angle*FU)
+
+		FangsHeist.defineExit(x, y, z, a)
 	end
 
 	for i = 1,5 do

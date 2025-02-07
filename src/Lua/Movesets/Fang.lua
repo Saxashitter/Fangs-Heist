@@ -7,7 +7,21 @@ local SKID_TIME = 3
 FangsHeist.makeCharacter("fang", {
 	difficulty = FHD_MEDIUM,
 	pregameBackground = "FH_PREGAME_FANG",
-	attackCooldown = 53
+	attackCooldown = 53,
+	controls = {
+		{
+			key = "SPIN",
+			name = "Pop-gun",
+			cooldown = function(self, p)
+				return (p.heist.attack_cooldown)
+			end,
+			visible = function(self, p)
+				return not p.heist.blocking
+			end
+		},
+		FangsHeist.Characters.sonic.controls[1],
+		FangsHeist.Characters.sonic.controls[2]
+	}
 })
 
 function A_ForceFrame(mo, var1, var2)
@@ -194,7 +208,8 @@ addHook("PlayerThink", function(p)
 	and not (p.lastbuttons & BT_SPIN)
 	and not (p.fang.popgun)
 	and not (p.heist.attack_cooldown)
-	and not (p.pflags & PF_BOUNCING) then
+	and not (p.pflags & PF_BOUNCING)
+	and not p.heist.blocking then
 		if not (not P_IsObjectOnGround(p.mo) and p.powers[pw_shield]) then
 			doPopgun(p)
 		end
