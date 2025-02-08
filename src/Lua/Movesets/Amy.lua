@@ -2,6 +2,13 @@ local function canAttack(p)
 	return not (p.heist.blocking or p.heist.attack_cooldown)
 end
 
+states[freeslot "S_FH_AMY_TWIRL"] = {
+	sprite = SPR_PLAY,
+	frame = freeslot "SPR2_TWRL",
+	tics = 2,
+	nextstate = S_FH_AMY_TWIRL
+}
+
 FangsHeist.makeCharacter("amy", {
 	pregameBackground = "FH_PREGAME_AMY",
 	attackRange = tofixed("1.3"),
@@ -43,8 +50,14 @@ FangsHeist.makeCharacter("amy", {
 	}
 })
 
+local function init(p)
+	p.amy = {
+		twirl = false
+	}
+end
+
 local function check(p)
-	if not (p and p.mo and p.mo.skin == "amy" and p.heist) then
+	if not (p and p.mo and p.mo.skin == "amy" and p.heist and p.amy) then
 		return false
 	end
 
@@ -62,8 +75,63 @@ local function check(p)
 
 	return true
 end
+addHook("PlayerThink", function(p)
+	if not FangsHeist.isMode() then 
+		p.amy = nil
+		return
+	end
+	if not (p and p.mo and p.mo.skin == "amy" and p.heist) then
+		p.amy = nil
+		return
+	end
 
-local function twinSpin(p)
+	if not (p.amy) then
+		init(p)
+	end
+
+	local attackFlags = STR_ATTACK|STR_WALL|STR_CEILING
+
+	if p.mo.state == S_FH_AMY_TWIRL then
+		local gravity = 3
+
+		if FangsHeist.playerHasSign(p) then
+			gravity = 9
+		end
+
+		p.pflags = $|PF_JUMPSTASIS
+		p.mo.momz = max(-gravity*p.mo.scale, $)
+
+		p.amy.twirl = true
+		p.powers[pw_strong] = $|attackFlags
+	elseif p.amy.twirl then
+		p.amy.twirl = false
+		p.powers[pw_strong] = $ & ~attackFlags
+	end
+
+	p.powers[pw_strong] = $ & ~STR_SPRING -- not so overpowered arent you now
+end)
+
+addHook("AbilitySpecial", function(p)
+	if not FangsHeist.isMode() then return end
+	if not check(p) then
+		return
+	end
+
+	if not canAttack(p)
+	or not p.amy then
+		return true
+	end
+
+	if p.pflags & PF_JUMPED
+	and not (p.pflags & PF_THOKKED) then
+		p.heist.attack_cooldown = 85
+		P_SetObjectMomZ(p.mo, 7*FU)
+		p.mo.state = S_FH_AMY_TWIRL
+		p.pflags = $|PF_THOKKED
+		return true
+	end
+end)
+addHook("JumpSpinSpecial", function(p)
 	if not FangsHeist.isMode() then return end
 	if not check(p) then
 		return
@@ -77,19 +145,8 @@ local function twinSpin(p)
 	and not (p.pflags & PF_THOKKED) then
 		p.heist.attack_cooldown = 50
 	end
-end
-
-addHook("PlayerThink", function(p)
-	if not FangsHeist.isMode() then return end
-	if not (p and p.mo and p.mo.skin == "amy" and p.heist) then
-		return
-	end
-
-	p.powers[pw_strong] = $ & ~STR_SPRING -- not so overpowered arent you now
 end)
 
-addHook("AbilitySpecial", twinSpin)
-addHook("JumpSpinSpecial", twinSpin)
 addHook("SpinSpecial", function(p)
 	if not FangsHeist.isMode() then return end
 	if not check(p) then
@@ -109,7 +166,8 @@ addHook("SpinSpecial", function(p)
 		return
 	end
 
-	if p.heist.attack_cooldown then
+	if p.heist.attack_cooldown
+	or p.heist.blocking then
 		return true
 	end
 

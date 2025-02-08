@@ -1,4 +1,4 @@
-local POPGUN_TIME = 24
+local POPGUN_TIME = 35
 local POPGUN_FRICTION = tofixed("0.92")
 
 local SKID_TIME = 3
@@ -7,7 +7,7 @@ local SKID_TIME = 3
 FangsHeist.makeCharacter("fang", {
 	difficulty = FHD_MEDIUM,
 	pregameBackground = "FH_PREGAME_FANG",
-	attackCooldown = 53,
+	attackCooldown = 68,
 	controls = {
 		{
 			key = "SPIN",
