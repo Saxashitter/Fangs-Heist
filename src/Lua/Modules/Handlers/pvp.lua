@@ -1,12 +1,6 @@
 local module = {}
 // PVP rewrite #3, this time we aren't gonna have a Battlemod like system.
 
-rawset(_G, "FH_ATTACKCOOLDOWN", TICRATE)
-rawset(_G, "FH_ATTACKTIME", G)
-rawset(_G, "FH_BLOCKCOOLDOWN", 5)
-rawset(_G, "FH_BLOCKTIME", 3*TICRATE)
-rawset(_G, "FH_BLOCKDEPLETION", FH_BLOCKTIME/3)
-
 local STR_INSTASHIELD = STR_ATTACK|STR_BUST
 local STR_BLOCK = STR_HEAVY
 
@@ -147,65 +141,6 @@ local function attackPlayers(p)
 		end
 
 		FangsHeist.damagePlayer(p, sp)
-	end
-end
-
-local function manageBlock(p)
-	if not (p.heist.block_cooldown) then
-		if not p.heist.blocking
-		and p.cmd.buttons & BT_FIRENORMAL
-		and not (p.heist.attack_cooldown) then
-			p.heist.blocking = true
-			p.powers[pw_strong] = $|STR_BLOCK
-			S_StartSound(p.mo, sfx_fhbonn)
-			p.heist.block_cooldown = FH_BLOCKCOOLDOWN
-		end
-	
-		if p.heist.blocking
-		and not (p.cmd.buttons & BT_FIRENORMAL) then
-			p.heist.blocking = false
-			p.powers[pw_strong] = $ & ~STR_BLOCK
-			S_StartSound(p.mo, sfx_fhboff)
-			p.heist.block_cooldown = FH_BLOCKCOOLDOWN
-		end
-	end
-
-	if not (p.heist.blockMobj and p.heist.blockMobj.valid) then
-		p.heist.blockMobj = nil
-	end
-
-	if p.heist.blocking
-	and not (p.heist.blockMobj) then
-		local thok = P_SpawnMobjFromMobj(p.mo, 0,0,0, MT_THOK)
-
-		thok.state = S_FH_SHIELD
-		thok.dispoffset = 10
-		thok.flags = MF_NOTHINK
-		thok.spriteyoffset = -2*FU
-		thok.colorized = true
-
-		p.heist.blockMobj = thok
-	end
-
-	if p.heist.blocking then
-		p.heist.blockMobj.color = p.mo.color
-	
-		local t = FixedDiv(p.heist.block_time, FH_BLOCKTIME*2)
-		local scale = FixedDiv(p.mo.height, 22*FU)
-
-		p.heist.blockMobj.scale = ease.linear(t, scale, 0)
-
-		local z = ease.linear(t, 0, p.mo.height/2)
-		P_MoveOrigin(p.heist.blockMobj,
-			p.mo.x, p.mo.y, p.mo.z+z)
-	
-		p.heist.block_time = min(FH_BLOCKTIME, $+1)
-	else
-		if p.heist.blockMobj then
-			P_RemoveMobj(p.heist.blockMobj)
-			p.heist.blockMobj = nil
-		end
-		p.heist.block_time = max(0, $-2)
 	end
 end
 

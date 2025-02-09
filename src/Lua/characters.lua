@@ -5,14 +5,17 @@ local DEFAULT = {
 	pregameBackground = "FH_PREGAME_UNKNOWN",
 
 	attackCooldown = TICRATE,
-	attackRange = 2*FU,
-	attackZRange = 2*FU,
+	attackRange = tofixed("2.5"),
+	attackZRange = tofixed("2.5"),
 
 	damageRange = tofixed("1.5"),
 	damageZRange = tofixed("1.5"),
 
+	useDefaultAttack = true,
+
 	onAttack = function(self, p) end,
-	onHit = function(self, p, sp, projectile) end,
+	onClash = function(self, p) end,
+	onHit = function(self, p, sp) end,
 
 	isAttacking = function(self, p)
 		return (p.heist.attack_time)

@@ -5,7 +5,7 @@ end
 states[freeslot "S_FH_AMY_TWIRL"] = {
 	sprite = SPR_PLAY,
 	frame = freeslot "SPR2_TWRL",
-	tics = 2,
+	tics = 1,
 	nextstate = S_FH_AMY_TWIRL
 }
 
@@ -15,9 +15,6 @@ FangsHeist.makeCharacter("amy", {
 	attackZRange = tofixed("1.5"),
 	isAttacking = function(self, p)
 		return (p.powers[pw_strong] & STR_ATTACK)
-	end,
-	onAttack = function(self, p)
-		return true
 	end,
 	onHit = function(self, p, projectile, sound)
 		if projectile then return end
@@ -34,6 +31,7 @@ FangsHeist.makeCharacter("amy", {
 		p.mo.state = S_PLAY_STND
 		return true
 	end,
+	useDefaultAttack = false,
 
 	controls = {
 		{
@@ -52,7 +50,8 @@ FangsHeist.makeCharacter("amy", {
 
 local function init(p)
 	p.amy = {
-		twirl = false
+		twirl = false,
+		twirlframes = 0
 	}
 end
 
@@ -103,8 +102,20 @@ addHook("PlayerThink", function(p)
 
 		p.amy.twirl = true
 		p.powers[pw_strong] = $|attackFlags
-	elseif p.amy.twirl then
+
+		if p.amy.twirlframes -- stupid abilityspecial runnig before playerthink
+		and p.cmd.buttons & BT_JUMP
+		and not (p.lastbuttons & BT_JUMP) then
+			p.mo.state = S_PLAY_FALL
+		end
+
+		p.amy.twirlframes = $+1
+	end
+
+	if p.mo.state ~= S_FH_AMY_TWIRL
+	and p.amy.twirl then
 		p.amy.twirl = false
+		p.amy.twirlframes = 0
 		p.powers[pw_strong] = $ & ~attackFlags
 	end
 
@@ -128,12 +139,17 @@ addHook("AbilitySpecial", function(p)
 		P_SetObjectMomZ(p.mo, 7*FU)
 		p.mo.state = S_FH_AMY_TWIRL
 		p.pflags = $|PF_THOKKED
+		p.amy.twirlframes = 0
 		return true
 	end
 end)
 addHook("JumpSpinSpecial", function(p)
 	if not FangsHeist.isMode() then return end
 	if not check(p) then
+		return
+	end
+
+	if p.powers[pw_shield] then
 		return
 	end
 

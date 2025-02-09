@@ -1,6 +1,5 @@
 local escape = FangsHeist.require "Modules/Handlers/escape"
 local music = FangsHeist.require "Modules/Handlers/music"
-local pvp = FangsHeist.require "Modules/Handlers/pvp"
 local orig_net = FangsHeist.require "Modules/Variables/net"
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 
@@ -234,7 +233,6 @@ addHook("ThinkFrame", do
 
 	music()
 	FangsHeist.manageTreasures()
-	pvp.tick()
 	FangsHeist.teleportSign()
 	// dialogue.tick()
 

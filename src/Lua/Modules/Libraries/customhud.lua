@@ -1,10 +1,22 @@
--- == Custom HUD Functions by TehRealSalt ==
--- Global script that contains extra functions for any HUD-related scripts.
+--[[
 
--- USAGE: Main part of customhud is the ability to creating and overwriting existing HUD items, and adding support for other HUD modifications.
--- This helps sort out HUD conflicts that are otherwise impossible to detect without the use of this library.
+	Custom HUD Library by TehRealSalt Continued by Community
 
-local VERSIONNUM = {2, 0};
+	-- Global script that contains extra functions for any HUD-related scripts.
+
+	Contributors>
+	* SkyDusk
+
+
+	-- USAGE: Main part of customhud is the ability to creating and overwriting existing HUD items, and adding support for other HUD modifications.
+	-- This helps sort out HUD conflicts that are otherwise impossible to detect without the use of this library.
+
+--]]
+
+local VERSIONNUM = {4, 0};
+local updating = nil;
+
+--#region library
 
 local function warn(str)
 	print("\131WARNING: \128"..str);
@@ -12,106 +24,6 @@ end
 
 local function notice(str)
 	print("\x83NOTICE: \x80"..str);
-end
-
-if (rawget(_G, "customhud")) then
-	local oldnum = customhud.GetVersionNum();
-	local numlength = max(#VERSIONNUM, #oldnum);
-
-	local loadednum = "";
-	local newnum = "";
-
-	local oldvers = false;
-
-	for i = 1,numlength
-		local num1 = oldnum[i];
-		local num2 = VERSIONNUM[i];
-
-		if (num1 == nil) then
-			num1 = 0;
-		end
-		if (num2 == nil) then
-			num2 = 0;
-		end
-
-		if (loadednum == "") then
-			loadednum = "v"..num1;
-		else
-			loadednum = $1.."."..num1;
-		end
-
-		if (newnum == "") then
-			newnum = "v"..num2;
-		else
-			newnum = $1.."."..num2;
-		end
-
-		if (num1 < num2) then
-			oldvers = true;
-		elseif (num1 > num2) then
-			break;
-		end
-	end
-
-	if (oldvers == false) then
-		-- Existing version is OK
-		return;
-	end
-
-	notice("An old version of customhud was detected ("..loadednum.."). Switching to newer ("..newnum.."), errors may occur.");
-end
-
-rawset(_G, "customhud", {});
-
-function customhud.GetVersionNum()
-	-- Make sure you cannot overwrite the version number by copying it into another table
-	-- That'd be really silly :V
-	local tempNum = {};
-
-	for k,v in ipairs(VERSIONNUM)
-		tempNum[k] = v;
-	end
-
-	return tempNum;
-end
-
-local huditems = {};
-
-local hooktypes = {
-	"game",
-	"scores",
-	"title",
-	"titlecard",
-	"intermission",
-	"gameandscores",
-};
-
-for _,v in pairs(hooktypes) do
-	huditems[v] = {};
-end
-
-local function CreateNewItem(itemName)
-	local newItem = {
-		-- The name ID we use for this item.
-		name = itemName,
-		-- All of the rendering functions given to this item.
-		funcs = {},
-		-- The current rendering function index for this item.
-		-- ("vanilla" is a reserved mod name for reverting a modded hud item
-		-- back to its original state, cannot be set for custom hud items)
-		type = nil,
-		-- Is this hud item supposed to be visible?
-		enabled = true,
-		-- Determine render order of this item.
-		-- Higher values are rendered on top, lower values are rendered below.
-		-- (Base game items are always on the lowest layer due to limitations.)
-		layer = 0,
-		-- Determines if this is a default HUD item defined by the game.
-		-- Should never be true for custom HUD elements.
-		isDefaultItem = false,
-	};
-
-	return newItem;
 end
 
 -- Should match hud_disable_options in lua_hudlib.c
@@ -124,6 +36,7 @@ local defaultitems = {
 	{"time", "game"},
 	{"rings", "game"},
 	{"lives", "game"},
+	{"input", "game"},
 
 	{"weaponrings", "game"},
 	{"powerstones", "game"},
@@ -147,20 +60,130 @@ local defaultitems = {
 	{"intermissionemeralds", "intermission"},
 };
 
-for _,v in pairs(defaultitems) do
-	local itemName = v[1];
-	local hookType = v[2];
-	local newItem = CreateNewItem(itemName);
+--#region Version Detection
 
-	newItem.funcs["vanilla"] = nil;
-	newItem.type = "vanilla";
-	newItem.enabled = hud.enabled(itemName);
-	newItem.layer = INT32_MIN;
-	newItem.isDefaultItem = true;
+if (rawget(_G, "customhud")) then
+	local oldnum = customhud.GetVersionNum();
+	local numlength = max(#VERSIONNUM, #oldnum);
 
-	table.insert(huditems[hookType], newItem);
+	local loadednum = "";
+	local newnum = "";
+
+	for i = 1,numlength do
+		local num1 = oldnum[i];
+		local num2 = VERSIONNUM[i];
+
+		if (num1 == nil) then
+			num1 = 0;
+		end
+		if (num2 == nil) then
+			num2 = 0;
+		end
+
+		if (loadednum == "") then
+			loadednum = "v"..num1;
+		else
+			loadednum = $1.."."..num1;
+		end
+
+		if (newnum == "") then
+			newnum = "v"..num2;
+		else
+			newnum = $1.."."..num2;
+		end
+
+		if (num1 < num2) then
+			updating = true;
+		elseif (num1 > num2) then
+			break;
+		end
+	end
+
+	if (updating == nil) then
+		-- Existing version is OK
+		return;
+	end
+
+	if customhud.Overwritten then
+		for k, overwrite in pairs(customhud.Overwritten) do
+			rawset(hud, k, overwrite)
+		end
+	end
+
+	notice("An old version of customhud was detected ("..loadednum.."). Switching to newer ("..newnum.."), errors may occur.");
+else
+	rawset(_G, "customhud", {});
 end
 
+customhud.Overwritten = {}
+customhud.Overwritten["enable"] = hud.enable
+customhud.Overwritten["enabled"] = hud.enabled
+customhud.Overwritten["disable"] = hud.disable
+
+local hudenable =  customhud.Overwritten["enable"] ---@type function
+local hudenabled = customhud.Overwritten["enabled"] ---@type function
+local huddisable = customhud.Overwritten["disable"] ---@type function
+
+--#endregion
+
+---@return table<number>
+function customhud.GetVersionNum()
+	-- Make sure you cannot overwrite the version number by copying it into another table
+	-- That'd be really silly :V
+	local tempNum = {};
+
+	for k,v in ipairs(VERSIONNUM) do
+		tempNum[k] = v;
+	end
+
+	return tempNum;
+end
+
+if (updating == nil) then
+	customhud.hudItems = {};
+end
+
+local huditems = customhud.hudItems
+
+if not (customhud.modPriority) then
+	customhud.modPriority = {
+		-- 0 = vanilla, don't use it
+		-- 1 = additional hud elements in vanilla style / Legacy items
+		-- 2 = simple replacements (Rings -> Coins etc.)
+		-- 3 = overhauling HUD mods/total conversions
+
+		-- DON'T USE "MOD PRIORITY" FOR CHARACTERS HUD OVERHAULS, USE CHARACTER ASSIGN SYSTEM INSTEAD!
+
+		["vanilla"] = 0,
+	}
+end
+
+if not (customhud.characterRuleset) then
+	customhud.characterRuleset = {}
+end
+
+if not (customhud.gametypeRuleset) then
+	customhud.gametypeRuleset = {}
+end
+
+customhud.hookTypes = {
+	"menu",
+	"gamemenu",
+	"overlay",
+	"game",
+	"scores",
+	"title",
+	"titlecard",
+	"intermission",
+	"gameandscores",
+	"continue",
+	"playersetup"
+};
+
+local hooktypes = customhud.hookTypes
+
+---@param itemName string
+---@return huditem__customhud?
 local function FindItem(itemName)
 	for _,hook in pairs(hooktypes) do
 		for _,item in pairs(huditems[hook]) do
@@ -173,44 +196,181 @@ local function FindItem(itemName)
 	return nil;
 end
 
-function customhud.ItemExists(itemName)
-	return (FindItem(itemName) != nil);
+function customhud.FindItem(itemName)
+	return FindItem(itemName);
 end
 
+---@class huditem__customhud
+---@field name  			string
+---@field funcs 			table<function>
+---@field type				string|nil
+---@field enabled			boolean
+---@field layer				table<number>
+---@field isDefaultItem 	boolean
+---@field metadata			table?
+
+---@param itemName string
+---@return huditem__customhud
+local function CreateNewItem(itemName)
+	local newItem = {
+		-- The name ID we use for this item.
+		name = itemName,
+		-- All of the rendering functions given to this item.
+		funcs = {},
+		-- The current rendering function index for this item.
+		-- ("vanilla" is a reserved mod name for reverting a modded hud item
+		-- back to its original state, cannot be set for custom hud items)
+		type = nil,
+		-- Is this hud item supposed to be visible?
+		enabled = true,
+		-- Determine render order of this item.
+		-- Higher values are rendered on top, lower values are rendered below.
+		-- (Base game items are always on the lowest layer due to limitations.)
+		layer = {},
+		-- Determines if this is a default HUD item defined by the game.
+		-- Should never be true for custom HUD elements.
+		isDefaultItem = false,
+	};
+
+	return newItem;
+end
+
+function customhud.CreateNewItem(itemName)
+	return CreateNewItem(itemName);
+end
+
+for _,v in pairs(hooktypes) do
+	if (huditems[v] == nil) then
+		huditems[v] = {};
+	end
+end
+
+if updating then
+	for _,hook in pairs(hooktypes) do
+		for _,item in pairs(huditems[hook]) do
+			if (item.layer and type(item.layer) == "number") then
+				local saved_num = item.layer;
+				item.layer = {};
+
+				if (item.funcs) then
+					for k,_ in pairs(item.funcs) do
+						item.layer[k] = saved_num;
+					end
+				end
+			end
+
+			if (not customhud.modPriority[item.type]) then
+				customhud.modPriority[item.type] = 1;
+			end
+		end
+	end
+end
+
+function customhud.UpdateHudItemStatus(item)
+	-- Update status of default hud items
+	if (item.isDefaultItem ~= true) then
+		return;
+	end
+
+	if (item.enabled == true and item.type == "vanilla") then
+		hudenable(item.name);
+	else
+		huddisable(item.name);
+	end
+end
+
+
+for _,v in pairs(defaultitems) do
+	local itemName = v[1];
+	local hookType = v[2];
+
+	local item = customhud.FindItem(itemName);
+	local updatingItem = true;
+
+	if (item == nil) then
+		item = customhud.CreateNewItem(itemName);
+		updatingItem = false;
+
+	end
+
+	item.funcs["vanilla"] = nil;
+	item.layer["vanilla"] = 0;
+
+	if (updatingItem == false) then
+		item.type = "vanilla";
+		item.enabled = hudenabled(itemName);
+	else
+		customhud.UpdateHudItemStatus(item)
+	end
+
+	item.isDefaultItem = true;
+
+	table.insert(huditems[hookType], item);
+end
+
+
+---Returns true if the HUD item has been defined already, otherwise false. customhud.SetupItem already handles HUD item collisions, so you shouldn't need to use this in most cases.
+---@param itemName string Item here means "rings" "time" "score" etc.
+---@return boolean
+function customhud.ItemExists(itemName)
+	return (FindItem(itemName) ~= nil);
+end
+
+local _hudchains = {}
+
+---Enables a HUD item. Should completely replace instances of the base game's hud.enable, as it has support for custom HUD items.
+---@param itemName string Item here means "rings" "time" "score" etc.
+---@return boolean
 function customhud.enable(itemName)
 	local item = FindItem(itemName);
 	if (item == nil) then
 		return false;
 	end
 
-	item.enabled = true;
+	if _hudchains[itemName] then
+		for _,v in ipairs(_hudchains[itemName]) do
+			local chain = FindItem(v);
+			if (chain == nil) then
+				continue;
+			end
 
-	if (item.isDefaultItem == true) then
-		if (item.type == "vanilla") then
-			hud.enable(itemName);
-		else
-			hud.disable(itemName);
+			chain.enabled = true;
 		end
 	end
 
+	item.enabled = true;
+	customhud.UpdateHudItemStatus(item);
 	return true;
 end
 
+---Disables a HUD item. Should completely replace instances of the base game's hud.disable, as it has support for custom HUD items.
+---@param itemName string Item here means "rings" "time" "score" etc.
+---@return boolean
 function customhud.disable(itemName)
 	local item = FindItem(itemName);
 	if (item == nil) then
 		return false;
 	end
 
-	item.enabled = false;
+	if _hudchains[itemName] then
+		for _,v in ipairs(_hudchains[itemName]) do
+			local chain = FindItem(v);
+			if (chain == nil) then
+				continue;
+			end
 
-	if (item.isDefaultItem == true) then
-		hud.disable(itemName);
+			chain.enabled = false;
+		end
 	end
 
+	item.enabled = false;
+	customhud.UpdateHudItemStatus(item);
 	return true;
 end
 
+---	Return true if a HUD item has been enabled or false if it hasn't. Should completely replace instances of the base game's hud.enabled, as it has support for custom HUD items.
+---@param itemName string Item here means "rings" "time" "score" etc.
+---@return boolean
 function customhud.enabled(itemName)
 	local item = FindItem(itemName);
 	if (item == nil) then
@@ -219,59 +379,119 @@ function customhud.enabled(itemName)
 
 	if (item.isDefaultItem == true)
 	and (item.type == "vanilla") then
-		return hud.enabled(itemName);
+		return hudenabled(itemName);
 	end
 
-	return x.enabled;
+	return item.enabled;
 end
 
+---	Returns the current mod identifier that a HUD item is using. If the HUD item doesn't exist, then this returns nil.
+---@param itemName string Item here means "rings" "time" "score" etc.
+---@return string|nil
 function customhud.CheckType(itemName)
-	local x = FindItem(itemName);
-	if (x == nil) then
+	local item = FindItem(itemName);
+	if (item == nil) then
 		return nil;
 	end
 
-	return x.type;
+	return item.type;
 end
 
-function customhud.SetupItem(itemName, modName, itemFunc, hook, layer)
-	if (type(itemName) != "string") then
-		warn("Invalid item string \""..itemName.."\" in customhud.SetupItem");
+---Chains custom hud type to vanilla or another custom hud type's boolean status
+---* Chaining hud items won't result in chain reaction or logical loop.
+---@param itemName 	string
+---@param target 	string
+function customhud.ChainType(itemName, target)
+	-- 2 levels of checking
+
+	if type(itemName) ~= "string" then
+		warn("Invalid item string \""..itemName.."\" in customhud.ChainType");
 		return;
 	end
 
-	if (type(modName) != "string") then
-		warn("Invalid type string \""..modName.."\" in customhud.SetupItem");
+	if type(target) ~= "string" then
+		warn("Invalid target item string \""..itemName.."\" in customhud.ChainType");
 		return;
 	end
 
 	local item = FindItem(itemName);
-	if (item == nil)
+
+	if item == nil then
+		warn("Item \""..itemName.."\" was not found in customhud.ChainType");
+		return;
+	end
+
+	if item.isDefaultItem then
+		warn("Vanilla item \""..itemName.."\" cannot be chained in customhud.ChainType");
+		return;
+	end
+
+	local targetItem = FindItem(target);
+
+	if targetItem ~= nil then
+		if _hudchains[targetItem] == nil then
+			_hudchains[targetItem] = {};
+		end
+
+		table.insert(_hudchains[targetItem], itemName);
+	else
+		warn("Item \""..targetItem.."\" was not found in customhud.ChainType");
+	end
+end
+
+---@param a any
+---@param b any
+---@return boolean
+local function HudPriority(a, b)
+	return tonumber(a.layer[a.type]) < tonumber(b.layer[b.type]);
+end
+
+local CUSHUD_NOSWITCH = 1
+
+local function SetupItem(itemName, modName, itemFunc, hook, drawlayer, modPriority, flags)
+	if (type(itemName) ~= "string") then
+		warn("Invalid item string \""..itemName.."\" in customhud.SetupItem");
+		return;
+	end
+
+	if (type(modName) ~= "string") then
+		warn("Invalid type string \""..modName.."\" in customhud.SetupItem");
+		return;
+	end
+
+	local layernum = max(type(drawlayer) == "number" and drawlayer or 0, 0) + 100
+
+	if (type(modPriority) ~= "number") then
+		modPriority = 1
+	else
+		modPriority = min(max(1, modPriority), 3)
+	end
+
+	if not customhud.modPriority[modName] then
+		customhud.modPriority[modName] = modPriority
+	end
+
+	local item = FindItem(itemName);
+	if (item == nil) then
 		-- Create new item
-		if (type(hook) != "string")
+		if (type(hook) ~= "string") then
 			hook = "game";
 		end
 
-		if (huditems[hook] == nil)
+		if (huditems[hook] == nil) then
 			warn("Invalid hook string \""..hook.."\" in customhud.SetupItem")
 			return false;
 		end
 
-		if (type(layer) != "number")
-			layer = 0;
-		end
-
 		local newItem = CreateNewItem(itemName);
 
-		newItem.funcs[modName] = itemFunc;
 		newItem.type = modName;
-		newItem.layer = layer;
+
+		newItem.funcs[modName] = itemFunc;
+		newItem.layer[modName] = tonumber(layernum);
 
 		-- Insert the new item, and then re-sort the layers
 		table.insert(huditems[hook], newItem);
-		table.sort(huditems[hook], function(a, b)
-			return (a.layer < b.layer);
-		end);
 
 		return true;
 	end
@@ -282,32 +502,279 @@ function customhud.SetupItem(itemName, modName, itemFunc, hook, layer)
 		return false;
 	end
 
-	if (modName == "vanilla") and (item.isDefaultItem != true) then
+	if (modName == "vanilla") and (item.isDefaultItem ~= true) then
 		-- Trying to set a custom HUD item to "vanilla".
 		warn("Type string \"vanilla\" is only reserved for base game HUD items in customhud.SetupItem")
 		return false;
 	end
 
-	if (itemFunc != nil) then
-		// Change the function it uses
+	if (itemFunc ~= nil) then
+		-- Change the function it uses
 		item.funcs[modName] = itemFunc;
 	end
-	item.type = modName;
 
-	-- Update status
-	if (item.isDefaultItem == true) then
-		if (item.enabled == false) then
-			hud.disable(itemName);
-		else
-			if (modName == "vanilla") then
-				hud.enable(itemName);
-			else
-				hud.disable(itemName);
-			end
+	if drawlayer ~= nil then
+		item.layer[modName] = layernum
+	elseif item.layer[modName] == nil then
+		item.layer[modName] = 100
+	end
+
+	flags = flags or 0
+
+	if not (flags & CUSHUD_NOSWITCH) then
+		if customhud.modPriority[item.type] <= customhud.modPriority[modName] then
+			item.type = modName;
 		end
 	end
 
+	-- Update status
+	customhud.UpdateHudItemStatus(item);
+
 	return true;
+end
+
+---Creates/Switches Item
+-- * Mostly from what mod Item comes from
+-- * Create Format: 	**customhud.SetupItem(itemName, modName, itemFunc, [hook : "game", layer : 0])**
+-- * Switch Format: 	**customhud.SetupItem(itemName, modName)**
+-- *
+-- * (https://wiki.srb2.org/wiki/User:TehRealSalt/Custom_HUD_Library) **WIKI:**
+-- *
+-- * This function can change the display of a HUD item to another already defined type, replace an existing HUD item's drawing function, or create new custom HUD items entirely.
+-- *
+-- * Returns true if no errors occurred, otherwise it will return false.
+---@param itemName 		string 		itemName is the name of the HUD item. This can be anything from this list of base game HUD items (https://wiki.srb2.org/wiki/Lua/Functions#Togglable_HUD_items), or a new string to define a custom HUD item.
+---@param modName 		string  	modName is a string to use to identify the mod. The string "vanilla" is reserved for base game HUD items, and thus cannot be used for custom HUD items.
+---@param itemFunc 		function? 	itemFunc is the function used to draw this HUD item. This can replace the need for using the base game's hud.add at all in your mod. The function format should match the HUD hook this HUD item belongs to.
+---@param hook 			hudtype? 	hook is a string for the HUD hook (https://wiki.srb2.org/wiki/Lua/Functions#HUD_hooks) to use for newly created custom HUD items. There is also a special hook called "gameandscores", which has the function format of "scores", and will run regardless of the scoreboard being shown or not. The hook can be left out when not using custom HUD items, as all vanilla HUD items have a hook already defined. If not defined for custom HUD items, then this will get set to "game".
+---@param drawlayer 	number?     layer is a number that determines sorting of custom HUD items. Higher numbers will be drawn on top of lower numbers. This can be left out when not using custom HUD items, as all vanilla HUD items will be put on the lowest possible layer (INT32_MIN) since there is no way to draw anything under them currently. If not defined for custom HUD items, then this will get set to 0.
+---@param modPriority	number?     When setting up HUDs, this will give priority to the mod. DO NOT USE THIS FOR COMPLETE CHARACTER HUDs. Use Character Assign system instead.
+---@return boolean|nil
+function customhud.SetupItem(itemName, modName, itemFunc, hook, drawlayer, modPriority)
+	if SetupItem(itemName, modName, itemFunc, hook, drawlayer, modPriority) then
+		for _,hook in pairs(hooktypes) do
+			table.sort(huditems[hook], HudPriority);
+		end
+
+		return true;
+	end
+	return false;
+end
+
+---Only creates Item but won't switch (It is macro function, so warnings will refer to it as SetupItem)
+-- * Mostly from what mod Item comes from
+-- * Create Format: 	**customhud.AddItem(itemName, modName, itemFunc, [hook : "game", layer : 0])**
+-- *
+-- * (https://wiki.srb2.org/wiki/User:TehRealSalt/Custom_HUD_Library) **WIKI:**
+-- *
+-- * This function can change the display of a HUD item to another already defined type, replace an existing HUD item's drawing function, or create new custom HUD items entirely.
+-- *
+-- * Returns true if no errors occurred, otherwise it will return false.
+---@param itemName 		string 		itemName is the name of the HUD item. This can be anything from this list of base game HUD items (https://wiki.srb2.org/wiki/Lua/Functions#Togglable_HUD_items), or a new string to define a custom HUD item.
+---@param modName 		string  	modName is a string to use to identify the mod. The string "vanilla" is reserved for base game HUD items, and thus cannot be used for custom HUD items.
+---@param itemFunc 		function? 	itemFunc is the function used to draw this HUD item. This can replace the need for using the base game's hud.add at all in your mod. The function format should match the HUD hook this HUD item belongs to.
+---@param hook 			hudtype? 	hook is a string for the HUD hook (https://wiki.srb2.org/wiki/Lua/Functions#HUD_hooks) to use for newly created custom HUD items. There is also a special hook called "gameandscores", which has the function format of "scores", and will run regardless of the scoreboard being shown or not. The hook can be left out when not using custom HUD items, as all vanilla HUD items have a hook already defined. If not defined for custom HUD items, then this will get set to "game".
+---@param drawlayer 	number?     layer is a number that determines sorting of custom HUD items. Higher numbers will be drawn on top of lower numbers. This can be left out when not using custom HUD items, as all vanilla HUD items will be put on the lowest possible layer (INT32_MIN) since there is no way to draw anything under them currently. If not defined for custom HUD items, then this will get set to 0.
+---@param modPriority	number?     When setting up HUDs, this will give priority to the mod. DO NOT USE THIS FOR COMPLETE CHARACTER HUDs. Use Character Assign system instead.
+---@return boolean|nil
+function customhud.AddItem(itemName, modName, itemFunc, hook, drawlayer, modPriority)
+	if SetupItem(itemName, modName, itemFunc, hook, drawlayer, modPriority, CUSHUD_NOSWITCH) then
+		for _,hook in pairs(hooktypes) do
+			table.sort(huditems[hook], HudPriority);
+		end
+
+		return true;
+	end
+	return false;
+end
+
+---Swaps/Switches Item to Mod's counterpart if it exists, regardless of Mod Priority
+--- - DO NOT USE THIS IN ANY FORCEFUL WAY.
+--- - Used internally
+---@param itemName 		string 		itemName is the name of the HUD item. This can be anything from this list of base game HUD items (https://wiki.srb2.org/wiki/Lua/Functions#Togglable_HUD_items), or a new string to define a custom HUD item.
+---@param modName 		string  	modName is a string to use to identify the mod. The string "vanilla" is reserved for base game HUD items, and thus cannot be used for custom HUD items.
+function customhud.SwapItem(itemName, modName)
+	if (type(itemName) ~= "string") then
+		warn("Invalid item string \""..itemName.."\" in customhud.SwapItem");
+		return;
+	end
+
+	if (type(modName) ~= "string") then
+		warn("Invalid type string \""..modName.."\" in customhud.SwapItem");
+		return;
+	end
+
+	local item = FindItem(itemName);
+	if (item) then
+
+		if (item.funcs[modName]) then
+			item.type = modName;
+
+			for _,hook in pairs(hooktypes) do
+				table.sort(huditems[hook], HudPriority);
+			end
+		end
+
+		return true;
+	end
+
+	return false;
+end
+
+---Assigns to character a ruleset that it priorities over any other loaded hud
+--- - Exclusive to Game HUD hook
+---@param skin string character skin that hud should work with
+---@param ruleSet table<table, table> Currently, nested table that contains 2 string table, disable & mod. disable = {["rings"] = true, ...}, mod = {["rings"] = "terrariamod", ...},
+function customhud.AssignToCharacter(skin, ruleSet)
+	if (customhud.characterRuleset[skin] == nil) then
+		customhud.characterRuleset[skin] = ruleSet;
+	end
+end
+
+COM_AddCommand("customhud_force_enableitem", function(_, itemName)
+	local item = customhud.FindItem(itemName);
+	if (item == nil) then
+		-- Item doesn't exist.
+		return;
+	end
+
+	customhud.enable(itemName);
+end, COM_LOCAL);
+
+COM_AddCommand("customhud_force_disableitem", function(_, itemName)
+	local item = customhud.FindItem(itemName);
+	if (item == nil) then
+		-- Item doesn't exist.
+		return;
+	end
+
+	customhud.disable(itemName);
+end, COM_LOCAL);
+
+COM_AddCommand("customhud_force_reset", function(_)
+	for _,v in pairs(defaultitems) do
+		customhud.enable(v[1]);
+	end
+end, COM_LOCAL);
+
+COM_AddCommand("customhud_setmod", function(_, modName)
+	for _,hook in pairs(hooktypes) do
+		for _,item in pairs(huditems[hook]) do
+			if (item.funcs[modName])
+			or (modName == "vanilla" and item.isDefaultItem == true) then
+				customhud.SwapItem(item.name, modName);
+				customhud.UpdateHudItemStatus(item);
+			end
+		end
+	end
+end, COM_LOCAL);
+
+COM_AddCommand("customhud_setitem", function(_, itemName, modName)
+	local item = customhud.FindItem(itemName);
+	if (item == nil) then
+		-- Item doesn't exist.
+		return;
+	end
+
+	customhud.SwapItem(itemName, modName);
+end, COM_LOCAL);
+
+COM_AddCommand("customhud_getitemtype", function(_, itemName)
+	local item = customhud.FindItem(itemName);
+	if (item == nil) then
+		-- Item doesn't exist.
+		return;
+	end
+
+	print(item.type)
+end, COM_LOCAL);
+
+---creates and returns metadata of hud item
+---@param itemName string
+---@return table?
+function customhud.metadata(itemName)
+	if type(itemName) ~= "string" then
+		warn("Invalid item string \""..itemName.."\" in customhud.etadata");
+		return;
+	end
+
+	local item = FindItem(itemName);
+
+	if item == nil then
+		warn("Item \""..itemName.."\" was not found in customhud.metadata");
+		return;
+	else
+		if item.metadata == nil then
+			item.metadata = {};
+		end
+
+		return item.metadata;
+	end
+end
+
+local hudMeta = {
+	easeInOut = true,
+	hide = false,
+
+	margin_left = 0,
+	margin_right = 0,
+	margin_top = 0,
+	margin_bottom = 0,
+}
+
+---gets hud system meta variables, like margins, ease in and out, hiding the hud etc.
+---@return table
+function customhud.GetMeta()
+	return hudMeta;
+end
+
+local lastleveltime = 0
+
+--#endregion
+--#region Hooks
+local function RunCustomGameHooks(hook, v, player, ...)
+	if (huditems[hook] == nil) then
+		return;
+	end
+
+	local ruleset
+
+	if player and player.valid and player.realmo and player.realmo.valid then
+		ruleset = customhud.characterRuleset[player.realmo.skin]
+	end
+
+	for _,item in pairs(huditems[hook]) do
+		if (item.enabled == false) then
+			continue;
+		end
+
+		if (item.type == nil) then
+			continue;
+		end
+
+		local func
+
+		if (ruleset ~= nil) then
+			if (ruleset.disable ~= nil and ruleset.disable[item.name]) then
+				continue;
+			end
+
+			if (ruleset.mod ~= nil and ruleset.mod[item.name]) then
+				func = item.funcs[ruleset.mod[item.name]];
+			end
+		end
+
+		if (func == nil) then
+			func = item.funcs[item.type];
+
+			if (func == nil) then
+				continue
+			end
+		end
+
+		local arg = {...};
+		func(v, player, unpack(arg));
+	end
 end
 
 local function RunCustomHooks(hook, v, ...)
@@ -316,16 +783,16 @@ local function RunCustomHooks(hook, v, ...)
 	end
 
 	for _,item in pairs(huditems[hook]) do
-		if (item.enabled == false)
+		if (item.enabled == false) then
 			continue;
 		end
 
-		if (item.type == nil)
+		if (item.type == nil) then
 			continue;
 		end
 
 		local func = item.funcs[item.type];
-		if (func == nil)
+		if (func == nil) then
 			continue;
 		end
 
@@ -335,11 +802,16 @@ local function RunCustomHooks(hook, v, ...)
 end
 
 hud.add(function(v, player, camera)
-	RunCustomHooks("game", v, player, camera);
+	RunCustomHooks("menu", v);
+	RunCustomHooks("gamemenu", v);
+	RunCustomGameHooks("overlay", v);
+	RunCustomGameHooks("game", v, player, camera);
 	RunCustomHooks("gameandscores", v);
 end, "game");
 
 hud.add(function(v)
+	RunCustomGameHooks("menu", v);
+	RunCustomGameHooks("overlay", v);
 	RunCustomHooks("scores", v);
 	RunCustomHooks("gameandscores", v);
 end, "scores");
@@ -349,21 +821,32 @@ hud.add(function(v)
 end, "title");
 
 hud.add(function(v, player, ticker, endtime)
-	RunCustomHooks("titlecard", v, player, ticker, endtime);
+	RunCustomGameHooks("titlecard", v, player, ticker, endtime);
 end, "titlecard");
 
 hud.add(function(v)
 	RunCustomHooks("intermission", v);
 end, "intermission");
 
-local fonts = {};
+rawset(hud, "enable",  customhud.enable)
+rawset(hud, "enabled", customhud.enabled)
+rawset(hud, "disable", customhud.disable)
+
+--#endregion
+--#region Fonts -- Currently unsupported
+
+if not customhud.fonts then
+	customhud.fonts = {};
+end
+
+local fonts = customhud.fonts;
 
 local function CreateNewFont(fontName, kerning, space, mono)
-	if (type(kerning) != "number")
+	if (type(kerning) ~= "number") then
 		kerning = 0;
 	end
 
-	if (type(space) != "number")
+	if (type(space) ~= "number") then
 		space = 4;
 	end
 
@@ -376,15 +859,25 @@ local function CreateNewFont(fontName, kerning, space, mono)
 		number = false,
 	};
 
-	if (type(mono) == "number")
+	if (type(mono) == "number") then
 		newFont.mono = mono;
 	end
 
 	return newFont;
 end
 
+function customhud.CreateNewFont(fontName, kerning, space, mono)
+	return CreateNewFont(fontName, kerning, space, mono)
+end
+
+---Defines a new font. This should be done before using any of the font functions.
+---@param fontName string is the font's prefix. This is used for determining the patch to use, which is in xxxxxyyy, where x is the font prefix and y is the ASCII decimal of each character. This cannot be longer than 5 characters.
+---@param kerning number? is the spacing between letters. Negative numbers makes letters overlap, positive numbers are spaced farther apart. Defaults to 0.
+---@param space number? is how many pixels a space should be. Defaults to 4
+---@param mono number? makes all characters mono-spaced instead of being based on each patch size. Defaults to nil, for a variable-width font.
+---@return table|nil
 function customhud.SetupFont(fontName, kerning, space, mono)
-	if (type(fontName) != "string") then
+	if (type(fontName) ~= "string") then
 		warn("Invalid font name \""..fontName.."\" in customhud.SetupFont");
 		return;
 	end
@@ -402,12 +895,19 @@ function customhud.SetupFont(fontName, kerning, space, mono)
 	fonts[fontName] = CreateNewFont(fontName, kerning, space, mono);
 end
 
+---Returns font data from customhud.SetupFont or customhud.SetupNumberFont.
+---@param fontName string
+---@return table
 function customhud.GetFont(fontName)
 	return fonts[fontName];
 end
 
 local function FontPatchNameDirect(fontName, charByte)
 	return fontName .. string.format("%03d", charByte);
+end
+
+function customhud.FontPatchNameDirect(fontName, charByte)
+	return FontPatchNameDirect(fontName, charByte);
 end
 
 local function FontPatchName(v, fontName, charByte)
@@ -425,6 +925,10 @@ local function FontPatchName(v, fontName, charByte)
 	return patchName;
 end
 
+function customhud.FontPatchName(v, fontName, charByte)
+	return FontPatchName(v, fontName, charByte);
+end
+
 local function NumberPatchName(v, fontName, charByte)
 	local charNumber = charByte - 48;
 	if (charNumber >= 0 and charNumber <= 9) then
@@ -433,6 +937,15 @@ local function NumberPatchName(v, fontName, charByte)
 	return "";
 end
 
+function customhud.NumberPatchName(v, fontName, charByte)
+	return NumberPatchName(v, fontName, charByte);
+end
+
+---Caches and returns a specific character patch from font data.
+---@param v 	   videolib
+---@param font 	   table
+---@param charByte number
+---@return patch_t|nil
 function customhud.GetFontPatch(v, font, charByte)
 	if not (font.patches[charByte] and font.patches[charByte].valid) then
 		local patchName = "";
@@ -443,7 +956,7 @@ function customhud.GetFontPatch(v, font, charByte)
 			patchName = FontPatchName(v, font.name, charByte);
 		end
 
-		if (patchName == "")
+		if (patchName == "") then
 			return nil;
 		end
 
@@ -456,6 +969,12 @@ function customhud.GetFontPatch(v, font, charByte)
 	return font.patches[charByte];
 end
 
+---Caches and returns a specific character patch from font data.
+---@param v 	   videolib
+---@param str 	   string
+---@param fontName string?
+---@param scale    number?
+---@return number|nil
 function customhud.CustomFontStringWidth(v, str, fontName, scale)
 	if not (type(str) == "string") then
 		warn("No string given in customhud.CustomFontStringWidth");
@@ -478,22 +997,22 @@ function customhud.CustomFontStringWidth(v, str, fontName, scale)
 		return strwidth;
 	end
 
-	if (type(scale) != "number")
+	if (type(scale) ~= "number") then
 		scale = nil;
 	end
 
 	local kerning = font.kerning;
-	if (scale != nil) then
+	if (scale ~= nil) then
 		kerning = $1 * scale;
 	end
 
 	local space = font.space;
-	if (scale != nil) then
+	if (scale ~= nil) then
 		space = $1 * scale;
 	end
 
 	local mono = font.mono;
-	if (mono != nil and scale != nil) then
+	if (mono ~= nil and scale ~= nil) then
 		mono = $1 * scale;
 	end
 
@@ -504,9 +1023,9 @@ function customhud.CustomFontStringWidth(v, str, fontName, scale)
 		if (patch and patch.valid) then
 			local charWidth = patch.width;
 
-			if (mono != nil) then
+			if (mono ~= nil) then
 				charWidth = mono;
-			elseif (scale != nil) then
+			elseif (scale ~= nil) then
 				charWidth = $1 * scale;
 			end
 
@@ -519,6 +1038,16 @@ function customhud.CustomFontStringWidth(v, str, fontName, scale)
 	return strwidth;
 end
 
+---Draws a single character of a custom font. Returns the X position to draw another character at, if trying to draw an entire string.
+---@param v videolib
+---@param x fixed_t|number
+---@param y fixed_t|number
+---@param charByte number
+---@param fontName string
+---@param flags number
+---@param scale fixed_t
+---@param color number
+---@return number|nil
 function customhud.CustomFontChar(v, x, y, charByte, fontName, flags, scale, color)
 	if not (type(charByte) == "number") then
 		warn("No character byte given in customhud.CustomFontChar");
@@ -536,22 +1065,26 @@ function customhud.CustomFontChar(v, x, y, charByte, fontName, flags, scale, col
 		return;
 	end
 
-	if (type(scale) != "number")
+	if (type(scale) ~= "number") then
 		scale = nil;
 	end
 
+	if (type(flags) ~= "number") then
+		flags = 0;
+	end
+
 	local kerning = font.kerning;
-	if (scale != nil) then
+	if (scale ~= nil) then
 		kerning = $1 * scale;
 	end
 
 	local space = font.space;
-	if (scale != nil) then
+	if (scale ~= nil) then
 		space = $1 * scale;
 	end
 
 	local mono = font.mono;
-	if (mono != nil and scale != nil) then
+	if (mono ~= nil and scale ~= nil) then
 		mono = $1 * scale;
 	end
 
@@ -562,7 +1095,7 @@ function customhud.CustomFontChar(v, x, y, charByte, fontName, flags, scale, col
 
 	local patch = customhud.GetFontPatch(v, font, charByte);
 	if (patch and patch.valid) then
-		if (scale != nil) then
+		if (scale ~= nil) then
 			v.drawScaled(x, y, scale, patch, flags, wc);
 		else
 			v.draw(x, y, patch, flags, wc);
@@ -573,9 +1106,9 @@ function customhud.CustomFontChar(v, x, y, charByte, fontName, flags, scale, col
 	if (patch and patch.valid) then
 		local charWidth = patch.width;
 
-		if (mono != nil) then
+		if (mono ~= nil) then
 			charWidth = mono;
-		elseif (scale != nil) then
+		elseif (scale ~= nil) then
 			charWidth = $1 * scale;
 		end
 
@@ -587,6 +1120,16 @@ function customhud.CustomFontChar(v, x, y, charByte, fontName, flags, scale, col
 	return nextx;
 end
 
+---Draws a string in a custom font. If scale is not nil, then the X/Y coordinates are expected to be in fixed point scale, otherwise they are expected to be integers. color uses skincolors rather than the base games' text colors.
+---@param v videolib
+---@param x fixed_t|number
+---@param y fixed_t|number
+---@param str number
+---@param fontName string
+---@param flags number
+---@param align string
+---@param scale fixed_t
+---@param color number
 function customhud.CustomFontString(v, x, y, str, fontName, flags, align, scale, color)
 	if not (type(str) == "string") then
 		warn("No string given in customhud.CustomFontString");
@@ -604,22 +1147,22 @@ function customhud.CustomFontString(v, x, y, str, fontName, flags, align, scale,
 		return;
 	end
 
-	if (type(scale) != "number")
+	if (type(scale) ~= "number") then
 		scale = nil;
 	end
 
 	local kerning = font.kerning;
-	if (scale != nil) then
+	if (scale ~= nil) then
 		kerning = $1 * scale;
 	end
 
 	local space = font.space;
-	if (scale != nil) then
+	if (scale ~= nil) then
 		space = $1 * scale;
 	end
 
 	local mono = font.mono;
-	if (mono != nil and scale != nil) then
+	if (mono ~= nil and scale ~= nil) then
 		mono = $1 * scale;
 	end
 
@@ -642,8 +1185,13 @@ function customhud.CustomFontString(v, x, y, str, fontName, flags, align, scale,
 	end
 end
 
+---Defines a new number font. Unlike standard fonts, the font prefix can be up to 7 characters long, but it only uses 0-9 as bytes to represent numbers. Generally, it's recommended to use customhud.SetupFont instead, as this is mostly only for backwards compatibility with some older mods' number font names.
+---@param fontName string
+---@param kerning number?
+---@param space number?
+---@param mono number?
 function customhud.SetupNumberFont(fontName, kerning, space, mono)
-	if (type(fontName) != "string") then
+	if (type(fontName) ~= "string") then
 		warn("Invalid font name \""..fontName.."\" in customhud.SetupNumberFont");
 		return;
 	end
@@ -664,10 +1212,17 @@ function customhud.SetupNumberFont(fontName, kerning, space, mono)
 	fonts[fontName] = newFont;
 end
 
+---Returns the width of a number if it were drawn in a custom font. padding is the number of padding zeroes to use, set to nil for no padding.
+---@param v 		videolib
+---@param num 		number
+---@param fontName 	string
+---@param padding 	string?
+---@param scale 	fixed_t?
+---@return number|nil
 function customhud.CustomNumWidth(v, num, fontName, padding, scale)
 	local str = "";
 
-	if (padding != nil)
+	if (padding ~= nil) then
 		str = string.format("%0"..padding.."d", num);
 	else
 		str = string.format("%d", num);
@@ -676,10 +1231,23 @@ function customhud.CustomNumWidth(v, num, fontName, padding, scale)
 	return customhud.CustomFontStringWidth(v, str, fontName, scale);
 end
 
+---Draws a number in a custom number font.
+---comment
+---@param v videolib
+---@param x fixed_t|number
+---@param y fixed_t|number
+---@param num number
+---@param fontName string
+---@param padding number?
+---@param flags number?
+---@param align string?
+---@param scale number?
+---@param color number?
+---@return nil
 function customhud.CustomNum(v, x, y, num, fontName, padding, flags, align, scale, color)
 	local str = "";
 
-	if (padding != nil)
+	if (padding ~= nil) then
 		str = string.format("%0"..padding.."d", num);
 	else
 		str = string.format("%d", num);
@@ -687,3 +1255,5 @@ function customhud.CustomNum(v, x, y, num, fontName, padding, flags, align, scal
 
 	return customhud.CustomFontString(v, x, y, str, fontName, flags, align, scale, color);
 end
+
+--#endregion
