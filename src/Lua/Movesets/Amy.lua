@@ -88,7 +88,7 @@ addHook("PlayerThink", function(p)
 		init(p)
 	end
 
-	local attackFlags = STR_ATTACK|STR_WALL|STR_CEILING
+	local attackFlags = STR_ATTACK|STR_WALL|STR_CEILING|STR_SPIKE
 
 	if p.mo.state == S_FH_AMY_TWIRL then
 		local gravity = 3
@@ -136,6 +136,8 @@ addHook("AbilitySpecial", function(p)
 	if p.pflags & PF_JUMPED
 	and not (p.pflags & PF_THOKKED) then
 		p.heist.attack_cooldown = 85
+		S_StartSound(p.mo, sfx_s3k42) -- twinspin / melee / instashield sfx
+		--S_StartSound(p.mo, sfx_s1ab) -- jet jaw sfx
 		P_SetObjectMomZ(p.mo, 7*FU)
 		p.mo.state = S_FH_AMY_TWIRL
 		p.pflags = $|PF_THOKKED

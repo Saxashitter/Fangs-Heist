@@ -70,14 +70,25 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 		return false
 	end
 
+	local blockDeplete = FH_BLOCKDEPLETION
+	local forceDmg
 	if i
-	and i.valid
-	and i.type == MT_CORK then
-		if t.player.powers[pw_flashing] then
-			return false
+	and i.valid then
+		if i.type == MT_CORK then
+			if t.player.powers[pw_flashing]
+			or t.player.powers[pw_invulnerability] then
+				return false
+			end
 		end
-		if t.player.powers[pw_invulnerability] then
-			return false
+		
+		if i.type == MT_LHRT then
+			if t.player.powers[pw_flashing]
+			or t.player.powers[pw_invulnerability] then
+				return false
+			end
+			
+			blockDeplete = $/5
+			forceDmg = true
 		end
 	end
 
@@ -86,7 +97,7 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 	and s.player
 	and s.player.heist then
 		if t.player.heist.blocking then
-			t.player.heist.block_time = min(FH_BLOCKTIME, $+FH_BLOCKDEPLETION)
+			t.player.heist.block_time = min(FH_BLOCKTIME, $+blockDeplete)
 			if t.player.heist.block_time == FH_BLOCKTIME then
 				t.player.heist.block_cooldown = 5*TICRATE
 				t.player.heist.blocking = false
@@ -98,6 +109,7 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 			end
 		end
 	end
+	return forceDmg
 end, MT_PLAYER)
 
 addHook("MobjDamage", function(t,i,s,dmg,dt)
