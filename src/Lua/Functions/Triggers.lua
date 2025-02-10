@@ -52,15 +52,47 @@ function FangsHeist.damagePlayers(p, friendlyfire, damage)
 
 		if char2:isAttacking(sp) then
 			FangsHeist.clashPlayers(p, sp)
+
+			S_StartSound(p.mo, sfx_s3k7b)
+			S_StartSound(sp.mo, sfx_s3k7b)
+
 			continue
+		end
+
+		if sp.heist.blocking then
+			local speed = FixedHypot(p.mo.momx, p.mo.momy)-FixedHypot(sp.mo.momx, sp.mo.momy)
+			local damaged = FangsHeist.depleteBlock(p, damage)
+	
+			if damaged then
+				char1:onHit(p, sp)
+
+				return sp, speed
+			end
+
+			return sp, false
 		end
 
 		if P_DamageMobj(sp.mo, p.mo, p.mo) then
 			char1:onHit(p, sp)
 			return sp, FixedHypot(p.mo.momx, p.mo.momy)-FixedHypot(sp.mo.momx, sp.mo.momy)
 		end
-		if sp.heist.blocking then
-			return sp, false
-		end
+	end
+end
+
+function FangsHeist.depleteBlock(p, damage)
+	if damage == nil then
+		damage = FH_BLOCKDEPLETION
+	end
+
+	p.heist.block_time = min(FH_BLOCKTIME, $+damage)
+
+	if p.heist.block_time == FH_BLOCKTIME then
+		p.heist.block_cooldown = 5*TICRATE
+		p.heist.blocking = false
+		S_StartSound(t, sfx_fhbbre)
+		return true
+	else
+		S_StartSound(t, sfx_s3k7b)
+		return false
 	end
 end
