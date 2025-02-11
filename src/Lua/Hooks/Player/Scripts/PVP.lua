@@ -113,14 +113,27 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 		return false
 	end
 
+	local damage = FH_BLOCKDEPLETION
+	local forced
+
 	if i
-	and i.valid
-	and i.type == MT_CORK then
-		if t.player.powers[pw_flashing] then
-			return false
+	and i.valid then
+		if i.type == MT_CORK then
+			if t.player.powers[pw_flashing] then
+				return false
+			end
+			if t.player.powers[pw_invulnerability] then
+				return false
+			end
 		end
-		if t.player.powers[pw_invulnerability] then
-			return false
+		if i.type == MT_LHRT then
+			if t.player.powers[pw_flashing]
+			or t.player.powers[pw_invulnerability] then
+				return false
+			end
+			
+			damage = $/5
+			forced = true
 		end
 	end
 
@@ -129,9 +142,11 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 	and s.player
 	and s.player.heist then
 		if t.player.heist.blocking then
-			return FangsHeist.depleteBlock(p)
+			return FangsHeist.depleteBlock(t.player, damage)
 		end
 	end
+
+	return forced
 end, MT_PLAYER)
 
 
@@ -149,13 +164,22 @@ return function(p)
 		local flags = STR_ATTACK
 
 		if p.heist.attack_time == 0 then
-			p.powers[pw_strong] = $|flags
-		else
 			p.powers[pw_strong] = $ & ~flags
+		else
+			p.powers[pw_strong] = $|flags
 		end
 	end
-			
-	p.heist.attack_cooldown = max(0, $-1)
+
+	if p.heist.attack_cooldown then
+		p.heist.attack_cooldown = max(0, $-1)
+
+		if p.heist.attack_cooldown == 0 then
+			local ghost = P_SpawnGhostMobj(p.mo)
+			ghost.destscale = 4*FU
+
+			S_StartSound(p.mo, sfx_ngskid)
+		end
+	end
 	p.heist.block_cooldown = max(0, $-1)
 
 	-- attacking
@@ -195,7 +219,6 @@ return function(p)
 			p.heist.blocking = false
 		end
 	end
-
 
 	if char:isAttacking(p) then
 		p.heist.attack_time = 0

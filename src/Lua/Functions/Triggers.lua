@@ -89,10 +89,11 @@ function FangsHeist.depleteBlock(p, damage)
 	if p.heist.block_time == FH_BLOCKTIME then
 		p.heist.block_cooldown = 5*TICRATE
 		p.heist.blocking = false
-		S_StartSound(t, sfx_fhbbre)
+		S_StartSound(p.mo, sfx_fhbbre)
+
 		return true
-	else
-		S_StartSound(t, sfx_s3k7b)
-		return false
 	end
+
+	S_StartSound(p.mo, sfx_s3k7b)
+	return false
 end

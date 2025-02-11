@@ -1,5 +1,5 @@
-local POPGUN_TIME = 35
-local POPGUN_FRICTION = tofixed("0.92")
+local POPGUN_TIME = 45
+local POPGUN_FRICTION = tofixed("0.95")
 
 local SKID_TIME = 3
 

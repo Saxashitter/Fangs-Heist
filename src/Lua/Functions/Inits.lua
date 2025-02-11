@@ -33,12 +33,14 @@ function FangsHeist.initMode(map)
 	FangsHeist.Net.is_boss = string.lower(mapheaderinfo[map].fh_boss or "") == "true"
 
 	local info = mapheaderinfo[map]
+
 	if info.fh_escapetheme then
 		FangsHeist.Net.escape_theme = info.fh_escapetheme
 	end
 	if info.fh_escapehurryup then
 		FangsHeist.Net.escape_hurryup = info.fh_escapehurryup:lower() == "true"
 	end
+
 	if info.fh_hellstage
 	and info.fh_hellstage:lower() == "true" then
 		FangsHeist.Net.hell_stage = true
@@ -47,18 +49,6 @@ function FangsHeist.initMode(map)
 	if FangsHeist.Net.is_boss then
 		FangsHeist.Net.time_left = ((2*60)*TICRATE)+(20*TICRATE)
 		FangsHeist.Net.max_time_left = ((2*60)*TICRATE)+(20*TICRATE)
-	end
-
-	local data = FangsHeist.getTypeData()
-	if data.start_timer then
-		local choice = P_RandomRange(1, #FangsHeist.escapeThemes)
-
-		while FangsHeist.Save.escape == FangsHeist.escapeThemes[choice] do
-			choice = P_RandomRange(1, #FangsHeist.escapeThemes)
-		end
-		FangsHeist.Save.escape = FangsHeist.escapeThemes[choice]
-		FangsHeist.Net.escape_theme = FangsHeist.escapeThemes[choice]
-		FangsHeist.Net.escape_choice = choice
 	end
 
 	for p in players.iterate do
@@ -95,7 +85,8 @@ function FangsHeist.loadMap()
 		and thing.mobj.valid
 		and (thing.mobj.type == MT_ATTRACT_BOX
 		or thing.mobj.type == MT_1UP_BOX
-		or thing.mobj.type == MT_INVULN_BOX) then
+		or thing.mobj.type == MT_INVULN_BOX
+		or thing.mobj.type == MT_STARPOST) then
 			P_RemoveMobj(thing.mobj)
 		end
 

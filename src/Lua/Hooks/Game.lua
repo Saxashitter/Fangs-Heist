@@ -5,6 +5,10 @@ local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 
 // Mode initialization.
 addHook("MapChange", function(map)
+	if not multiplayer then
+		mapmusname = mapheaderinfo[map].musname or $
+	end
+
 	FangsHeist.initMode(map)
 end)
 
@@ -241,5 +245,18 @@ addHook("ThinkFrame", do
 	if count.alive == 0
 	and FangsHeist.Net.escape then
 		FangsHeist.startIntermission()
+	end
+end)
+
+addHook("PostThinkFrame", do
+	local p = displayplayer
+
+	if multiplayer then return end
+	if not (p and p.heist) then return end
+
+	if (p.exiting or p.pflags & PF_FINISHED)
+	and not p.heist.exiting then
+		p.exiting = 0
+		p.pflags = $ & ~(PF_FINISHED|PF_FULLSTASIS)
 	end
 end)
