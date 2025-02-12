@@ -74,6 +74,16 @@ local bean_things = {
 	[409] = true
 }
 
+local replace_types = {
+	[MT_1UP_BOX] = MT_RING_BOX
+}
+
+local delete_types = { -- why wasnt this a table like the rest before? -pac
+	[MT_ATTRACT_BOX] = true,
+	[MT_INVULN_BOX] = true,
+	[MT_STARPOST] = true
+}
+
 function FangsHeist.loadMap()
 	FangsHeist.spawnSign()
 
@@ -82,12 +92,18 @@ function FangsHeist.loadMap()
 
 	for thing in mapthings.iterate do
 		if thing.mobj
-		and thing.mobj.valid
-		and (thing.mobj.type == MT_ATTRACT_BOX
-		or thing.mobj.type == MT_1UP_BOX
-		or thing.mobj.type == MT_INVULN_BOX
-		or thing.mobj.type == MT_STARPOST) then
-			P_RemoveMobj(thing.mobj)
+		and thing.mobj.valid then
+			if replace_types[thing.mobj.type] ~= nil then
+				local newtype = replace_types[thing.mobj.type]
+				P_RemoveMobj(thing.mobj)
+				
+				local mo = P_SpawnMobj(thing.x*FU, thing.y*FU, spawnpos.getThingSpawnHeight(newtype, thing, thing.x*FU, thing.y*FU), newtype)
+				if (thing.options & MTF_OBJECTFLIP) then
+					thing.flags2 = $^^MF2_OBJECTFLIP
+				end
+			elseif delete_types[thing.mobj.type] then
+				P_RemoveMobj(thing.mobj)
+			end
 		end
 
 		if thing.type == 3844 then
