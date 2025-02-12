@@ -27,6 +27,7 @@ addHook("PlayerThink", function(p)
 	if p.skin ~= p.heist.locked_skin then
 		R_SetPlayerSkin(p, p.heist.locked_skin)
 	end
+	p.score = FangsHeist.returnProfit(p)
 end)
 
 addHook("ThinkFrame", function(p)
