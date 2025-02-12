@@ -5,6 +5,12 @@ GameData = fangsheist.dat
 
 Clear All
 
+Unlockable 1
+Name = Sound Test
+Type = SoundTest
+Height = 10
+ConditionSet = -1
+
 Unlockable 2
 Unlockable 3
 Unlockable 23
