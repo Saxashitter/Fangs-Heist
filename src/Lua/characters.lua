@@ -5,8 +5,8 @@ local DEFAULT = {
 	pregameBackground = "FH_PREGAME_UNKNOWN",
 
 	attackCooldown = TICRATE,
-	attackRange = tofixed("2.5"),
-	attackZRange = tofixed("2.5"),
+	attackRange = tofixed("4"),
+	attackZRange = tofixed("2.35"),
 
 	damageRange = tofixed("1.5"),
 	damageZRange = tofixed("1.5"),
