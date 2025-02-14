@@ -45,7 +45,11 @@ dofile "Objects/Hell Stage"
 dofile "Objects/Bosses/GFZ3 Eggman"
 dofile "Objects/Bosses/Missile"
 
-dofile "Movesets/Fang"
 dofile "Movesets/Amy"
+dofile "Movesets/Fang"
+
+dofile "Compat/Mario"
+dofile "Compat/S3 Sonic"
+dofile "Compat/Bean"
 
 dofile "modsupport"

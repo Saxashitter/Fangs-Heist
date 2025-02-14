@@ -187,6 +187,7 @@ return function(p)
 	and p.cmd.buttons & BT_ATTACK
 	and not (p.lastbuttons & BT_ATTACK)
 	and not p.heist.blocking
+	and not P_PlayerInPain(p)
 	and char.useDefaultAttack then
 		p.heist.attack_cooldown = char.attackCooldown
 		p.heist.attack_time = FH_ATTACKTIME
@@ -204,7 +205,9 @@ return function(p)
 		p.heist.block_time = max(0, $-2)
 
 		if p.heist.block_cooldown == 0
-		and p.cmd.buttons & BT_FIRENORMAL then
+		and p.heist.attack_cooldown == 0
+		and p.cmd.buttons & BT_FIRENORMAL
+		and not P_PlayerInPain(p) then
 			p.heist.block_cooldown = FH_BLOCKCOOLDOWN
 			S_StartSound(p.mo, sfx_fhbonn)
 			p.heist.blocking = true

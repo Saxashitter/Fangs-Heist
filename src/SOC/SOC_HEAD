@@ -47,27 +47,6 @@ FlickyList = Bluebird,Chipmunk
 SelectHeading = Supported Maps
 #see act 1
 
-Level 3
-Levelname = Greenflower
-Act = 3
-Keywords = GFZ3
-Music = THECUR
-MusicPostBoss = GFZ1
-TypeOfLevel = Heist
-NextLevel = 4
-SkyNum = 1
-RecordAttack = true
-LevelSelect = 1
-SaveGame = true
-SkyboxScale = 64
-BonusType = Boss
-FlickyList = Bluebird,Chipmunk
-StartRings = 10
-ForceResetMusic = On
-WarningTitle = true
-Lua.FH_Boss = true
-#see act 1
-
 Level 4
 Levelname = Techno Hill
 Act = 1
