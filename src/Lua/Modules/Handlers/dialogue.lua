@@ -120,7 +120,7 @@ DIALOGUE = {
     startFangPreset = function (name)
         print("Fang preset " .. name)
         local data = {
-            icon = fangdiag.portrait,
+            icon = (randSeed%69 == 0) and fangdiag.fankportrait or fangdiag.portrait,
             text = fangdiag[name][(randSeed % #fangdiag[name]) + 1],
             needsWrap = true
         }
