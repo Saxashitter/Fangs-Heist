@@ -38,12 +38,17 @@ function module.think(input) // runs when selected
 			dir = -1
 		end
 
+		local old = curSel
 		curSel = max(1, min($+dir, #FangsHeist.Net.map_choices))
+		if old ~= curSel then
+			S_StartSound(nil, sfx_menu1)
+		end
 	end
 
 	if input.buttons & BT_JUMP
 	and not (input.lastbuttons & BT_JUMP) then
 		COM_BufInsertText(consoleplayer, "fh_votemap "..curSel)
+		S_StartSound(nil, sfx_strpst)
 	end
 end
 

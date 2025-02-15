@@ -20,7 +20,7 @@ function FangsHeist.doSignpostWarning(_took)
 end
 
 function module.init()
-	y = 200*FU
+	y = 210*FU
 	x = 160*FU
 	alpha = 0
 	ticker = 0
@@ -28,7 +28,7 @@ function module.init()
 	warning_active = false
 end
 
-function module.draw(v)
+function module.draw(v,p)
 	local data = FangsHeist.getTypeData()
 
 	if warning_active then
@@ -54,7 +54,7 @@ function module.draw(v)
 
 		if alpha ~= 10 then
 			v.drawScaled(x-(warning.width*scale/2),
-				y-2*FU-warning.height*scale,
+				y-12*FU-warning.height*scale,
 				scale,
 				warning,
 				V_SNAPTOBOTTOM|(V_10TRANS*alpha))
@@ -71,11 +71,34 @@ function module.draw(v)
 	if (FangsHeist.Net.escape
 	and not FangsHeist.isHurryUp())
 	or FangsHeist.Net.is_boss then
-		y = ease.linear(FU/6, $, 180*FU)
+		y = ease.linear(FU/6, $, 170*FU)
 	end
 
-	v.drawScaled(draw_x, y, scale, bar, V_SNAPTOBOTTOM)
-	v.drawCropped(draw_x, y, scale, scale,
+	local objective = "Get the sign."
+	if p and p.heist then
+		local sign = false
+
+		for p,_ in pairs(p.heist.team.players) do
+			if p and p.heist then
+				if FangsHeist.playerHasSign(p) then
+					sign = true
+					break
+				end
+			end
+		end
+
+		if sign then
+			objective = "Get more Profit."
+		end
+	end
+	if FangsHeist.Net.time_left <= 30*TICRATE then
+		objective = "Get back to the door!"
+	end
+
+	v.drawString(x, y, "OBJECTIVE: "..objective, V_SNAPTOBOTTOM, "thin-fixed-center")
+
+	v.drawScaled(draw_x, y+10*FU, scale, bar, V_SNAPTOBOTTOM)
+	v.drawCropped(draw_x, y+10*FU, scale, scale,
 		bar2,
 		V_SNAPTOBOTTOM,
 		nil,
@@ -84,7 +107,7 @@ function module.draw(v)
 	local time = FangsHeist.Net.time_left
 	local str = string.format("%02d:%02d", G_TicsToMinutes(time), G_TicsToSeconds(time))
 
-	text.draw(v, x, y, FixedMul(FixedDiv(21, 14), scale), str, "TMRFT", "center", V_SNAPTOBOTTOM)
+	text.draw(v, x, y+10*FU, FixedMul(FixedDiv(21, 14), scale), str, "TMRFT", "center", V_SNAPTOBOTTOM)
 end
 
 return module

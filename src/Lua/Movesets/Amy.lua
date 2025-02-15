@@ -1,5 +1,5 @@
 local function canAttack(p)
-	return not (p.heist.blocking or p.heist.attack_cooldown)
+	return not (p.heist.blocking or p.heist.attack_cooldown or (p.amy and p.amy.thrown and p.amy.thrown.valid))
 end
 
 states[freeslot "S_FH_AMY_TWIRL"] = {
@@ -7,6 +7,21 @@ states[freeslot "S_FH_AMY_TWIRL"] = {
 	frame = freeslot "SPR2_TWRL",
 	tics = 1,
 	nextstate = S_FH_AMY_TWIRL
+}
+
+-- Amy Hammer
+states[freeslot "S_FH_THROWNHAMMER"] = {
+	sprite = freeslot "SPR_AHMR",
+	frame = FF_ANIMATE,
+	tics = -1,
+	var1 = H,
+	var2 = 1
+}
+mobjinfo[freeslot "MT_FH_THROWNHAMMER"] = {
+	spawnstate = S_FH_THROWNHAMMER,
+	radius = 16*FU,
+	height = 16*FU,
+	flags = MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY
 }
 
 FangsHeist.makeCharacter("amy", {
@@ -36,7 +51,17 @@ FangsHeist.makeCharacter("amy", {
 	controls = {
 		{
 			key = "SPIN/JUMP",
-			name = "Attack (Twinspin)",
+			name = "Attack (Melee)",
+			cooldown = function(self, p)
+				return not canAttack(p)
+			end,
+			visible = function(self, p)
+				return not p.heist.blocking
+			end
+		},
+		{
+			key = "FIRE",
+			name = "Attack (Throw)",
 			cooldown = function(self, p)
 				return not canAttack(p)
 			end,
@@ -51,7 +76,7 @@ FangsHeist.makeCharacter("amy", {
 local function init(p)
 	p.amy = {
 		twirl = false,
-		twirlframes = 0
+		twirlframes = 0,
 	}
 end
 
@@ -74,6 +99,24 @@ local function check(p)
 
 	return true
 end
+
+local function throwHammer(p)
+	local hammer = P_SpawnMobjFromMobj(p.mo,
+		0, 0, p.mo.height/2 - mobjinfo[MT_FH_THROWNHAMMER].height/2,
+		MT_FH_THROWNHAMMER
+	)
+
+	if not (hammer and hammer.valid) then
+		return
+	end
+
+	hammer.target = p.mo
+	hammer.returntics = 16
+	P_InstaThrust(hammer, p.mo.angle, FixedHypot(p.mo.momx, p.mo.momy)+50*FU)
+
+	return hammer
+end
+
 addHook("PlayerThink", function(p)
 	if not FangsHeist.isMode() then 
 		p.amy = nil
@@ -86,6 +129,12 @@ addHook("PlayerThink", function(p)
 
 	if not (p.amy) then
 		init(p)
+	end
+
+	if p.amy.thrown and p.amy.thrown.valid then
+		p.heist.attack_cooldown = 62
+	else
+		p.amy.thrown = nil
 	end
 
 	local attackFlags = STR_ATTACK|STR_WALL|STR_CEILING|STR_SPIKE
@@ -110,6 +159,14 @@ addHook("PlayerThink", function(p)
 		end
 
 		p.amy.twirlframes = $+1
+	elseif canAttack(p)
+	and p.cmd.buttons & BT_ATTACK
+	and not (p.lastbuttons & BT_ATTACK)
+	and not P_PlayerInPain(p) then
+		-- Hammer Throw
+		local hammer = throwHammer(p)
+
+		p.amy.thrown = hammer
 	end
 
 	if p.mo.state ~= S_FH_AMY_TWIRL
@@ -136,8 +193,7 @@ addHook("AbilitySpecial", function(p)
 	if p.pflags & PF_JUMPED
 	and not (p.pflags & PF_THOKKED) then
 		p.heist.attack_cooldown = 85
-		S_StartSound(p.mo, sfx_s3k42) -- twinspin / melee / instashield sfx
-		--S_StartSound(p.mo, sfx_s1ab) -- jet jaw sfx
+		S_StartSound(p.mo, sfx_s1ab) -- jet jaw sfx
 		P_SetObjectMomZ(p.mo, 7*FU)
 		p.mo.state = S_FH_AMY_TWIRL
 		p.pflags = $|PF_THOKKED
@@ -191,3 +247,96 @@ addHook("SpinSpecial", function(p)
 
 	p.heist.attack_cooldown = 50
 end)
+
+local function L_ReturnThrustXYZ(mo, point, speed)
+	local horz = R_PointToAngle2(mo.x, mo.y, point.x, point.y)
+	local vert = R_PointToAngle2(0, mo.z+(mo.height/2), FixedHypot(mo.x-point.x, mo.y-point.y), point.z+(point.height/2))
+
+	local x = FixedMul(FixedMul(speed, cos(horz)), cos(vert))
+	local y = FixedMul(FixedMul(speed, sin(horz)), cos(vert))
+	local z = FixedMul(speed, sin(vert))
+
+	return x, y, z
+end
+
+local function isDamagable(mo)
+	if mo.flags & MF_ENEMY
+	or mo.flags & MF_MONITOR then
+		return true
+	end
+
+	if mo.type == MT_PLAYER then
+		return true
+	end
+
+	return false
+end
+
+local function collisionCheck(mo, pmo)
+	return mo.x-mo.radius < pmo.x+pmo.radius
+	and pmo.x-pmo.radius < mo.x+mo.radius
+	and mo.y-mo.radius < pmo.y+pmo.radius
+	and pmo.y-pmo.radius < mo.y+mo.radius
+	and mo.z < pmo.z+pmo.height
+	and pmo.z < mo.z+mo.height
+end
+
+local function onObjectFound(mo, found)
+	if not (found and found.valid) then return end
+	if not isDamagable(found) then return end
+	if found == mo.target then return end
+	if not collisionCheck(mo, found) then return end
+	if P_DamageMobj(found, mo, mo.target) then
+		mo.momx = $*-1
+		mo.momy = $*-1
+		mo.momz = $*-1
+	end
+end
+
+-- Hammer Thinker
+addHook("MobjThinker", function(mo)
+	if not (mo and mo.valid) then return  end
+	if not (mo.target and mo.target.valid and mo.target.health) then
+		local pmo = mo.target
+
+		if pmo and pmo.valid and pmo.player and pmo.player.amy then
+			pmo.player.amy.thrown = nil
+		end
+		P_RemoveMobj(mo)
+		return
+	end
+
+	P_SpawnGhostMobj(mo)
+
+	local pmo = mo.target
+
+	local angle = R_PointToAngle2(mo.x, mo.y, pmo.x, pmo.y)
+	local speed = tofixed("0.13")
+
+	local x, y, z = L_ReturnThrustXYZ(mo, pmo, 3*FU)
+	local friction = tofixed("0.95")
+
+	mo.momx = FixedMul($+x, friction)
+	mo.momy = FixedMul($+y, friction)
+	mo.momz = FixedMul($+z, friction)
+
+	searchBlockmap("objects",
+		onObjectFound,
+		mo,
+		mo.x-mo.radius,
+		mo.x+mo.radius,
+		mo.y-mo.radius,
+		mo.y+mo.radius
+	)
+
+	mo.returntics = max(($ or 0)-1, 0)
+
+	if collisionCheck(pmo, mo)
+	and mo.returntics == 0 then
+		if pmo.player and pmo.player.amy then
+			pmo.player.amy.thrown = nil
+		end
+		P_RemoveMobj(mo)
+	end
+
+end, MT_FH_THROWNHAMMER)

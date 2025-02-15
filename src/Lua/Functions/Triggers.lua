@@ -33,8 +33,8 @@ function FangsHeist.damagePlayers(p, friendlyfire, damage)
 		local char1 = FangsHeist.Characters[p.mo.skin]
 		local char2 = FangsHeist.Characters[sp.mo.skin]
 	
-		local radius1 = fixmul(fixmul(p.mo.radius, p.mo.scale), char1.attackRange)
-		local radius2 = fixmul(fixmul(sp.mo.radius, sp.mo.scale), char2.damageRange)
+		local radius1 = fixmul(p.mo.radius, char1.attackRange)
+		local radius2 = fixmul(sp.mo.radius, char2.damageRange)
 	
 		if distXY > radius1+radius2 then continue end
 	
@@ -59,23 +59,14 @@ function FangsHeist.damagePlayers(p, friendlyfire, damage)
 			continue
 		end
 
-		if sp.heist.blocking then
-			local speed = FixedHypot(p.mo.momx, p.mo.momy)-FixedHypot(sp.mo.momx, sp.mo.momy)
-			local damaged = FangsHeist.depleteBlock(p, damage)
-	
-			if damaged then
-				char1:onHit(p, sp)
-
-				return sp, speed
-			end
-
-			return sp, false
-		end
+		local speed = FixedHypot(p.mo.momx, p.mo.momy)-FixedHypot(sp.mo.momx, sp.mo.momy)
 
 		if P_DamageMobj(sp.mo, p.mo, p.mo) then
 			char1:onHit(p, sp)
-			return sp, FixedHypot(p.mo.momx, p.mo.momy)-FixedHypot(sp.mo.momx, sp.mo.momy)
+			return sp, speed
 		end
+
+		return sp, false
 	end
 end
 

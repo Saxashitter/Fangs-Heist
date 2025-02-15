@@ -1,12 +1,12 @@
 return {
 	scraps = 0,
 	saved_profit = 0,
-	generated_profit = 0,
 	had_sign = false,
 
 	team = {
 		players = {},
-		banked_sign = false
+		banked_sign = false,
+		generated_profit = 0,
 	},
 	invites = {},
 

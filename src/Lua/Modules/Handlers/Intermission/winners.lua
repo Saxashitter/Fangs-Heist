@@ -39,17 +39,15 @@ function module.draw(v)
 	local width = v.width()*FU/v.dupx()
 	local height = v.height()*FU/v.dupy()
 
-	for p in players.iterate do
-		if not (FangsHeist.isPlayerAlive(p)
-		and p.heist
-		and p.heist.team.leader == p) then
-			continue
-		end
+	for _,data in pairs(FangsHeist.Net.placements) do
+		local placement = data.place
+		local p = data.p
 
-		table.insert(plyrs, p)
+		if placement > 3 then continue end
+		if not (p and p.valid) then continue end
+
+		plyrs[placement] = p
 	end
-
-	table.sort(plyrs, profit_sort)
 
 	if not (#plyrs) then
 		text.draw(v,
@@ -97,21 +95,23 @@ function module.draw(v)
 			"center",
 			f,
 			v.getColormap(nil, p.skincolor))
-		y = $+16*FU
-	
-		v.drawString(x, y, "Profit: "..tostring(FangsHeist.returnProfit(p)), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
-		y = $+8*FU
-	
-		v.drawString(x, y, "Enemies: "..tostring(p.heist.enemies), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
-		y = $+8*FU
+		y = $+20*FU
 
-		v.drawString(x, y, "Monitors: "..tostring(p.heist.monitors), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
-		y = $+8*FU
+		local scale = (FU/3)*2
+		local patch = v.cachePatch("FH_PROFIT")
 
-		v.drawString(x, y, "Treasures: "..tostring(#p.heist.treasures), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
-		y = $+8*FU
+		v.drawScaled(x-patch.width*scale/2, y, scale, patch, f)
+		text.draw(v,
+			x,
+			y+4*FU-9*FU,
+			scale,
+			"$"..tostring(FangsHeist.returnProfit(p)),
+			"PRTFT",
+			"center",
+			f
+		)
 
-		v.drawString(x, y, "Rings: "..tostring(p.rings), V_SNAPTOBOTTOM|V_SNAPTOLEFT, "fixed-center")
+		--v.drawString(x, y, "$"..tostring(FangsHeist.returnProfit(p)), V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_GREENMAP, "thin-fixed-center")
 	end
 end
 

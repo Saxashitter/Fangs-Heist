@@ -160,13 +160,13 @@ return function(p)
 	local char = FangsHeist.Characters[p.mo.skin]
 
 	if p.heist.attack_time then
+		local flags = STR_ATTACK|STR_BUST
+
 		p.heist.attack_time = max(0, $-1)
-		local flags = STR_ATTACK
+		p.powers[pw_strong] = $|flags
 
 		if p.heist.attack_time == 0 then
 			p.powers[pw_strong] = $ & ~flags
-		else
-			p.powers[pw_strong] = $|flags
 		end
 	end
 
@@ -224,11 +224,12 @@ return function(p)
 	end
 
 	if char:isAttacking(p) then
-		p.heist.attack_time = 0
-
 		local player, speed = FangsHeist.damagePlayers(p)
 
 		if player then
+			-- stop attack
+			p.heist.attack_time = 0
+
 			if speed ~= false then
 				local tier = max(1, min(FixedDiv(speed, 10*FU)/FU, #attackSounds))
 				local sound = attackSounds[tier][P_RandomRange(1, 2)]

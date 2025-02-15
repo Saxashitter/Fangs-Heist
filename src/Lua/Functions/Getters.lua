@@ -94,7 +94,7 @@ function FangsHeist.returnProfit(p, personal)
 	profit = $+(50*p.heist.deadplayers/div)
 	profit = $+(12*p.heist.monitors/div)
 	profit = $+(35*p.heist.enemies/div)
-	profit = $+p.heist.generated_profit -- TODO: work on a way to cap treasures while teaming
+	profit = $+p.heist.team.generated_profit -- TODO: work on a way to cap treasures while teaming
 	profit = $+(8*p.rings/div)
 
 	if not personal then

@@ -1,3 +1,5 @@
+local showhud = CV_FindVar("showhud")
+
 return function(p)
 	if FangsHeist.Net.pregame then
 		if not p.heist.confirmed_skin then
@@ -13,18 +15,21 @@ return function(p)
 				elseif p.heist.locked_skin > #skins-1 then
 					p.heist.locked_skin = 0
 				end
+
+				S_StartSound(nil, sfx_menu1, p)
 			end
 
 			if p.heist.buttons & BT_JUMP
 			and not (p.heist.lastbuttons & BT_JUMP) then
 				p.heist.confirmed_skin = true
+				S_StartSound(nil, sfx_strpst, p)
 			end
 		elseif (p.heist.buttons & BT_SPIN)
 		and not (p.heist.lastbuttons & BT_SPIN) then
 			p.heist.confirmed_skin = false
+			S_StartSound(nil, sfx_alart, p)
 		end
-		
-		local showhud = CV_FindVar("showhud")
+
 		if showhud.value == 0 then -- if the hud isn't being shown
 			CV_StealthSet(showhud, 1) -- then force it to show :P
 		end

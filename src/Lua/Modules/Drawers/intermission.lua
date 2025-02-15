@@ -202,7 +202,12 @@ local function manage_intermission(v)
 		select = $-1
 	end
 
+	local lastCurrent = current
 	current = max(1, min($+select, #states))
+
+	if lastCurrent ~= current then
+		S_StartSound(nil, sfx_menu1)
+	end
 end
 
 function module.draw(v)

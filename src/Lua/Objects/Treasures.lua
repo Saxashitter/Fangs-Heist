@@ -145,6 +145,10 @@ local function manage_picked(tres)
 end
 
 function FangsHeist.manageTreasures()
+	if not FangsHeist.Net.treasures then
+		return
+	end
+
 	for _,tres in pairs(FangsHeist.Net.treasures) do
 		local mobj = tres.mobj
 		local data = tres.data
