@@ -53,14 +53,24 @@ local function draw_cs(v,p)
 	local x = 16*FU
 	local y = 60*FU
 	for i = 0,#skins-1 do
-		local patch = v.getSprite2Patch(i, SPR2_LIFE, false, A)
-
-		local scale = skins[i].highresscale
+		if not (p and p.valid) then continue end
+		
+		local patch
+		local scale = FU
+		local fakeyoffset = 0
+		if skins[i].sprites[SPR2_LIFE].numframes then 
+			patch = v.getSprite2Patch(i, SPR2_LIFE, false, A)
+			scale = skins[i].highresscale
+		else
+			patch = v.cachePatch("CONTINS")
+			fakeyoffset = 12
+		end
+		
 		if i == p.heist.locked_skin then
 			scale = $*3/2
 		end
 		v.drawScaled(x + patch.leftoffset*scale,
-			y,
+			y - fakeyoffset*scale,
 			scale,
 			patch,
 			V_SNAPTOLEFT|f,
@@ -86,7 +96,12 @@ local function draw_cs(v,p)
 	)
 
 	-- character
-	local patch = v.getSprite2Patch(p.heist.locked_skin, SPR2_XTRA, false, B)
+	local patch
+	if skins[p.heist.locked_skin].sprites[SPR2_XTRA].numframes >= 2 then -- B = 2 so, check if it has the B frame
+		patch = v.getSprite2Patch(p.heist.locked_skin, SPR2_XTRA, false, B)
+	else
+		patch = v.cachePatch("MISSING") -- what srb2 defaults to if XTRAB is missing
+	end
 	local scale = (FU/4)*3
 
 	local x = ease.outquad(

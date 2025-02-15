@@ -8,10 +8,17 @@ local function draw_player(v, p, tp, mo, x, y)
 	local arrow_scale = FU/2
 	local dist = R_PointToDist2(mo.x, mo.y, p.mo.x, p.mo.y)
 
-	local plyr_spr = v.getSprite2Patch(p.mo.skin, SPR2_SIGN, false, A, 0)
+	local plyr_spr, plyr_scale
+	if skins[p.mo.skin].sprites[SPR2_SIGN].numframes then
+		plyr_spr = v.getSprite2Patch(p.mo.skin, SPR2_SIGN, false, A, 0)
+		plyr_scale = skins[p.mo.skin].highresscale
+	else
+		plyr_spr = v.getSpritePatch(SPR_SIGN, A, 0)
+		plyr_scale = FU
+	end
 	local color = v.getColormap(p.mo.skin, p.mo.color)
 
-	v.drawScaled(x, y, FU/4, plyr_spr, 0, color)
+	v.drawScaled(x, y, plyr_scale/4, plyr_spr, 0, color)
 	y = $-8*FU*2
 
 	if #p.heist.treasures then

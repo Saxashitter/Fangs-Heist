@@ -17,9 +17,15 @@ local function select_player(sign, p)
 	sign.holder = p.mo
 	sign.hold_pos = {x = sign.x, y = sign.y, z = sign.z}
 	if sign.bustmo and sign.bustmo.valid then
-		sign.bustmo.skin = p.mo.skin
-		sign.bustmo.color = p.skincolor
-		sign.bustmo.state = S_PLAY_SIGN
+		if skins[p.mo.skin].sprites[SPR2_SIGN].numframes then
+			sign.bustmo.skin = p.mo.skin
+			sign.bustmo.color = p.skincolor
+			sign.bustmo.state = S_PLAY_SIGN
+		else -- just what A_SignPlayer does :P
+			sign.bustmo.skin = nil
+			sign.bustmo.color = SKINCOLOR_NONE
+			sign.bustmo.skin = S_CLEARSIGN
+		end
 	end
 
 	p.powers[pw_flashing] = TICRATE*2
