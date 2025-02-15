@@ -55,9 +55,9 @@ local function draw_cs(v,p)
 	for i = 0,#skins-1 do
 		local patch = v.getSprite2Patch(i, SPR2_LIFE, false, A)
 
-		local scale = FU
+		local scale = skins[i].highresscale
 		if i == p.heist.locked_skin then
-			scale = FU*3/2
+			scale = $*3/2
 		end
 		v.drawScaled(x + patch.leftoffset*scale,
 			y,

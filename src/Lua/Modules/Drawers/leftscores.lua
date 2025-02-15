@@ -24,7 +24,9 @@ function module.draw(v)
 			if not (p and p.valid) then continue end
 			local life = v.getSprite2Patch(p.skin,
 				SPR2_LIFE, false, A, 0)
-	
+			
+			scale = skins[p.skin].highresscale/2
+			
 			v.drawScaled(SCORE_X+life.leftoffset*scale,
 				SCORE_Y+target_y+life.topoffset*scale-(2*scale),
 				scale,
