@@ -13,7 +13,7 @@ local function draw_player(v, p, tp, mo, x, y)
 		plyr_spr = v.getSprite2Patch(p.mo.skin, SPR2_SIGN, false, A, 0)
 		plyr_scale = skins[p.mo.skin].highresscale
 	else
-		plyr_spr = v.getSpritePatch(SPR_SIGN, A, 0)
+		plyr_spr = v.getSpritePatch(SPR_SIGN, S, 0)
 		plyr_scale = FU
 	end
 	local color = v.getColormap(p.mo.skin, p.mo.color)
