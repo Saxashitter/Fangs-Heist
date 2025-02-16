@@ -60,7 +60,7 @@ local function draw_cs(v,p)
 			scale = FU*3/2
 		end
 		v.drawScaled(x + patch.leftoffset*scale,
-			y,
+			y + patch.topoffset*scale - patch.height*scale,
 			scale,
 			patch,
 			V_SNAPTOLEFT|f,
