@@ -31,18 +31,25 @@ local function draw_data(v, data, i)
 	end
 
 	color = FangsHeist.getColorByName(color)
-
-	local life = v.getSprite2Patch(skin,
-		SPR2_LIFE, false, A, 0)
+	
+	local life
+	local scale = FU
+	if skins[skin].sprites[SPR2_LIFE].numframes then 
+		life = v.getSprite2Patch(skin,
+			SPR2_LIFE, false, A, 0)
+		scale = skins[skin].highresscale
+	else
+		life = v.cachePatch("CONTINS")
+	end
 
 	local x = 16*FU
 	local y = 40*FU
 
 	y = $+(10*((i-1)*FU))
 
-	v.drawScaled(x + (life.topoffset*FU/2),
-		y + (life.topoffset*FU/2),
-		FU/2,
+	v.drawScaled(x + (life.topoffset*scale/2),
+		y + (life.topoffset*scale/2),
+		scale/2,
 		life,
 		0,
 		v.getColormap(skin, color))

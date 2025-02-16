@@ -1,6 +1,7 @@
 local fangdiag = {}
 
 fangdiag.portrait = "FH_DIALOGUE_FANG_DEFAULT"
+fangdiag.fankportrait = "FH_DIALOGUE_FANK_DEFAULT"
 
 fangdiag["escapestart_nosign"] = {
 	"EY! Someone took the signpost! Don't you DARE leave without it! Do ya know how valuable it is!?",
