@@ -1,7 +1,15 @@
+FangsHeist.forceCap = {
+	["s3sonic"] = true,
+	["takisthefox"] = true,
+	["heavy"] = true
+}
+
+-- This turned into a general lua to force speed caps on characters.
+
 addHook("PlayerThink", function(p)
 	if not FangsHeist.isMode() then return end
 	if not (p.mo and p.mo.valid) then return end
-	if p.mo.skin ~= "s3sonic" then return end
+	if not FangsHeist.forceCap[p.mo.skin] then return end
 
 	if FangsHeist.playerHasSign(p) then
 		-- S3 Sonic's momentum allows him to bypass the speed limit.

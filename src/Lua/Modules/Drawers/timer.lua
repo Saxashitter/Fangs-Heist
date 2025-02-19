@@ -20,7 +20,7 @@ function FangsHeist.doSignpostWarning(_took)
 end
 
 function module.init()
-	y = 210*FU
+	y = 200*FU
 	x = 160*FU
 	alpha = 0
 	ticker = 0
@@ -54,7 +54,7 @@ function module.draw(v,p)
 
 		if alpha ~= 10 then
 			v.drawScaled(x-(warning.width*scale/2),
-				y-12*FU-warning.height*scale,
+				y-2*FU-warning.height*scale,
 				scale,
 				warning,
 				V_SNAPTOBOTTOM|(V_10TRANS*alpha))

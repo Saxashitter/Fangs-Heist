@@ -1,8 +1,17 @@
 FangsHeist.Characters = {}
 
+states[freeslot "S_FH_PANIC"] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_CNT1,
+	tics = 4,
+	nextstate = S_FH_PANIC
+}
+
 local DEFAULT = {
 	difficulty = FHD_UNKNOWN,
 	pregameBackground = "FH_PREGAME_UNKNOWN",
+
+	panicState = S_FH_PANIC,
 
 	attackCooldown = TICRATE,
 	attackRange = tofixed("4"),

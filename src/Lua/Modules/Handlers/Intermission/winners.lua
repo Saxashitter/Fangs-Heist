@@ -69,8 +69,9 @@ function module.draw(v)
 		local p = plyrs[i]
 		local pos = POSITION_DATA[i]
 
+		local scale = skins[p.skin].highresscale
 		local stnd = v.getSprite2Patch(p.skin, SPR2_STND, false, A, 1)
-		local color = v.getColormap(p.skin, p.skincolor)
+		local color = v.getColormap(p.skin, p.skincolor, ((p.mo and p.mo.valid) and p.mo.translation or nil))
 
 		local podium = v.cachePatch(pos.patch)
 		local podium_scale = FU*6/8
@@ -81,7 +82,7 @@ function module.draw(v)
 		local name = (trim(p.name)):upper()
 
 		v.drawScaled(x-podium.width*podium_scale/2, 200*FU-podium.height*podium_scale, podium_scale, podium, V_SNAPTOBOTTOM|V_SNAPTOLEFT)
-		v.drawScaled(x, pos.y, FU*6/8, stnd, V_SNAPTOBOTTOM|V_SNAPTOLEFT, color)
+		v.drawScaled(x, pos.y, scale*6/8, stnd, V_SNAPTOBOTTOM|V_SNAPTOLEFT, color)
 
 		local y = pos.y+12*FU
 		local f = V_SNAPTOBOTTOM|V_SNAPTOLEFT

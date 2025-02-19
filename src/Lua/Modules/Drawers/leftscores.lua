@@ -22,9 +22,15 @@ function module.draw(v)
 
 		for p,_ in pairs(p.heist.team.players) do
 			if not (p and p.valid) then continue end
-			local life = v.getSprite2Patch(p.skin,
-				SPR2_LIFE, false, A, 0)
-	
+			local life
+			if skins[p.skin].sprites[SPR2_LIFE].numframes then 
+				life = v.getSprite2Patch(p.skin,
+					SPR2_LIFE, false, A, 0)
+				scale = skins[p.skin].highresscale/2
+			else
+				life = v.cachePatch("CONTINS")
+			end
+			
 			v.drawScaled(SCORE_X+life.leftoffset*scale,
 				SCORE_Y+target_y+life.topoffset*scale-(2*scale),
 				scale,
