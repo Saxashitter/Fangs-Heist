@@ -19,8 +19,8 @@ states[freeslot "S_FH_THROWNHAMMER"] = {
 }
 mobjinfo[freeslot "MT_FH_THROWNHAMMER"] = {
 	spawnstate = S_FH_THROWNHAMMER,
-	radius = 16*FU,
-	height = 16*FU,
+	radius = 64*FU,
+	height = 64*FU,
 	flags = MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY
 }
 
@@ -264,8 +264,13 @@ local function isDamagable(mo)
 	or mo.flags & MF_MONITOR then
 		return true
 	end
-
+	
 	if mo.type == MT_PLAYER then
+		return true
+	end
+	
+	if mo.type == MT_RING 
+	or mo.type == MT_FLINGRING then
 		return true
 	end
 
@@ -281,11 +286,24 @@ local function collisionCheck(mo, pmo)
 	and pmo.z < mo.z+mo.height
 end
 
+local function erectRing(mo, found)
+	if mo.target and mo.target.valid then
+		if found.type == MT_RING 
+		or found.type == MT_FLINGRING then
+			P_TouchSpecialThing(found, mo.target)
+			return true
+		end
+	end
+end
+
 local function onObjectFound(mo, found)
 	if not (found and found.valid) then return end
 	if not isDamagable(found) then return end
 	if found == mo.target then return end
 	if not collisionCheck(mo, found) then return end
+	
+	if erectRing(mo, found) then return end
+	
 	if P_DamageMobj(found, mo, mo.target) then
 		mo.momx = $*-1
 		mo.momy = $*-1
@@ -323,10 +341,10 @@ addHook("MobjThinker", function(mo)
 	searchBlockmap("objects",
 		onObjectFound,
 		mo,
-		mo.x-mo.radius,
-		mo.x+mo.radius,
-		mo.y-mo.radius,
-		mo.y+mo.radius
+		mo.x-mo.radius*2, -- Even if you change the radius and height, keep it multiplied by 2, so it's accurate.
+		mo.x+mo.radius*2,
+		mo.y-mo.radius*2, 
+		mo.y+mo.radius*2
 	)
 
 	mo.returntics = max(($ or 0)-1, 0)
