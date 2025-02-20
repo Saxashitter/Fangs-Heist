@@ -112,7 +112,9 @@ local function throwHammer(p)
 
 	hammer.target = p.mo
 	hammer.returntics = 16
-	P_InstaThrust(hammer, p.mo.angle, FixedHypot(p.mo.momx, p.mo.momy)+50*FU)
+	P_InstaThrust(hammer, p.mo.angle, FixedHypot(p.mo.momx, p.mo.momy)+75*FU)
+
+	S_StartSound(p.mo, sfx_s3k51)
 
 	return hammer
 end
@@ -278,10 +280,7 @@ local function isDamagable(mo)
 end
 
 local function collisionCheck(mo, pmo)
-	return mo.x-mo.radius < pmo.x+pmo.radius
-	and pmo.x-pmo.radius < mo.x+mo.radius
-	and mo.y-mo.radius < pmo.y+pmo.radius
-	and pmo.y-pmo.radius < mo.y+mo.radius
+	return FixedHypot(mo.x-pmo.x, mo.y-pmo.y) <= pmo.radius+mo.radius
 	and mo.z < pmo.z+pmo.height
 	and pmo.z < mo.z+mo.height
 end
@@ -305,9 +304,15 @@ local function onObjectFound(mo, found)
 	if erectRing(mo, found) then return end
 	
 	if P_DamageMobj(found, mo, mo.target) then
+		if found.type == MT_PLAYER then
+			S_StartSound(mo, sfx_dmga3)
+			S_StartSound(mo.target, sfx_dmga3, mo.target.player)
+		end
+
 		mo.momx = $*-1
 		mo.momy = $*-1
 		mo.momz = $*-1
+		mo.returntics = 0
 	end
 end
 
@@ -351,6 +356,7 @@ addHook("MobjThinker", function(mo)
 
 	if collisionCheck(pmo, mo)
 	and mo.returntics == 0 then
+		S_StartSound(pmo, sfx_s3k4a)
 		if pmo.player and pmo.player.amy then
 			pmo.player.amy.thrown = nil
 		end

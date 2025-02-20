@@ -66,7 +66,9 @@ function FangsHeist.damagePlayers(p, friendlyfire, damage)
 			return sp, speed
 		end
 
-		return sp, false
+		if sp.heist.blocking then
+			return sp, false
+		end
 	end
 end
 

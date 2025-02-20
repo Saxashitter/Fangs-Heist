@@ -79,7 +79,7 @@ function module.draw(v,p)
 		local sign = false
 
 		for p,_ in pairs(p.heist.team.players) do
-			if p and p.heist then
+			if p and p.valid and p.heist then
 				if FangsHeist.playerHasSign(p) then
 					sign = true
 					break

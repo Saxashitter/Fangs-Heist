@@ -18,7 +18,7 @@ function module.draw(v, p)
 
 	local y = 180
 	if FangsHeist.Net.escape then
-		y = $-16
+		y = $-26
 	end
 
 	v.drawString(160, y-17, "Treasure got!", f, "thin-center")
