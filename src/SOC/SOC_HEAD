@@ -63,6 +63,22 @@ FlickyList = Rabbit,Chicken
 SelectHeading = Supported Maps
 #Flicky selection is final.
 
+Level 5
+Levelname = Techno Hill
+Act = 2
+Keywords = THZ2
+Music = THZ2
+TypeOfLevel = Heist
+NextLevel = 6
+SkyNum = 6
+NoVisitNeeded = true
+RecordAttack = true
+SaveGame = true
+SkyboxScale = 16
+FlickyList = Rabbit,Chicken
+SelectHeading = Supported Maps
+#see act 1
+
 Level 30
 Levelname = Frozen Hillside
 Act = 0
