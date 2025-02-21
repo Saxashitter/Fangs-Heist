@@ -138,6 +138,7 @@ addHook("ThinkFrame", do
 			for p in players.iterate do
 				if p and p.heist then
 					p.heist.invites = {}
+					p.powers[pw_flashing] = TICRATE
 				end
 			end
 		else

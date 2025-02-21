@@ -229,14 +229,15 @@ return function(p)
 		if player then
 			-- stop attack
 			p.heist.attack_time = 0
-			p.heist.attack_cooldown = 0
-			p.heist.block_time = max(0, $-20)
 
 			if speed ~= false then
 				local tier = max(1, min(FixedDiv(speed, 10*FU)/FU, #attackSounds))
 				local sound = attackSounds[tier][P_RandomRange(1, 2)]
 
 				S_StartSound(p.mo, sound)
+
+				p.heist.attack_cooldown = 0
+				p.heist.block_time = max(0, $-20)
 			end
 
 			local angle = R_PointToAngle2(p.mo.x, p.mo.y, player.mo.x, player.mo.y)
