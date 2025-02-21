@@ -229,6 +229,8 @@ return function(p)
 		if player then
 			-- stop attack
 			p.heist.attack_time = 0
+			p.heist.attack_cooldown = 0
+			p.heist.block_time = max(0, $-20)
 
 			if speed ~= false then
 				local tier = max(1, min(FixedDiv(speed, 10*FU)/FU, #attackSounds))

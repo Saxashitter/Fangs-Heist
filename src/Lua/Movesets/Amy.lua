@@ -112,7 +112,7 @@ local function throwHammer(p)
 
 	hammer.target = p.mo
 	hammer.returntics = 16
-	P_InstaThrust(hammer, p.mo.angle, FixedHypot(p.mo.momx, p.mo.momy)+75*FU)
+	P_InstaThrust(hammer, p.mo.angle, FixedHypot(p.mo.momx, p.mo.momy)+53*FU)
 
 	S_StartSound(p.mo, sfx_s3k51)
 
@@ -261,13 +261,18 @@ local function L_ReturnThrustXYZ(mo, point, speed)
 	return x, y, z
 end
 
-local function isDamagable(mo)
+local function isDamagable(mo, p)
 	if mo.flags & MF_ENEMY
 	or mo.flags & MF_MONITOR then
 		return true
 	end
 	
-	if mo.type == MT_PLAYER then
+	if mo.type == MT_PLAYER
+	and p
+	and p.heist
+	and mo.player
+	and mo.player.heist
+	and not FangsHeist.partOfTeam(p, mo) then
 		return true
 	end
 	
@@ -297,7 +302,7 @@ end
 
 local function onObjectFound(mo, found)
 	if not (found and found.valid) then return end
-	if not isDamagable(found) then return end
+	if not isDamagable(found, mo.target.player) then return end
 	if found == mo.target then return end
 	if not collisionCheck(mo, found) then return end
 	
@@ -309,6 +314,18 @@ local function onObjectFound(mo, found)
 			S_StartSound(mo.target, sfx_dmga3, mo.target.player)
 		end
 
+		mo.momx = $*-1
+		mo.momy = $*-1
+		mo.momz = $*-1
+		mo.returntics = 0
+
+		return
+	end
+
+	if found.type == MT_PLAYER
+	and found.player
+	and found.player.heist
+	and found.player.heist.blocking then
 		mo.momx = $*-1
 		mo.momy = $*-1
 		mo.momz = $*-1
@@ -334,7 +351,7 @@ addHook("MobjThinker", function(mo)
 	local pmo = mo.target
 
 	local angle = R_PointToAngle2(mo.x, mo.y, pmo.x, pmo.y)
-	local speed = tofixed("0.13")
+	local speed = tofixed("0.07")
 
 	local x, y, z = L_ReturnThrustXYZ(mo, pmo, 3*FU)
 	local friction = tofixed("0.95")
