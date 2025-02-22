@@ -19,8 +19,8 @@ states[freeslot "S_FH_THROWNHAMMER"] = {
 }
 mobjinfo[freeslot "MT_FH_THROWNHAMMER"] = {
 	spawnstate = S_FH_THROWNHAMMER,
-	radius = 64*FU,
-	height = 64*FU,
+	radius = 30*FU,
+	height = 26*FU,
 	flags = MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY
 }
 
@@ -100,9 +100,12 @@ local function check(p)
 	return true
 end
 
+local THROW_TIME = 27
+
 local function throwHammer(p)
+	local z = (p.mo.height/2) - (mobjinfo[MT_FH_THROWNHAMMER].height/2)
 	local hammer = P_SpawnMobjFromMobj(p.mo,
-		0, 0, p.mo.height/2 - mobjinfo[MT_FH_THROWNHAMMER].height/2,
+		0, 0, z,
 		MT_FH_THROWNHAMMER
 	)
 
@@ -111,8 +114,17 @@ local function throwHammer(p)
 	end
 
 	hammer.target = p.mo
-	hammer.returntics = 16
-	P_InstaThrust(hammer, p.mo.angle, FixedHypot(p.mo.momx, p.mo.momy)+53*FU)
+	hammer.angle = p.mo.angle
+	hammer.throwtime = THROW_TIME
+	hammer.throwspeed = FixedHypot(p.mo.momx, p.mo.momy)+25*FU
+	if p.mo.state == S_PLAY_TWINSPIN then
+		p.mo.state = S_PLAY_FALL
+		P_SetObjectMomZ(hammer,
+			(p.mo.momz*P_MobjFlip(hammer)) - 34*FU)
+	else
+		P_InstaThrust(hammer, hammer.angle,
+			fixhypot(p.mo.momx, p.mo.momy) + 34*FU)
+	end
 
 	S_StartSound(p.mo, sfx_s3k51)
 
@@ -133,10 +145,16 @@ addHook("PlayerThink", function(p)
 		init(p)
 	end
 
+	local attack = canAttack(p)
+
 	if p.amy.thrown and p.amy.thrown.valid then
 		p.heist.attack_cooldown = 62
 	else
 		p.amy.thrown = nil
+		if not attack
+		and p.mo.state == S_PLAY_TWINSPIN then
+			attack = true
+		end
 	end
 
 	local attackFlags = STR_ATTACK|STR_WALL|STR_CEILING|STR_SPIKE
@@ -161,10 +179,11 @@ addHook("PlayerThink", function(p)
 		end
 
 		p.amy.twirlframes = $+1
-	elseif canAttack(p)
+	elseif attack
 	and p.cmd.buttons & BT_ATTACK
 	and not (p.lastbuttons & BT_ATTACK)
-	and not P_PlayerInPain(p) then
+	and not P_PlayerInPain(p)
+	and p.mo.health then
 		-- Hammer Throw
 		local hammer = throwHammer(p)
 
@@ -252,7 +271,7 @@ end)
 
 local function L_ReturnThrustXYZ(mo, point, speed)
 	local horz = R_PointToAngle2(mo.x, mo.y, point.x, point.y)
-	local vert = R_PointToAngle2(0, mo.z+(mo.height/2), FixedHypot(mo.x-point.x, mo.y-point.y), point.z+(point.height/2))
+	local vert = R_PointToAngle2(0, mo.z, FixedHypot(mo.x-point.x, mo.y-point.y), point.z)
 
 	local x = FixedMul(FixedMul(speed, cos(horz)), cos(vert))
 	local y = FixedMul(FixedMul(speed, sin(horz)), cos(vert))
@@ -317,7 +336,7 @@ local function onObjectFound(mo, found)
 		mo.momx = $*-1
 		mo.momy = $*-1
 		mo.momz = $*-1
-		mo.returntics = 0
+		mo.throwtime = 0
 
 		return
 	end
@@ -329,7 +348,7 @@ local function onObjectFound(mo, found)
 		mo.momx = $*-1
 		mo.momy = $*-1
 		mo.momz = $*-1
-		mo.returntics = 0
+		mo.throwtime = 0
 	end
 end
 
@@ -346,38 +365,43 @@ addHook("MobjThinker", function(mo)
 		return
 	end
 
-	P_SpawnGhostMobj(mo)
-
 	local pmo = mo.target
 
-	local angle = R_PointToAngle2(mo.x, mo.y, pmo.x, pmo.y)
-	local speed = tofixed("0.07")
+	if mo.throwtime then
+		P_SpawnGhostMobj(mo)
+		local time = THROW_TIME - 10
 
-	local x, y, z = L_ReturnThrustXYZ(mo, pmo, 3*FU)
-	local friction = tofixed("0.95")
+		mo.momx = fixmul($, tofixed("0.96"))
+		mo.momy = fixmul($, tofixed("0.96"))
+		mo.momz = fixmul($, tofixed("0.96"))
 
-	mo.momx = FixedMul($+x, friction)
-	mo.momy = FixedMul($+y, friction)
-	mo.momz = FixedMul($+z, friction)
+		mo.throwtime = max (0, $-1)
+		mo.flags = ($|MF_BOUNCE) & ~(MF_NOCLIP|MF_NOCLIPHEIGHT)
 
-	searchBlockmap("objects",
-		onObjectFound,
-		mo,
-		mo.x-mo.radius*2, -- Even if you change the radius and height, keep it multiplied by 2, so it's accurate.
-		mo.x+mo.radius*2,
-		mo.y-mo.radius*2, 
-		mo.y+mo.radius*2
-	)
+		searchBlockmap("objects",
+			onObjectFound,
+			mo,
+			mo.x-mo.radius*2, -- Even if you change the radius and height, keep it multiplied by 2, so it's accurate.
+			mo.x+mo.radius*2,
+			mo.y-mo.radius*2, 
+			mo.y+mo.radius*2
+		)
+	else
+		local angle = R_PointToAngle2(mo.x, mo.y, pmo.x, pmo.y)
 
-	mo.returntics = max(($ or 0)-1, 0)
+		mo.momx, mo.momy, mo.momz = L_ReturnThrustXYZ(mo, {
+			x = pmo.x,
+			y = pmo.y,
+			z = pmo.z + (pmo.height/2) - (mo.height/2)
+		}, 40*FU)
+		mo.flags = ($|MF_NOCLIP|MF_NOCLIPHEIGHT) & ~MF_BOUNCE
 
-	if collisionCheck(pmo, mo)
-	and mo.returntics == 0 then
-		S_StartSound(pmo, sfx_s3k4a)
-		if pmo.player and pmo.player.amy then
-			pmo.player.amy.thrown = nil
+		if collisionCheck(pmo, mo) then
+			S_StartSound(pmo, sfx_s3k4a)
+			if pmo.player and pmo.player.amy then
+				pmo.player.amy.thrown = nil
+			end
+			P_RemoveMobj(mo)
 		end
-		P_RemoveMobj(mo)
 	end
-
 end, MT_FH_THROWNHAMMER)

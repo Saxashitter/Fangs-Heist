@@ -8,6 +8,10 @@ function FangsHeist.isPlayerAlive(p)
 	return p and p.mo and p.mo.health and p.heist and not p.heist.spectator
 end
 
+function FangsHeist.isServer()
+	return isserver or isdedicatedserver
+end
+
 function FangsHeist.isPlayerAtGate(p)
 	local exit = FangsHeist.Net.exit
 
@@ -50,7 +54,7 @@ function FangsHeist.isHurryUp()
 		return false
 	end
 
-	if (orig.time_left-FangsHeist.Net.time_left)*MUSICRATE/TICRATE > HURRY_LENGTH then
+	if (FangsHeist.Net.max_time_left-FangsHeist.Net.time_left)*MUSICRATE/TICRATE > HURRY_LENGTH then
 		return false
 	end
 

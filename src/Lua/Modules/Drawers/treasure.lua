@@ -1,12 +1,18 @@
 local module = {}
 
 local alpha
+local tresgot = 0
 
 function module.init()
 	alpha = 10
 end
 
 function module.draw(v, p)
+	if #p.heist.treasures ~= tresgot then
+		alpha = 10
+		tresgot = #p.heist.treasures
+	end
+
 	if p.heist.treasure_time then
 		alpha = max(0, $-1)
 	else
