@@ -11,6 +11,10 @@ return function(p)
 		p.maxdash = min($, spindash_limit)
 		p.jumpfactor = max(FU, $) -- makes characters like knux jump higher, while others like amy still have their bigger jump height
 
+		if not p.heist.exiting then
+			p.camerascale = ease.linear(FU/3, $, tofixed("1.65"))
+		end
+
 		-- effect for running with the sign
 		if p.mo
 		and p.mo.health
@@ -24,12 +28,17 @@ return function(p)
 				0,
 			MT_DUST)
 		end
-	elseif not p.heist.corrected_speed then
-		p.heist.corrected_speed = true
-		p.normalspeed = skins[p.skin].normalspeed
-		p.mindash = skins[p.skin].mindash
-		p.maxdash = skins[p.skin].maxdash
-		p.runspeed = skins[p.skin].runspeed
-		p.jumpfactor = skins[p.skin].jumpfactor
+	else
+		if not p.heist.exiting then
+			p.camerascale = ease.linear(FU/3, $, tofixed("1"))
+		end
+		if not p.heist.corrected_speed then
+			p.heist.corrected_speed = true
+			p.normalspeed = skins[p.skin].normalspeed
+			p.mindash = skins[p.skin].mindash
+			p.maxdash = skins[p.skin].maxdash
+			p.runspeed = skins[p.skin].runspeed
+			p.jumpfactor = skins[p.skin].jumpfactor
+		end
 	end
 end

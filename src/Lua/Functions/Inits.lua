@@ -46,10 +46,18 @@ function FangsHeist.initMode(map)
 		FangsHeist.Net.hell_stage = true
 	end
 
-	if FangsHeist.Net.is_boss then
-		FangsHeist.Net.time_left = ((2*60)*TICRATE)+(20*TICRATE)
-		FangsHeist.Net.max_time_left = ((2*60)*TICRATE)+(20*TICRATE)
+	local time = FangsHeist.Net.time_left
+	if FangsHeist.Save.last_map == map then
+		FangsHeist.Save.retakes = $+1
+
+		time = max(30*TICRATE, $-((TICRATE*60)*FangsHeist.Save.retakes))
+	else
+		FangsHeist.Save.retakes = 0
 	end
+
+	FangsHeist.Save.last_map = map
+	FangsHeist.Net.time_left = time
+	FangsHeist.Net.max_time_left = time
 
 	for p in players.iterate do
 		p.camerascale = FU

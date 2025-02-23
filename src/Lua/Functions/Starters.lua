@@ -31,7 +31,10 @@ function FangsHeist.startEscape()
 		P_LinedefExecute(tonumber(data.fh_escapelinedef))
 	end
 
-	FangsHeist.doSignpostWarning(FangsHeist.playerHasSign(displayplayer))
+	if displayplayer
+	and displayplayer.valid then
+		FangsHeist.doSignpostWarning(FangsHeist.playerHasSign(displayplayer))
+	end
 end
 
 local function profsort(a, b)
@@ -46,7 +49,7 @@ function FangsHeist.startIntermission()
 	S_StartSound(nil, sfx_nargam)
 
 	// map vote for the funny
-	if isserver or isdedicatedserver then
+	if FangsHeist.isServer() then
 		local maps = {}
 		local checked = {}
 
@@ -113,8 +116,7 @@ function FangsHeist.startIntermission()
 		end
 	end
 
-	if isserver
-	or isdedicatedserver then
+	if FangsHeist.isServer() then
 		local f = io.openlocal("client/FangsHeist/serverScores.txt", "w+")
 		if f then
 			f:write(FangsHeist.ServerScoresToString())

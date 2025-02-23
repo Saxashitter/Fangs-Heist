@@ -63,6 +63,21 @@ function FangsHeist.damagePlayers(p, friendlyfire, damage)
 
 		if P_DamageMobj(sp.mo, p.mo, p.mo) then
 			char1:onHit(p, sp)
+
+			// Retake Knockback
+			local mult = FU
+			local zmult = FU
+
+			mult = $ + (FU * FangsHeist.Save.retakes)
+			zmult = $ + (FU * FangsHeist.Save.retakes)
+
+			mult = $ - FixedMul(tofixed("0.28"), FangsHeist.Save.retakes*FU)
+			zmult = $ - FixedMul(tofixed("0.8"), FangsHeist.Save.retakes*FU)
+
+			sp.mo.momx = FixedMul($, mult)
+			sp.mo.momy = FixedMul($, mult)
+			sp.mo.momz = FixedMul($, zmult)
+
 			return sp, speed
 		end
 

@@ -49,6 +49,7 @@ dofile "Movesets/Amy"
 dofile "Movesets/Fang"
 
 dofile "Compat/Mario"
+dofile "Compat/Soap"
 dofile "Compat/S3 Sonic"
 dofile "Compat/Bean"
 

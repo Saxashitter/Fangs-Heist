@@ -13,6 +13,11 @@ local function add(file)
 end
 
 addHook("PlayerThink", function(p)
+	-- Force every PlayerThink hook to run before our code here.
+	for _,data in pairs(FangsHeist._HOOKS.PlayerThink) do
+		data.func(p)
+	end
+
 	if not FangsHeist.isMode() then return end
 	if not (p and p.valid) then return end
 
@@ -84,12 +89,12 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if s
 	and s.player
 	and s.player.heist then
-		if FangsHeist.playerHasSign(t.player) then
+		if FangsHeist.playerHasSign(t.player)
+		and not s.player.heist.team.banked_sign then
 			FangsHeist.giveSignTo(s.player)
 		end
 
-		if not (t.player.rings)
-		and not (t.player.powers[pw_shield]) then
+		if not (t.health) then
 			s.player.heist.deadplayers = $+1
 		else
 			s.player.heist.hitplayers = $+1
@@ -99,7 +104,7 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if t.player.powers[pw_shield] then return end
 	if not t.player.rings then return end
 
-	local rings_spill = min(5, t.player.rings)
+	local rings_spill = min(5+(8*FangsHeist.Save.retakes), t.player.rings)
 
 	S_StartSound(t, sfx_s3kb9)
 
@@ -109,7 +114,6 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	t.player.powers[pw_shield] = 0
 
 	P_DoPlayerPain(t.player, s, i)
-
 	return true
 end, MT_PLAYER)
 
