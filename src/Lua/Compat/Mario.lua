@@ -3,7 +3,7 @@ addHook("PlayerThink", function(p)
 	if not (p.mo and p.mo.valid) then return end
 	if not (IsMario and IsMario(p.mo)) then return end
 
-	if FangsHeist.playerHasSign(p) then
+	if FangsHeist.isPlayerNerfed(p) then
 		-- Safety check to make sure Mario isn't running 24/7
 		p.runspeed = p.normalspeed*2
 

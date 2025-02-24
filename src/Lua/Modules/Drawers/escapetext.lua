@@ -28,7 +28,7 @@ local function animate_object(v, object)
 	if ticker < KILL_TICS then
 		local sw = v.height()*FU/v.dupy()
 
-		object.y = ease.linear(FU/6, $, (sw/2)-(4*FU))
+		object.y = ease.linear(FU/6, $, (sw/2)-(10*FU))
 		return
 	end
 
