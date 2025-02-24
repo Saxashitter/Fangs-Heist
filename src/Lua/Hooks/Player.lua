@@ -199,17 +199,19 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if not t.player.rings then return end
 
 
-	local rings_spill = min(5, t.player.rings)
+	if not t.player.guard then
+		local rings_spill = min(5, t.player.rings)
 
-	S_StartSound(t, sfx_s3kb9)
+		S_StartSound(t, sfx_s3kb9)
 
-	P_PlayerRingBurst(t.player, rings_spill)
-	
-	t.player.rings = $-rings_spill
-	t.player.powers[pw_shield] = 0
+		P_PlayerRingBurst(t.player, rings_spill)
+		
+		t.player.rings = $-rings_spill
+		t.player.powers[pw_shield] = 0
 
-	P_DoPlayerPain(t.player, s, i)
+		P_DoPlayerPain(t.player, s, i)
 
+	end
 	return true
 end, MT_PLAYER)
 
