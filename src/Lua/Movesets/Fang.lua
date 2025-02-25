@@ -137,7 +137,7 @@ local function doPopgun(p)
 	if not P_IsObjectOnGround(p.mo)
 	and p.pflags & PF_JUMPED
 	and not (p.pflags & PF_THOKKED)
-	and not FangsHeist.playerHasSign(p) then
+	and not FangsHeist.isPlayerNerfed(p) then
 		p.pflags = $ & ~PF_JUMPED|PF_STARTJUMP
 		P_SetObjectMomZ(p.mo, max(p.mo.momz*P_MobjFlip(p.mo)*5/4, FU*6))
 

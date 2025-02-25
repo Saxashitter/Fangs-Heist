@@ -105,3 +105,11 @@ InterScreen = INTERSCR
 FlickyList = Demo
 Lua.FH_HellStage = true
 Lua.FH_EscapeTheme = FDSPHR
+
+Level P0
+LevelName = Vicious Volcano
+TypeOfLevel = Heist
+Music = FDEMO7
+SelectHeading = Supported Maps
+Lua.FH_EscapeTheme = HLFPIZ
+Lua.FH_EscapeLinedef = 47

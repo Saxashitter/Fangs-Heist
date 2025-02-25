@@ -29,12 +29,12 @@ FangsHeist.treasures = {
 	};
 	{
 		name = "Tempest Ribbon",
-		desc = "In a world of glass, the girl faced endless conflict.",
+		desc = "The girl faced endless conflict.",
 		frame = E
 	};
 	{
 		name = "Fatalis Ribbon",
-		desc = "In a world of glass, the girl was shrouded in unyielding light.",
+		desc = "The girl was shrouded in unyielding light.",
 		frame = F
 	};
 	{
@@ -93,7 +93,7 @@ local function manage_unpicked(tres)
 
 	for p in players.iterate do
 		if not FangsHeist.isPlayerAlive(p) then continue end
-		if p.powers[pw_flashing] then continue end
+		if p.powers[pw_flashing] and not FangsHeist.playerHasSign(p) then continue end
 		if P_PlayerInPain(p) then continue end
 
 		local dist = R_PointToDist2(mobj.x, mobj.y, p.mo.x, p.mo.y)

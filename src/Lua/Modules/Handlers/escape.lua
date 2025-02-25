@@ -4,6 +4,21 @@ local function valid_player(p)
 	return p and p.mo and p.mo.health and p.heist and not p.heist.spectator and not p.heist.exiting
 end
 
+local bombs = {}
+addHook("NetVars", function(n) bombs = n($) end)
+addHook("ThinkFrame", do
+	for i = #bombs, 1, -1 do
+		local bomb = bombs[i]
+
+		if not (bomb and bomb.valid) then
+			table.remove(bombs, i)
+			continue
+		end
+
+		bomb.alpha = min($+FU/12, FU)
+	end
+end)
+
 local function choose_player()
 	local plyrs = {}
 	for p in players.iterate do
@@ -19,72 +34,37 @@ local function choose_player()
 	return plyrs[P_RandomRange(1, #plyrs)]
 end
 
+local function canSpawn()
+	if not (FangsHeist.Net.time_left) then
+		return true
+	end
+
+	if FangsHeist.Save.retakes > 1 then
+		return true
+	end
+
+	return false
+end
+
 local function handleEggman()
+	if not canSpawn() then return end
+
 	if not (FangsHeist.Net.eggman
-		and FangsHeist.Net.eggman.valid) then
-			local sign = FangsHeist.Net.sign
-			local eggman = P_SpawnMobj(sign.x, sign.y, sign.z, MT_THOK)
+	and FangsHeist.Net.eggman.valid) then
+		local sign = FangsHeist.Net.sign
+		local eggman = P_SpawnMobj(sign.x, sign.y, sign.z, MT_FH_EGGMAN)
 
-			eggman.fuse = -1
-			eggman.tics = -1
-			eggman.flags = $|MF_NOTHINK|MF_NOBLOCKMAP
+		FangsHeist.Net.eggman = eggman
 
-			FangsHeist.Net.eggman = eggman
+		if FangsHeist.Save.retakes > 1
+		and FangsHeist.Net.time_left then
+			eggman.state = S_FH_EGGMAN_COOLDOWN
+		end
 	end
 
-	local eggman = FangsHeist.Net.eggman
-
-	eggman.flags = $|MF_NOTHINK|MF_NOBLOCKMAP
-	eggman.fuse = -1
-	eggman.tics = -1
-
-	if eggman.state ~= S_EGGMOBILE_STND then
-		eggman.state = S_EGGMOBILE_STND
-	end
-
-	if not (eggman.target
-		and eggman.target.valid
-		and eggman.target.player
-		and valid_player(eggman.target.player)) then
-			local p = choose_player()
-
-			if not p then
-				return
-			end
-			eggman.target = p.mo
-	end
-
-
-	local p = eggman.target.player
-
-	local x = p.mo.x
-	local y = p.mo.y
-	local z = p.mo.z
-
-	p.heist.death_time = max(0, $-1)
-
-	local t = FixedDiv(p.heist.death_time, orig_plyr.death_time)
-	local distance = ease.linear(
-		t,
-		0,
-		-240*FU
-	)
-
-	x = $+FixedMul(distance, cos(p.drawangle))
-	y = $+FixedMul(distance, sin(p.drawangle))
-
-	P_MoveOrigin(eggman,
-		ease.linear(FU-(t/5), eggman.x, x),
-		ease.linear(FU-(t/5), eggman.y, y),
-		ease.linear(FU/5, eggman.z, z)
-	)
-
-	eggman.angle = R_PointToAngle2(eggman.x, eggman.y, p.mo.x, p.mo.y)
-
-	if not (p.heist.death_time)
-	and p.mo
-	and p.mo.valid then
-		P_DamageMobj(p.mo, nil, nil, 999, DMG_INSTAKILL)
+	if FangsHeist.Net.eggman.state ~= S_FH_EGGMAN_DOOMCHASE
+	and not (FangsHeist.Net.time_left) then
+		FangsHeist.Net.eggman.state = S_FH_EGGMAN_DOOMCHASE
 	end
 end
 
@@ -100,9 +80,7 @@ local function module()
 		FangsHeist.Net.hurry_up = true
 	end
 
-	if not (FangsHeist.Net.time_left) then
-		handleEggman()
-	end
+	handleEggman()
 
 	if not (FangsHeist.Net.sign
 		and FangsHeist.Net.sign.valid) then
@@ -130,8 +108,13 @@ local function module()
 		end
 	end
 
+
 	local exit = FangsHeist.Net.exit
 	exit.state = S_FH_EXIT_OPEN
+
+	-- BOMBS FOR RETAKES.......
+	local potential_positions = {}
+	local range = 80
 
 	for p in players.iterate do
 		if not p.heist then continue end
@@ -145,6 +128,14 @@ local function module()
 		end
 
 		if not FangsHeist.isPlayerAtGate(p) then
+			if FangsHeist.Save.retakes then
+				table.insert(potential_positions, {
+					x = p.mo.x + p.mo.momx*15 + P_RandomRange(-240, 240)*FU,
+					y = p.mo.y + p.mo.momy*15 + P_RandomRange(-240, 240)*FU,
+					player = p
+				})
+			end
+
 			continue
 		end
 		
@@ -154,6 +145,36 @@ local function module()
 			p.heist.team.banked_sign = true
 			p.heist.had_sign = true
 			FangsHeist.respawnSign(p)
+		end
+	end
+
+	if not FangsHeist.Save.retakes then return end
+
+	local tics = max(3*TICRATE/FangsHeist.Save.retakes, 42)
+
+	if #potential_positions
+	and not (leveltime % tics) then
+		for _,position in pairs(potential_positions) do
+			local sector = R_PointInSubsectorOrNil(position.x, position.y)
+	
+			if not (sector and sector.valid) then
+				continue
+			end
+	
+			sector = sector.sector
+	
+			local scale = 1
+			local z = min(position.player.mo.z+360*FU, sector.ceilingheight - mobjinfo[MT_FBOMB].height*scale)
+	
+			local bomb = P_SpawnMobj(position.x, position.y, z, MT_FBOMB)
+			if bomb and bomb.valid then
+				bomb.scale = $*scale
+				bomb.spritexscale = $/scale
+				bomb.spriteyscale = $/scale
+				bomb.momz = -8*FU
+				bomb.alpha = 0
+				table.insert(bombs, bomb)
+			end
 		end
 	end
 end

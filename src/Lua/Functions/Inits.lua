@@ -16,6 +16,12 @@ local orig_save = FangsHeist.require "Modules/Variables/save"
 local orig_plyr = FangsHeist.require "Modules/Variables/player"
 local orig_hud = FangsHeist.require "Modules/Variables/hud"
 
+local escape_time = CV_RegisterVar{
+	name = "fh_escapetime",
+	defaultvalue = 0,
+	flags = CV_NETVAR
+}
+
 // Initalize player.
 function FangsHeist.initPlayer(p)
 	p.heist = copy(orig_plyr)
@@ -50,9 +56,13 @@ function FangsHeist.initMode(map)
 	if FangsHeist.Save.last_map == map then
 		FangsHeist.Save.retakes = $+1
 
-		time = max(30*TICRATE, $-((TICRATE*60)*FangsHeist.Save.retakes))
+		-- time = max(30*TICRATE, $-((TICRATE*60)*FangsHeist.Save.retakes))
 	else
 		FangsHeist.Save.retakes = 0
+	end
+
+	if escape_time.value then
+		time = escape_time.value*TICRATE
 	end
 
 	FangsHeist.Save.last_map = map

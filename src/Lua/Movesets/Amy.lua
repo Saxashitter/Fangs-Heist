@@ -162,7 +162,7 @@ addHook("PlayerThink", function(p)
 	if p.mo.state == S_FH_AMY_TWIRL then
 		local gravity = 3
 
-		if FangsHeist.playerHasSign(p) then
+		if FangsHeist.isPlayerNerfed(p) then
 			gravity = 9
 		end
 

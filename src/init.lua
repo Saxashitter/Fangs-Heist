@@ -35,6 +35,7 @@ dofile "Hooks/Game"
 dofile "Hooks/HUD"
 dofile "Hooks/Titlescreen"
 
+dofile "Objects/Eggman"
 dofile "Objects/Exit"
 dofile "Objects/Treasures"
 dofile "Objects/Signpost"

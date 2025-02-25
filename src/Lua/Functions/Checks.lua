@@ -42,9 +42,27 @@ function FangsHeist.canUseAbility(p)
 	return false
 end
 
+function FangsHeist.isPlayerNerfed(p)
+	if not FangsHeist.isMode()
+	or not p.heist then
+		return false
+	end
+
+	if FangsHeist.playerHasSign(p) then
+		return true
+	end
+
+	if #p.heist.treasures
+	and FangsHeist.Save.retakes then
+		return true
+	end
+
+	return false
+end
+
 local HURRY_LENGTH = 2693
 
-// Check if the time is in the "Hurry Up" segment.
+-- Check if the time is in the "Hurry Up" segment.
 function FangsHeist.isHurryUp()
 	if not FangsHeist.Net.escape then
 		return false
@@ -59,11 +77,4 @@ function FangsHeist.isHurryUp()
 	end
 
 	return true
-end
-
-function FangsHeist.isPlayerUnconscious(p)
-	return p and p.heist and not (p.heist.conscious_meter)
-end
-function FangsHeist.isPlayerPickedUp(p)
-	return FangsHeist.isPlayerUnconscious(p) and p.heist.picked_up_by and p.heist.picked_up_by.valid
 end
