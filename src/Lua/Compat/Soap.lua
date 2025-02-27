@@ -75,6 +75,12 @@ addHook("AddonLoaded", do
 
 	OVERRIDDEN = true
 
+	Takis_Hook.addHook("CanPlayerHurtPlayer",function(p1,p2, nobs)
+	    if FangsHeist.isMode() then
+	        return false
+	    end
+	end)
+
 	rawset(_G,"Soap_ButtonStuff", function(p)
 		local soap = p.soaptable
 		

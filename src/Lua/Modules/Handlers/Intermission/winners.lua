@@ -51,13 +51,13 @@ function module.draw(v)
 
 	if not (#plyrs) then
 		text.draw(v,
-			160*FU,
-			100*FU - 21*FU/2,
+			width/2,
+			height/2 - 21*FU/2,
 			FU,
 			"NO WINNERS!!",
 			"FHFNT",
 			"center",
-			0,
+			V_SNAPTOLEFT|V_SNAPTOTOP,
 			v.getColormap(nil, SKINCOLOR_CYAN)
 		)
 		return
@@ -69,20 +69,48 @@ function module.draw(v)
 		local p = plyrs[i]
 		local pos = POSITION_DATA[i]
 
-		local scale = skins[p.skin].highresscale
-		local stnd = v.getSprite2Patch(p.skin, SPR2_STND, false, A, 1)
-		local color = v.getColormap(p.skin, p.skincolor, ((p.mo and p.mo.valid) and p.mo.translation or nil))
-
 		local podium = v.cachePatch(pos.patch)
-		local podium_scale = FU*6/8
 
 		local mult = FixedDiv(width, 320*FU)
 		local x = FixedMul(pos.x, mult)
 
 		local name = (trim(p.name)):upper()
 
-		v.drawScaled(x-podium.width*podium_scale/2, 200*FU-podium.height*podium_scale, podium_scale, podium, V_SNAPTOBOTTOM|V_SNAPTOLEFT)
-		v.drawScaled(x, pos.y, scale*6/8, stnd, V_SNAPTOBOTTOM|V_SNAPTOLEFT, color)
+		local sep = 15*FU
+		local width = 0
+		local length = 0
+		for sp,_ in pairs(p.heist.team.players) do
+			if not (sp and sp.valid and sp.heist) then continue end
+			length = $+1
+			width = $+sep
+		end
+
+		local div = length > 1 and width/(length-1) or width/2
+		local i = 0
+
+		local podium_scale = FU*6/8
+		local podium_wscale = podium_scale + FU*(length-1)/10
+		v.drawScaled(x-podium.width*podium_wscale/2, 200*FU-podium.height*podium_scale, podium_wscale, podium, V_SNAPTOBOTTOM|V_SNAPTOLEFT)
+
+		for sp,_ in pairs(p.heist.team.players) do
+			if not (sp and sp.mo and sp.valid and sp.heist) then continue end
+
+			local color = v.getColormap(sp.skin, sp.skincolor, ((sp.mo and sp.mo.valid) and sp.mo.translation or nil))
+			local scale = skins[sp.skin].highresscale
+			local stnd = v.getSprite2Patch(sp.skin, SPR2_STND, false, A, 1)
+			local dx = x - width/2 + div*i
+			if length <= 1 then
+				dx = x
+			end
+
+			--[[if length % 2 == 1 then
+				dx = x - width + sep*i
+			end]]
+
+			v.drawScaled(dx, pos.y, scale*6/8, stnd, V_SNAPTOBOTTOM|V_SNAPTOLEFT, color)
+
+			i = $+1
+		end
 
 		local y = pos.y+12*FU
 		local f = V_SNAPTOBOTTOM|V_SNAPTOLEFT

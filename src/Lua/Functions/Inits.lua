@@ -32,6 +32,10 @@ function FangsHeist.initPlayer(p)
 end
 
 function FangsHeist.initMode(map)
+	if not FangsHeist.isMode() then
+		return
+	end
+
 	FangsHeist.Net = copy(orig_net)
 	FangsHeist.HUD = copy(orig_hud)
 
@@ -59,6 +63,10 @@ function FangsHeist.initMode(map)
 		-- time = max(30*TICRATE, $-((TICRATE*60)*FangsHeist.Save.retakes))
 	else
 		FangsHeist.Save.retakes = 0
+	end
+
+	if info.fh_time then
+		time = tonumber(info.fh_time)*TICRATE
 	end
 
 	if escape_time.value then

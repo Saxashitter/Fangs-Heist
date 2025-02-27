@@ -5,6 +5,14 @@ return function()
 
 	if FangsHeist.Net.escape then
 		song = FangsHeist.Net.escape_theme
+
+		if consoleplayer
+		and consoleplayer.valid
+		and consoleplayer.heist
+		and consoleplayer.heist.reached_second then
+			song = "MIGMAG"
+		end
+
 		if FangsHeist.Save.retakes then
 			song = "WILFOR"
 

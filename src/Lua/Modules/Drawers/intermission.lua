@@ -4,9 +4,14 @@ local vwarp = FangsHeist.require"Modules/Libraries/vwarp"
 local text = FangsHeist.require"Modules/Libraries/text"
 
 local alpha
+local retakealpha
 local statealpha
 local current
 local x
+
+local retake_ticup
+local retake_texty
+local retake_laugh
 
 local buttons
 local lastbuttons
@@ -35,11 +40,15 @@ function module.init()
 	shakeFactor = 12*FU
 	alpha = 0
 	statealpha = 10
+	retakealpha = 10
 	current = 2
 	buttons = 0
 	lastbuttons = 0
 	sidemove = 0
 	lastside = 0
+	retake_ticup = 2*TICRATE
+	retake_laugh = retake_ticup+20
+	retake_texty = 0
 	forwardmove = 0
 	lastforward = 0
 	scroll = 0
@@ -51,6 +60,16 @@ function module.init()
 		end
 	end
 end
+
+freeslot("SKINCOLOR_REALLYREALLYBLACK")
+skincolors[SKINCOLOR_REALLYREALLYBLACK] = {
+    name = "GUHHH",
+    ramp = {31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31},
+    invcolor = SKINCOLOR_BLACK,
+    invshade = 9,
+    chatcolor = V_BLUEMAP,
+    accessible = false
+}
 
 // UNEXPECTED HOOK GRAAAAHHH
 addHook("PlayerCmd", function(_, _cmd)
@@ -104,6 +123,71 @@ local function draw_bg(v)
 		ys,
 		bg,
 		V_SNAPTOLEFT|V_SNAPTOTOP)
+end
+
+local function draw_rect(v, x, y, w, h, flags, color)
+	local patch = v.cachePatch("FH_PINK_SCROLL")
+	v.drawStretched(
+		x, y,
+		FixedDiv(w, patch.width*FU),
+		FixedDiv(h, patch.height*FU),
+		patch,
+		flags,
+		color and v.getColormap(TC_BLINK, color)
+	)
+end
+
+local function draw_retake_factor(v)
+	if not FangsHeist.Net.retaking then return end
+
+	retakealpha = max(0, $-1)
+	local f = V_10TRANS*retakealpha
+
+	draw_rect(v, 0, 0, v.width()*FU/v.dupx(), v.height()*FU/v.dupy(), V_SNAPTOLEFT|V_SNAPTOTOP|f, SKINCOLOR_REALLYREALLYBLACK)
+
+	if retake_ticup then
+		retake_ticup = max(0, $-1)
+
+		if retake_ticup == 0 then
+			retake_texty = -4*FU
+			S_StartSound(nil, sfx_menu1)
+		end
+	end
+	if retake_laugh then
+		retake_laugh = max(0, $-1)
+
+		if retake_laugh == 0 then
+			S_StartSound(nil, sfx_bewar1)
+		end
+	end
+
+	local num = FangsHeist.Save.retakes
+	if retake_ticup == 0 then
+		num = $+1
+	end
+
+	customhud.CustomFontString(v,
+		160*FU,
+		100*FU - 30*FU + retake_texty,
+		"RETAKES ",
+		"FHFNT",
+		f,
+		"center",
+		FU,
+		SKINCOLOR_RED
+	)
+	customhud.CustomFontString(v,
+		160*FU,
+		100*FU - 10*FU + retake_texty,
+		tostring(num),
+		"FHFNT",
+		f,
+		"center",
+		FU,
+		SKINCOLOR_RED
+	)
+
+	retake_texty = ease.linear(FU/4, $, 0)
 end
 
 // sucks to suck but how else am i gonna do this
@@ -232,9 +316,12 @@ function module.draw(v)
 	end
 
 	manage_fade_screen(v)
-	manage_intermission(v)
+	if not FangsHeist.Net.retaking then
+		manage_intermission(v)
+	end
 	draw_intermission(v)
 	draw_tabs(v)
+	draw_retake_factor(v)
 end
 
 return module,"gameandscores"

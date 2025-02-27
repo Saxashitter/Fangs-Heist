@@ -2,6 +2,7 @@ return {
 	scraps = 0,
 	saved_profit = 0,
 	had_sign = false,
+	spawn_time = 2*TICRATE,
 
 	team = {
 		players = {},
@@ -53,6 +54,8 @@ return {
 
 	locked_skin = 0, -- sonic probably
 	confirmed_skin = 0,
+
+	reached_second = false, -- only used in final demo stages
 
 	exiting = false
 }

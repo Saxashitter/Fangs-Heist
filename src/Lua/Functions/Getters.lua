@@ -161,7 +161,7 @@ end
 function FangsHeist.getColorByName(name)
 	for i = 1,#skincolors do
 		if skincolors[i] and skincolors[i].name == name then
-			return i
+			return i-1
 		end
 	end
 

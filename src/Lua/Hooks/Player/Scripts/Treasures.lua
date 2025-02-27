@@ -8,7 +8,7 @@ return function(p)
 
 	if p.heist.team.leader ~= p then return end
 	if leveltime % TICRATE*5 == 0
-	and not FangsHeist.Net.its_over then
+	and not FangsHeist.Net.game_over then
 		local count = 0
 
 		for p,_ in pairs(p.heist.team.players) do

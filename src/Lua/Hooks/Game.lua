@@ -44,8 +44,7 @@ addHook("PreThinkFrame", do
 		p.heist.sidemove = p.cmd.sidemove
 
 		if FangsHeist.isPlayerAlive(p) then
-			if p.heist.exiting
-			or p.heist.weapon_hud then
+			if p.heist.exiting then
 				p.cmd.buttons = 0
 				p.cmd.forwardmove = 0
 				p.cmd.sidemove = 0
@@ -163,18 +162,38 @@ addHook("ThinkFrame", do
 		end
 
 		if t >= FangsHeist.INTER_START_DELAY+FangsHeist.Net.game_over_length then
-			local map = 1
-			local votes = -1
-
-			for i,selmap in pairs(FangsHeist.Net.map_choices) do
-				if selmap.votes > votes then
-					map = selmap.map
-					votes = selmap.votes
+			if FangsHeist.Net.selected_map == 0 then
+				local map = 1
+				local votes = -1
+	
+				for i,selmap in pairs(FangsHeist.Net.map_choices) do
+					if selmap.votes > votes then
+						map = selmap.map
+						votes = selmap.votes
+					end
+				end
+	
+				FangsHeist.Net.selected_map = map
+	
+				if map == gamemap
+				and not FangsHeist.Net.retaking then
+					-- RETAKING??
+					FangsHeist.Net.retaking = true
+					FangsHeist.Net.retake_anim = 10*TICRATE
+					S_FadeOutStopMusic(2000)
 				end
 			end
 
-			G_SetCustomExitVars(map)
-			G_ExitLevel()
+			if FangsHeist.Net.retake_anim then
+				FangsHeist.Net.retake_anim = max(0, $-1)
+			end
+	
+			if FangsHeist.Net.selected_map
+			and (not FangsHeist.Net.retaking
+			or FangsHeist.Net.retake_anim == 0) then
+				G_SetCustomExitVars(FangsHeist.Net.selected_map)
+				G_ExitLevel()
+			end
 		end
 
 		return

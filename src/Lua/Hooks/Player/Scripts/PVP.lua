@@ -53,6 +53,13 @@ local function manageBlockMobj(p)
 		p.heist.blockMobj = nil
 	end
 
+	if not FangsHeist.Net.pregame then
+		if p.heist.spawn_time then
+			p.powers[pw_flashing] = TICRATE
+		end
+		p.heist.spawn_time = max(0, $-1)
+	end
+
 	if not FangsHeist.isPlayerAlive(p) then
 		if p.heist.blockMobj then
 			P_RemoveMobj(p.heist.blockMobj)
@@ -75,7 +82,7 @@ local function manageBlockMobj(p)
 		end
 
 		local t = FixedDiv(p.heist.block_time, FH_BLOCKTIME*2)
-		local scale = FixedDiv(p.mo.height, 22*FU)
+		local scale = FixedDiv(p.mo.height, 48*FU)
 
 		p.heist.blockMobj.scale = ease.linear(t, scale, 0)
 		p.heist.blockMobj.color = p.mo.color

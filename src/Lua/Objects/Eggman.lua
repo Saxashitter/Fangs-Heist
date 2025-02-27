@@ -91,6 +91,17 @@ local function getNearestPlayer(mo)
 	return player
 end
 
+local function L_ReturnThrustXYZ(mo, point, speed)
+	local horz = R_PointToAngle2(mo.x, mo.y, point.x, point.y)
+	local vert = R_PointToAngle2(0, mo.z, FixedHypot(mo.x-point.x, mo.y-point.y), point.z)
+
+	local x = FixedMul(FixedMul(speed, cos(horz)), cos(vert))
+	local y = FixedMul(FixedMul(speed, sin(horz)), cos(vert))
+	local z = FixedMul(speed, sin(vert))
+
+	return x, y, z
+end
+
 local function isColliding(mo, smo)
 	return mo.x-mo.radius < smo.x+smo.radius
 	and mo.y-mo.radius < smo.y+smo.radius
@@ -146,38 +157,44 @@ local function ENDGAME_CHASE(mo)
 
 		mo.target = p.mo
 		mo.distance = 500*FU
-		SET_POS(mo, mo.target, mo.distance)
 	end
 
 	local target = mo.target
 
 	local dist = FixedHypot(
-		FixedHypot(
-			mo.x-target.x,
-			mo.y-target.y
-		),
-		(mo.z+mo.height/2) - (target.z+target.height/2)
+		mo.x-target.x,
+		mo.y-target.y
 	)
 
 	mo.distance = max(0, $ - ((500*FU) - target.radius)/(5*TICRATE))
 
+	local x = mo.x
+	local y = mo.y
+
+	local angle = R_PointToAngle2(mo.x, mo.y, target.x, target.y)
+	local aiming = R_PointToAngle2(
+		0,
+		mo.z+mo.height/2,
+		FixedHypot(mo.x-target.x, mo.y-target.y),
+		target.z+target.height/2
+	)
+
 	if dist > mo.distance then
-		SET_POS(mo, mo.target, mo.distance)
+		x = target.x + FixedMul(-mo.distance, cos(angle))
+		y = target.y + FixedMul(-mo.distance, sin(angle))
 	end
 
 	P_MoveOrigin(mo,
-		mo.x,
-		mo.y,
-		ease.linear(FU/24, mo.z, (target.z + target.height/2) - (mo.height/2)))
+		x,
+		y,
+		ease.linear(FU/8, mo.z, (target.z + target.height/2) - (mo.height/2)))
+	mo.angle = angle
 
-	searchBlockmap("objects",
-		killObjects,
-		mo,
-		mo.x-mo.radius*4,
-		mo.x+mo.radius*4,
-		mo.y-mo.radius*4,
-		mo.y+mo.radius*4
-	)
+	if FixedHypot(mo.x-target.x, mo.y-target.y) < target.radius
+	and mo.z < target.z+target.height
+	and target.z < mo.z+mo.height then
+		P_DamageMobj(target, mo, mo, 999, DMG_INSTAKILL)
+	end
 end
 
 local function PT_CHASE(mo)
@@ -188,12 +205,21 @@ local function PT_CHASE(mo)
 	local target = p.mo
 
 	local band = 1024*FU
-	local speed = 30*FU
-
-	if FangsHeist.playerHasSign(p) then
-		// We're a bitch, but not that big of a bitch.
-		speed = 18*FU
+	if mo.chasespeed == nil then
+		mo.chasespeed = 25*FU
 	end
+
+	if P_PlayerInPain(p) 
+	or p.powers[pw_flashing] then
+		mo.chasespeed = ease.linear(FU/5, $, 6*FU)
+	elseif FangsHeist.isPlayerNerfed(p) then
+		// We're a bitch, but not that big of a bitch.
+		mo.chasespeed = ease.linear(FU/7, $, 18*FU)
+	else
+		mo.chasespeed = ease.linear(FU/18, $, 25*FU)
+	end
+
+	local speed = mo.chasespeed
 
 	local angle = R_PointToAngle2(mo.x, mo.y, target.x, target.y)
 	local aiming = R_PointToAngle2(
@@ -203,26 +229,29 @@ local function PT_CHASE(mo)
 		target.z+target.height/2
 	)
 
-	local x = mo.x + FixedMul(FixedMul(speed, cos(angle)), cos(aiming))
-	local y = mo.y + FixedMul(FixedMul(speed, sin(angle)), cos(aiming))
-	local z = mo.z + FixedMul(speed, sin(aiming))
-
-	z = ease.linear(FU/24, $, target.z + (target.height/2) - (mo.height/2))
-
-	P_MoveOrigin(mo,
-		x,
-		y,
-		z)
-
+	local momx, momy, momz = L_ReturnThrustXYZ(mo, {
+		x = target.x,
+		y = target.y,
+		z = target.z + target.height/2 - mo.height/2
+	}, speed)
 	local dist = FixedHypot(
-		FixedHypot(mo.x-target.x, mo.y-target.y),
-		(mo.z+mo.height/2)-(target.z+target.height/2)
+		FixedHypot(mo.x+momx-target.x, mo.y+momy-target.y),
+		(mo.z+mo.height/2+momz)-(target.z+target.height/2)
 	)
 
 	if dist > band then
-		SET_POS(mo, target, band)
+		local x, y, z = L_ReturnThrustXYZ(target, {
+			x = mo.x,
+			y = mo.y,
+			z = mo.z+mo.height/2-target.height/2
+		}, band)
+
+		P_MoveOrigin(mo, target.x+x, target.y+y, target.z+z)
 	end
 
+	mo.momx = momx
+	mo.momy = momy
+	mo.momz = momz
 	mo.angle = angle
 
 	searchBlockmap("objects",

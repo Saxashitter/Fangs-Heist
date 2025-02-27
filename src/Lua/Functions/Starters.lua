@@ -275,10 +275,10 @@ COM_AddCommand("fh_acceptrequest", function(p, sp)
 		return
 	end
 
-	if not p.heist.invites[sp] then
+	--[[if not p.heist.invites[sp] then
 		CONS_Printf(p, "This player never requested to join you.")
 		return
-	end
+	end]]
 
 	local length = FangsHeist.getTeamLength(p)
 	if length >= 2 then

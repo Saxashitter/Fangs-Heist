@@ -1,5 +1,7 @@
 MainCfg
-TitleMap = 0
+TitleScrollXSpeed = 0
+LoopTitle = true
+HideTitlePics = true
 NumDemos = 0
 GameData = fangsheist.dat
 
@@ -83,7 +85,7 @@ Level Z0
 Levelname = Tutorial
 NoVisitNeeded = true
 Act = 0
-Music = _TITLE
+Music = BLYOBO
 NextLevel = 1
 TypeOfLevel = Heist
 SelectHeading = Supported Maps
@@ -104,6 +106,7 @@ NoVisitNeeded = true
 InterScreen = INTERSCR
 FlickyList = Demo
 Lua.FH_HellStage = true
+Lua.FH_Time = 300
 Lua.FH_EscapeTheme = FDSPHR
 
 Level P0

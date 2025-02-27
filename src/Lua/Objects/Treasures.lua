@@ -74,6 +74,10 @@ local function spawn_mobj(x, y, z)
 end
 
 function FangsHeist.defineTreasure(x, y, z)
+	if not FangsHeist.isMode() then
+		return
+	end
+
 	local treasure = spawn_mobj(x, y, z)
 	local choice = P_RandomRange(1, #FangsHeist.treasures)
 
@@ -128,14 +132,6 @@ local function manage_picked(tres)
 		target.x,
 		target.y,
 		(target.z+target.height)+(24*FU*(mobj.index-1)))
-
-	if displayplayer
-	and displayplayer.mo
-	and displayplayer.mo == target then
-		mobj.frame = $|FF_TRANS80
-	else
-		mobj.frame = $ & ~FF_TRANS80
-	end
 
 	if target.flags2 & MF2_DONTDRAW then
 		mobj.flags2 = $|MF2_DONTDRAW

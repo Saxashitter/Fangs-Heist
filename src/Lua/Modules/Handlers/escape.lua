@@ -102,6 +102,8 @@ local function module()
 				p.mo.angle = pos.a
 				p.drawangle = pos.a
 
+				p.heist.reached_second = true
+
 				S_StartSound(nil, sfx_mixup, p)
 				P_InstaThrust(p.mo, p.mo.angle, FixedHypot(p.rmomx, p.rmomy))
 			end
@@ -129,11 +131,28 @@ local function module()
 
 		if not FangsHeist.isPlayerAtGate(p) then
 			if FangsHeist.Save.retakes then
+				local x = p.mo.x
+				local y = p.mo.y
+	
+				if p.mo.momx
+				and p.mo.momy then
+					local groundPrediction = 24
+					local speed = R_PointToDist2(0,0,p.mo.momx,p.mo.momy)
+					local momangle = R_PointToAngle2(0,0,p.mo.momx,p.mo.momy)
+					local thrustangle = FixedAngle(P_RandomRange(-12, 12)*FU)
+
+					x = $ + P_ReturnThrustX(p.mo, momangle-thrustangle, speed*groundPrediction)
+					y = $ + P_ReturnThrustY(p.mo, momangle-thrustangle, speed*groundPrediction)
+				end
+
 				table.insert(potential_positions, {
-					x = p.mo.x + p.mo.momx*15 + P_RandomRange(-240, 240)*FU,
-					y = p.mo.y + p.mo.momy*15 + P_RandomRange(-240, 240)*FU,
+					x = x,
+					y = y,
 					player = p
 				})
+			else
+				x = $ + P_RandomRange(-60, 60)*FU
+				y = $ + P_RandomRange(-60, 60)*FU
 			end
 
 			continue
@@ -150,7 +169,13 @@ local function module()
 
 	if not FangsHeist.Save.retakes then return end
 
-	local tics = max(3*TICRATE/FangsHeist.Save.retakes, 42)
+	local tics = 2*TICRATE
+	if FangsHeist.Save.retakes >= 2 then
+		tics = TICRATE
+	end
+	if FangsHeist.Save.retakes >= 3 then
+		tics = max(8, $ - 15*(FangsHeist.Save.retakes-2))
+	end
 
 	if #potential_positions
 	and not (leveltime % tics) then
@@ -171,8 +196,9 @@ local function module()
 				bomb.scale = $*scale
 				bomb.spritexscale = $/scale
 				bomb.spriteyscale = $/scale
-				bomb.momz = -8*FU
+				bomb.momz = -10*FU
 				bomb.alpha = 0
+				bomb.alivetime = 0
 				table.insert(bombs, bomb)
 			end
 		end

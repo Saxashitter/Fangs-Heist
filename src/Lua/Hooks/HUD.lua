@@ -35,6 +35,7 @@ local defaultitems = {
 }
 
 customhud.SetupFont("CSFNT")
+customhud.SetupFont("FHFNT")
 
 local function is_hud_modded(name)
 	for k,v in ipairs(defaultitems) do
@@ -83,7 +84,7 @@ addHook("HUD", function(v,p,c)
 			if (is_hud_modded(name)
 			and not customhud.ItemExists(name))
 			or not is_hud_modded(name) then
-				customhud.SetupItem(name, MOD_NAME, object.draw, hudtype)
+				customhud.SetupItem(name, MOD_NAME, object.draw, hudtype, i)
 				continue
 			end
 
@@ -117,6 +118,7 @@ addHud "score"
 addHud "time"
 addHud "treasure"
 addHud "timer"
+addHud "round"
 addHud "escapetext"
 addHud "discord"
 addHud "leftscores"

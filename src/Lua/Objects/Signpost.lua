@@ -118,6 +118,30 @@ function FangsHeist.respawnSign()
 
 	FangsHeist.spawnSign()
 
+	if FangsHeist.Net.hell_stage then
+		local sec = FangsHeist.Net.hell_stage_teleport.sector
+		local pos = FangsHeist.Net.hell_stage_teleport.pos
+
+		local count = 0
+		local secondCount = 0
+
+		for p in players.iterate do
+			if not (FangsHeist.isPlayerAlive(p) and not p.heist.exiting) then continue end
+
+			count = $+1
+			if p.heist.reached_second then
+				secondCount = $+1
+			end
+		end
+
+		if secondCount >= count/2 then
+			P_SetOrigin(FangsHeist.Net.sign,
+				pos.x,
+				pos.y,
+				pos.z)
+		end
+	end
+
 	print "Sign is back!"
 end
 

@@ -1,7 +1,7 @@
 local orig = FangsHeist.require "Modules/Variables/net"
 
 function FangsHeist.isMode()
-	return gametype == GT_FANGSHEIST or (gamestate == GS_LEVEL and not multiplayer)
+	return gametype == GT_FANGSHEIST
 end
 
 function FangsHeist.isPlayerAlive(p)
