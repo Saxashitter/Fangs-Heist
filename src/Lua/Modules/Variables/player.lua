@@ -53,7 +53,12 @@ return {
 	lastside = 0,
 
 	locked_skin = 0, -- sonic probably
-	confirmed_skin = 0,
+	confirmed_skin = false,
+	locked_team = false,
+
+	cur_sel = 1,
+	hud_sel = 8, -- for some kinda camera thing idfk
+	cur_menu = 0,
 
 	reached_second = false, -- only used in final demo stages
 

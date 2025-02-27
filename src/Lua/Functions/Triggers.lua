@@ -56,7 +56,7 @@ function FangsHeist.damagePlayers(p, friendlyfire, damage)
 			S_StartSound(p.mo, sfx_s3k7b)
 			S_StartSound(sp.mo, sfx_s3k7b)
 
-			continue
+			return sp, false
 		end
 
 		local speed = FixedHypot(p.mo.momx, p.mo.momy)-FixedHypot(sp.mo.momx, sp.mo.momy)
@@ -77,6 +77,8 @@ function FangsHeist.damagePlayers(p, friendlyfire, damage)
 			sp.mo.momx = FixedMul($, mult)
 			sp.mo.momy = FixedMul($, mult)
 			sp.mo.momz = FixedMul($, zmult)
+
+			HeistHook.runHook("PlayerDamage", p, sp)
 
 			return sp, speed
 		end

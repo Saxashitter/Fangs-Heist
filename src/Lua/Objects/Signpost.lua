@@ -168,7 +168,7 @@ local function manage_unpicked(sign)
 
 	select_player(sign, selected_player)
 	if not (FangsHeist.Net.escape) then
-		FangsHeist.startEscape()
+		FangsHeist.startEscape(selected_player)
 	end
 end
 

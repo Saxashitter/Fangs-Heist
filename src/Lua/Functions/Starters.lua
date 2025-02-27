@@ -11,18 +11,13 @@ FangsHeist.escapeThemes = {
 	--{"LUNCLO", true}
 	// if the second argument is false, the hurry up music wont play
 }
-function FangsHeist.startEscape()
-	if FangsHeist.Net.escape then return end
+function FangsHeist.startEscape(p)
+	if FangsHeist.Net.escape
+	or HeistHook.runHook("EscapeStart", p) == true then
+		return
+	end
 
 	FangsHeist.Net.escape = true
-
-	if mapheaderinfo[gamemap].fh_escapetime
-	and tonumber(mapheaderinfo[gamemap].fh_escapetime) then
-		local time = tonumber(mapheaderinfo[gamemap].fh_escapetime)
-
-		FangsHeist.Net.time_left = time
-		FangsHeist.Net.max_time_left = time
-	end
 	S_StartSound(nil, sfx_gogogo)
 
 	FangsHeist.changeBlocks()
@@ -42,7 +37,8 @@ local function profsort(a, b)
 end
 
 function FangsHeist.startIntermission()
-	if FangsHeist.Net.game_over then
+	if FangsHeist.Net.game_over
+	or HeistHook.runHook("GameOver") == true then
 		return
 	end
 
@@ -79,7 +75,7 @@ function FangsHeist.startIntermission()
 
 		local str = ""
 
-		for i,data in pairs(FangsHeist.Net.map_choices) do
+		for i,data in ipairs(FangsHeist.Net.map_choices) do
 			str = $..tostring(data.map)..","..tostring(data.votes)
 			if i ~= #FangsHeist.Net.map_choices then
 				str = $.."^"
@@ -221,7 +217,7 @@ local function return_player(p)
 	end
 end
 
-COM_AddCommand("fh_jointeam", function(p, sp)
+--[[COM_AddCommand("fh_jointeam", function(p, sp)
 	if not FangsHeist.isMode() then return end
 	if not FangsHeist.Net.pregame then
 		CONS_Printf(p, "This can only be done during Pre-game!")
@@ -275,10 +271,10 @@ COM_AddCommand("fh_acceptrequest", function(p, sp)
 		return
 	end
 
-	--[[if not p.heist.invites[sp] then
+	if not p.heist.invites[sp] then
 		CONS_Printf(p, "This player never requested to join you.")
 		return
-	end]]
+	end
 
 	local length = FangsHeist.getTeamLength(p)
 	if length >= 2 then
@@ -290,7 +286,7 @@ COM_AddCommand("fh_acceptrequest", function(p, sp)
 	FangsHeist.joinTeam(p, sp)
 	CONS_Printf(p, "Team successful.")
 	CONS_Printf(sp, "Team successful.")
-end)
+end)]]
 
 COM_AddCommand("fh_endgame", function(p)
 	FangsHeist.startIntermission()

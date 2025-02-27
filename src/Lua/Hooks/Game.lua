@@ -86,7 +86,12 @@ addHook("ThinkFrame", do
 	end
 
 	// ROUND 2:
-	for _,data in pairs(FangsHeist.Net.placements) do
+	for i = 0,31 do
+		local data = FangsHeist.Net.placements[i]
+		if not data then
+			continue
+		end
+
 		data.place = 1
 
 		local profit = FangsHeist.returnProfit(data.p)
@@ -120,7 +125,7 @@ addHook("ThinkFrame", do
 		for p in players.iterate do
 			if p and p.heist then
 				count = $+1
-				if p.heist.confirmed_skin then
+				if p.heist.locked_team then
 					confirmcount = $+1
 				end
 			end
@@ -137,9 +142,13 @@ addHook("ThinkFrame", do
 			for p in players.iterate do
 				if p and p.heist then
 					p.heist.invites = {}
+					p.heist.playersList = nil
+					p.heist.invitesList = nil
 					p.powers[pw_flashing] = TICRATE
 				end
 			end
+
+			HeistHook.runHook("GameStart")
 		else
 			return
 		end
@@ -271,6 +280,7 @@ end)
 addHook("PostThinkFrame", do
 	local p = displayplayer
 
+	if not FangsHeist.isMode() then return end
 	if multiplayer then return end
 	if not (p and p.heist) then return end
 

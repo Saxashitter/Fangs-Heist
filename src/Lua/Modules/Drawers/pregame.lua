@@ -43,6 +43,7 @@ local function draw_rect(v, x, y, w, h, flags, color)
 end
 
 local function draw_cs(v,p)
+	v.drawString(160, 4, "CHARACTER SELECT", V_SNAPTOTOP|f, "center")
 	local skin = skins[p.heist.locked_skin]
 
 	local sw = v.width()*FU/v.dupx()
@@ -132,6 +133,130 @@ local function draw_cs(v,p)
 	)
 end
 
+local function draw_menu(v,x,y,width,height,items,selected,dispoffset,flags)
+	local black = v.cachePatch("FH_BLACK")
+	local length = 8
+	local i = dispoffset-length+1
+	local iter = 0
+
+	for i = i, i+length do
+		local str = items[i]
+
+		local y = y + height*iter
+
+		local color = SKINCOLOR_CORNFLOWER
+		if i == selected
+		and #items then
+			color = SKINCOLOR_SKY
+		end
+
+		draw_rect(v, x*FU, y*FU, width*FU, height*FU, flags, color)
+		iter = $+1
+
+		if not str
+		or not #items then continue end
+
+		if #str > 16 then
+			str = string.sub($, 1, 16)
+		end
+		
+		v.drawString(x+4, y+4, str, flags|V_ALLOWLOWERCASE, "thin")
+	end
+
+	if not #items then
+		v.drawString(x+width/2, y+(height/2)-4, "No players!", flags, "thin-center")
+	end
+end
+
+local function draw_team(v,p)
+	local f = alpha*V_10TRANS
+
+	v.drawString(160, 4, "TEAM SELECT", V_SNAPTOTOP|f, "center")
+
+	// Players
+	local length = 8
+	local i = p.heist.hud_sel-length+1
+	local iter = 0
+
+	local boxheight = 16
+	local boxwidth = 80
+
+	local names = {}
+	for _,p in pairs(p.heist.playersList) do
+		table.insert(names, p.name)
+	end
+
+	local hud_sel = p.heist.hud_sel
+	local cur_sel = p.heist.cur_sel
+
+	if p.heist.cur_menu ~= -1 then
+		cur_sel = 0
+		hud_sel = 8
+	end
+
+	if p.heist.team.leader == p then
+		v.drawString(6, 20-8, "JOIN", V_SNAPTOLEFT)
+		draw_menu(v, 6, 20, 80, 16, names, cur_sel, hud_sel, V_SNAPTOLEFT|f)
+	end
+
+	local hud_sel = p.heist.hud_sel
+	local cur_sel = p.heist.cur_sel
+
+	if p.heist.cur_menu ~= 1 then
+		cur_sel = 0
+		hud_sel = 8
+	end
+
+	local requests = {}
+
+	for _,sp in pairs(p.heist.invitesList) do
+		if sp and sp.valid then
+			table.insert(requests, sp.name)
+		end
+	end
+
+	if p.heist.team.leader == p then
+		v.drawString(320-86, 20-8, "REQUESTS", V_SNAPTORIGHT)
+		draw_menu(v, 320-86, 20, 80, 16, requests, cur_sel, hud_sel, V_SNAPTORIGHT|f)
+	end
+
+	// ready button
+	local width = 64*FU
+	local height = 32*FU
+	local color = SKINCOLOR_GREEN
+
+	if p.heist.cur_menu == 0
+	and (leveltime/5) % 2 == 0 then
+		color = SKINCOLOR_WHITE
+	end
+
+	draw_rect(v, 160*FU - width/2, 196*FU - height, width, height, V_SNAPTOBOTTOM|f, color)
+	v.drawString(160*FU, 196*FU - (height/2) - 4*FU, "Ready", V_SNAPTOBOTTOM|V_ALLOWLOWERCASE|f, "fixed-center")
+
+	v.drawString(160, 4+10, "Team:", V_SNAPTOTOP|V_ALLOWLOWERCASE|f, "center")
+
+	local i = 1
+	for sp,_ in pairs(p.heist.team.players) do
+		if not (sp and sp.valid and sp.heist) then
+			continue
+		end
+		
+		local name = sp.name
+		local f = f|V_SNAPTOTOP
+
+		if p == sp then
+			f = $|V_YELLOWMAP
+		end
+
+		if #name > 16 then
+			name = string.sub(name, 1, 16)
+		end
+
+		v.drawString(160, 4+10 + (10*i), name, V_SNAPTOTOP|f, "thin-center")
+		i = $+1
+	end
+end
+
 function module.draw(v,p)
 	if not FangsHeist.Net.pregame then
 		alpha = min($+1, 10)
@@ -166,8 +291,6 @@ function module.draw(v,p)
 		y = $+patch.height*FU
 	end
 
-	v.drawString(160, 4, "PREGAME", V_SNAPTOTOP|f, "center")
-
 	local num = FangsHeist.Net.pregame_time/TICRATE
 	local str = tostring(num)
 	local x = 4*FU
@@ -179,9 +302,6 @@ function module.draw(v,p)
 		v.drawScaled(x, 4*FU, FU, patch, V_SNAPTOLEFT|V_SNAPTOTOP|f)
 		x = $+patch.width*FU
 	end
-
-	v.drawString(4, 20, "To request to join a team, use \"fh_jointeam nameornode\" in the console!", V_SNAPTOTOP|V_SNAPTOLEFT|V_ALLOWLOWERCASE|f, "thin")
-	v.drawString(4, 20+8, "Names are case-sensitive.", V_SNAPTOTOP|V_SNAPTOLEFT|V_ALLOWLOWERCASE|f, "thin")
 
 	chartween = min($+1, CHAR_TWEEN)
 	overlaytween = min($+1, CHAROVERLAY_TWEEN)
@@ -205,6 +325,11 @@ function module.draw(v,p)
 
 	if not p.heist.confirmed_skin then
 		draw_cs(v,p)
+		return
+	end
+
+	if not p.heist.locked_team then
+		draw_team(v,p)
 		return
 	end
 

@@ -14,6 +14,8 @@ rawset(_G, "FangsHeist", {Net = {}, HUD = {}, Objects = {}, Save = {}})
 // FANGS HEIGHT IS BY SAXASHITTER
 // OFFICIAL SEQUEL TO NICK'S PIZZA TIME!
 
+dofile "HookLib"
+
 rawset(_G, "FH_ATTACKCOOLDOWN", TICRATE)
 rawset(_G, "FH_ATTACKTIME", G)
 rawset(_G, "FH_BLOCKCOOLDOWN", 5)

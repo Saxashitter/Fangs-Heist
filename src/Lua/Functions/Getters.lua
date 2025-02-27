@@ -159,9 +159,9 @@ end
 
 // Used for loading colors from files.
 function FangsHeist.getColorByName(name)
-	for i = 1,#skincolors do
+	for i = 1,#skincolors-1 do
 		if skincolors[i] and skincolors[i].name == name then
-			return i-1
+			return i
 		end
 	end
 

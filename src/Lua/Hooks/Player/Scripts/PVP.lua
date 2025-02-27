@@ -166,15 +166,19 @@ return function(p)
 
 	local char = FangsHeist.Characters[p.mo.skin]
 
+	local flags = STR_ATTACK|STR_BUST
 	if p.heist.attack_time then
-		local flags = STR_ATTACK|STR_BUST
 
 		p.heist.attack_time = max(0, $-1)
-		p.powers[pw_strong] = $|flags
-
-		if p.heist.attack_time == 0 then
-			p.powers[pw_strong] = $ & ~flags
+		if not p.heist.strong_attack then
+			p.powers[pw_strong] = $|flags
+			p.heist.strong_attack = true
 		end
+	end
+	if not p.heist.attack_time
+	and p.heist.strong_attack then
+		p.heist.strong_attack = false
+		p.powers[pw_strong] = $ & ~flags
 	end
 
 	if p.heist.attack_cooldown then
@@ -233,7 +237,8 @@ return function(p)
 	if char:isAttacking(p) then
 		local player, speed = FangsHeist.damagePlayers(p)
 
-		if player then
+		if player
+		and HeistHook.runHook("PlayerHit", p, player, speed) ~= true then
 			-- stop attack
 			p.heist.attack_time = 0
 

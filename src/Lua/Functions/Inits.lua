@@ -29,6 +29,8 @@ function FangsHeist.initPlayer(p)
 	p.heist.locked_skin = p.skin
 	p.heist.team.players[p] = true
 	p.heist.team.leader = p
+
+	HeistHook.runHook("PlayerInit", p)
 end
 
 function FangsHeist.initMode(map)
@@ -89,6 +91,8 @@ function FangsHeist.initMode(map)
 			object.init()
 		end
 	end
+
+	HeistHook.runHook("GameInit")
 end
 
 local treasure_things = {
@@ -183,4 +187,6 @@ function FangsHeist.loadMap()
 		FangsHeist.defineTreasure(thing.x, thing.y, thing.z)
 		table.remove(treasure_spawns, choice)
 	end
+
+	HeistHook.runHook("GameLoad")
 end

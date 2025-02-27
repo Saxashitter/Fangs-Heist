@@ -76,7 +76,7 @@ function module.draw(v)
 
 		local name = (trim(p.name)):upper()
 
-		local sep = 15*FU
+		local sep = 12*FU
 		local width = 0
 		local length = 0
 		for sp,_ in pairs(p.heist.team.players) do
@@ -89,7 +89,7 @@ function module.draw(v)
 		local i = 0
 
 		local podium_scale = FU*6/8
-		local podium_wscale = podium_scale + FU*(length-1)/10
+		local podium_wscale = podium_scale + FU*(length-1)/8
 		v.drawScaled(x-podium.width*podium_wscale/2, 200*FU-podium.height*podium_scale, podium_wscale, podium, V_SNAPTOBOTTOM|V_SNAPTOLEFT)
 
 		for sp,_ in pairs(p.heist.team.players) do
@@ -115,6 +115,18 @@ function module.draw(v)
 		local y = pos.y+12*FU
 		local f = V_SNAPTOBOTTOM|V_SNAPTOLEFT
 		// 21*FU
+
+		if length > 1 then
+			text.draw(v,
+				x, y,
+				FU*6/9,
+				"TEAM",
+				"FHFNT",
+				"center",
+				f,
+				v.getColormap(nil, p.skincolor))
+			y = $+20*(FU*6/9)
+		end
 
 		text.draw(v,
 			x, y,

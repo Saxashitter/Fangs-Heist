@@ -68,12 +68,45 @@ local function handleEggman()
 	end
 end
 
+local function predictTicsUntilGrounded(x, y, z, height, momz, gravity)
+	local floorz = P_FloorzAtPos(x, y, z, height)
+	local grav = gravity
+	local tics = 0
+
+	local floorheight = z-floorz
+
+	--[[local t_in_secs = FixedDiv(-momz + FixedSqrt(FixedMul(momz, momz) + 2 * FixedMul(grav, floorheight)), grav)
+	print(t_in_secs/FU)
+
+	return t_in_secs]]
+
+	for i = 1,2048 do
+		tics = $+1
+		momz = $+grav
+		z = $+momz
+
+		if z <= floorz then
+			return tics
+		end
+
+	end
+
+	return -1
+end
+
 local function module()
 	if not FangsHeist.Net.escape then
 		return
 	end
 
-	FangsHeist.Net.time_left = max(0, $-1)
+	if FangsHeist.Net.time_left then
+		FangsHeist.Net.time_left = max(0, $-1)
+
+		if not FangsHeist.Net.time_left then
+			HeistHook.runHook("TimeUp")
+		end
+	end
+
 	if FangsHeist.Net.time_left <= 30*TICRATE
 	and not FangsHeist.Net.hurry_up then
 		dialogue.startFangPreset("hurryup")
@@ -131,33 +164,17 @@ local function module()
 
 		if not FangsHeist.isPlayerAtGate(p) then
 			if FangsHeist.Save.retakes then
-				local x = p.mo.x
-				local y = p.mo.y
-	
-				if p.mo.momx
-				and p.mo.momy then
-					local groundPrediction = 24
-					local speed = R_PointToDist2(0,0,p.mo.momx,p.mo.momy)
-					local momangle = R_PointToAngle2(0,0,p.mo.momx,p.mo.momy)
-					local thrustangle = FixedAngle(P_RandomRange(-12, 12)*FU)
-
-					x = $ + P_ReturnThrustX(p.mo, momangle-thrustangle, speed*groundPrediction)
-					y = $ + P_ReturnThrustY(p.mo, momangle-thrustangle, speed*groundPrediction)
-				end
-
 				table.insert(potential_positions, {
-					x = x,
-					y = y,
 					player = p
 				})
-			else
-				x = $ + P_RandomRange(-60, 60)*FU
-				y = $ + P_RandomRange(-60, 60)*FU
 			end
 
 			continue
 		end
-		
+		if HeistHook.runHook("PlayerExit", p) == true then
+			continue
+		end
+
 		p.heist.exiting = true
 
 		if FangsHeist.playerHasSign(p) then
@@ -179,26 +196,37 @@ local function module()
 
 	if #potential_positions
 	and not (leveltime % tics) then
-		for _,position in pairs(potential_positions) do
-			local sector = R_PointInSubsectorOrNil(position.x, position.y)
-	
-			if not (sector and sector.valid) then
-				continue
-			end
-	
-			sector = sector.sector
-	
+		for _,position in ipairs(potential_positions) do
 			local scale = 1
-			local z = min(position.player.mo.z+360*FU, sector.ceilingheight - mobjinfo[MT_FBOMB].height*scale)
-	
-			local bomb = P_SpawnMobj(position.x, position.y, z, MT_FBOMB)
+			local p = position.player
+			local z = min(position.player.mo.z+380*FU, p.mo.ceilingz - mobjinfo[MT_FBOMB].height*scale)
+
+			local x = p.mo.x
+			local y = p.mo.y
+			local g = -2*FU
+
+			local bomb = P_SpawnMobj(x, y, z, MT_FBOMB)
 			if bomb and bomb.valid then
-				bomb.scale = $*scale
-				bomb.spritexscale = $/scale
-				bomb.spriteyscale = $/scale
-				bomb.momz = -10*FU
+				if p.mo.momx
+				and p.mo.momy then
+					local speed = R_PointToDist2(0,0,p.mo.momx,p.mo.momy)
+					local momangle = R_PointToAngle2(0,0,p.mo.momx,p.mo.momy)
+					local thrustangle = FixedAngle(P_RandomRange(-12, 12)*FU)
+	
+					local thrustx = P_ReturnThrustX(p.mo, momangle-thrustangle, speed)
+					local thrusty = P_ReturnThrustY(p.mo, momangle-thrustangle, speed)
+	
+					local prediction = predictTicsUntilGrounded(x, y, z, mobjinfo[MT_FBOMB].height, g, P_GetMobjGravity(bomb))
+	
+					x = $+thrustx*prediction
+					y = $+thrusty*prediction
+		
+					P_SetOrigin(bomb, x, y, z)
+				end
+
+				bomb.momz = g
 				bomb.alpha = 0
-				bomb.alivetime = 0
+
 				table.insert(bombs, bomb)
 			end
 		end

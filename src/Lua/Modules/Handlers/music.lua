@@ -32,6 +32,11 @@ return function()
 		end
 	end
 
+	local custom = HeistHook.runHook("Music")
+	if type(custom) == "string" then
+		song = custom
+	end
+
 	if song
 	and mapmusname ~= song then
 		mapmusname = song
