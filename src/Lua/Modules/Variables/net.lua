@@ -6,6 +6,7 @@ return {
 	escape = false,
 	escape_theme = "SPRHRO",
 	escape_hurryup = true,
+	escape_on_start = false,
 
 	hell_stage = false,
 	hell_stage_teleport = {},
@@ -22,7 +23,7 @@ return {
 	retaking = false,
 	selected_map = 0,
 	end_anim = 0,
-	retake_anim = 3*TICRATE+10,
+	retake_anim = 3*TICRATE-24,
 
 	pregame = true,
 	pregame_time = 30*TICRATE,

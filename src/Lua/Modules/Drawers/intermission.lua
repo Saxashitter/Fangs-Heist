@@ -28,7 +28,6 @@ local scale
 local shakeFactor
 
 local states = {
-	FangsHeist.require"Modules/Handlers/Intermission/personalstats",
 	FangsHeist.require"Modules/Handlers/Intermission/winners",
 	FangsHeist.require"Modules/Handlers/Intermission/highscores",
 	FangsHeist.require"Modules/Handlers/Intermission/vote"
@@ -41,7 +40,7 @@ function module.init()
 	alpha = 0
 	statealpha = 10
 	retakealpha = 10
-	current = 2
+	current = 1
 	buttons = 0
 	lastbuttons = 0
 	sidemove = 0

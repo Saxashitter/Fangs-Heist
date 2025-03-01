@@ -16,12 +16,6 @@ local orig_save = FangsHeist.require "Modules/Variables/save"
 local orig_plyr = FangsHeist.require "Modules/Variables/player"
 local orig_hud = FangsHeist.require "Modules/Variables/hud"
 
-local escape_time = CV_RegisterVar{
-	name = "fh_escapetime",
-	defaultvalue = 0,
-	flags = CV_NETVAR
-}
-
 // Initalize player.
 function FangsHeist.initPlayer(p)
 	p.heist = copy(orig_plyr)
@@ -59,7 +53,8 @@ function FangsHeist.initMode(map)
 	end
 
 	local time = FangsHeist.Net.time_left
-	if FangsHeist.Save.last_map == map then
+	if FangsHeist.Save.last_map == map
+	and not (info.fh_disableretakes == "true") then
 		FangsHeist.Save.retakes = $+1
 
 		-- time = max(30*TICRATE, $-((TICRATE*60)*FangsHeist.Save.retakes))
@@ -71,13 +66,15 @@ function FangsHeist.initMode(map)
 		time = tonumber(info.fh_time)*TICRATE
 	end
 
-	if escape_time.value then
-		time = escape_time.value*TICRATE
+	if FangsHeist.CVars.escape_time.value then
+		time = FangsHeist.CVars.escape_time.value*TICRATE
 	end
 
 	FangsHeist.Save.last_map = map
 	FangsHeist.Net.time_left = time
 	FangsHeist.Net.max_time_left = time
+
+	FangsHeist.Net.escape_on_start = (info.fh_escapeonstart == "true")
 
 	for p in players.iterate do
 		p.camerascale = FU

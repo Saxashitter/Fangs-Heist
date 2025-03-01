@@ -1,7 +1,7 @@
 return function()
 	local song = nil
 	local loop = true
-	local volume = 255
+	local volume = false
 
 	if FangsHeist.Net.escape then
 		song = FangsHeist.Net.escape_theme
@@ -13,26 +13,27 @@ return function()
 			song = "MIGMAG"
 		end
 
-		if FangsHeist.Save.retakes then
-			song = "WILFOR"
+		if not FangsHeist.Net.time_left then
+			song = "FHTUP"
+		elseif FangsHeist.Save.retakes then
+			song = "MANTRA"
+			volume = true
 
 			if FangsHeist.Save.retakes > 1 then
 				song = "FIFTTP"
 			end
-		end
-		if FangsHeist.isHurryUp() then
+		elseif FangsHeist.isHurryUp() then
 			song = "HURRUP"
 			loop = false
-		elseif FangsHeist.Net.time_left then
-			local t = max(0, min(FixedDiv((5*TICRATE)-FangsHeist.Net.time_left, 5*TICRATE), FU))
-	
-			S_SetInternalMusicVolume(ease.linear(t, 100, 0))
 		else
-			song = "FHTUP"
+			volume = true
 		end
+	elseif not FangsHeist.Net.pregame
+	and FangsHeist.Save.retakes then
+		song = "FHRETK"
 	end
 
-	local custom = HeistHook.runHook("Music")
+	local custom = HeistHook.runHook("Music", song)
 	if type(custom) == "string" then
 		song = custom
 	end
@@ -41,5 +42,11 @@ return function()
 	and mapmusname ~= song then
 		mapmusname = song
 		S_ChangeMusic(song, loop)
+	end
+	if song
+	and volume then
+		local t = max(0, min(FixedDiv((5*TICRATE)-FangsHeist.Net.time_left, 5*TICRATE), FU))
+	
+		S_SetInternalMusicVolume(ease.linear(t, 100, 0))
 	end
 end

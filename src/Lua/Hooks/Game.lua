@@ -139,16 +139,38 @@ addHook("ThinkFrame", do
 			FangsHeist.Net.pregame = false
 			S_ChangeMusic(mapmusname, true)
 
+			local randPlyrs = {}
+
 			for p in players.iterate do
 				if p and p.heist then
 					p.heist.invites = {}
 					p.heist.playersList = nil
 					p.heist.invitesList = nil
 					p.powers[pw_flashing] = TICRATE
+
+					if FangsHeist.isPlayerAlive(p) then
+						table.insert(randPlyrs, p)
+					end
 				end
 			end
 
+
+			if #randPlyrs
+			and FangsHeist.Net.escape_on_start then
+				local p = randPlyrs[P_RandomRange(1, #randPlyrs)]
+
+				FangsHeist.giveSignTo(p)
+				FangsHeist.startEscape(p)
+
+			end
+
 			HeistHook.runHook("GameStart")
+
+			local linedef = tonumber(mapheaderinfo[gamemap].gamestartlinedef)
+
+			if linedef ~= nil then
+				P_LinedefExecute(linedef)
+			end
 		else
 			return
 		end
@@ -176,7 +198,7 @@ addHook("ThinkFrame", do
 				local votes = -1
 	
 				for i,selmap in pairs(FangsHeist.Net.map_choices) do
-					if selmap.votes > votes then
+					if selmap.votes >= votes then
 						map = selmap.map
 						votes = selmap.votes
 					end
@@ -185,7 +207,8 @@ addHook("ThinkFrame", do
 				FangsHeist.Net.selected_map = map
 	
 				if map == gamemap
-				and not FangsHeist.Net.retaking then
+				and not FangsHeist.Net.retaking
+				and not (mapheaderinfo[map].fh_disableretakes == "true") then
 					-- RETAKING??
 					FangsHeist.Net.retaking = true
 					FangsHeist.Net.retake_anim = 10*TICRATE

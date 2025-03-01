@@ -1,5 +1,4 @@
--- code by unmatched bracket
--- but i took it from luigi budds mod with permission (yar soap)
+-- code by unmatched bracket and jisk and luigi
 
 if not rawget(_G,"HeistHook")
 	rawset(_G, "HeistHook", {})
@@ -116,7 +115,7 @@ events["Round2"] = {}
 	// Arguments:
 		// player == player_t
 
-events["Music"] = {}
+events["Music"] = {handler = handler_snapany}
 // Music:
 	// Returns the appropriate music that should be playing.
 	// return string: Overrides the music that's supposed to be playing with the returned string.

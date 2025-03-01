@@ -72,7 +72,13 @@ local function draw_rect(v, x, y, w, h, flags, color)
 	)
 end
 
-function module.draw(v, p)
+function module.draw(v)
+	local p = consoleplayer
+
+	if not (p and p.valid and p.heist) then
+		return
+	end
+
 	local monitor = v.cachePatch("FH_ROUND_MONITOR")
 	local round = v.cachePatch("FH_ROUND_ROUND")
 	local number = v.cachePatch("FH_ROUND2") // TODO: Add support for multiple rounds.

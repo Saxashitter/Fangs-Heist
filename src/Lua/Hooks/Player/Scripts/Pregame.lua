@@ -8,7 +8,7 @@ local function valid(p, sp)
 	and not sp.heist.invites[p]
 	and not FangsHeist.partOfTeam(p, sp)
 	and sp.heist.team.leader == sp
-	and FangsHeist.getTeamLength(p) < 2
+	and not (FangsHeist.getTeamLength(p))
 end
 
 // yes i know this code is weird
@@ -75,7 +75,8 @@ return function(p)
 		// 0 == Ready button
 		// 1 == Requests
 
-		if p.heist.team.leader ~= p then
+		if p.heist.team.leader ~= p
+		or FangsHeist.getTeamLength(p) then
 			p.heist.cur_menu = 0
 		elseif horz then
 			p.heist.cur_menu = max(-1, min($+x, 1))

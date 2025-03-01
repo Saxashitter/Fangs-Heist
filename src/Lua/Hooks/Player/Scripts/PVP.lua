@@ -112,6 +112,30 @@ states[freeslot "S_FH_SHIELD"] = {
 	tics = -1
 }
 
+local function L_ReturnThrustXYZ(mo, point, speed)
+	local horz = R_PointToAngle2(mo.x, mo.y, point.x, point.y)
+	local vert = R_PointToAngle2(0, mo.z, FixedHypot(mo.x-point.x, mo.y-point.y), point.z)
+
+	local x = FixedMul(FixedMul(speed, cos(horz)), cos(vert))
+	local y = FixedMul(FixedMul(speed, sin(horz)), cos(vert))
+	local z = FixedMul(speed, sin(vert))
+
+	return x, y, z
+end
+
+local function L_ClaireThrustXYZ(mo,xyangle,zangle,speed,relative)
+	local xythrust = P_ReturnThrustX(nil,zangle,speed)
+	local zthrust = P_ReturnThrustY(nil,zangle,speed)
+	if relative then
+		P_Thrust(mo,xyangle,xythrust)		
+		mo.momz = $+zthrust	
+	else
+		P_InstaThrust(mo,xyangle,xythrust)		
+		mo.momz = zthrust	
+	end
+	return xythrust, zthrust
+end
+
 addHook("ShouldDamage", function(t,i,s,dmg,dt)
 	if not FangsHeist.isMode() then return end
 	if not (t and t.player and t.player.heist) then return end
@@ -121,21 +145,13 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 	end
 
 	local damage = FH_BLOCKDEPLETION
+	local canDamage = not (t.player.powers[pw_flashing] or t.player.powers[pw_invulnerability])
 	local forced
 
 	if i
 	and i.valid then
-		if i.type == MT_CORK then
-			if t.player.powers[pw_flashing] then
-				return false
-			end
-			if t.player.powers[pw_invulnerability] then
-				return false
-			end
-		end
 		if i.type == MT_LHRT then
-			if t.player.powers[pw_flashing]
-			or t.player.powers[pw_invulnerability] then
+			if not canDamage then
 				return false
 			end
 			
@@ -144,18 +160,41 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 		end
 	end
 
-	if s
-	and s.valid
-	and s.player
-	and s.player.heist then
-		if t.player.heist.blocking then
-			return FangsHeist.depleteBlock(t.player, damage)
+	
+	if t.player.heist.blocking
+	and canDamage then
+		local blocking = not FangsHeist.depleteBlock(t.player, damage)
+
+		if blocking then
+			if i
+			and i.valid then
+				if i.flags & MF_MISSILE then
+					i.target = t
+
+					--[[P_InstaThrust(i,
+						InvAngle(R_PointToAngle2(0,0, i.momx, i.momy)),
+						R_PointToDist2(0,0, i.momx, i.momy))
+					i.momz = -$]]
+
+					local speed = R_PointToDist2(
+						0,0,
+						R_PointToDist2(0,0, i.momx, i.momy),
+						i.momz
+					)
+					local horz = R_PointToAngle2(i.x, i.y, t.x, t.y)
+					local vert = R_PointToAngle2(0, i.z+(i.height/2), speed, t.z+(t.height/2))
+
+					L_ClaireThrustXYZ(i, InvAngle(horz), InvAngle(vert), speed)
+				end
+			end
+
+			t.player.powers[pw_flashing] = TICRATE
+			return false
 		end
 	end
 
 	return forced
 end, MT_PLAYER)
-
 
 return function(p)
 	manageBlockMobj(p)

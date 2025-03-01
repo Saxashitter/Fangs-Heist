@@ -106,6 +106,21 @@ NoVisitNeeded = true
 InterScreen = INTERSCR
 FlickyList = Demo
 Lua.FH_HellStage = true
+Lua.FH_Time = 240
+Lua.FH_EscapeTheme = FDSPHR
+
+Level 34
+Levelname = FD Techno Hill
+Music = FDEMO3
+TypeOfLevel = Heist
+NextLevel = 1100
+SkyNum = 2
+LevelSelect = 2
+SelectHeading = Supported Maps
+NoVisitNeeded = true
+InterScreen = INTERSCR
+FlickyList = Demo
+Lua.FH_HellStage = true
 Lua.FH_Time = 300
 Lua.FH_EscapeTheme = FDSPHR
 
@@ -114,5 +129,8 @@ LevelName = Vicious Volcano
 TypeOfLevel = Heist
 Music = FDEMO7
 SelectHeading = Supported Maps
-Lua.FH_EscapeTheme = HLFPIZ
+Lua.FH_EscapeTheme = SUPREF
 Lua.FH_EscapeLinedef = 47
+Lua.FH_EscapeOnStart = true
+Lua.FH_DisableRetakes = true
+Lua.FH_EscapeHurryUp = false

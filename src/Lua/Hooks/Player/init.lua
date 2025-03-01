@@ -118,7 +118,7 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 end, MT_PLAYER)
 
 addHook("AbilitySpecial", function (p)
-	if FangsHeist.canUseAbility(p)
+	if not FangsHeist.isPlayerNerfed(p)
 	and FangsHeist.isPlayerAlive(p)
 	and p.charability == CA_THOK
 	and not (p.pflags & PF_THOKKED) then
@@ -126,7 +126,7 @@ addHook("AbilitySpecial", function (p)
 	end
 	
 	if p.charability ~= CA_TWINSPIN then
-		return not FangsHeist.canUseAbility(p)
+		return FangsHeist.isPlayerNerfed(p)
 	end
 end)
 

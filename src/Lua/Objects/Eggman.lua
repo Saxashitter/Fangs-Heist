@@ -1,5 +1,43 @@
 // YEAAAAAAH EGGMAAAAAAN
-// managed through game as well lmao
+
+// alerts for when eggman targets you
+local alerts = {}
+
+local function alertZPos(mo)
+	local height = mo.height + 24*mo.scale
+	local z = mo.z
+
+	return z, height
+end
+addHook("ThinkFrame", do
+	if not #alerts then return end
+
+	for i = #alerts, 1, -1 do
+		local alert = alerts[i]
+
+		if not (alert
+		and alert.valid) then
+			table.remove(alerts, i)
+			continue
+		end
+
+		if not (alert.target
+		and alert.target.health) then
+			table.remove(alerts, i)
+			P_RemoveMobj(alert)
+			continue
+		end
+
+		local z, height = alertZPos(alert.target)
+
+		alert.scale = alert.target.scale
+		alert.flags = $|MF_NOGRAVITY|MF_NOCLIP|MF_NOCLIPHEIGHT
+		P_MoveOrigin(alert,
+			alert.target.x,
+			alert.target.y,
+			z + height)
+	end
+end)
 
 freeslot(
 	"MT_FH_EGGMAN",
@@ -91,17 +129,6 @@ local function getNearestPlayer(mo)
 	return player
 end
 
-local function L_ReturnThrustXYZ(mo, point, speed)
-	local horz = R_PointToAngle2(mo.x, mo.y, point.x, point.y)
-	local vert = R_PointToAngle2(0, mo.z, FixedHypot(mo.x-point.x, mo.y-point.y), point.z)
-
-	local x = FixedMul(FixedMul(speed, cos(horz)), cos(vert))
-	local y = FixedMul(FixedMul(speed, sin(horz)), cos(vert))
-	local z = FixedMul(speed, sin(vert))
-
-	return x, y, z
-end
-
 local function isColliding(mo, smo)
 	return mo.x-mo.radius < smo.x+smo.radius
 	and mo.y-mo.radius < smo.y+smo.radius
@@ -121,6 +148,23 @@ local function killObjects(mo, found)
 	if not isColliding(mo, found) then return end
 
 	P_DamageMobj(found, mo, mo, 999, DMG_INSTAKILL)
+end
+
+local function doAlert(mo)
+	local z, height = alertZPos(mo)
+	local alert = P_SpawnMobjFromMobj(mo, 0,0,height, MT_GHOST)
+
+	S_StartSound(mo, sfx_alart)
+
+	if not (alert and alert.valid) then
+		return
+	end
+
+	alert.fuse = states[S_FANG_INTRO12].tics+10
+	alert.state = S_ALART1
+	alert.target = mo
+	alert.dispoffset = 36
+	table.insert(alerts, alert)
 end
 
 // Endgame Chase
@@ -146,6 +190,7 @@ local function SET_POS(mo, target, dist)
 end
 
 local function ENDGAME_CHASE(mo)
+	mo._lastplayer = nil
 	if not (mo.target
 	and mo.target.valid
 	and mo.target.health
@@ -157,6 +202,15 @@ local function ENDGAME_CHASE(mo)
 
 		mo.target = p.mo
 		mo.distance = 500*FU
+		doAlert(p.mo)
+		
+		local target = mo.target
+		local angle = R_PointToAngle2(mo.x, mo.y, target.x, target.y)
+
+		P_MoveOrigin(mo,
+			target.x + FixedMul(-mo.distance, cos(angle)),
+			target.y + FixedMul(-mo.distance, sin(angle)),
+			target.z+target.height/2-mo.height/2)
 	end
 
 	local target = mo.target
@@ -197,62 +251,59 @@ local function ENDGAME_CHASE(mo)
 	end
 end
 
+local function L_ReturnThrustXYZ(mo, point, speed)
+	local horz = R_PointToAngle2(mo.x, mo.y, point.x, point.y)
+	local vert = R_PointToAngle2(0, mo.z+mo.height/2, FixedHypot(mo.x-point.x, mo.y-point.y), point.z)
+
+	local x = FixedMul(FixedMul(speed, cos(horz)), cos(vert))
+	local y = FixedMul(FixedMul(speed, sin(horz)), cos(vert))
+	local z = FixedMul(speed, sin(vert))
+
+	return x, y, z
+end
+
 local function PT_CHASE(mo)
 	local p = getNearestPlayer(mo)
+	if mo._lastplayer ~= p then
+		doAlert(p.mo)
+		mo._lastplayer = p
+	end
 
 	if not p then return end
 
 	local target = p.mo
 
-	local band = 1024*FU
-	if mo.chasespeed == nil then
-		mo.chasespeed = 25*FU
-	end
+	local band = 1500*FU
+	local speed = 25*FU
 
 	if P_PlayerInPain(p) 
 	or p.powers[pw_flashing] then
-		mo.chasespeed = ease.linear(FU/5, $, 6*FU)
+		speed = 6*FU
 	elseif FangsHeist.isPlayerNerfed(p) then
 		// We're a bitch, but not that big of a bitch.
-		mo.chasespeed = ease.linear(FU/7, $, 18*FU)
-	else
-		mo.chasespeed = ease.linear(FU/18, $, 25*FU)
+		speed = 18*FU
 	end
 
-	local speed = mo.chasespeed
-
-	local angle = R_PointToAngle2(mo.x, mo.y, target.x, target.y)
-	local aiming = R_PointToAngle2(
-		0,
-		mo.z+mo.height/2,
+	local dist = FixedHypot(
 		FixedHypot(mo.x-target.x, mo.y-target.y),
-		target.z+target.height/2
+		(mo.z+mo.height/2)-(target.z+target.height/2)
 	)
+
+	if dist > band then
+		// rubberbanding code from jisk, taken from ptsr
+		speed = FixedMul($, FU+FixedDiv(dist - band, band))
+	end
 
 	local momx, momy, momz = L_ReturnThrustXYZ(mo, {
 		x = target.x,
 		y = target.y,
-		z = target.z + target.height/2 - mo.height/2
+		z = target.z + (target.height/2)
 	}, speed)
-	local dist = FixedHypot(
-		FixedHypot(mo.x+momx-target.x, mo.y+momy-target.y),
-		(mo.z+mo.height/2+momz)-(target.z+target.height/2)
-	)
-
-	if dist > band then
-		local x, y, z = L_ReturnThrustXYZ(target, {
-			x = mo.x,
-			y = mo.y,
-			z = mo.z+mo.height/2-target.height/2
-		}, band)
-
-		P_MoveOrigin(mo, target.x+x, target.y+y, target.z+z)
-	end
 
 	mo.momx = momx
 	mo.momy = momy
 	mo.momz = momz
-	mo.angle = angle
+	mo.angle = R_PointToAngle2(mo.x, mo.y, target.x, target.y)
 
 	searchBlockmap("objects",
 		killObjects,

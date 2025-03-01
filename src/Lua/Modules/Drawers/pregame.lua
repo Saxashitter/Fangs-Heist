@@ -195,8 +195,8 @@ local function draw_team(v,p)
 	end
 
 	if p.heist.team.leader == p then
-		v.drawString(6, 20-8, "JOIN", V_SNAPTOLEFT)
-		draw_menu(v, 6, 20, 80, 16, names, cur_sel, hud_sel, V_SNAPTOLEFT|f)
+		v.drawString(6, 24-8, "JOIN PLAYERS", V_SNAPTOLEFT|f, "thin")
+		draw_menu(v, 6, 24, 80, 16, names, cur_sel, hud_sel, V_SNAPTOLEFT|f)
 	end
 
 	local hud_sel = p.heist.hud_sel
@@ -216,22 +216,25 @@ local function draw_team(v,p)
 	end
 
 	if p.heist.team.leader == p then
-		v.drawString(320-86, 20-8, "REQUESTS", V_SNAPTORIGHT)
-		draw_menu(v, 320-86, 20, 80, 16, requests, cur_sel, hud_sel, V_SNAPTORIGHT|f)
+		v.drawString(320-86, 24-8, "JOIN REQUESTS", V_SNAPTORIGHT|f, "thin")
+		draw_menu(v, 320-86, 24, 80, 16, requests, cur_sel, hud_sel, V_SNAPTORIGHT|f)
 	end
 
 	// ready button
-	local width = 64*FU
-	local height = 32*FU
-	local color = SKINCOLOR_GREEN
-
-	if p.heist.cur_menu == 0
-	and (leveltime/5) % 2 == 0 then
-		color = SKINCOLOR_WHITE
+	local ready = v.cachePatch("FH_READY")
+	local scale = FU
+	local color = v.getColormap(TC_RAINBOW, SKINCOLOR_GREY)
+	if p.heist.cur_menu == 0 then
+		scale = tofixed("1.25")
+		color = nil
 	end
-
-	draw_rect(v, 160*FU - width/2, 196*FU - height, width, height, V_SNAPTOBOTTOM|f, color)
-	v.drawString(160*FU, 196*FU - (height/2) - 4*FU, "Ready", V_SNAPTOBOTTOM|V_ALLOWLOWERCASE|f, "fixed-center")
+	v.drawScaled(
+		160*FU - ready.width*scale/2,
+		200*FU - 4*FU - ready.height*scale,
+		scale,
+		ready,
+		V_SNAPTOBOTTOM|f,
+		color)
 
 	v.drawString(160, 4+10, "Team:", V_SNAPTOTOP|V_ALLOWLOWERCASE|f, "center")
 
@@ -244,7 +247,7 @@ local function draw_team(v,p)
 		local name = sp.name
 		local f = f|V_SNAPTOTOP
 
-		if p == sp then
+		if sp.heist.team.leader == sp then
 			f = $|V_YELLOWMAP
 		end
 

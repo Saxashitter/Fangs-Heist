@@ -103,6 +103,12 @@ local function module()
 		FangsHeist.Net.time_left = max(0, $-1)
 
 		if not FangsHeist.Net.time_left then
+			local linedef = tonumber(mapheaderinfo[gamemap].fh_timeuplinedef)
+
+			if linedef ~= nil then
+				P_LinedefExecute(linedef)
+			end
+
 			HeistHook.runHook("TimeUp")
 		end
 	end
@@ -211,7 +217,7 @@ local function module()
 				and p.mo.momy then
 					local speed = R_PointToDist2(0,0,p.mo.momx,p.mo.momy)
 					local momangle = R_PointToAngle2(0,0,p.mo.momx,p.mo.momy)
-					local thrustangle = FixedAngle(P_RandomRange(-12, 12)*FU)
+					local thrustangle = FixedAngle(P_RandomRange(-15, 15)*FU/3)
 	
 					local thrustx = P_ReturnThrustX(p.mo, momangle-thrustangle, speed)
 					local thrusty = P_ReturnThrustY(p.mo, momangle-thrustangle, speed)

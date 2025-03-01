@@ -25,6 +25,7 @@ rawset(_G, "FH_BLOCKDEPLETION", FH_BLOCKTIME/3)
 dofile "gametypes"
 dofile "files"
 dofile "characters"
+dofile "console"
 
 dofile "Functions/Inits"
 dofile "Functions/Getters"
