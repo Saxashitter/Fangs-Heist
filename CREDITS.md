@@ -21,6 +21,8 @@
 - GFZ2
 - F.D. THZ (Basic)
 - Titlescreen Map
+## ETC
+- Added Sound Test
 
 # Pacola
 ## Mapper
@@ -33,6 +35,10 @@
 # Lemerks
 ## Mapper
 - Tutorial
+
+# Speedcore Tempest
+## Ex-Spriter
+- All treasures in-game
 
 # Yousuke Yasui:
 ## Composer
