@@ -12,6 +12,9 @@ function FangsHeist.clashPlayers(p, sp)
 
 	p.mo.state = S_PLAY_FALL
 	sp.mo.state = S_PLAY_FALL
+
+	p.powers[pw_flashing] = 10
+	sp.powers[pw_flashing] = 10
 end
 
 function FangsHeist.damagePlayers(p, friendlyfire, damage)
@@ -83,7 +86,7 @@ function FangsHeist.damagePlayers(p, friendlyfire, damage)
 			return sp, speed
 		end
 
-		if sp.heist.blocking then
+		if char2:isBlocking(sp) then
 			return sp, false
 		end
 	end
@@ -92,6 +95,11 @@ end
 function FangsHeist.depleteBlock(p, damage)
 	if damage == nil then
 		damage = FH_BLOCKDEPLETION
+	end
+
+	local result = HeistHook.runHook("DepleteBlock", p, damage)
+	if result ~= nil then
+		return result
 	end
 
 	p.heist.block_time = min(FH_BLOCKTIME, $+damage)

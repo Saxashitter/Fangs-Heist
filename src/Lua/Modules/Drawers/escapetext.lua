@@ -1,101 +1,72 @@
-local escape = {}
+local module = {}
 
-local ANIM_END_TICS = 2*TICRATE
-local KILL_TICS = 3*TICRATE
-local SPAWN_TICS = TICRATE/3
+local elapsed = 0
+local maxtime = TICRATE+13
+local offsettime = TICRATE
+local endtime = 24
+local offset = 12
 
-local SPAWN_X = 160*FU
-local OFFSET_X = 45*FU
+local function gravityTypeEase(t, start, finish, param)
+	local tweenStuff = FU/3
+	if t < tweenStuff then
+		return ease.outcubic(FixedDiv(t, tweenStuff), start, start-param)
+	end
 
-local GRAVITY = FU/3
+	local t = FixedDiv(t-tweenStuff, FU-tweenStuff)
 
-local ticker = 0
-local objects = {}
-
-local text = "GO!  "
-
-local function make_escape_object(v)
-	return {
-		text = text,
-		x = 0,
-		y = v.height()*FU/v.dupy(),
-		vx = 0,
-		vy = 0
-	}
+	return ease.incubic(t, start-param, finish)
 end
 
-local function animate_object(v, object)
-	if ticker < KILL_TICS then
-		local sw = v.height()*FU/v.dupy()
+function module.init()
+	elapsed = 0
+end
 
-		object.y = ease.linear(FU/6, $, (sw/2)-(10*FU))
+function module.draw(v)
+	if not FangsHeist.Net.escape then
 		return
 	end
 
-	if ticker == KILL_TICS then
-		object.vx = v.RandomRange(-4*FU, 4*FU)
-		object.vy = v.RandomRange(-GRAVITY*6, -GRAVITY*12)
+	elapsed = min(maxtime+offsettime+endtime, $+1)
+
+	if elapsed >= maxtime+offsettime+endtime then
+		return
 	end
 
-	if object.y > v.height()*FU/v.dupy() then
-		return true
-	end
+	local go = v.cachePatch("FH_GOGOGO")
+	local scale = FU
 
-	object.vy = $+GRAVITY
+	local start = -go.height*scale
+	local mid = ((v.height()*FU/v.dupy())/2) - go.height*scale/2
+	local endpos = v.height()*FU/v.dupy()
+	local offsetwidth = 4*scale
+	local width = go.width*scale+offsetwidth
 
-	object.x = $+object.vx
-	object.y = $+object.vy
-end
+	for i = 1,3 do
+		local time = max(0, elapsed-(offset*(i-1)))
 
-local function draw_object(v, object)
-	v.drawString(object.x, object.y, object.text, V_SNAPTOTOP|V_YELLOWMAP, "fixed")
-	if object.vx or object.vy then
-		for i = 1,3 do
-			local ox = (object.vx*3/2)*i
-			local oy = (object.vy*3/2)*i
-			local trans = V_20TRANS*i
-			v.drawString(object.x-ox, object.y-oy, object.text, V_SNAPTOTOP|V_YELLOWMAP|trans, "fixed")
-		end
-	end
-end
+		local x = 160*FU - go.width*scale/2 - width*2 + width*i
+		local y = start
 
-function escape.init()
-	ticker = 0
-	objects = {}
-end
+		if elapsed > maxtime+offsettime then
+			local t = FixedDiv(elapsed - (maxtime+offsettime), endtime)
+			local tx = 30*FU
 
-function escape.draw(v)
-	if not FangsHeist.Net.escape then return end
-
-	if ticker % SPAWN_TICS == 0
-	and #objects < 3 then
-		objects[#objects+1] = make_escape_object(v)
-
-		local text_width = v.stringWidth(text)*FU*3
-
-		objects[#objects].x = SPAWN_X-(text_width/2)+((text_width/3)*(#objects-1))
-	end
-
-	local remove = {}
-	for k,i in pairs(objects) do
-		if not animate_object(v,i) then
-			draw_object(v,i)
-			continue
+			x = ease.linear(t, $, $+tx*(i-2))
+			y = gravityTypeEase(t, mid, endpos, FU*12)
+		else
+			local div = min(FixedDiv(time, maxtime), FU)
+	
+			y = ease.outback(div, $, mid, FU*2)
 		end
 
-		table.insert(remove, i)
-	end
+		for i = 1,2 do
+			local x = x+v.RandomRange(-5*scale, 5*scale)
+			local y = y+v.RandomRange(-5*scale, 5*scale)
 
-	for _,i in pairs(remove) do
-		for k,v in pairs(objects) do
-			if i == v then
-				table.remove(objects, k)
-				break
-			end
+			v.drawScaled(x, y, scale, go, V_SNAPTOTOP|V_70TRANS)
 		end
+		v.drawScaled(x, y, scale, go, V_SNAPTOTOP)
 	end
-
-	ticker = $+1
 end
 
-return escape
+return module

@@ -136,6 +136,41 @@ local function L_ClaireThrustXYZ(mo,xyangle,zangle,speed,relative)
 	return xythrust, zthrust
 end
 
+local function armaDamage(mo, found)
+	if not (found and found.valid and found.health) then
+		return
+	end
+	if found.type ~= MT_PLAYER then return end
+	if R_PointToDist2(mo.x, mo.y, found.x, found.y) > 1536*FU then
+		return
+	end
+	if not found.player then return end
+	if FangsHeist.partOfTeam(mo.player, found.player) then
+		return
+	end
+
+	P_DamageMobj(found, mo, mo)
+end
+
+addHook("ShieldSpecial", function(p)
+	if not FangsHeist.isMode() then
+		return
+	end
+	if not p.heist then return end
+	if p.powers[pw_shield] ~= SH_ARMAGEDDON then
+		return
+	end
+
+	searchBlockmap("objects",
+		armaDamage,
+		p.mo,
+		p.mo.x-2048*FU,
+		p.mo.x+2048*FU,
+		p.mo.y-2048*FU,
+		p.mo.y+2048*FU
+	)
+end)
+
 addHook("ShouldDamage", function(t,i,s,dmg,dt)
 	if not FangsHeist.isMode() then return end
 	if not (t and t.player and t.player.heist) then return end
@@ -144,12 +179,18 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 		return false
 	end
 
+	local char = FangsHeist.Characters[t.skin]
 	local damage = FH_BLOCKDEPLETION
 	local canDamage = not (t.player.powers[pw_flashing] or t.player.powers[pw_invulnerability])
 	local forced
 
 	if i
 	and i.valid then
+		if i.type == MT_CORK then
+			if not canDamage then
+				return false
+			end
+		end
 		if i.type == MT_LHRT then
 			if not canDamage then
 				return false
@@ -161,7 +202,7 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 	end
 
 	
-	if t.player.heist.blocking
+	if char:isBlocking(t.player)
 	and canDamage then
 		local blocking = not FangsHeist.depleteBlock(t.player, damage)
 
@@ -257,7 +298,8 @@ return function(p)
 		if p.heist.block_cooldown == 0
 		and p.heist.attack_cooldown == 0
 		and p.cmd.buttons & BT_FIRENORMAL
-		and not P_PlayerInPain(p) then
+		and not P_PlayerInPain(p)
+		and char.useDefaultBlock then
 			p.heist.block_cooldown = FH_BLOCKCOOLDOWN
 			S_StartSound(p.mo, sfx_fhbonn)
 			p.heist.blocking = true

@@ -7,6 +7,14 @@ local function alertZPos(mo)
 	local height = mo.height + 24*mo.scale
 	local z = mo.z
 
+	if mo.player
+	and mo.player.heist then
+		if FangsHeist.playerHasSign(mo.player) then
+			height = $+48*mo.scale
+		end
+		height = $+24*#mo.player.heist.treasures
+	end
+
 	return z, height
 end
 addHook("ThinkFrame", do

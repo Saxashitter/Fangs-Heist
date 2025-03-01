@@ -21,6 +21,7 @@ local DEFAULT = {
 	damageZRange = tofixed("1.5"),
 
 	useDefaultAttack = true,
+	useDefaultBlock = true,
 
 	onAttack = function(self, p) end,
 	onClash = function(self, p) end,
@@ -29,6 +30,9 @@ local DEFAULT = {
 	isAttacking = function(self, p)
 		return (p.heist.attack_time)
 	end,
+	isBlocking = function(self, p)
+		return p.heist.blocking
+	end
 
 	controls = {
 		{

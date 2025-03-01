@@ -108,6 +108,14 @@ events["PlayerHit"] = {}
 		// damaged == player_t
 		// speed == bool/fixed_t - speed is false if the player wasn't hurt. Otherwise, it returns a fixed value.
 
+events["DepleteBlock"] = {}
+// DepleteBlock:
+	// Runs before the depleting code when something hits the player.
+	// return true/false: Stop the code from running, and determines if the block was broken.
+	// Arguments:
+		// player == player_t
+		// damage == int
+
 events["Round2"] = {}
 // Round2:
 	// Runs when the player heads to the teleporter for the second part of Final Demo stages.

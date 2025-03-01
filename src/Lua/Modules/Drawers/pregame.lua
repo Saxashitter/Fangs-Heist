@@ -192,9 +192,13 @@ local function draw_team(v,p)
 	local boxheight = 16
 	local boxwidth = 80
 
+	local teamleng = max(0, FangsHeist.CVars.team_limit.value-1)
+
 	local names = {}
-	for _,p in pairs(p.heist.playersList) do
-		table.insert(names, p.name)
+	if p.heist.playersList then
+		for _,p in pairs(p.heist.playersList) do
+			table.insert(names, p.name)
+		end
 	end
 
 	local hud_sel = p.heist.hud_sel
@@ -205,7 +209,8 @@ local function draw_team(v,p)
 		hud_sel = 8
 	end
 
-	if p.heist.team.leader == p then
+	if p.heist.team.leader == p
+	and FangsHeist.getTeamLength(p) < teamleng then
 		v.drawString(6, 24-8, "JOIN PLAYERS", V_SNAPTOLEFT|f, "thin")
 		draw_menu(v, 6, 24, 80, 16, names, cur_sel, hud_sel, V_SNAPTOLEFT|f)
 	end
@@ -220,13 +225,16 @@ local function draw_team(v,p)
 
 	local requests = {}
 
-	for _,sp in pairs(p.heist.invitesList) do
-		if sp and sp.valid then
-			table.insert(requests, sp.name)
+	if p.heist.invitesList then
+		for _,sp in pairs(p.heist.invitesList) do
+			if sp and sp.valid then
+				table.insert(requests, sp.name)
+			end
 		end
 	end
 
-	if p.heist.team.leader == p then
+	if p.heist.team.leader == p
+	and FangsHeist.getTeamLength(p) < teamleng then
 		v.drawString(320-86, 24-8, "JOIN REQUESTS", V_SNAPTORIGHT|f, "thin")
 		draw_menu(v, 320-86, 24, 80, 16, requests, cur_sel, hud_sel, V_SNAPTORIGHT|f)
 	end

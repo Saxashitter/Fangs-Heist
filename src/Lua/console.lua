@@ -63,3 +63,8 @@ FangsHeist.CVars.escape_time = CV_RegisterVar{
 	defaultvalue = 0,
 	flags = CV_NETVAR
 }
+FangsHeist.CVars.team_limit = CV_RegisterVar{
+	name = "fh_teamlimit",
+	defaultvalue = 3,
+	flags = CV_NETVAR
+}

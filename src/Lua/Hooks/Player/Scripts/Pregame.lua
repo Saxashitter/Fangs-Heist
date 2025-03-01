@@ -1,6 +1,7 @@
 local showhud = CV_FindVar("showhud")
 
 local function valid(p, sp)
+	local teamleng = max(0, FangsHeist.CVars.team_limit.value-1)
 	return sp
 	and sp.valid
 	and sp.heist
@@ -8,7 +9,7 @@ local function valid(p, sp)
 	and not sp.heist.invites[p]
 	and not FangsHeist.partOfTeam(p, sp)
 	and sp.heist.team.leader == sp
-	and not (FangsHeist.getTeamLength(p))
+	and not (FangsHeist.getTeamLength(p) >= teamleng)
 end
 
 // yes i know this code is weird

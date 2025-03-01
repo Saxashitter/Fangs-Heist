@@ -193,6 +193,7 @@ end
 addHook("PostThinkFrame", do
 	if not FangsHeist.isMode() then return end
 	if not FangsHeist.Net.game_over then return end
+	if FangsHeist.Net.retaking then return end
 	if statealpha == 10 then return end
 
 	local state = states[current]
@@ -253,18 +254,18 @@ local function draw_tabs(v)
 	local tab_patch = v.cachePatch"FH_INTER_TAB"
 	local dist = (tab_patch.width-16)*FU
 
-	v.drawString(0, tab_patch.height*FU, "Weapon Prev & Next", V_SNAPTOLEFT|V_SNAPTOTOP|alpha, "thin-fixed")
+	v.drawString(160*FU, tab_patch.height*FU, "Weapon Prev & Next", V_SNAPTOTOP|alpha, "thin-fixed-center")
 
 	local tabOrder = calc_tab_order(current, #states)
 	local xorigin = 160*FU - (dist*(#states-1))/2
 	for _,i in ipairs(tabOrder) do
 		local state = states[i]
 		local x = xorigin+dist*(i-1)
-		v.drawScaled(x, 0, FU, tab_patch, V_SNAPTOLEFT|V_SNAPTOTOP|alpha)
+		v.drawScaled(x, 0, FU, tab_patch, V_SNAPTOTOP|alpha)
 		v.drawString(x,
 			4*FU,
 			state.name,
-			V_ALLOWLOWERCASE|V_SNAPTOLEFT|V_SNAPTOTOP|alpha|(current == i and V_YELLOWMAP or 0),
+			V_ALLOWLOWERCASE|V_SNAPTOTOP|alpha|(current == i and V_YELLOWMAP or 0),
 			"thin-fixed-center")
 	end
 end

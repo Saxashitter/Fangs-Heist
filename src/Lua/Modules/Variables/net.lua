@@ -25,7 +25,7 @@ return {
 	retaking = false,
 	selected_map = 0,
 	end_anim = 0,
-	retake_anim = 3*TICRATE-24,
+	retake_anim = 2*TICRATE,
 
 	pregame = true,
 	pregame_time = 30*TICRATE,

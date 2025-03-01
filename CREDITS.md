@@ -24,6 +24,10 @@
 ## ETC
 - Added Sound Test
 
+# enes2gamer
+## Mapper
+- GFZ1
+
 # Pacola
 ## Mapper
 - THZ (Basic)
@@ -35,6 +39,11 @@
 # Lemerks
 ## Mapper
 - Tutorial
+
+# 5UP34
+## Spriter
+- Thrown Hammer (Amy)
+- All Pre-game backgrounds
 
 # Speedcore Tempest
 ## Ex-Spriter
@@ -59,8 +68,13 @@
 
 # Rumya
 ## Composer
-### TEK Touhou Arrangements
-- Faith is for the Transistent People
+### +TEK Touhou Arrangements
+- Faith is for the Transient People
+
+# +TEK
+## Composer
+### +TEK Touhou Arrangements
+- the Grimoire of Alice
 
 # Jisk
 ## Contributor
