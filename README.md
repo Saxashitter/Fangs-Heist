@@ -11,7 +11,7 @@ This mod aims to reinvent the wheel of Pizza Time mods by offering a fun and uni
 
 This mod is completely reusable. Do as you wish with it!
 
-If you want scripting/mapping help, feel free to check the wiki. [You can also join our Discord to get access to times when the mod is hosted, directly talk with me, and more!](https://discord.gg/BqUHFYJSDv)
+If you want scripting/mapping help, [feel free to check the wiki](https://github.com/Saxashitter/Fangs-Heist/wiki). You can also [join our Discord to get access to times when the mod is hosted, directly talk with me, and more!](https://discord.gg/BqUHFYJSDv)
 
 Don't forget about the lovely people who helped us with this mod. [Check the credits!](https://github.com/Saxashitter/Fangs-Heist/blob/main/CREDITS.md)
 
