@@ -113,6 +113,7 @@ function FangsHeist.playerCount()
 	local count = {
 		total = 0,
 		alive = 0,
+		team = 0
 		exiting = 0,
 		dead = 0
 	}
@@ -130,6 +131,10 @@ function FangsHeist.playerCount()
 		if p.heist.exiting then
 			count.exiting = $+1
 			continue
+		end
+
+		if p.heist.team.leader == p then
+			count.team = $+1
 		end
 
 		count.alive = $+1

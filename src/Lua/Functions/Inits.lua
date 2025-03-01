@@ -51,6 +51,10 @@ function FangsHeist.initMode(map)
 	and info.fh_hellstage:lower() == "true" then
 		FangsHeist.Net.hell_stage = true
 	end
+	if info.fh_lastmanstanding
+	and info.fh_lastmanstanding:lower() == "true" then
+		FangsHeist.Net.last_man_standing = true
+	end
 
 	local time = FangsHeist.Net.time_left
 	if FangsHeist.Save.last_map == map
