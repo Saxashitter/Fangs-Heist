@@ -55,13 +55,22 @@ return function(p)
 		if horz then
 			p.heist.locked_skin = $+x
 
-			if p.heist.locked_skin < 0
+			if p.heist.locked_skin < 0 then
 				p.heist.locked_skin = #skins-1
 			elseif p.heist.locked_skin > #skins-1 then
 				p.heist.locked_skin = 0
 			end
 
 			S_StartSound(nil, sfx_menu1, p)
+		end
+	
+		if vert then
+			local y = y*-17
+
+			if p.heist.locked_skin+y > 0
+			and p.heist.locked_skin+y < #skins-1 then
+				p.heist.locked_skin = $+y
+			end
 		end
 
 		if p.heist.buttons & BT_JUMP

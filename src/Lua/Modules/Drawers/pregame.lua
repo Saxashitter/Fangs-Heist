@@ -51,11 +51,22 @@ local function draw_cs(v,p)
 	local f = alpha*V_10TRANS
 
 	-- icon underlay
+	local limit = 17+1
+	local oy = 16*FU
+
 	local x = 16*FU
-	local y = 60*FU
+	local y = 60*FU - oy*#skins/limit
+	local adds = 0
+
 	for i = 0,#skins-1 do
-		if not (p and p.valid) then continue end
-		
+		if not (p and p.valid) then break end
+
+		if (i+1)/limit > adds then
+			x = 16*FU
+			y = $+oy
+			adds = (i+1)/limit
+		end
+
 		local patch
 		local scale = FU
 		if skins[i].sprites[SPR2_LIFE].numframes then 
@@ -64,7 +75,7 @@ local function draw_cs(v,p)
 		else
 			patch = v.cachePatch("CONTINS")
 		end
-		
+
 		if i == p.heist.locked_skin then
 			scale = $*3/2
 		end
@@ -73,7 +84,7 @@ local function draw_cs(v,p)
 			scale,
 			patch,
 			V_SNAPTOLEFT|f,
-			v.getColormap(nil, skins[i].prefcolor))
+			v.getColormap(skins[i].name, skins[i].prefcolor))
 
 		x = x + patch.width*scale
 	end
