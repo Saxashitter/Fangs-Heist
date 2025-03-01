@@ -113,7 +113,7 @@ function FangsHeist.playerCount()
 	local count = {
 		total = 0,
 		alive = 0,
-		team = 0
+		team = 0,
 		exiting = 0,
 		dead = 0
 	}

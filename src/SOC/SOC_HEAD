@@ -134,3 +134,4 @@ Lua.FH_EscapeLinedef = 47
 Lua.FH_EscapeOnStart = true
 Lua.FH_DisableRetakes = true
 Lua.FH_EscapeHurryUp = false
+Lua.FH_LastManStanding = true

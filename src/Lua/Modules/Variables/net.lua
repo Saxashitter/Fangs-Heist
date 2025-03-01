@@ -8,7 +8,7 @@ return {
 	escape_hurryup = true,
 	escape_on_start = false,
 
-	last_man_standing = true,
+	last_man_standing = false,
 
 	hell_stage = false,
 	hell_stage_teleport = {},
