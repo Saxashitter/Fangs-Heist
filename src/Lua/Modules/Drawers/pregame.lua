@@ -21,7 +21,7 @@ local texttween = 0
 local textdelay = 0
 local lastskin = 0
 local alpha = 0
-
+local lastlockskin = 0
 function module.init()
 	chartween = 0
 	overlaytween = 0
@@ -75,12 +75,15 @@ local function draw_cs(v,p)
 		else
 			patch = v.cachePatch("CONTINS")
 		end
-
+		--Icon Tweening :p
 		if i == p.heist.locked_skin then
-			scale = $*3/2
+			scale = ease.outquint(FixedDiv(chartween, CHAR_TWEEN),$,3*$/2)
+		end
+		if i == p.heist.lastlockskin then
+			scale = ease.outquint(FixedDiv(chartween, CHAR_TWEEN),3*$/2,$)
 		end
 		v.drawScaled(x + patch.leftoffset*scale,
-			y + patch.topoffset*scale - patch.height*scale,
+			y + patch.topoffset*scale,
 			scale,
 			patch,
 			V_SNAPTOLEFT|f,
@@ -197,6 +200,7 @@ local function draw_team(v,p)
 	local names = {}
 	if p.heist.playersList then
 		for _,p in pairs(p.heist.playersList) do
+			if not (p and p.valid) then continue end
 			table.insert(names, p.name)
 		end
 	end

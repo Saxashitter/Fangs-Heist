@@ -94,6 +94,10 @@ function FangsHeist.initMode(map)
 	end
 
 	HeistHook.runHook("GameInit")
+
+	if not multiplayer then
+		FangsHeist.Net._inited = true
+	end
 end
 
 local treasure_things = {
@@ -116,6 +120,10 @@ local delete_types = { -- why wasnt this a table like the rest before? -pac
 }
 
 function FangsHeist.loadMap()
+	if not multiplayer
+	and not FangsHeist.Net._inited then
+		FangsHeist.initMode(gamemap)
+	end
 	FangsHeist.spawnSign()
 
 	local exit
@@ -160,6 +168,11 @@ function FangsHeist.loadMap()
 				y = thing.y*FU,
 				z = spawnpos.getThingSpawnHeight(MT_PLAYER, thing, thing.x*FU, thing.y*FU)
 			})
+
+			if thing.mobj
+			and thing.mobj.valid then
+				P_RemoveMobj(thing.mobj)
+			end
 		end
 
 		if thing.type == 1

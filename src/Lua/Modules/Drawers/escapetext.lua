@@ -4,6 +4,7 @@ local elapsed = 0
 local maxtime = TICRATE+13
 local offsettime = TICRATE
 local endtime = 24
+local delay = 10
 local offset = 12
 
 local function gravityTypeEase(t, start, finish, param)
@@ -26,9 +27,9 @@ function module.draw(v)
 		return
 	end
 
-	elapsed = min(maxtime+offsettime+endtime, $+1)
+	elapsed = min(maxtime+offsettime+endtime+delay, $+1)
 
-	if elapsed >= maxtime+offsettime+endtime then
+	if elapsed >= maxtime+offsettime+endtime+delay then
 		return
 	end
 
@@ -42,13 +43,13 @@ function module.draw(v)
 	local width = go.width*scale+offsetwidth
 
 	for i = 1,3 do
-		local time = max(0, elapsed-(offset*(i-1)))
+		local time = max(0, elapsed-delay-(offset*(i-1)))
 
 		local x = 160*FU - go.width*scale/2 - width*2 + width*i
 		local y = start
 
-		if elapsed > maxtime+offsettime then
-			local t = FixedDiv(elapsed - (maxtime+offsettime), endtime)
+		if elapsed > maxtime+offsettime+delay then
+			local t = FixedDiv(elapsed - (maxtime+offsettime+delay), endtime)
 			local tx = 30*FU
 
 			x = ease.linear(t, $, $+tx*(i-2))

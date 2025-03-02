@@ -99,6 +99,8 @@ local function draw_p(v, p, placement, actualPlacement)
 end
 
 function module.draw(v)
+	if not multiplayer then return end
+
 	local drawedSelf = false
 	local self
 

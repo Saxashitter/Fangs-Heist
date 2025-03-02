@@ -7,7 +7,7 @@
   </a>
 </p>
 
-This mod aims to reinvent the wheel of Pizza Time mods by offering a fun and unique experience that bonds collect-a-thon and heart-pumping fighting into one SRB2 gametype for players to enjoy. We also have an entire story, but I don't wanna fill it all out here. :P
+This mod aims to reinvent the wheel of Pizza Time mods by offering a fun and unique experience that binds together collect-a-thon and heart-pumping fighting into one SRB2 gametype for players to enjoy.
 
 This mod is completely reusable. Do as you wish with it!
 

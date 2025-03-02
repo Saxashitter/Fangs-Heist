@@ -4,6 +4,9 @@ local function valid_player(p)
 	return p and p.mo and p.mo.health and p.heist and not p.heist.spectator and not p.heist.exiting
 end
 
+sfxinfo[freeslot "sfx_fhtick"].caption = "Tick..."
+sfxinfo[freeslot "sfx_fhuhoh"].caption = "Uh oh!"
+
 local bombs = {}
 addHook("NetVars", function(n) bombs = n($) end)
 addHook("ThinkFrame", do
@@ -101,6 +104,15 @@ local function module()
 
 	if FangsHeist.Net.time_left then
 		FangsHeist.Net.time_left = max(0, $-1)
+
+		if FangsHeist.Net.time_left <= 10*TICRATE
+		and FangsHeist.Net.time_left % TICRATE == 0 then
+			if FangsHeist.Net.time_left == 0 then
+				S_StartSound(nil, sfx_fhuhoh)
+			else
+				S_StartSound(nil, sfx_fhtick)
+			end
+		end
 
 		if not FangsHeist.Net.time_left then
 			local linedef = tonumber(mapheaderinfo[gamemap].fh_timeuplinedef)

@@ -67,6 +67,40 @@ addHook("ThinkFrame", do
 
 	dialogue.tick()
 
+	-- manage teams
+	local teamsWithNoLeaders = {}
+	local checkedTeams = {}
+
+	for p in players.iterate do
+		if not FangsHeist.isPlayerAlive(p) then continue end
+		if checkedTeams[p.heist.team] then continue end
+
+		checkedTeams[p.heist.team] = true
+
+		for sp,_ in pairs(p.heist.team.players) do
+			if not (sp and sp.valid and sp.heist and not sp.heist.spectator) then
+				p.heist.team.players[sp] = nil
+				if p.heist.team.leader == sp then
+					table.insert(teamsWithNoLeaders, p.heist.team)
+				end
+			end
+		end
+	end
+
+	for k,team in pairs(teamsWithNoLeaders) do
+		local teamPlyrs = {}
+
+		for p,_ in pairs(team.players) do
+			if p and p.valid and p.heist and not p.heist.spectator then
+				table.insert(teamPlyrs, p)
+			end
+		end
+
+		if #teamPlyrs then
+			team.leader = teamPlyrs[P_RandomRange(1, #teamPlyrs)]
+		end
+	end
+
 	FangsHeist.Net.placements = {}
 
 	for i = 0,31 do
@@ -223,46 +257,12 @@ addHook("ThinkFrame", do
 			if FangsHeist.Net.selected_map
 			and (not FangsHeist.Net.retaking
 			or FangsHeist.Net.retake_anim == 0) then
-				G_SetCustomExitVars(FangsHeist.Net.selected_map)
+				G_SetCustomExitVars(FangsHeist.Net.selected_map, 2)
 				G_ExitLevel()
 			end
 		end
 
 		return
-	end
-
-	-- manage teams
-	local teamsWithNoLeaders = {}
-	local checkedTeams = {}
-
-	for p in players.iterate do
-		if not FangsHeist.isPlayerAlive(p) then continue end
-		if checkedTeams[p.heist.team] then continue end
-
-		checkedTeams[p.heist.team] = true
-
-		for sp,_ in pairs(p.heist.team.players) do
-			if not (sp and sp.valid and sp.heist and not sp.heist.spectator) then
-				p.heist.team.players[sp] = nil
-				if p.heist.team.leader == sp then
-					table.insert(teamsWithNoLeaders, p.heist.team)
-				end
-			end
-		end
-	end
-
-	for k,team in pairs(teamsWithNoLeaders) do
-		local teamPlyrs = {}
-
-		for p,_ in pairs(team.players) do
-			if p and p.valid and p.heist and not p.heist.spectator then
-				table.insert(teamPlyrs, p)
-			end
-		end
-
-		if #teamPlyrs then
-			team.leader = teamPlyrs[P_RandomRange(1, #teamPlyrs)]
-		end
 	end
 
 	if FangsHeist.Net.is_boss then

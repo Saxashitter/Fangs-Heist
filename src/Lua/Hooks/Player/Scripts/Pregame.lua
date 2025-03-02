@@ -39,7 +39,7 @@ return function(p)
 	if not FangsHeist.Net.pregame then
 		return
 	end
-
+	p.heist.lastlockskin = $ or 0
 	manage_players(p)
 
 	local deadzone = 25
@@ -54,6 +54,7 @@ return function(p)
 	// Skin Select
 	if not p.heist.confirmed_skin then
 		if horz then
+			p.heist.lastlockskin = p.heist.locked_skin
 			p.heist.locked_skin = $+x
 
 			if p.heist.locked_skin < 0 then
@@ -72,6 +73,8 @@ return function(p)
 			and p.heist.locked_skin+y < #skins-1 then
 				p.heist.locked_skin = $+y
 			end
+
+			S_StartSound(nil, sfx_menu1, p)
 		end
 
 		if p.heist.buttons & BT_JUMP
@@ -86,7 +89,7 @@ return function(p)
 		// 1 == Requests
 
 		if p.heist.team.leader ~= p
-		or FangsHeist.getTeamLength(p) then
+		or FangsHeist.getTeamLength(p) > max(0, FangsHeist.CVars.team_limit.value-1) then
 			p.heist.cur_menu = 0
 		elseif horz then
 			p.heist.cur_menu = max(-1, min($+x, 1))
