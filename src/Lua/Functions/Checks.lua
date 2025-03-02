@@ -48,6 +48,11 @@ function FangsHeist.isPlayerNerfed(p)
 		return false
 	end
 
+	local result = HeistHook.runHook("IsPlayerNerfed", p)
+	if result ~= nil then
+		return result
+	end
+
 	if FangsHeist.playerHasSign(p) then
 		return true
 	end

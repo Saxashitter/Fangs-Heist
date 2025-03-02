@@ -108,6 +108,13 @@ events["PlayerHit"] = {}
 		// damaged == player_t
 		// speed == bool/fixed_t - speed is false if the player wasn't hurt. Otherwise, it returns a fixed value.
 
+events["IsPlayerNerfed"] = {handler = handler_snapany}
+// IsPlayerNerfed:
+	// Runs before the regular nerfed check, used for determining whether if the player was nerfed or not.
+	// return true/false: Stops the code from running, and returns the variable that was given.
+	// Arguments:
+		// player == player_t
+
 events["DepleteBlock"] = {handler = handler_snapany}
 // DepleteBlock:
 	// Runs before the depleting code when something hits the player.
