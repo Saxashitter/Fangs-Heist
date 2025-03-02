@@ -32,7 +32,7 @@ local DEFAULT = {
 	end,
 	isBlocking = function(self, p)
 		return p.heist.blocking
-	end
+	end,
 
 	controls = {
 		{
