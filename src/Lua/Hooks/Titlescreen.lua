@@ -9,7 +9,15 @@ local function approach(from, to, by)
 
 	return min(from+by, to)
 end
-
+local ShakeSine = function(v,scale)
+	local randomkey = (v != nil) and v.RandomKey or P_RandomKey
+	local randomfixed = (v != nil) and v.RandomFixed or P_RandomFixed
+	local ang = randomkey(360)*ANG1
+	local rng = 3*randomfixed()/2
+	local xx = FixedMul(rng,FixedMul(cos(ang),scale))
+	local xy = FixedMul(rng,FixedMul(sin(ang),scale))
+	return xx,xy
+end
 local warning = true
 
 local warning_sec1 = 3*TICRATE
@@ -27,7 +35,28 @@ local logo_y = 0
 local logo_animated = true
 local logo_delay = 13
 local logo_shake = 0
+local GetAndSetMusicPosition = function(muslump,pos)
+	if (S_GetMusicPosition() < pos) --7199 is the Start of The Music
+	and S_MusicName() == string.lower(muslump)
+		S_SetMusicPosition(pos)
+	end
+end
 
+freeslot("sfx_fhwrn1","sfx_fhwrn2")
+
+addHook("MusicChange", function(old, new)
+	if new == "_title" then
+		if titlemapinaction
+		and not titlescreen then
+			S_StopMusic()
+			return true
+		end
+
+		if old == "BLYOBO" then
+			return true
+		end
+	end
+end)
 addHook("ThinkFrame", do
 	if not titlemapinaction then
 		titlescreen = false
@@ -51,25 +80,38 @@ addHook("ThinkFrame", do
 	titlescreen = true
 
 	if warning then
-		if warning_sec1 then
-			warning_sec1 = max(0, $-1)
-
-			if not warning_sec1 then
-				
+		S_StopMusic()
+		if leveltime >= 2
+			if warning_sec1 then
+				warning_sec1 = max(0, $-1)
+				if warning_sec1 == 3*TICRATE-1
+					S_StartSound(nil,sfx_fhwrn1)
+				end
 			end
-		end
 
-		if not warning_sec1
-		and warning_sec2 then
-			warning_sec2 = max(0, $-1)
-
-			if not warning_sec2 then
-				warning = false
+			if not warning_sec1
+			and warning_sec2 then
+				warning_sec2 = max(0, $-1)
+				if warning_sec2 == 3*TICRATE-15
+					S_StartSound(nil,sfx_fhwrn2)
+				end
+				if not warning_sec2 then
+					warning = false
+					S_ChangeMusic("BLYOBO",true,nil,nil)
+				end
 			end
+		else
+			warning_sec1alpha = 10
 		end
 	end
 end)
-
+addHook("KeyDown",function(key)
+	if titlemapinaction
+		if warning or logo_bounces
+			return true --All Keys Are Disabled During Mod Warning or During Bounce
+		end
+	end
+end)
 local function draw_alpha_patch(v, x, y, scale, alpha, patch, flags, color)
 	if alpha >= 10 then
 		return
@@ -80,7 +122,6 @@ local function draw_alpha_patch(v, x, y, scale, alpha, patch, flags, color)
 
 	v.drawScaled(x, y, scale, patch, f, color)
 end
-
 addHook("HUD", function(v)
 	if not titlescreen then
 		return
@@ -98,6 +139,8 @@ addHook("HUD", function(v)
 	// Manage (low taper) fades
 	if not warning_sec1 then
 		warning_sec1alpha = min($+1, 10)
+	else
+		warning_sec1alpha = max(0, $-1)
 	end
 
 	if warning_sec2
@@ -141,10 +184,9 @@ addHook("HUD", function(v)
 	local scale = FU/2
 
 	logo_shake = max(0, $-1)
-	local s = FixedDiv(logo_shake, 12)
+	local s = FixedMul(FixedDiv(logo_shake, 12),12*FU)
 
-	local ox = v.RandomRange(-12*s, 12*s)
-	local oy = v.RandomRange(-12*s, 12*s)
+	local ox,oy = ShakeSine(v,s)
 
 	if not warning_sec1
 	and not warning_sec2 then
@@ -158,23 +200,23 @@ addHook("HUD", function(v)
 					S_StartSound(nil, sfx_s3k51)
 				end
 			else
-				logo_y = $+logo_dy
-
-				if logo_y < target_y then
-					logo_dy = $ + FU/3
-				elseif logo_bounces then
-					logo_bounces = $-1
-					logo_dy = -$/2
-					logo_y = target_y
-					S_StartSound(nil, sfx_dmga3)
-					logo_shake = 12
-					bs_alpha = 10
-				else
-					logo_animated = false
-					S_StartSound(nil, sfx_s3k4a)
-					logo_shake = 6
+				if not logo_shake
+					logo_y = $+logo_dy
+					if logo_y < target_y then
+						logo_dy = $ + FU/3
+					elseif logo_bounces then
+						logo_bounces = $-1
+						logo_dy = -$/2
+						logo_y = target_y
+						S_StartSound(nil, sfx_dmga3)
+						logo_shake = 12
+						bs_alpha = 10
+					else
+						logo_animated = false
+						S_StartSound(nil, sfx_s3k4a)
+						logo_shake = 6
+					end
 				end
-
 				// are we still animated?
 				if logo_animated then
 					v.drawScaled(
@@ -190,20 +232,34 @@ addHook("HUD", function(v)
 
 		// are we not animated?
 		if not logo_animated then
+			local y = 100*FU+FixedMul(10*scale,cos(ANG1*leveltime))
+			--	Pulsing
+			local tics = max(0,min(FixedDiv(leveltime%15,15),FU))
+			local colorloop = (leveltime%30) >= 15 and SKINCOLOR_MAUVE or SKINCOLOR_GREEN
+			local pulsescale = ease.outcubic(tics,scale,scale+2500)
+			local pulsefade = ease.linear(tics,0,10)
+			v.drawScaled(
+				160*FU - logo.width*pulsescale/2 + ox,
+				y - logo.height*pulsescale/2 + oy,
+				pulsescale,
+				logo,
+				V_ADD|(pulsefade*V_10TRANS),v.getColormap(TC_BLINK,colorloop)
+			)
+			--Actual Logo
 			v.drawScaled(
 				160*FU - logo.width*scale/2 + ox,
-				100*FU - logo.height*scale/2 + oy,
+				y - logo.height*scale/2 + oy,
 				scale,
 				logo)
 		end
 	end
-
 	// WARNING:
 	local scale = FU/2
+	local warnscale = ease.outcubic(FU-max(0,min(FixedDiv(warning_sec1-90,15),FU)),0,scale)
 	draw_alpha_patch(v,
-		wid/2 - warning.width*scale/2,
-		hei/2 - warning.height*scale/2,
-		scale,
+		wid/2 - warning.width*warnscale/2,
+		hei/2 - warning.height*warnscale/2,
+		warnscale,
 		warning_sec1alpha,
 		warning,
 		V_SNAPTOLEFT|V_SNAPTOTOP)
@@ -211,7 +267,6 @@ addHook("HUD", function(v)
 	// Some assets taken from...
 	local scale = FU/2
 	local tolhei = someassets.height+satmf.height
-
 	draw_alpha_patch(v,
 		wid/2 - someassets.width*scale/2,
 		hei/2 - tolhei*scale/2,
@@ -220,11 +275,33 @@ addHook("HUD", function(v)
 		someassets,
 		V_SNAPTOLEFT|V_SNAPTOTOP)
 
+	local assetscale = ease.outcubic(FU-max(0,min(FixedDiv(warning_sec2-75,15),FU)),0,scale)
 	draw_alpha_patch(v,
-		wid/2 - satmf.width*scale/2,
-		hei/2 - tolhei*scale/2 + someassets.height*scale,
-		scale,
+		wid/2 - satmf.width*assetscale/2,
+		hei/2 - tolhei*assetscale/2 + someassets.height*assetscale,
+		assetscale,
 		warning_sec2alpha,
 		satmf,
 		V_SNAPTOLEFT|V_SNAPTOTOP)
+	local version = "Demo 1 (The Greenflower Demo)"
+	local texts = {
+		{y = 192,text = "https://github.com/Saxashitter/Fangs-Heist"},
+		{y = 182,text = "Version: "..version}, --For SRB2MB version or GitHub Commit Version
+		{y = 172,text = "By Saxashitter"},
+	}
+	if not menuactive
+		for k,d in ipairs(texts)
+			local i = k-1
+			local starttime = (6*35)+17
+			local tics = max(0,min(FixedDiv(leveltime-starttime-i*5,10),FU))
+			local fadeWIP = ease.linear(tics,10,5)
+			local xtics = max(0,min(FixedDiv(leveltime-starttime-i*5,25),FU))
+			local xslide = ease.outcubic(xtics,-v.stringWidth(d.text,nil,"thin")*FU,2*FU)
+			if d and type(d) == "table"
+				if fadeWIP != 10
+					v.drawString(xslide,d.y*FU,d.text,V_PURPLEMAP|V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_ALLOWLOWERCASE|(fadeWIP*V_10TRANS),"thin-fixed")
+				end
+			end
+		end
+	end
 end, "title")

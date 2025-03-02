@@ -36,6 +36,11 @@
 - Bug fixer
 - Tweaker
 
+# JosephLol
+## Coder
+- Titlescreen
+- Icon tweening when selected (Character Select)
+
 # Lemerks
 ## Mapper
 - Tutorial
