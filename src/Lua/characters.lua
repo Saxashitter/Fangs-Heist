@@ -13,6 +13,8 @@ local DEFAULT = {
 
 	panicState = S_FH_PANIC,
 
+	forceSpeedCap = false,
+
 	attackCooldown = TICRATE,
 	attackRange = tofixed("4"),
 	attackZRange = tofixed("2.35"),

@@ -108,7 +108,7 @@ events["PlayerHit"] = {}
 		// damaged == player_t
 		// speed == bool/fixed_t - speed is false if the player wasn't hurt. Otherwise, it returns a fixed value.
 
-events["DepleteBlock"] = {}
+events["DepleteBlock"] = {handler = handler_snapany}
 // DepleteBlock:
 	// Runs before the depleting code when something hits the player.
 	// return true/false: Stop the code from running, and determines if the block was broken.

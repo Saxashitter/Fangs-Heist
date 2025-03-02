@@ -98,6 +98,7 @@ function FangsHeist.depleteBlock(p, damage)
 	end
 
 	local result = HeistHook.runHook("DepleteBlock", p, damage)
+
 	if result ~= nil then
 		return result
 	end
