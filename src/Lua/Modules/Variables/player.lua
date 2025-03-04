@@ -3,6 +3,7 @@ return {
 	saved_profit = 0,
 	profit = 0,
 	had_sign = false,
+	got_sign = false,
 	spawn_time = 2*TICRATE,
 
 	invites = {},

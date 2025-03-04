@@ -157,6 +157,12 @@ local function module()
 
 				S_StartSound(nil, sfx_mixup, p)
 				P_InstaThrust(p.mo, p.mo.angle, FixedHypot(p.rmomx, p.rmomy))
+
+				local linedef = tonumber(mapheaderinfo[gamemap].fh_round2linedef)
+
+				if linedef ~= nil then
+					P_LinedefExecute(linedef)
+				end
 			end
 		end
 	end
@@ -203,7 +209,7 @@ local function module()
 
 	if not FangsHeist.Save.retakes then return end
 
-	local tics = 2*TICRATE
+	local tics = TICRATE+24
 	if FangsHeist.Save.retakes >= 2 then
 		tics = TICRATE
 	end

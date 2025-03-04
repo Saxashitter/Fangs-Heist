@@ -10,7 +10,7 @@ return function()
 		and consoleplayer.valid
 		and consoleplayer.heist
 		and consoleplayer.heist.reached_second then
-			song = "MIGMAG"
+			song = FangsHeist.Net.round2_theme
 		end
 
 		if not FangsHeist.Net.time_left then

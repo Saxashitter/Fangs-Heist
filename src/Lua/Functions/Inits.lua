@@ -41,6 +41,9 @@ function FangsHeist.initMode(map)
 	if info.fh_escapetheme then
 		FangsHeist.Net.escape_theme = info.fh_escapetheme
 	end
+	if info.fh_round2theme then
+		FangsHeist.Net.round2_theme = info.fh_round2theme
+	end
 	if info.fh_escapehurryup then
 		FangsHeist.Net.escape_hurryup = info.fh_escapehurryup:lower() == "true"
 	end
@@ -148,6 +151,7 @@ function FangsHeist.loadMap()
 		end
 
 		if thing.type == 3842 then
+			FangsHeist.Net.hell_stage = true
 			FangsHeist.Net.hell_stage_teleport.pos = {
 				x = thing.x*FU,
 				y = thing.y*FU,
@@ -157,6 +161,7 @@ function FangsHeist.loadMap()
 		end
 
 		if thing.type == 3843 then
+			FangsHeist.Net.hell_stage = true
 			FangsHeist.Net.hell_stage_teleport.sector = R_PointInSubsector(thing.x*FU, thing.y*FU).sector
 		end
 

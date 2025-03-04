@@ -1,6 +1,6 @@
 return function(p)
 	if FangsHeist.isPlayerAlive(p)
-	and FangsHeist.playerHasSign(p) then
+	and (FangsHeist.playerHasSign(p) or p.heist.had_sign) then
 		if not p.heist.sign_got then
 			FangsHeist.gainProfit(p, 1200, true)
 			p.heist.sign_got = true

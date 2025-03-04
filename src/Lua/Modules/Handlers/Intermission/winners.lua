@@ -60,27 +60,25 @@ function module.draw(v)
 		local name = (trim(p.name)):upper()
 
 		local sep = 12*FU
-		local width = 0
+		local width = 20*FU
 		local team = FangsHeist.isInTeam(p)
 
-		local length = FangsHeist.getTeamLength(p)+1
-		local div = length > 1 and width/(length-1) or width/2
+		local length = FangsHeist.getTeamLength(p)
+		local div = length and width/length or width/2
 
 		local podium_scale = FU*6/8
 		local podium_wscale = podium_scale + FU*(length-1)/8
 		v.drawScaled(x-podium.width*podium_wscale/2, 200*FU-podium.height*podium_scale, podium_wscale, podium, V_SNAPTOBOTTOM|V_SNAPTOLEFT)
 
 		if team then
-			local i = 0
-	
-			for _,sp in ipairs(team) do
+			for i,sp in ipairs(team) do
 				if not (sp and sp.mo and sp.valid and sp.heist) then continue end
 	
 				local color = v.getColormap(sp.skin, sp.skincolor, ((sp.mo and sp.mo.valid) and sp.mo.translation or nil))
 				local scale = skins[sp.skin].highresscale
 				local stnd = v.getSprite2Patch(sp.skin, SPR2_STND, false, A, 1)
-				local dx = x - width/2 + div*i
-				if length <= 1 then
+				local dx = x - width/2 + div*(i-1)
+				if not length then
 					dx = x
 				end
 	
@@ -89,11 +87,9 @@ function module.draw(v)
 				end]]
 	
 				v.drawScaled(dx, pos.y, scale*6/8, stnd, V_SNAPTOBOTTOM|V_SNAPTOLEFT, color)
-	
-				i = $+1
 			end
 		else
-			local color = v.getColormap(p.skin, p.skincolor, ((sp.mo and sp.mo.valid) and sp.mo.translation or nil))
+			local color = v.getColormap(p.skin, p.skincolor, ((p.mo and p.mo.valid) and p.mo.translation or nil))
 			local scale = skins[p.skin].highresscale
 			local stnd = v.getSprite2Patch(p.skin, SPR2_STND, false, A, 1)
 

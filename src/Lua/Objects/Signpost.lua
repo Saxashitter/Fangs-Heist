@@ -152,7 +152,21 @@ local function manage_picked(sign)
 end
 
 local function blacklist(p)
-	return P_PlayerInPain(p) or (p.heist and (p.heist.exiting) or p.powers[pw_flashing])
+	local hadsign = false
+	local team = FangsHeist.isInTeam(p)
+
+	if team then
+		for _,plyr in ipairs(team) do
+			if not (plyr and plyr.valid and plyr.heist) then continue end
+
+			if plyr.heist.had_sign then
+				hadsign = true
+				break
+			end
+		end
+	end
+
+	return P_PlayerInPain(p) or (p.heist and (p.heist.exiting or hadsign) or p.powers[pw_flashing])
 end
 
 local function manage_unpicked(sign)
