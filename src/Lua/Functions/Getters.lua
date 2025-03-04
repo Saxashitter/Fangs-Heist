@@ -44,69 +44,29 @@ end
 function FangsHeist.playerHasSign(p)
 	return (FangsHeist.Net.sign
 		and FangsHeist.Net.sign.valid
-		and p
-		and p.mo
-		and p.mo.valid
 		and FangsHeist.Net.sign.holder == p.mo)
-end
-
-function FangsHeist.partOfTeam(p, sp)
-	return p and p.heist and p.heist.team.players[sp]
 end
 
 function FangsHeist.getTeamLength(p)
 	if not (p and p.heist) then return 0 end
 
+	local team = FangsHeist.isInTeam(p)
+
+	if not team then
+		return 0
+	end
+
 	local length = 0
 
-	for sp,_ in pairs(p.heist.team.players) do
-		if sp ~= p then
-			length = $+1
+	for _,player in ipairs(team) do
+		if not (player and player.valid and player.heist and player ~= p) then
+			continue
 		end
+
+		length = $+1
 	end
 
 	return length
-end
-
-function FangsHeist.returnProfit(p, personal)
-	if not (p and p.heist) then return 0 end
-	
-	if not FangsHeist.isPlayerAlive(p) then
-		return 0
-	end
-	
-	local profit = 0
-	
-	if FangsHeist.playerHasSign(p)
-	or p.heist.had_sign then
-		profit = $+1200
-	end
-	
-	local div = 1
-	local length = FangsHeist.getTeamLength(p)
-	if length then
-		for i = 1,length do
-			div = $+1
-		end
-	end
-
-	profit = $+(28*p.heist.hitplayers/div)
-	profit = $+(50*p.heist.deadplayers/div)
-	profit = $+(12*p.heist.monitors/div)
-	profit = $+(35*p.heist.enemies/div)
-	profit = $+p.heist.team.generated_profit -- TODO: work on a way to cap treasures while teaming
-	profit = $+(8*p.rings/div)
-
-	if not personal then
-		for sp,k in pairs(p.heist.team.players) do
-			if p == sp then continue end
-			if not (sp and sp.valid) then continue end
-
-			profit = $+FangsHeist.returnProfit(sp, true)
-		end
-	end
-
-	return profit
 end
 
 function FangsHeist.playerCount()
@@ -133,7 +93,7 @@ function FangsHeist.playerCount()
 			continue
 		end
 
-		if p.heist.team.leader == p then
+		if FangsHeist.isTeamLeader(p) then
 			count.team = $+1
 		end
 
@@ -143,23 +103,15 @@ function FangsHeist.playerCount()
 	return count
 end
 
-local function score_sort(a, b)
-	local score1 = FangsHeist.returnProfit(a)
-	local score2 = FangsHeist.returnProfit(b)
-
-	return score1 > score2
-end
-
 // Returns -1 if the player isn't placed anywhere.
 function FangsHeist.getPlayerPlacement(p)
-	local placement = 1
-	placement = FangsHeist.Net.placements[#p]
-
-	if not (FangsHeist.isPlayerAlive(p) and placement) then
-		return -1
+	for i,sp in ipairs(FangsHeist.Net.placements) do
+		if sp == p then
+			return i
+		end
 	end
 
-	return placement.place
+	return -1
 end
 
 // Used for loading colors from files.

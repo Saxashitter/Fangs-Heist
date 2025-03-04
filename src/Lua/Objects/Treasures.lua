@@ -145,7 +145,7 @@ function FangsHeist.manageTreasures()
 		return
 	end
 
-	for _,tres in pairs(FangsHeist.Net.treasures) do
+	for _,tres in ipairs(FangsHeist.Net.treasures) do
 		local mobj = tres.mobj
 		local data = tres.data
 		local spawn = tres.spawn

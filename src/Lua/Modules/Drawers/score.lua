@@ -11,7 +11,7 @@ function module.init()
 end
 
 function module.draw(v, p)
-	local profit = FangsHeist.returnProfit(p)
+	local profit = p.heist.profit
 
 	y = ease.linear(FU/2, $, 0)
 

@@ -106,7 +106,7 @@ local function attackPlayers(p)
 	for sp in players.iterate do
 		if not playerCheck(sp) then continue end
 		if sp == p then continue end
-		if FangsHeist.partOfTeam(p, sp)
+		if FangsHeist.isPartOfTeam(p, sp)
 		and not FangsHeist.playerHasSign(sp) then
 			continue
 		end

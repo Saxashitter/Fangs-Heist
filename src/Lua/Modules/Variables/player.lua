@@ -1,14 +1,10 @@
 return {
 	scraps = 0,
 	saved_profit = 0,
+	profit = 0,
 	had_sign = false,
 	spawn_time = 2*TICRATE,
 
-	team = {
-		players = {},
-		banked_sign = false,
-		generated_profit = 0,
-	},
 	invites = {},
 
 	attack_cooldown = 0,
@@ -26,6 +22,7 @@ return {
 
 	treasures = {},
 	treasure_time = 0,
+	treasures_collected = 0,
 	treasure_name = "",
 	treasure_desc = "",
 

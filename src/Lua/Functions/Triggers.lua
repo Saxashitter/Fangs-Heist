@@ -17,6 +17,43 @@ function FangsHeist.clashPlayers(p, sp)
 	sp.powers[pw_flashing] = 10
 end
 
+function FangsHeist.gainProfit(p, gain, dontDiv, specialSound)
+	local div = 0
+
+	if not dontDiv then
+		for i = 0,FangsHeist.getTeamLength(p) do
+			div = $+1
+		end
+	else
+		div = 1
+	end
+
+	local team = FangsHeist.isInTeam(p)
+	local profit = p.heist.profit
+
+	if team then
+		for _,sp in ipairs(team) do
+			if not (sp and sp.valid and sp.heist) then
+				continue
+			end
+
+			profit = max($, sp.heist.profit)
+		end
+	end
+
+	p.heist.profit = max(0, profit+(gain/div))
+
+	if team then
+		for _,sp in ipairs(team) do
+			if not (sp and sp.valid and sp.heist) then
+				continue
+			end
+
+			sp.heist.profit = p.heist.profit
+		end
+	end
+end
+
 function FangsHeist.damagePlayers(p, friendlyfire, damage)
 	if friendlyfire == nil then
 		friendlyfire = false
@@ -48,7 +85,7 @@ function FangsHeist.damagePlayers(p, friendlyfire, damage)
 	
 		if z > max(height1, height2) then continue end
 
-		if FangsHeist.partOfTeam(p, sp)
+		if FangsHeist.isPartOfTeam(p, sp)
 		and not friendlyfire then
 			continue
 		end

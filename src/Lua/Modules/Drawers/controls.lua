@@ -27,6 +27,12 @@ function module.draw(v,p)
 		table.insert(strData, {str = str, f = f})
 	end
 
+	if FangsHeist.playerHasSign(p) then
+		table.insert(strData, {
+			str = "[TOSS FLAG] - Toss Sign",
+			f = 0})
+	end
+
 	y = $ - (8*#strData)
 
 	for k,data in pairs(strData) do

@@ -100,7 +100,7 @@ function FangsHeist.startIntermission()
 			p.mo.skin,
 			skincolors[p.mo.color].name,
 			p.name,
-			FangsHeist.returnProfit(p)
+			p.heist.profit
 		})
 	end
 
@@ -176,21 +176,19 @@ function FangsHeist.changeBlocks()
 end
 
 function FangsHeist.joinTeam(p, sp)
-	if sp.heist.team.leader == sp
-	and FangsHeist.getTeamLength(sp) > 0 then
-		local ps = {}
-		for k,v in pairs(sp.heist.team.players) do
-			if k == sp then continue end
+	local team = FangsHeist.isInTeam(p)
 
-			table.insert(ps, k)
-		end
-		sp.heist.team.leader = ps[P_RandomRange(1, #ps)]
+	if team
+	and FangsHeist.isPartOfTeam(p, sp) then
+		return
 	end
 
-	sp.heist.team.players[sp] = nil
-	p.heist.team.players[sp] = true
+	if not team then
+		team = {p}
+		table.insert(FangsHeist.Net.teams, team)
+	end
 
-	sp.heist.team = p.heist.team
+	table.insert(team, sp)
 end
 
 local function sac(name, caption)

@@ -291,7 +291,7 @@ local function isDamagable(mo, p)
 	and p.heist
 	and mo.player
 	and mo.player.heist
-	and not FangsHeist.partOfTeam(p, mo.player) then
+	and not FangsHeist.isPartOfTeam(p, mo.player) then
 		return true
 	end
 	

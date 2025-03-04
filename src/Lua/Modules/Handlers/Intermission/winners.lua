@@ -13,13 +13,6 @@ local POSITION_DATA = {
 function module.think(p) // runs when selected
 end
 
-local profit_sort = function(a, b)
-	local profit1 = FangsHeist.returnProfit(a)
-	local profit2 = FangsHeist.returnProfit(b)
-
-	return profit1 > profit2
-end
-
 local TRIM_LENGTH = 12
 local function trim(str)
 	if #str > TRIM_LENGTH then
@@ -34,20 +27,10 @@ local function trim(str)
 end
 
 function module.draw(v)
-	local plyrs = {}
+	local plyrs = FangsHeist.Net.placements
 
 	local width = v.width()*FU/v.dupx()
 	local height = v.height()*FU/v.dupy()
-
-	for _,data in pairs(FangsHeist.Net.placements) do
-		local placement = data.place
-		local p = data.p
-
-		if placement > 3 then continue end
-		if not (p and p.valid) then continue end
-
-		plyrs[placement] = p
-	end
 
 	if not (#plyrs) then
 		text.draw(v,
@@ -64,7 +47,7 @@ function module.draw(v)
 	end
 
 	for i = 1,3 do
-		if not plyrs[i] then break end
+		if not (plyrs[i] and plyrs[i].valid and plyrs[i].heist) then continue end
 
 		local p = plyrs[i]
 		local pos = POSITION_DATA[i]
@@ -78,38 +61,43 @@ function module.draw(v)
 
 		local sep = 12*FU
 		local width = 0
-		local length = 0
-		for sp,_ in pairs(p.heist.team.players) do
-			if not (sp and sp.valid and sp.heist) then continue end
-			length = $+1
-			width = $+sep
-		end
+		local team = FangsHeist.isInTeam(p)
 
+		local length = FangsHeist.getTeamLength(p)+1
 		local div = length > 1 and width/(length-1) or width/2
-		local i = 0
 
 		local podium_scale = FU*6/8
 		local podium_wscale = podium_scale + FU*(length-1)/8
 		v.drawScaled(x-podium.width*podium_wscale/2, 200*FU-podium.height*podium_scale, podium_wscale, podium, V_SNAPTOBOTTOM|V_SNAPTOLEFT)
 
-		for sp,_ in pairs(p.heist.team.players) do
-			if not (sp and sp.mo and sp.valid and sp.heist) then continue end
-
-			local color = v.getColormap(sp.skin, sp.skincolor, ((sp.mo and sp.mo.valid) and sp.mo.translation or nil))
-			local scale = skins[sp.skin].highresscale
-			local stnd = v.getSprite2Patch(sp.skin, SPR2_STND, false, A, 1)
-			local dx = x - width/2 + div*i
-			if length <= 1 then
-				dx = x
+		if team then
+			local i = 0
+	
+			for _,sp in ipairs(team) do
+				if not (sp and sp.mo and sp.valid and sp.heist) then continue end
+	
+				local color = v.getColormap(sp.skin, sp.skincolor, ((sp.mo and sp.mo.valid) and sp.mo.translation or nil))
+				local scale = skins[sp.skin].highresscale
+				local stnd = v.getSprite2Patch(sp.skin, SPR2_STND, false, A, 1)
+				local dx = x - width/2 + div*i
+				if length <= 1 then
+					dx = x
+				end
+	
+				--[[if length % 2 == 1 then
+					dx = x - width + sep*i
+				end]]
+	
+				v.drawScaled(dx, pos.y, scale*6/8, stnd, V_SNAPTOBOTTOM|V_SNAPTOLEFT, color)
+	
+				i = $+1
 			end
+		else
+			local color = v.getColormap(p.skin, p.skincolor, ((sp.mo and sp.mo.valid) and sp.mo.translation or nil))
+			local scale = skins[p.skin].highresscale
+			local stnd = v.getSprite2Patch(p.skin, SPR2_STND, false, A, 1)
 
-			--[[if length % 2 == 1 then
-				dx = x - width + sep*i
-			end]]
-
-			v.drawScaled(dx, pos.y, scale*6/8, stnd, V_SNAPTOBOTTOM|V_SNAPTOLEFT, color)
-
-			i = $+1
+			v.drawScaled(x, pos.y, scale*6/8, stnd, V_SNAPTOBOTTOM|V_SNAPTOLEFT, color)
 		end
 
 		local y = pos.y+12*FU
@@ -146,7 +134,7 @@ function module.draw(v)
 			x,
 			y+4*FU-9*FU,
 			scale,
-			"$"..tostring(FangsHeist.returnProfit(p)),
+			"$"..tostring(p.heist.profit),
 			"PRTFT",
 			"center",
 			f

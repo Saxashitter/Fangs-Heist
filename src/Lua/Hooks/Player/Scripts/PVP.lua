@@ -145,7 +145,7 @@ local function armaDamage(mo, found)
 		return
 	end
 	if not found.player then return end
-	if FangsHeist.partOfTeam(mo.player, found.player) then
+	if FangsHeist.isPartOfTeam(mo.player, found.player) then
 		return
 	end
 

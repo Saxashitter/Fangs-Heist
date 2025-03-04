@@ -199,7 +199,7 @@ local function draw_team(v,p)
 
 	local names = {}
 	if p.heist.playersList then
-		for _,p in pairs(p.heist.playersList) do
+		for _,p in ipairs(p.heist.playersList) do
 			if not (p and p.valid) then continue end
 			table.insert(names, p.name)
 		end
@@ -213,7 +213,7 @@ local function draw_team(v,p)
 		hud_sel = 8
 	end
 
-	if p.heist.team.leader == p
+	if FangsHeist.isTeamLeader(p)
 	and FangsHeist.getTeamLength(p) < teamleng then
 		v.drawString(6, 24-8, "JOIN PLAYERS", V_SNAPTOLEFT|f, "thin")
 		draw_menu(v, 6, 24, 80, 16, names, cur_sel, hud_sel, V_SNAPTOLEFT|f)
@@ -230,14 +230,14 @@ local function draw_team(v,p)
 	local requests = {}
 
 	if p.heist.invitesList then
-		for _,sp in pairs(p.heist.invitesList) do
+		for _,sp in ipairs(p.heist.invitesList) do
 			if sp and sp.valid then
 				table.insert(requests, sp.name)
 			end
 		end
 	end
 
-	if p.heist.team.leader == p
+	if FangsHeist.isTeamLeader(p)
 	and FangsHeist.getTeamLength(p) < teamleng then
 		v.drawString(320-86, 24-8, "JOIN REQUESTS", V_SNAPTORIGHT|f, "thin")
 		draw_menu(v, 320-86, 24, 80, 16, requests, cur_sel, hud_sel, V_SNAPTORIGHT|f)
@@ -259,27 +259,31 @@ local function draw_team(v,p)
 		V_SNAPTOBOTTOM|f,
 		color)
 
-	v.drawString(160, 4+10, "Team:", V_SNAPTOTOP|V_ALLOWLOWERCASE|f, "center")
 
 	local i = 1
-	for sp,_ in pairs(p.heist.team.players) do
-		if not (sp and sp.valid and sp.heist) then
-			continue
-		end
-		
-		local name = sp.name
-		local f = f|V_SNAPTOTOP
+	local team = FangsHeist.isInTeam(p)
 
-		if sp.heist.team.leader == sp then
-			f = $|V_YELLOWMAP
+	if team then
+		v.drawString(160, 4+10, "Team:", V_SNAPTOTOP|V_ALLOWLOWERCASE|f, "center")
+		for _,sp in ipairs(team) do
+			if not (sp and sp.valid and sp.heist) then
+				continue
+			end
+			
+			local name = sp.name
+			local f = f|V_SNAPTOTOP
+	
+			if FangsHeist.isTeamLeader(sp) then
+				f = $|V_YELLOWMAP
+			end
+	
+			if #name > 16 then
+				name = string.sub(name, 1, 16)
+			end
+	
+			v.drawString(160, 4+10 + (10*i), name, V_SNAPTOTOP|f, "thin-center")
+			i = $+1
 		end
-
-		if #name > 16 then
-			name = string.sub(name, 1, 16)
-		end
-
-		v.drawString(160, 4+10 + (10*i), name, V_SNAPTOTOP|f, "thin-center")
-		i = $+1
 	end
 end
 

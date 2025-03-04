@@ -87,3 +87,45 @@ function FangsHeist.isHurryUp()
 
 	return true
 end
+
+function FangsHeist.isInTeam(p)
+	for _,team in ipairs(FangsHeist.Net.teams) do
+		for _,player in ipairs(team) do
+			if player == p then
+				return team
+			end
+		end
+	end
+
+	return false
+end
+
+function FangsHeist.isPartOfTeam(p, sp)
+	local team = FangsHeist.isInTeam(p)
+
+	if p == sp then
+		return true
+	end
+
+	if not team then
+		return false
+	end
+
+	for _,player in ipairs(team) do
+		if sp == player then
+			return true
+		end
+	end
+
+	return false
+end
+
+function FangsHeist.isTeamLeader(p)
+	local team = FangsHeist.isInTeam(p)
+
+	if not team then
+		return true
+	end
+
+	return team[1] == p
+end

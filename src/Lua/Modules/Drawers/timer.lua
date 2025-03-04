@@ -134,29 +134,6 @@ function module.draw(v,p)
 		sl_y = v.height()*FU/v.dupy()
 	end
 
-	local objective = "Get the sign."
-	if p and p.heist then
-		local sign = false
-
-		for p,_ in pairs(p.heist.team.players) do
-			if p and p.valid and p.heist then
-				if FangsHeist.playerHasSign(p) then
-					sign = true
-					break
-				end
-			end
-		end
-
-		if sign then
-			objective = "Get more Profit."
-		end
-	end
-	if FangsHeist.Net.time_left <= 30*TICRATE then
-		objective = "Get back to the door!"
-	end
-
-	v.drawString(x, y, "OBJECTIVE: "..objective, V_SNAPTOBOTTOM, "thin-fixed-center")
-
 	v.drawScaled(draw_x, y+10*FU, scale, bar, V_SNAPTOBOTTOM)
 	v.drawCropped(draw_x, y+10*FU, scale, scale,
 		bar2,

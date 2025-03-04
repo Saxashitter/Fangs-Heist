@@ -1,31 +1,59 @@
 return function(p)
+	if FangsHeist.isPlayerAlive(p)
+	and FangsHeist.playerHasSign(p) then
+		if not p.heist.sign_got then
+			FangsHeist.gainProfit(p, 1200, true)
+			p.heist.sign_got = true
+		end
+	else
+		if p.heist.sign_got then
+			FangsHeist.gainProfit(p, -1200, false)
+			p.heist.sign_got = false
+		end
+	end
+
 	if p.heist.spectator then
 		p.heist.treasure_time = 0
-		return
 	end
 
 	p.heist.treasure_time = max(0, $-1)
 
-	if p.heist.team.leader ~= p then return end
-	if leveltime % TICRATE*5 == 0
-	and not FangsHeist.Net.game_over 
-	and not p.heist.exiting then
-		local count = 0
+	if not FangsHeist.isTeamLeader(p) then return end
 
-		for p,_ in pairs(p.heist.team.players) do
-			if not (p and p.valid and p.heist and FangsHeist.isPlayerAlive(p)) then
+	local team = FangsHeist.isInTeam(p)
+	local treasures = #p.heist.treasures
+	local canIncrease = FangsHeist.isPlayerAlive(p) and not p.heist.exiting
+
+	if team then
+		for _,sp in ipairs(team) do
+			if not (sp and sp.valid and FangsHeist.isPlayerAlive(sp)) then
 				continue
 			end
-	
-			count = $+#p.heist.treasures
+
+			treasures = $+#sp.heist.treasures
+			if not sp.heist.exiting then
+				canIncrease = true
+			end
 		end
+	end
 
-		local maxprofit = 120*count
+	local profit = 120
 
-		if p.heist.team.generated_profit < maxprofit then
-			p.heist.team.generated_profit = min(maxprofit, $+15)
-		else
-			p.heist.team.generated_profit = max(maxprofit, $-15)
+	if p.heist.treasures_collected ~= treasures
+	and canIncrease then
+		local gainAmount = treasures-p.heist.treasures_collected
+
+		FangsHeist.gainProfit(p, profit*gainAmount, true)
+		p.heist.treasures_collected = treasures
+	end
+
+	if team then
+		for _,sp in ipairs(team) do
+			if not (sp and sp.valid and FangsHeist.isPlayerAlive(sp)) then
+				continue
+			end
+
+			sp.heist.treasures_collected = treasures
 		end
 	end
 end

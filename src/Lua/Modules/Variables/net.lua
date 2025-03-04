@@ -31,5 +31,8 @@ return {
 	pregame_time = 30*TICRATE,
 
 	placements = {},
-	treasures = {}
+	teams = {},
+	treasures = {},
+
+	last_profit = -1
 }

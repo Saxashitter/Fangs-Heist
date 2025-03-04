@@ -34,7 +34,7 @@ dofile "Functions/Starters"
 dofile "Functions/Triggers"
 
 dofile "Hooks/Player/init"
-dofile "Hooks/Game"
+dofile "Hooks/Game/init"
 dofile "Hooks/HUD"
 dofile "Hooks/Titlescreen"
 

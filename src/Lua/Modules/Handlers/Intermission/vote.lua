@@ -57,7 +57,7 @@ function module.draw(v,p)
 	local sep = (sw/2) - (100*FU)
 	local length = #FangsHeist.Net.map_choices
 
-	for i,map in pairs(FangsHeist.Net.map_choices) do
+	for i,map in ipairs(FangsHeist.Net.map_choices) do
 		local x = sw/2
 		local patch = get_map(v, map.map)
 		local scale = FU/2

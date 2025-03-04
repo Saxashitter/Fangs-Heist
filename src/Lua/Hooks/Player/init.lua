@@ -14,7 +14,7 @@ end
 
 addHook("PlayerThink", function(p)
 	-- Force every PlayerThink hook to run before our code here.
-	for _,data in pairs(FangsHeist._HOOKS.PlayerThink) do
+	for _,data in ipairs(FangsHeist._HOOKS.PlayerThink) do
 		data.func(p)
 	end
 
@@ -25,14 +25,14 @@ addHook("PlayerThink", function(p)
 		FangsHeist.initPlayer(p)
 	end
 
-	for _,script in pairs(scripts.playerthink) do
+	for _,script in ipairs(scripts.playerthink) do
 		script(p)
 	end
 
 	if p.skin ~= p.heist.locked_skin then
 		R_SetPlayerSkin(p, p.heist.locked_skin)
 	end
-	p.score = FangsHeist.returnProfit(p)
+	p.score = p.heist.profit
 end)
 
 addHook("ThinkFrame", function(p)
@@ -41,11 +41,18 @@ addHook("ThinkFrame", function(p)
 	for p in players.iterate do
 		if not (p and p.valid and p.heist) then continue end
 
-		for _,script in pairs(scripts.thinkframe) do
+		for _,script in ipairs(scripts.thinkframe) do
 			script(p)
 		end
 	end
 end)
+
+addHook("TouchSpecial", function(special, pmo)
+	if not FangsHeist.isMode() then return end
+	if not FangsHeist.isPlayerAlive(pmo.player) then return end
+
+	FangsHeist.gainProfit(pmo.player, 8)
+end, MT_RING)
 
 addHook("MobjDeath", function(t,i,s)
 	if not FangsHeist.isMode() then return end
@@ -54,9 +61,11 @@ addHook("MobjDeath", function(t,i,s)
 
 	if t.flags & MF_ENEMY then
 		s.player.heist.enemies = $+1
+		FangsHeist.gainProfit(s.player, 35)
 	end
 	if t.flags & MF_MONITOR then
 		s.player.heist.monitors = $+1
+		FangsHeist.gainProfit(s.player, 12)
 	end
 end)
 
@@ -72,7 +81,7 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if not FangsHeist.isMode() then return end
 	if not (t and t.player and t.player.heist) then return end
 
-	for _,tres in pairs(t.player.heist.treasures) do
+	for _,tres in ipairs(t.player.heist.treasures) do
 		if not (tres.mobj.valid) then continue end
 
 		local angle = FixedAngle(P_RandomRange(1, 360)*FU)
@@ -86,19 +95,34 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 
 	if dt & DMG_DEATHMASK then return end
 
+	local givenSign = false
+
 	if s
 	and s.player
 	and s.player.heist then
-		if FangsHeist.playerHasSign(t.player)
-		and not s.player.heist.team.banked_sign then
+		if FangsHeist.playerHasSign(t.player) then
 			FangsHeist.giveSignTo(s.player)
+			givenSign = true
 		end
 
 		if not (t.health) then
 			s.player.heist.deadplayers = $+1
+			FangsHeist.gainProfit(s.player, 50)
 		else
 			s.player.heist.hitplayers = $+1
+			FangsHeist.gainProfit(s.player, 28)
 		end
+	end
+
+	if not givenSign
+	and FangsHeist.playerHasSign(t.player) then
+		local sign = FangsHeist.Net.sign
+		sign.holder = nil
+
+		local launch_angle = FixedAngle(P_RandomRange(0, 360)*FU)
+
+		P_InstaThrust(sign, launch_angle, 8*FU)
+		P_SetObjectMomZ(sign, 4*FU)
 	end
 
 	if t.player.powers[pw_shield] then return end
@@ -114,6 +138,7 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	t.player.powers[pw_shield] = 0
 
 	P_DoPlayerPain(t.player, s, i)
+	FangsHeist.gainProfit(t.player, -8*rings_spill)
 	return true
 end, MT_PLAYER)
 
@@ -141,7 +166,7 @@ addHook("MobjCollide", function(pmo, mo)
 	or not (mo.target.player and mo.target.player.valid) then return end
 	
 	local p = pmo.player
-	if FangsHeist.partOfTeam(p, mo.target.player) then
+	if FangsHeist.isPartOfTeam(p, mo.target.player) then
 		return false
 	end
 	if p == mo.target.player then
@@ -153,6 +178,7 @@ add("Pregame")
 add("Nerfs")
 add("Treasures")
 add("Panic")
+add("Sign Toss")
 
 type = "thinkframe"
 

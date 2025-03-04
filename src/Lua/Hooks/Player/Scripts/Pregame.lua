@@ -2,14 +2,15 @@ local showhud = CV_FindVar("showhud")
 
 local function valid(p, sp)
 	local teamleng = max(0, FangsHeist.CVars.team_limit.value-1)
+
 	return sp
 	and sp.valid
 	and sp.heist
 	and sp ~= p
 	and not sp.heist.invites[p]
-	and not FangsHeist.partOfTeam(p, sp)
-	and sp.heist.team.leader == sp
-	and not (FangsHeist.getTeamLength(p) >= teamleng)
+	and not FangsHeist.isPartOfTeam(p, sp)
+	and FangsHeist.isTeamLeader(sp)
+	and FangsHeist.getTeamLength(sp) < teamleng
 end
 
 // yes i know this code is weird
@@ -88,14 +89,19 @@ return function(p)
 		// 0 == Ready button
 		// 1 == Requests
 
-		if p.heist.team.leader ~= p
-		or FangsHeist.getTeamLength(p) > max(0, FangsHeist.CVars.team_limit.value-1) then
-			p.heist.cur_menu = 0
-		elseif horz then
+		local teamleng = max(0, FangsHeist.CVars.team_limit.value-1)
+		local canSwitch = FangsHeist.getTeamLength(p) < teamleng
+
+		if horz
+		and canSwitch then
 			p.heist.cur_menu = max(-1, min($+x, 1))
 			p.heist.cur_sel = 1
 			p.heist.hud_sel = 8
 			S_StartSound(nil, sfx_menu1, p)
+		elseif not canSwitch then
+			p.heist.cur_menu = 0
+			p.heist.cur_sel = 1
+			p.heist.hud_sel = 8
 		end
 
 		local length = 0
@@ -126,8 +132,12 @@ return function(p)
 				if sp
 				and sp.valid
 				and sp.heist
-				and sp.heist.team.leader == sp then
-					sp.heist.invites[p] = true
+				and FangsHeist.isTeamLeader(sp) then
+					if sp.bot then
+						FangsHeist.joinTeam(p, sp)
+					else
+						sp.heist.invites[p] = true
+					end
 					S_StartSound(nil, sfx_strpst, p)
 				end
 			end

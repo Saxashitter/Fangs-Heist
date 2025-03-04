@@ -29,7 +29,7 @@ local function draw_player(v, p, tp, mo, x, y)
 		v.drawString(x, y, "SIGN", 0, "thin-fixed-center")
 		y = $-8*FU
 	end
-	if FangsHeist.partOfTeam(tp, p) then
+	if FangsHeist.isPartOfTeam(tp, p) then
 		v.drawString(x, y, "TEAM", 0, "thin-fixed-center")
 		y = $-8*FU
 	end
@@ -48,7 +48,7 @@ end
 local function isSpecial(p, sp)
 	return #sp.heist.treasures
 	or FangsHeist.playerHasSign(sp)
-	or (p and p.heist and FangsHeist.partOfTeam(p, sp))
+	or (p and p.heist and FangsHeist.isPartOfTeam(p, sp))
 end
 
 function module.init() end
