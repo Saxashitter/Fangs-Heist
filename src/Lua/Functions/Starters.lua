@@ -85,9 +85,8 @@ function FangsHeist.startIntermission()
 		COM_BufInsertText(server, "fh_receivemapvote "..str)
 	end
 
-	local scores = FangsHeist.Save.ServerScores
-	if not scores[gamemap] then
-		scores[gamemap] = {}
+	if not FangsHeist.Save.ServerScores[gamemap] then
+		FangsHeist.Save.ServerScores[gamemap] = {}
 	end
 
 	for p in players.iterate do
@@ -96,7 +95,7 @@ function FangsHeist.startIntermission()
 			continue
 		end
 
-		table.insert(scores[gamemap], {
+		table.insert(FangsHeist.Save.ServerScores[gamemap], {
 			p.mo.skin,
 			skincolors[p.mo.color].name,
 			p.name,
@@ -104,11 +103,11 @@ function FangsHeist.startIntermission()
 		})
 	end
 
-	table.sort(scores[gamemap], profsort)
+	table.sort(FangsHeist.Save.ServerScores[gamemap], profsort)
 
-	if #scores[gamemap] > 12 then
-		for i = 12,#scores[gamemap] do
-			scores[gamemap][i] = nil
+	if #FangsHeist.Save.ServerScores[gamemap] > 12 then
+		for i = 12,#FangsHeist.Save.ServerScores[gamemap] do
+			FangsHeist.Save.ServerScores[gamemap][i] = nil
 		end
 	end
 

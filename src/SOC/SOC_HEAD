@@ -105,7 +105,6 @@ SelectHeading = Supported Maps
 NoVisitNeeded = true
 InterScreen = INTERSCR
 FlickyList = Demo
-Lua.FH_HellStage = true
 Lua.FH_Time = 240
 Lua.FH_EscapeTheme = FDSPHR
 
@@ -120,7 +119,6 @@ SelectHeading = Supported Maps
 NoVisitNeeded = true
 InterScreen = INTERSCR
 FlickyList = Demo
-Lua.FH_HellStage = true
 Lua.FH_Time = 300
 Lua.FH_EscapeTheme = FDSPHR
 
@@ -135,3 +133,23 @@ Lua.FH_EscapeOnStart = true
 Lua.FH_DisableRetakes = true
 Lua.FH_EscapeHurryUp = false
 Lua.FH_LastManStanding = true
+
+Level 16
+Levelname = Red Volcano
+Act = 1
+Keywords = RVZ1
+Music = RVZ1
+TypeOfLevel = Heist
+NextLevel = 22
+SkyNum = 159
+SkyboxScaleZ = 32
+RecordAttack = true
+LevelSelect = 1
+SaveGame = true
+FlickyList = Pig,Cat
+StartRings = 10
+Selectheading = Supported Maps
+Lua.FH_EscapeTheme = MIGMAG
+Lua.FH_EscapeHurryUp = false
+Lua.FH_EscapeOnStart = true
+Lua.FH_Time = 300

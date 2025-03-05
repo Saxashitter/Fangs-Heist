@@ -73,9 +73,8 @@ return function(p)
 			if p.heist.locked_skin+y > 0
 			and p.heist.locked_skin+y < #skins-1 then
 				p.heist.locked_skin = $+y
+				S_StartSound(nil, sfx_menu1, p)
 			end
-
-			S_StartSound(nil, sfx_menu1, p)
 		end
 
 		if p.heist.buttons & BT_JUMP
@@ -90,7 +89,7 @@ return function(p)
 		// 1 == Requests
 
 		local teamleng = max(0, FangsHeist.CVars.team_limit.value-1)
-		local canSwitch = FangsHeist.getTeamLength(p) < teamleng
+		local canSwitch = FangsHeist.getTeamLength(p) < teamleng and FangsHeist.isTeamLeader(p)
 
 		if horz
 		and canSwitch then

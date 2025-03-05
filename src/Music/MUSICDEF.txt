@@ -62,10 +62,10 @@ Soundtestpage = 1
 Soundtestcond = 0
 BPM = 178
 
-Lump MIGMAG
-Title = Round_2
-Alttitle = Mighty_Magma_Red
-Authors = Yousuke_Yasui_(Natsuki_Chronicles)
+Lump EXTERM
+Title = Round 2
+Alttitle = EXTERMINATION
+Authors = Yousuke_Yasui_(Eschatos)
 Soundtestpage = 1
 Soundtestcond = 0
 BPM = 185
@@ -77,6 +77,14 @@ Authors = Yousuke_Yasui_(Mamorukun_Curse!)
 Soundtestpage = 1
 Soundtestcond = 0
 BPM = 153
+
+Lump MIGMAG
+Title = Volcano_Escape
+Alttitle = Mighty_Magma_Red
+Authors = Yousuke_Yasui_(Natsuki_Chronicles)
+Soundtestpage = 1
+Soundtestcond = 0
+BPM = 185
 
 Lump SUPREF
 Title = Vicious_Volcano

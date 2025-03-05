@@ -5,7 +5,7 @@ return {
 
 	escape = false,
 	escape_theme = "SPRHRO",
-	round2_theme = "MIGMAG",
+	round2_theme = "EXTERM",
 	escape_hurryup = true,
 	escape_on_start = false,
 
