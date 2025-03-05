@@ -36,7 +36,8 @@ local defaultitems = {
 
 customhud.SetupFont("CSFNT")
 customhud.SetupFont("FHFNT")
-customhud.SetupFont("PRTFT")
+customhud.SetupNumberFont("RNGNUM")
+customhud.SetupNumberFont("PROFNT")
 
 local function is_hud_modded(name)
 	for k,v in ipairs(defaultitems) do

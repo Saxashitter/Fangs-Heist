@@ -44,15 +44,15 @@ function module.draw(v, p)
 		v.drawScaled(10*FU, 32*FU, scale, red_rings_patch, V_SNAPTOLEFT|V_SNAPTOTOP|(alpha*V_10TRANS))
 	end
 
-	text.draw(v,
-		100*FU,
-		32*FU + y,
-		scale,
-		tostring(p.rings),
-		"RNGFT",
+	customhud.CustomNum(v,
+		10*FU + 142*scale,
+		32*FU + 6*scale + y,
+		p.rings,
+		"RNGNUM",
+		0,
+		V_SNAPTOLEFT|V_SNAPTOTOP,
 		"right",
-		V_SNAPTOLEFT|V_SNAPTOTOP
-	)
+		scale)
 end
 
 return module

@@ -97,6 +97,11 @@ function FangsHeist.isInTeam(p)
 		end
 	end
 
+	--[[if not team
+	and FangsHeist.isAbleToTeam(p) then
+		team = FangsHeist.initTeam(p)
+	end]]
+
 	return false
 end
 
@@ -128,4 +133,8 @@ function FangsHeist.isTeamLeader(p)
 	end
 
 	return team[1] == p
+end
+
+function FangsHeist.isAbleToTeam(p)
+	return p and p.valid and p.heist and not p.heist.spectator
 end

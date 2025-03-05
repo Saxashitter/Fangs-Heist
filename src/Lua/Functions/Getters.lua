@@ -105,9 +105,11 @@ end
 
 // Returns -1 if the player isn't placed anywhere.
 function FangsHeist.getPlayerPlacement(p)
-	for i,sp in ipairs(FangsHeist.Net.placements) do
-		if sp == p then
-			return i
+	for i,team in ipairs(FangsHeist.Net.placements) do
+		for _,sp in ipairs(team) do
+			if sp == p then
+				return i
+			end
 		end
 	end
 

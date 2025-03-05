@@ -21,13 +21,13 @@ local function get_place(num)
 	return tostring(num).."th"
 end
 
-local function draw_p(v, p, placement, actualPlacement)
+local function draw_p(v, team, placement, actualPlacement)
 	actualPlacement = actualPlacement or placement
 	local SCORE_X = 16*FU
 	local target_y = (10*FU)*placement-1
 
 	local scale = FU/2
-	local profit = p.heist.profit
+	local profit = team.profit
 
 	v.drawString(SCORE_X,
 		SCORE_Y+target_y,
@@ -37,11 +37,9 @@ local function draw_p(v, p, placement, actualPlacement)
 
 	SCORE_X = $+2*FU+v.stringWidth(get_place(actualPlacement), V_ALLOWLOWERCASE, "thin")*FU
 
-	local team = FangsHeist.isInTeam(p)
-
-	if not team then
+	for _,p in ipairs(team) do
+		if not (p and p.valid) then continue end
 		local life
-
 		if skins[p.skin].sprites[SPR2_LIFE].numframes then 
 			life = v.getSprite2Patch(p.skin,
 				SPR2_LIFE, false, A, 0)
@@ -55,41 +53,17 @@ local function draw_p(v, p, placement, actualPlacement)
 			scale,
 			life,
 			V_SNAPTOTOP|V_SNAPTOLEFT,
-			v.getColormap(nil, p.skincolor))
+			v.getColormap(skins[p.skin].name, p.skincolor))
 
 		SCORE_X = $+2*FU+life.width*scale
-	else
-		for _,p in ipairs(team) do
-			if not (p and p.valid) then continue end
-			local life
-			if skins[p.skin].sprites[SPR2_LIFE].numframes then 
-				life = v.getSprite2Patch(p.skin,
-					SPR2_LIFE, false, A, 0)
-				scale = skins[p.skin].highresscale/2
-			else
-				life = v.cachePatch("CONTINS")
-			end
-			
-			v.drawScaled(SCORE_X+life.leftoffset*scale,
-				SCORE_Y+target_y+life.topoffset*scale-(2*scale),
-				scale,
-				life,
-				V_SNAPTOTOP|V_SNAPTOLEFT,
-				v.getColormap(nil, p.skincolor))
-	
-			SCORE_X = $+2*FU+life.width*scale
-		end
 	end
 
-	local name = p.name
-	if team then
-		name = "TEAM "..$
-	end
+	local name = team[1].name
 
 	v.drawString(SCORE_X,
 		SCORE_Y+target_y,
 		name,
-		V_SNAPTOLEFT|V_SNAPTOTOP|(displayplayer.heist and FangsHeist.isPartOfTeam(displayplayer, p) and V_YELLOWMAP or 0),
+		V_SNAPTOLEFT|V_SNAPTOTOP|(displayplayer.heist and FangsHeist.isPartOfTeam(displayplayer, team[1]) and V_YELLOWMAP or 0),
 		"thin-fixed")
 
 	local str_width = v.stringWidth(name, 0, "thin")
@@ -100,16 +74,12 @@ local function draw_p(v, p, placement, actualPlacement)
 		V_SNAPTOLEFT|V_SNAPTOTOP|V_GREENMAP,
 		"thin-fixed")
 
-	local sign = FangsHeist.playerHasSign(p)
-	local team = FangsHeist.isInTeam(p)
-
-	if team then
-		for _,sp in ipairs(team) do
-			if FangsHeist.isPlayerAlive(sp)
-			and FangsHeist.playerHasSign(sp) then
-				sign = true
-				break
-			end
+	local sign = false
+	for _,sp in ipairs(team) do
+		if FangsHeist.isPlayerAlive(sp)
+		and FangsHeist.playerHasSign(sp) then
+			sign = true
+			break
 		end
 	end
 
@@ -132,7 +102,7 @@ function module.draw(v)
 
 	for i = 1,3 do
 		local p = FangsHeist.Net.placements[i]
-		if not (p and p.valid) then continue end
+		if not p then continue end
 
 		draw_p(v, p, i, i)
 	end

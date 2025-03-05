@@ -202,7 +202,10 @@ local function module()
 		p.heist.exiting = true
 
 		if FangsHeist.playerHasSign(p) then
-			p.heist.had_sign = true
+			local team = FangsHeist.isInTeam(p)
+
+			team.had_sign = true
+
 			FangsHeist.respawnSign(p)
 		end
 	end

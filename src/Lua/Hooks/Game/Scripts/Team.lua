@@ -4,47 +4,47 @@ return function()
 
 	for i = #FangsHeist.Net.teams, 1, -1 do
 		local team = FangsHeist.Net.teams[i]
-		local signGot = false
-		local hadSign = false
+		local signGot = team.had_sign
+		local treasures = 0
 
 		if #team then
 			for k = #team, 1, -1 do
 				local p = team[k]
 	
-				if not (p and p.valid and p.heist and not p.heist.spectator) then
+				if not FangsHeist.isAbleToTeam(p) then
 					table.remove(team, k)
 					continue
 				end
 
 				if FangsHeist.isPlayerAlive(p) then
 					signGot = $ or FangsHeist.playerHasSign(p)
-					hadSign = $ or p.heist.had_sign
+					treasures = $+#p.heist.treasures
 				end
 			end
 		end
 	
-		if #team <= 1 then
-			local p = team[1]
-
-			if FangsHeist.isPlayerAlive(p) then
-				p.heist.sign_got = signGot
-				p.heist.had_sign = hadSign
-			end
-
+		if #team < 1 then
 			table.remove(FangsHeist.Net.teams, i)
 			continue
 		end
 
-		if (signGot or hadSign)
-		and not team.sign then
-			FangsHeist.gainProfit(team[1], 1200, true)
+		if signGot
+		and not team.added_sign then
+			team.profit = $+1200
 		end
 
-		if not (signGot or hadSign)
-		and team.sign then
-			FangsHeist.gainProfit(team[1], -1200, true)
+		if not signGot
+		and team.added_sign then
+			team.profit = $-1200
 		end
 
-		team.sign = (signGot or hadSign)
+		team.added_sign = signGot
+
+		if treasures ~= team.treasures then
+			local gain = team.treasures+(treasures-team.treasures)
+			team.profit = $+120*gain
+		end
+
+		team.treasures = treasures
 	end
 end

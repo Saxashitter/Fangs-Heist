@@ -1,21 +1,4 @@
 return function(p)
-	local team = FangsHeist.isInTeam(p)
-
-	if not team then
-		if FangsHeist.isPlayerAlive(p)
-		and (FangsHeist.playerHasSign(p) or p.heist.had_sign) then
-			if not p.heist.sign_got then
-				FangsHeist.gainProfit(p, 1200, true)
-				p.heist.sign_got = true
-			end
-		else
-			if p.heist.sign_got then
-				FangsHeist.gainProfit(p, -1200, false)
-				p.heist.sign_got = false
-			end
-		end
-	end
-
 	if p.heist.spectator then
 		p.heist.treasure_time = 0
 	end
@@ -24,7 +7,7 @@ return function(p)
 
 	if not FangsHeist.isTeamLeader(p) then return end
 
-	local team = FangsHeist.isInTeam(p)
+	--[[local team = FangsHeist.isInTeam(p)
 	local treasures = #p.heist.treasures
 	local canIncrease = FangsHeist.isPlayerAlive(p) and not p.heist.exiting
 
@@ -59,5 +42,5 @@ return function(p)
 
 			sp.heist.treasures_collected = treasures
 		end
-	end
+	end]]
 end
