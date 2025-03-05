@@ -129,7 +129,7 @@ function module.draw(v)
 
 		v.drawScaled(x-patch.width*scale/2, y, scale, patch, f)
 		customhud.CustomFontString(v,
-			x, y+4*FU-9*FU,,
+			x, y+4*FU-9*FU,
 			"$"..tostring(p.heist.profit),
 			"PRTFT",
 			f,
