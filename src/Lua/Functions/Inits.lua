@@ -17,10 +17,28 @@ local orig_plyr = FangsHeist.require "Modules/Variables/player"
 local orig_hud = FangsHeist.require "Modules/Variables/hud"
 
 // Initalize player.
+
+function FangsHeist.initTeam(p)
+	if not FangsHeist.isAbleToTeam(p) then
+		return
+	end
+
+	local team = {p}
+
+	team.profit = 0
+	team.added_sign = false
+	team.treasures = 0
+
+	table.insert(FangsHeist.Net.teams, team)
+	return team
+end
+
 function FangsHeist.initPlayer(p)
 	p.heist = copy(orig_plyr)
 	p.heist.spectator = FangsHeist.Net.escape
 	p.heist.locked_skin = p.skin
+
+	FangsHeist.initTeam(p)
 
 	HeistHook.runHook("PlayerInit", p)
 end

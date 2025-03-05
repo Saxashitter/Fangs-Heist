@@ -32,7 +32,7 @@ addHook("PlayerThink", function(p)
 	if p.skin ~= p.heist.locked_skin then
 		R_SetPlayerSkin(p, p.heist.locked_skin)
 	end
-	p.score = p.heist.profit
+	p.score = 0
 end)
 
 addHook("ThinkFrame", function(p)

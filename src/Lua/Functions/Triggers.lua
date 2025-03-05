@@ -29,29 +29,13 @@ function FangsHeist.gainProfit(p, gain, dontDiv, specialSound)
 	end
 
 	local team = FangsHeist.isInTeam(p)
-	local profit = p.heist.profit
 
-	if team then
-		for _,sp in ipairs(team) do
-			if not (sp and sp.valid and sp.heist) then
-				continue
-			end
-
-			profit = max($, sp.heist.profit)
-		end
+	if not team then
+		print "not in team bozo"
+		return
 	end
 
-	p.heist.profit = max(0, profit+(gain/div))
-
-	if team then
-		for _,sp in ipairs(team) do
-			if not (sp and sp.valid and sp.heist) then
-				continue
-			end
-
-			sp.heist.profit = p.heist.profit
-		end
-	end
+	team.profit = max(0, $+(gain/div))
 end
 
 function FangsHeist.damagePlayers(p, friendlyfire, damage)
