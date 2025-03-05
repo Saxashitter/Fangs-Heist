@@ -36,7 +36,7 @@ local states = {
 FangsHeist.INTER_START_DELAY = 15
 
 function module.init()
-	shakeFactor = 12*FU
+	shakeFactor = 0
 	alpha = 0
 	statealpha = 10
 	retakealpha = 10
@@ -69,7 +69,34 @@ skincolors[SKINCOLOR_REALLYREALLYBLACK] = {
     chatcolor = V_BLUEMAP,
     accessible = false
 }
+--The Color is the thing: This Color Matches the Player's Color and Fades Out to Black
+freeslot("SKINCOLOR_INTERMISSIONCOLOR")
+addHook("ThinkFrame",do
+	local index = color.rgbToPalette(255,255,255) --All White, That's all
+	if FangsHeist.Net.game_over
+		if consoleplayer--Match the Player's Skincolor!
+			local skincolor = skincolors[consoleplayer.skincolor].ramp[4]
+			local r,g,b = color.paletteToRgb(skincolor)
+			index = color.rgbToPalette(r,g,b)
+		end
+		if FangsHeist.Net.end_anim <= 75
+			local r,g,b = color.paletteToRgb(index)
+			local ticsperrgb = ease.linear(FU-max(0,min(FixedDiv(FangsHeist.Net.end_anim-60,15),FU)),255*FU,0)/FU
+			local t = FU-max(0,min(FixedDiv(ticsperrgb,255),FU))
 
+			local r1 = ease.linear(t, r, 0)
+			local r2 = ease.linear(t, g, 0)
+			local r3 = ease.linear(t, b, 0)
+			local rgb = color.packRgb(r1, r2, r3)
+			index = color.rgbToPalette(rgb)
+		end
+	end
+	local hex = index
+	skincolors[SKINCOLOR_INTERMISSIONCOLOR] = {
+		ramp = {0,0,0,hex,0,0,0,0,0,0,0,0,0,0,0,0}, --All White except the 4th Ramp
+		accessible = false
+	}
+end)
 // UNEXPECTED HOOK GRAAAAHHH
 addHook("PlayerCmd", function(_, _cmd)
 	if not FangsHeist.Net.game_over then return end
@@ -293,29 +320,83 @@ local function manage_intermission(v)
 		S_StartSound(nil, sfx_menu1)
 	end
 end
+--Bouncing Ease i made, If you wanted to Use this code, Let me know
+ease.inbounce = function(tic,s,m,e)
+	local ts = max(0,min(FixedDiv(tic-(FU/2),FU/2),FU))
+	local t = ease.linear(ts,0,180*FU)
+	local tc = max(0,min(FixedDiv(tic,FU/2),FU))
+	return ease.incubic(tc,s,e)+FixedMul(m,sin(FixedAngle(t))) --actual Bounce
+end
+/*
+New GAME! Animation
 
+Draws Game Sliding to Center with Boarder
+And raise a little
+
+then Shakes and Widen to Screen Height
+
+and after Shaking Fades an Color to Black
+*/
+local draw_game = function(v)
+	local sw = v.width()*FU/v.dupx()
+	local m = 40*FU
+	local e = sw
+	local radius = ease.outback(
+		FU-max(0,min(FixedDiv(FangsHeist.Net.end_anim-(5*TICRATE+15),20),FU)),
+		0, m
+	)
+	local alphatext = 0
+	local intiming = (3*TICRATE+32)
+	if FangsHeist.Net.end_anim <= intiming
+		if FangsHeist.Net.end_anim == intiming
+		and not paused
+			shakeFactor = 24*FU
+		end
+		radius = ease.linear(
+			FU-max(0,min(FixedDiv(FangsHeist.Net.end_anim-(3*TICRATE+22),10),FU)),
+			m, e
+		)
+	end
+	if FangsHeist.Net.end_anim <= 75
+		alphatext = ease.linear(
+			FU-max(0,min(FixedDiv(FangsHeist.Net.end_anim-60,15),FU)),
+			0, 10
+		)
+	end
+	local sx = ease.outquad(
+			FU-max(0,min(FixedDiv(FangsHeist.Net.end_anim-(5*TICRATE+15),20),FU)),
+			-50*FU, 160*FU) 
+	local tic = FU-max(0,min(FixedDiv(FangsHeist.Net.end_anim-(4*TICRATE-2),35),FU))
+	local sy = ease.inquint(tic,175*FU,100*FU)
+	draw_rect(v,
+		0, sy-radius/2,
+		sw,
+		radius,
+		V_SNAPTOLEFT,
+		SKINCOLOR_INTERMISSIONCOLOR
+	)
+	if alphatext != 10
+		local Gameset = v.cachePatch("FH_GAMESET")
+		local x = sx + v.RandomRange(-shakeFactor, shakeFactor)
+		local y = sy + v.RandomRange(-shakeFactor, shakeFactor)
+		local t = FU-max(0,min(FixedDiv(FangsHeist.Net.end_anim-(intiming-10),10),FU))
+		local scale = ease.outcubic(t,FU/2,FU)
+		v.drawScaled(x,y,scale,Gameset,alphatext*V_10TRANS)
+		shakeFactor = max(0, $-FU*3/2)
+	end
+end
 function module.draw(v)
 	if not (FangsHeist.Net.game_over) then return end
 
-	text.draw(v,
-		160*FU + v.RandomRange(-shakeFactor, shakeFactor),
-		100*FU - 21*FU + v.RandomRange(-shakeFactor, shakeFactor),
-		FU*2,
-		"GAME!",
-		"FHFNT",
-		"center",
-		0,
-		v.getColormap(nil, SKINCOLOR_RED)
-	)
-	shakeFactor = max(0, $-FU*3/2)
+	draw_game(v)
 
 	if FangsHeist.Net.end_anim then return end
-	alpha = min($+1, 10)
+	--alpha = min($+1, 10) Removed for the New "GAME!" Animation
 	if FangsHeist.Net.game_over_ticker >= FangsHeist.INTER_START_DELAY then
 		statealpha = max(0, $-1)
 	end
 
-	manage_fade_screen(v)
+	--manage_fade_screen(v)
 	if not FangsHeist.Net.retaking then
 		manage_intermission(v)
 	end

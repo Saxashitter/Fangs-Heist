@@ -184,6 +184,8 @@ function FangsHeist.joinTeam(p, sp)
 
 	if not team then
 		team = {p}
+		team.sign_profit = false
+
 		table.insert(FangsHeist.Net.teams, team)
 	end
 

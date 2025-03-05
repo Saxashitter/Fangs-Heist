@@ -10,6 +10,9 @@ return function(p)
 		p.mindash = min($, spindash_limit)
 		p.maxdash = min($, spindash_limit)
 		p.jumpfactor = max(FU, $) -- makes characters like knux jump higher, while others like amy still have their bigger jump height
+		if p.pflags & PF_JUMPED then
+			p.pflags = $|PF_THOKKED
+		end
 
 		if not p.heist.exiting then
 			p.camerascale = ease.linear(FU/3, $, tofixed("1.65"))

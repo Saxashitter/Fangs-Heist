@@ -76,15 +76,15 @@ function module.draw(v)
 	local scores = FangsHeist.Save.ServerScores[gamemap]
 
 	if not (scores and #scores) then
-		text.draw(v,
+		customhud.CustomFontString(v,
 			160*FU,
-			100*FU - 21*FU/2,
-			FU,
-			"NO SCORES!",
+			100*FU - 16*FU/2,
+			"No scores!",
 			"FHFNT",
-			"center",
 			0,
-			v.getColormap(nil, SKINCOLOR_RED)
+			"center",
+			FU,
+			SKINCOLOR_RED
 		)
 		return
 	end

@@ -1,14 +1,18 @@
 return function(p)
-	if FangsHeist.isPlayerAlive(p)
-	and (FangsHeist.playerHasSign(p) or p.heist.had_sign) then
-		if not p.heist.sign_got then
-			FangsHeist.gainProfit(p, 1200, true)
-			p.heist.sign_got = true
-		end
-	else
-		if p.heist.sign_got then
-			FangsHeist.gainProfit(p, -1200, false)
-			p.heist.sign_got = false
+	local team = FangsHeist.isInTeam(p)
+
+	if not team then
+		if FangsHeist.isPlayerAlive(p)
+		and (FangsHeist.playerHasSign(p) or p.heist.had_sign) then
+			if not p.heist.sign_got then
+				FangsHeist.gainProfit(p, 1200, true)
+				p.heist.sign_got = true
+			end
+		else
+			if p.heist.sign_got then
+				FangsHeist.gainProfit(p, -1200, false)
+				p.heist.sign_got = false
+			end
 		end
 	end
 

@@ -33,15 +33,15 @@ function module.draw(v)
 	local height = v.height()*FU/v.dupy()
 
 	if not (#plyrs) then
-		text.draw(v,
+		customhud.CustomFontString(v,
 			width/2,
-			height/2 - 21*FU/2,
-			FU,
-			"NO WINNERS!!",
+			height/2 - 16*FU/2,
+			"No winners!",
 			"FHFNT",
-			"center",
 			V_SNAPTOLEFT|V_SNAPTOTOP,
-			v.getColormap(nil, SKINCOLOR_CYAN)
+			"center",
+			FU,
+			SKINCOLOR_CYAN
 		)
 		return
 	end
@@ -57,7 +57,7 @@ function module.draw(v)
 		local mult = FixedDiv(width, 320*FU)
 		local x = FixedMul(pos.x, mult)
 
-		local name = (trim(p.name)):upper()
+		local name = trim(p.name)
 
 		local sep = 12*FU
 		local width = 20*FU
@@ -66,7 +66,7 @@ function module.draw(v)
 		local length = FangsHeist.getTeamLength(p)
 		local div = length and width/length or width/2
 
-		local podium_scale = FU*6/8
+		local podium_scale = FU
 		local podium_wscale = podium_scale + FU*(length-1)/8
 		v.drawScaled(x-podium.width*podium_wscale/2, 200*FU-podium.height*podium_scale, podium_wscale, podium, V_SNAPTOBOTTOM|V_SNAPTOLEFT)
 
@@ -101,39 +101,40 @@ function module.draw(v)
 		// 21*FU
 
 		if length > 1 then
-			text.draw(v,
+			customhud.CustomFontString(v,
 				x, y,
-				FU*6/9,
-				"TEAM",
+				"Team",
 				"FHFNT",
+				V_SNAPTOLEFT|V_SNAPTOTOP,
 				"center",
-				f,
-				v.getColormap(nil, p.skincolor))
+				FU*6/9,
+				p.skincolor
+			)
 			y = $+20*(FU*6/9)
 		end
 
-		text.draw(v,
+		customhud.CustomFontString(v,
 			x, y,
-			FU*6/9,
 			name,
 			"FHFNT",
+			V_SNAPTOLEFT|V_SNAPTOTOP,
 			"center",
-			f,
-			v.getColormap(nil, p.skincolor))
+			FU*6/9,
+			p.skincolor
+		)
 		y = $+20*FU
 
 		local scale = (FU/3)*2
 		local patch = v.cachePatch("FH_PROFIT")
 
 		v.drawScaled(x-patch.width*scale/2, y, scale, patch, f)
-		text.draw(v,
-			x,
-			y+4*FU-9*FU,
-			scale,
+		customhud.CustomFontString(v,
+			x, y+4*FU-9*FU,,
 			"$"..tostring(p.heist.profit),
 			"PRTFT",
+			f,
 			"center",
-			f
+			scale
 		)
 
 		--v.drawString(x, y, "$"..tostring(FangsHeist.returnProfit(p)), V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_GREENMAP, "thin-fixed-center")
