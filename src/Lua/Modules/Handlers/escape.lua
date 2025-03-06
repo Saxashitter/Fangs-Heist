@@ -139,37 +139,25 @@ local function module()
 	end
 
 	if FangsHeist.Net.hell_stage then
-		local sec = FangsHeist.Net.hell_stage_teleport.sector
-		local pos = FangsHeist.Net.hell_stage_teleport.pos
+		local mobj = FangsHeist.Net.hell_stage_mobj
 
 		for p in players.iterate do
-			if (p and p.mo and p.mo.subsector.sector == sec) then
-				P_SetOrigin(p.mo,
-					pos.x,
-					pos.y,
-					pos.z
-				)
+			if not FangsHeist.isPlayerAlive(p) then continue end
+			if p.heist.reached_second then continue end
 
-				p.mo.angle = pos.a
-				p.drawangle = pos.a
-
-				p.heist.reached_second = true
-
-				S_StartSound(nil, sfx_mixup, p)
-				P_InstaThrust(p.mo, p.mo.angle, FixedHypot(p.rmomx, p.rmomy))
-
-				local linedef = tonumber(mapheaderinfo[gamemap].fh_round2linedef)
-
-				if linedef ~= nil then
-					P_LinedefExecute(linedef)
-				end
+			if R_PointToDist2(p.mo.x,p.mo.y,mobj.x,mobj.y) > 24*FU+p.mo.radius then
+				continue
 			end
+			if p.mo.z > mobj.z+48*FU then
+				continue
+			end
+			if mobj.z > p.mo.z+p.mo.height then
+				continue
+			end
+
+			FangsHeist.goToRound2(p)
 		end
 	end
-
-
-	local exit = FangsHeist.Net.exit
-	exit.state = S_FH_EXIT_OPEN
 
 	-- BOMBS FOR RETAKES.......
 	local potential_positions = {}
@@ -179,9 +167,11 @@ local function module()
 		if not p.heist then continue end
 		if not FangsHeist.isPlayerAlive(p) then continue end
 		if p.heist.exiting then
+			local exit = FangsHeist.Net.exit
 			P_SetOrigin(p.mo, exit.x, exit.y, exit.z)
 			p.mo.flags2 = $|MF2_DONTDRAW
 			p.mo.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOTHINK
+			p.mo.state = S_PLAY_STND
 			p.camerascale = FU*3
 			continue
 		end
@@ -202,7 +192,7 @@ local function module()
 		p.heist.exiting = true
 
 		if FangsHeist.playerHasSign(p) then
-			local team = FangsHeist.isInTeam(p)
+			local team = FangsHeist.getTeam(p)
 
 			team.had_sign = true
 

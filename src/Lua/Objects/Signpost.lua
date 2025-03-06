@@ -153,7 +153,7 @@ end
 
 local function blacklist(p)
 	local hadsign = false
-	local team = FangsHeist.isInTeam(p)
+	local team = FangsHeist.getTeam(p)
 
 	if team then
 		for _,plyr in ipairs(team) do

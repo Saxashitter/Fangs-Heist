@@ -21,7 +21,7 @@ addHook("PlayerThink", function(p)
 
 		-- Hmm... Maybe we should cap his speed too.
 		local speed = FixedHypot(p.rmomx, p.rmomy)
-		local maxspeed = 24*p.mo.scale
+		local maxspeed = FixedMul(FH_NERFSPEED, p.mo.scale)
 
 		if speed > maxspeed then
 			local angle = R_PointToAngle2(0,0, p.rmomx, p.rmomy)

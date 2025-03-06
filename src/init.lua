@@ -16,13 +16,7 @@ rawset(_G, "FangsHeist", {Net = {}, HUD = {}, Objects = {}, Save = {}})
 
 dofile "HookLib"
 
-rawset(_G, "FH_ATTACKCOOLDOWN", TICRATE)
-rawset(_G, "FH_ATTACKTIME", G)
-rawset(_G, "FH_BLOCKCOOLDOWN", 5)
-rawset(_G, "FH_BLOCKTIME", 5*TICRATE)
-rawset(_G, "FH_BLOCKDEPLETION", FH_BLOCKTIME/3)
-
-dofile "gametypes"
+dofile "constants"
 dofile "files"
 dofile "characters"
 dofile "console"
@@ -52,9 +46,10 @@ dofile "Objects/Bosses/Missile"
 dofile "Movesets/Amy"
 dofile "Movesets/Fang"
 
+dofile "modsupport"
+
 dofile "Compat/Mario"
 dofile "Compat/Soap"
 dofile "Compat/S3 Sonic"
 dofile "Compat/Bean"
-
-dofile "modsupport"
+dofile "Compat/Eggman"

@@ -3,13 +3,8 @@
 
 // heres some cool functions and states tho
 
-states[freeslot "S_FH_EXIT_OPEN"] = {
-	sprite = freeslot "SPR_EXGT",
-	frame = B,
-	tics = -1
-}
-states[freeslot "S_FH_EXIT_CLOSE"] = {
-	sprite = SPR_EXGT,
+states[freeslot "S_FH_MARVQUEEN"] = {
+	sprite = freeslot "SPR_MAQU",
 	frame = A,
 	tics = -1
 }
@@ -23,7 +18,7 @@ function FangsHeist.defineExit(x, y, z, a)
 	local exit = P_SpawnMobj(x, y, z, MT_THOK)
 	exit.fuse = -1
 	exit.tics = -1
-	exit.state = S_FH_EXIT_CLOSE
+	exit.state = S_FH_MARVQUEEN
 	exit.angle = a
 	exit.flags = (MF_NOTHINK|MF_NOGRAVITY|MF_NOCLIP|MF_NOCLIPHEIGHT)
 

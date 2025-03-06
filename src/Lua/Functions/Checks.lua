@@ -21,8 +21,8 @@ function FangsHeist.isPlayerAtGate(p)
 
 	local dist = R_PointToDist2(p.mo.x, p.mo.y, exit.x, exit.y)
 
-	if dist <= 80*FU
-	and p.mo.z <= exit.z+170*FU
+	if dist <= p.mo.radius+24*FU
+	and p.mo.z <= exit.z+48*FU
 	and exit.z <= p.mo.z+p.mo.height then
 		return true
 	end
@@ -88,25 +88,8 @@ function FangsHeist.isHurryUp()
 	return true
 end
 
-function FangsHeist.isInTeam(p)
-	for _,team in ipairs(FangsHeist.Net.teams) do
-		for _,player in ipairs(team) do
-			if player == p then
-				return team
-			end
-		end
-	end
-
-	--[[if not team
-	and FangsHeist.isAbleToTeam(p) then
-		team = FangsHeist.initTeam(p)
-	end]]
-
-	return false
-end
-
 function FangsHeist.isPartOfTeam(p, sp)
-	local team = FangsHeist.isInTeam(p)
+	local team = FangsHeist.getTeam(p)
 
 	if p == sp then
 		return true
@@ -126,7 +109,7 @@ function FangsHeist.isPartOfTeam(p, sp)
 end
 
 function FangsHeist.isTeamLeader(p)
-	local team = FangsHeist.isInTeam(p)
+	local team = FangsHeist.getTeam(p)
 
 	if not team then
 		return true

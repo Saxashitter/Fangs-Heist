@@ -12,7 +12,7 @@ end
 
 function module.draw(v, p)
 	local profit = 0
-	local team = FangsHeist.isInTeam(p)
+	local team = FangsHeist.getTeam(p)
 
 	if team then
 		profit = team.profit

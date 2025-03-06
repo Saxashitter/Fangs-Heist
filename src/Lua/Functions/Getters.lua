@@ -1,13 +1,5 @@
 local orig = FangsHeist.require "Modules/Variables/net"
 
-function FangsHeist.getTypeData()
-	if FangsHeist.GameTypes[FangsHeist.Net.gametype] then
-		return FangsHeist.GameTypes[FangsHeist.Net.gametype]
-	end
-
-	return FangsHeist.GameTypes[0]
-end
-
 // Get players nearby, mainly used for pickup-ables.
 function FangsHeist.getNearbyPlayers(mobj, distscale, blacklist)
 	if not (distscale) then distscale = FU*3/2 end
@@ -47,26 +39,29 @@ function FangsHeist.playerHasSign(p)
 		and FangsHeist.Net.sign.holder == p.mo)
 end
 
+function FangsHeist.getTeam(p)
+	for _,team in ipairs(FangsHeist.Net.teams) do
+		for _,player in ipairs(team) do
+			if player == p then
+				return team
+			end
+		end
+	end
+
+	--[[if not team
+	and FangsHeist.isAbleToTeam(p) then
+		team = FangsHeist.initTeam(p)
+	end]]
+
+	return false
+end
+
 function FangsHeist.getTeamLength(p)
 	if not (p and p.heist) then return 0 end
 
-	local team = FangsHeist.isInTeam(p)
+	local team = FangsHeist.getTeam(p)
 
-	if not team then
-		return 0
-	end
-
-	local length = 0
-
-	for _,player in ipairs(team) do
-		if not (player and player.valid and player.heist and player ~= p) then
-			continue
-		end
-
-		length = $+1
-	end
-
-	return length
+	return #team-1
 end
 
 function FangsHeist.playerCount()

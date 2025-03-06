@@ -170,17 +170,32 @@ function FangsHeist.loadMap()
 
 		if thing.type == 3842 then
 			FangsHeist.Net.hell_stage = true
-			FangsHeist.Net.hell_stage_teleport.pos = {
+			local pos = {
 				x = thing.x*FU,
 				y = thing.y*FU,
 				z = spawnpos.getThingSpawnHeight(MT_PLAYER, thing, thing.x*FU, thing.y*FU),
 				a = thing.angle*ANG1
 			}
+
+			FangsHeist.Net.hell_stage_teleport.pos = pos
 		end
 
 		if thing.type == 3843 then
 			FangsHeist.Net.hell_stage = true
-			FangsHeist.Net.hell_stage_teleport.sector = R_PointInSubsector(thing.x*FU, thing.y*FU).sector
+	
+			local pos = {
+				x = thing.x*FU,
+				y = thing.y*FU,
+				z = spawnpos.getThingSpawnHeight(MT_PLAYER, thing, thing.x*FU, thing.y*FU),
+				a = thing.angle*ANG1
+			}
+	
+			local mobj = P_SpawnMobj(pos.x, pos.y, pos.z, MT_THOK)
+			mobj.angle = pos.a
+			mobj.state = S_FH_MARVQUEEN
+			mobj.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOTHINK|MF_NOGRAVITY
+
+			FangsHeist.Net.hell_stage_mobj = mobj
 		end
 
 		if treasure_things[thing.type] then
