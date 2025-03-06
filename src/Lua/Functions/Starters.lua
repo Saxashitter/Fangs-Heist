@@ -20,7 +20,6 @@ function FangsHeist.startEscape(p)
 	FangsHeist.Net.escape = true
 	S_StartSound(nil, sfx_gogogo)
 
-	FangsHeist.changeBlocks()
 	local data = mapheaderinfo[gamemap]
 	if data.fh_escapelinedef then
 		P_LinedefExecute(tonumber(data.fh_escapelinedef))
@@ -95,7 +94,7 @@ function FangsHeist.startIntermission()
 			continue
 		end
 
-		local team = FangsHeist.isInTeam(p)
+		local team = FangsHeist.getTeam(p)
 
 		table.insert(FangsHeist.Save.ServerScores[gamemap], {
 			p.mo.skin,
@@ -125,7 +124,7 @@ function FangsHeist.startIntermission()
 	S_FadeMusic(0, MUSICRATE/2)
 
 	for mobj in mobjs.iterate() do
-		if not (mobj and mobj.valid) then return end
+		if not (mobj and mobj.valid) then continue end
 
 		mobj.flags = $|MF_NOTHINK
 	end
@@ -135,65 +134,6 @@ function FangsHeist.startIntermission()
 	S_ChangeMusic("FH_WIN", false)
 end
 
-local oppositefaces = {
-	--awake to asleep
-	["JOHNBLK1"] = "JOHNBLK0",
-	--asleep to awake
-	["JOHNBLK0"] = "JOHNBLK1",
-}
-
-function FangsHeist.changeBlocks()
-	for sec in sectors.iterate do
-		for rover in sec.ffloors() do
-			if not rover.valid then continue end
-			local side = rover.master.frontside
-			
-			if not (side.midtexture == R_TextureNumForName("JOHNBLK1")
-			or side.midtexture == R_TextureNumForName("JOHNBLK0")) then
-			--or side.midtexture == R_TextureNumForName("TKISBKB1")
-			--or side.midtexture == R_TextureNumForName("TKISBKB2"))
-				continue
-			end
-			
-			local oppositeface = oppositefaces[
-				string.sub(R_TextureNameForNum(side.midtexture),1,8)
-			]
-				
-			--???????
-			if oppositeface == nil then continue end
-			
-			if rover.flags & FOF_SOLID
-			--awake to asleep
-				rover.flags = $|FOF_TRANSLUCENT|FOF_NOSHADE &~(FOF_SOLID|FOF_CUTLEVEL|FOF_CUTSOLIDS)
-				rover.alpha = 128
-			else
-			--asleep to awake
-				rover.flags = $|FOF_SOLID|FOF_CUTLEVEL|FOF_CUTSOLIDS &~(FOF_TRANSLUCENT|FOF_NOSHADE)
-				rover.alpha = 255
-			end
-			side.midtexture = R_TextureNumForName(oppositeface)
-		end
-	end
-end
-
-function FangsHeist.joinTeam(p, sp)
-	local team = FangsHeist.isInTeam(p)
-
-	if team
-	and FangsHeist.isPartOfTeam(p, sp) then
-		return
-	end
-
-	if not team then
-		team = {p}
-		team.sign_profit = false
-
-		table.insert(FangsHeist.Net.teams, team)
-	end
-
-	table.insert(team, sp)
-end
-
 local function sac(name, caption)
 	local sfx = freeslot(name)
 
@@ -201,90 +141,3 @@ local function sac(name, caption)
 
 	return sfx
 end
-
-local function return_player(p)
-	if tonumber(p) ~= nil then
-		p = tonumber(p)
-
-		if (players[p] and players[p].valid) then
-			return players[p]
-		end
-	end
-
-	for checkp in players.iterate do
-		if checkp.name == p then
-			return checkp
-		end
-	end
-end
-
---[[COM_AddCommand("fh_jointeam", function(p, sp)
-	if not FangsHeist.isMode() then return end
-	if not FangsHeist.Net.pregame then
-		CONS_Printf(p, "This can only be done during Pre-game!")
-		return
-	end
-
-	sp = return_player($)
-	if not (sp and sp.heist) then
-		CONS_Printf(p, "That's not a valid player.")
-		return
-	end
-
-	if p.heist.team.players[sp] then
-		CONS_Printf(p, "This player is in your team.")
-		return
-	end
-
-	if sp.heist.team.leader ~= sp then
-		CONS_Printf(p, "This player isn't the leader.")
-		return
-	end
-
-	if sp.heist.invites[p] then
-		CONS_Printf(p, "You already requested to join this player.")
-		return
-	end
-
-	local length = FangsHeist.getTeamLength(sp)
-	if length >= 2 then
-		CONS_Printf(p, "This player's team is full.")
-		return
-	end
-
-	sp.heist.invites[p] = true
-	CONS_Printf(sp, p.name.." has requested to join your team!")
-	CONS_Printf(sp, "Use \"fh_acceptrequest "..#p.."\" to accept their request!")
-
-	CONS_Printf(p, "Request successful.")
-end)
-
-COM_AddCommand("fh_acceptrequest", function(p, sp)
-	if not FangsHeist.isMode() then return end
-	if not FangsHeist.Net.pregame then
-		CONS_Printf(p, "This can only be done during Pre-game!")
-		return
-	end
-
-	sp = return_player($)
-	if not (sp and sp.heist) then
-		CONS_Printf(p, "That's not a valid player.")
-		return
-	end
-
-	if not p.heist.invites[sp] then
-		CONS_Printf(p, "This player never requested to join you.")
-		return
-	end
-
-	local length = FangsHeist.getTeamLength(p)
-	if length >= 2 then
-		CONS_Printf(p, "Your team is full.")
-		CONS_Printf(sp, "This player's team is full.")
-		return
-	end
-
-	FangsHeist.joinTeam(p, sp)
-	CONS_Printf(p, "Team successful.")
-	CONS_Printf(sp, "Team successful.")
-end)]]

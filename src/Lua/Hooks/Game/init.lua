@@ -68,7 +68,6 @@ addHook("ThinkFrame", do
 	if not FangsHeist.isMode() then
 		return
 	end
-	local data = FangsHeist.getTypeData()
 	local stop = false
 
 	dialogue.tick()

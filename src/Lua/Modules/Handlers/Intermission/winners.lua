@@ -51,6 +51,9 @@ function module.draw(v)
 
 		local team = plyrs[i]
 		local p = team[1]
+
+		if not (p and p.valid) then continue end
+
 		local pos = POSITION_DATA[i]
 
 		local podium = v.cachePatch(pos.patch)
@@ -65,9 +68,9 @@ function module.draw(v)
 		local length = #team-1
 		local div = length and width/length or width/2
 
-		local podium_scale = FU
+		local podium_scale = tofixed("0.81")
 		local podium_wscale = podium_scale + FU*(length-1)/8
-		v.drawScaled(x-podium.width*podium_wscale/2, 200*FU-podium.height*podium_scale, podium_wscale, podium, V_SNAPTOBOTTOM|V_SNAPTOLEFT)
+		v.drawStretched(x-podium.width*podium_wscale/2, 200*FU-podium.height*podium_scale, podium_wscale, podium_scale, podium, V_SNAPTOBOTTOM|V_SNAPTOLEFT)
 
 		for i,sp in ipairs(team) do
 			if not FangsHeist.isPlayerAlive(sp) then continue end
@@ -91,7 +94,7 @@ function module.draw(v)
 		local f = V_SNAPTOBOTTOM|V_SNAPTOLEFT
 		// 21*FU
 
-		if length > 1 then
+		if #team > 1 then
 			customhud.CustomFontString(v,
 				x, y,
 				"Team",

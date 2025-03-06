@@ -60,11 +60,6 @@ local DEFAULT = {
 	}
 }
 
-rawset(_G, "FHD_EASY", 0)
-rawset(_G, "FHD_MEDIUM", 1)
-rawset(_G, "FHD_HARD", 2)
-rawset(_G, "FHD_UNKNOWN", 3)
-
 setmetatable(FangsHeist.Characters, {
 	__index = function(self, val)
 		if rawget(self, val) == nil then

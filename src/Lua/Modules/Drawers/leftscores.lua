@@ -23,6 +23,9 @@ end
 
 local function draw_p(v, team, placement, actualPlacement)
 	actualPlacement = actualPlacement or placement
+
+	if not (team[1] and team[1].valid) then return end
+
 	local SCORE_X = 16*FU
 	local target_y = (10*FU)*placement-1
 
@@ -59,6 +62,9 @@ local function draw_p(v, team, placement, actualPlacement)
 	end
 
 	local name = team[1].name
+	if #team >= 2 then
+		name = "Team "..$
+	end
 
 	v.drawString(SCORE_X,
 		SCORE_Y+target_y,
@@ -96,20 +102,32 @@ end
 
 function module.draw(v)
 	if not multiplayer then return end
+	if not (displayplayer and displayplayer.valid) then return end
 
 	local drawedSelf = false
-	local self
+	local self = FangsHeist.getTeam(displayplayer)
 
 	for i = 1,3 do
 		local p = FangsHeist.Net.placements[i]
+
 		if not p then continue end
 
+		drawedSelf = $ or p == self
 		draw_p(v, p, i, i)
 	end
 
 	if drawedSelf then return end
+	if not self then return end
 
-	--draw_p(v, self.p, 4, self.place)
+	local selfPlace = 0
+	for place,team in ipairs(FangsHeist.Net.placements) do
+		if team == self then
+			selfPlace = place
+			break
+		end
+	end
+
+	draw_p(v, self, 4, selfPlace)
 end
 
 return module

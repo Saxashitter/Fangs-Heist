@@ -28,7 +28,7 @@ function FangsHeist.gainProfit(p, gain, dontDiv, specialSound)
 		div = 1
 	end
 
-	local team = FangsHeist.isInTeam(p)
+	local team = FangsHeist.getTeam(p)
 
 	if not team then
 		print "not in team bozo"
@@ -136,4 +136,54 @@ function FangsHeist.depleteBlock(p, damage)
 
 	S_StartSound(p.mo, sfx_s3k7b)
 	return false
+end
+
+function FangsHeist.joinTeam(p, sp)
+	local team = FangsHeist.getTeam(p)
+
+	if team
+	and FangsHeist.isPartOfTeam(p, sp) then
+		return
+	end
+
+	local otherteam = FangsHeist.getTeam(sp)
+	if otherteam then
+		for i = #otherteam, 1, -1 do
+			local plyr = otherteam[i]
+
+			if plyr == sp then
+				table.remove(otherteam, i)
+				break
+			end
+		end
+	end
+
+	table.insert(team, sp)
+end
+
+function FangsHeist.goToRound2(p)
+	if not FangsHeist.Net.hell_stage then return end
+	if p.heist.reached_second then return end
+
+	local pos = FangsHeist.Net.hell_stage_teleport.pos
+
+	P_SetOrigin(p.mo,
+		pos.x,
+		pos.y,
+		pos.z
+	)
+	
+	p.mo.angle = pos.a
+	p.drawangle = pos.a
+	
+	p.heist.reached_second = true
+	
+	S_StartSound(nil, sfx_mixup, p)
+	P_InstaThrust(p.mo, p.mo.angle, FixedHypot(p.rmomx, p.rmomy))
+	
+	local linedef = tonumber(mapheaderinfo[gamemap].fh_round2linedef)
+	
+	if linedef ~= nil then
+		P_LinedefExecute(linedef)
+	end
 end
