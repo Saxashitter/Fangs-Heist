@@ -4,8 +4,6 @@ FangsHeist.makeCharacter("s3sonic", cap)
 FangsHeist.makeCharacter("heavy", cap)
 FangsHeist.makeCharacter("megaman", cap)
 
--- This turned into a general lua to force speed caps on characters.
-
 addHook("PlayerThink", function(p)
 	if not FangsHeist.isMode() then return end
 	if not (p.mo and p.mo.valid) then return end
