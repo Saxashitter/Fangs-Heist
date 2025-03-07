@@ -71,8 +71,7 @@ function FangsHeist.startIntermission()
 		table.remove(maps, key)
 	end
 
-		/*old code
-		local str = ""
+		/*local str = ""
 	
 		for i,data in ipairs(FangsHeist.Net.map_choices) do
 			str = $..tostring(data.map)..","..tostring(data.votes)
