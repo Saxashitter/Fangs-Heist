@@ -30,6 +30,7 @@ addHook("NetVars", function(n)
 		"escape_on_start",
 		"last_man_standing",
 		"sign",
+		"exit",
 		"hell_stage",
 		"hell_stage_teleport",
 		"time_left",
