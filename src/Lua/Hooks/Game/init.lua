@@ -18,8 +18,49 @@ addHook("MapChange", function(map)
 end)
 
 addHook("NetVars", function(n)
-	FangsHeist.Net = n($)
-	FangsHeist.Save = n($)
+	/*FangsHeist.Net = n($)
+	FangsHeist.Save = n($)*/
+
+	local net = {
+		"gametype",
+		"escape",
+		"escape_theme",
+		"round2_theme",
+		"escape_hurryup",
+		"escape_on_start",
+		"last_man_standing",
+		"hell_stage",
+		"hell_stage_teleport",
+		"time_left",
+		"max_time_left",
+		"hurry_up",
+		"map_choices",
+		"game_over",
+		"game_over_ticker",
+		"game_over_length",
+		"retaking",
+		"selected_map",
+		"end_anim",
+		"retake_anim",
+		"pregame",
+		"pregame_time",
+		"placements",
+		"teams",
+		"treasures",
+		"last_profit"
+	}
+	local save = {
+		"last_map",
+		"retakes",
+		"ServerScores"
+	}
+
+	for _,v in ipairs(net) do
+		FangsHeist.Net[v] = n($)
+	end
+	for _,v in ipairs(sage) do
+		FangsHeist.Save[v] = n($)
+	end
 end)
 
 addHook("MapLoad", do
