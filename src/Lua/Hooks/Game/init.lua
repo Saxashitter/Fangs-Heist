@@ -33,6 +33,7 @@ addHook("NetVars", function(n)
 		"exit",
 		"hell_stage",
 		"hell_stage_teleport",
+		"hell_stage_mobj",
 		"time_left",
 		"max_time_left",
 		"hurry_up",
