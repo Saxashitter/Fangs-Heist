@@ -38,10 +38,15 @@
 
 # JosephLol
 ## Coder
-- Titlescreen
+- Titlescreen polish
 - Icon tweening when selected (Character Select)
+- GAME! Animation
 
 # Lemerks
+## Mapper
+- Tutorial
+
+# Sludesus
 ## Mapper
 - Tutorial
 
@@ -70,6 +75,8 @@
 - SUPER-REFLEX
 ### Natsuki Chronicles
 - Mighty Magma Red
+## Eschatos
+- EXTERMINATION
 
 # Rumya
 ## Composer
