@@ -21,6 +21,7 @@ end
 FangsHeist.Save.ServerScores = {}
 
 function FangsHeist.ServerScoresToString()
+	print("FH - Turning scores to string...")
 	local str = ""
 
 	for map,data in pairs(FangsHeist.Save.ServerScores) do
@@ -30,6 +31,7 @@ function FangsHeist.ServerScoresToString()
 		end
 	end
 
+	print("FH - Success!")
 	return str
 end
 
@@ -49,6 +51,7 @@ end
 
 function FangsHeist.FileToServerScores()
 	// SHOULD ONLY BE CALLED ONCE.
+	print("FH - Getting scores from file...")
 
 	local scores = FangsHeist.Save.ServerScores
 	local f = io.openlocal("client/FangsHeist/serverScores.txt", "r")
@@ -73,6 +76,7 @@ function FangsHeist.FileToServerScores()
 	end
 
 	f:close()
+	print("FH - Success!")
 end
 
 if not makeFile("serverScores", FangsHeist.ServerScoresToString()) then
