@@ -6,7 +6,7 @@ FangsHeist.makeCharacter("megaman", cap)
 
 addHook("PlayerThink", function(p)
 	if not FangsHeist.isMode() then return end
-	if not (p.mo and p.mo.valid) then return end
+	if not FangsHeist.isPlayerAlive(p) then return end
 	local char = FangsHeist.Characters[p.mo.skin]
 
 	if not char.forceSpeedCap then return end
