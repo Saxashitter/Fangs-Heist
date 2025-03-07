@@ -21,7 +21,7 @@ function FangsHeist.isPlayerAtGate(p)
 
 	local dist = R_PointToDist2(p.mo.x, p.mo.y, exit.x, exit.y)
 
-	if dist <= p.mo.radius+24*FU
+	if dist <= p.mo.radius+32*FU
 	and p.mo.z <= exit.z+48*FU
 	and exit.z <= p.mo.z+p.mo.height then
 		return true
