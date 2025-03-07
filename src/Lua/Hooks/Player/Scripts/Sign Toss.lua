@@ -9,8 +9,8 @@ return function(p)
 		-- throw sign
 
 		sign.holder = nil
-		P_InstaThrust(sign, p.mo.angle, 8*p.mo.scale)
-		P_SetObjectMomZ(sign, 4*p.mo.scale)
+		P_InstaThrust(sign, p.mo.angle, 12*p.mo.scale)
+		P_SetObjectMomZ(sign, 6*p.mo.scale)
 		sign.momx = $+p.mo.momx
 		sign.momy = $+p.mo.momy
 		sign.momz = $+p.mo.momz
