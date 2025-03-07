@@ -58,7 +58,7 @@ addHook("NetVars", function(n)
 	for _,v in ipairs(net) do
 		FangsHeist.Net[v] = n($)
 	end
-	for _,v in ipairs(sage) do
+	for _,v in ipairs(save) do
 		FangsHeist.Save[v] = n($)
 	end
 end)
