@@ -173,7 +173,8 @@ return function(p)
 		S_StartSound(nil, sfx_alart, p)
 	end
 
-	if showhud.value == 0 then -- if the hud isn't being shown
+	if showhud
+	and showhud.value == 0 then -- if the hud isn't being shown
 		CV_StealthSet(showhud, 1) -- then force it to show :P
 	end
 end
