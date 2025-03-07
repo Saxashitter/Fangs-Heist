@@ -4,8 +4,6 @@ FangsHeist.makeCharacter("s3sonic", cap)
 FangsHeist.makeCharacter("heavy", cap)
 FangsHeist.makeCharacter("megaman", cap)
 
--- TODO: move to a file ingame
-
 addHook("PlayerThink", function(p)
 	if not FangsHeist.isMode() then return end
 	if not FangsHeist.isPlayerAlive(p) then return end
