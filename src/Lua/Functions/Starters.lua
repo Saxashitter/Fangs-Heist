@@ -44,36 +44,35 @@ function FangsHeist.startIntermission()
 	S_StartSound(nil, sfx_nargam)
 
 	// map vote for the funny
-	if FangsHeist.isServer() then
-		local maps = {}
-		local checked = {}
+	local maps = {}
+	local checked = {}
 
-		for i = 1,1024 do
-			if not (mapheaderinfo[i] and mapheaderinfo[i].typeoflevel & TOL_HEIST) then
-				continue
-			end
-	
-			table.insert(maps, i)
+	for i = 1,1024 do
+		if not (mapheaderinfo[i] and mapheaderinfo[i].typeoflevel & TOL_HEIST) then
+			continue
 		end
 
-		for i = 1, 3 do
-			if not (#maps) then
-				break
-			end
+		table.insert(maps, i)
+	end
 
-			local key = P_RandomRange(1, #maps)
-			local map = maps[key]
-
-			table.insert(FangsHeist.Net.map_choices, {
-				map = map,
-				votes = 0
-			})
-	
-			table.remove(maps, key)
+	for i = 1, 3 do
+		if not (#maps) then
+			break
 		end
 
-		local str = ""
+		local key = P_RandomRange(1, #maps)
+		local map = maps[key]
 
+		table.insert(FangsHeist.Net.map_choices, {
+			map = map,
+			votes = 0
+		})
+
+		table.remove(maps, key)
+	end
+
+		/*local str = ""
+	
 		for i,data in ipairs(FangsHeist.Net.map_choices) do
 			str = $..tostring(data.map)..","..tostring(data.votes)
 			if i ~= #FangsHeist.Net.map_choices then
@@ -81,8 +80,7 @@ function FangsHeist.startIntermission()
 			end
 		end
 
-		COM_BufInsertText(server, "fh_receivemapvote "..str)
-	end
+		COM_BufInsertText(server, "fh_receivemapvote "..str)*/
 
 	if not FangsHeist.Save.ServerScores[gamemap] then
 		FangsHeist.Save.ServerScores[gamemap] = {}
