@@ -77,15 +77,15 @@ local function drawBar(v)
 	local fillend = v.cachePatch("FH_FILLEND"..((leveltime/2) % 3))
 
 	local speed = 35
-	local fillscale = scale
+	local fillscale = FixedMul(scale, tofixed("0.75"))
 	local prog = FixedMul(bar.width*scale - 10*scale, FixedDiv(current, time))
 
-	v.drawStretched(x+6*scale, y+0*scale, hscale, scale, bg, V_SNAPTOBOTTOM)
+	v.drawStretched(x+6*scale, y+2*scale, hscale, scale, bg, V_SNAPTOBOTTOM)
 	drawParallax(v,
 		x + 6*scale,
-		y + 5*scale,
+		y + 4*scale,
 		prog,
-		13*scale,
+		14*scale,
 		fillscale,
 		fill,
 		V_SNAPTOBOTTOM,

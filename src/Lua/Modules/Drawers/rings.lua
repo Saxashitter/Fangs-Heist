@@ -45,7 +45,7 @@ function module.draw(v, p)
 	end
 
 	customhud.CustomNum(v,
-		10*FU + 142*scale,
+		10*FU + 122*scale,
 		32*FU + 6*scale + y,
 		p.rings,
 		"RNGNUM",
