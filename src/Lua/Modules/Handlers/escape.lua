@@ -4,23 +4,8 @@ local function valid_player(p)
 	return p and p.mo and p.mo.health and p.heist and not p.heist.spectator and not p.heist.exiting
 end
 
-sfxinfo[freeslot "sfx_fhtick"].caption = "Tick..."
-sfxinfo[freeslot "sfx_fhuhoh"].caption = "Uh oh!"
-
-local bombs = {}
-addHook("NetVars", function(n) bombs = n($) end)
-addHook("ThinkFrame", do
-	for i = #bombs, 1, -1 do
-		local bomb = bombs[i]
-
-		if not (bomb and bomb.valid) then
-			table.remove(bombs, i)
-			continue
-		end
-
-		bomb.alpha = min($+FU/12, FU)
-	end
-end)
+--[[sfxinfo[freeslot "sfx_fhtick"].caption = "Tick..."
+sfxinfo[freeslot "sfx_fhuhoh"].caption = "Uh oh!"]]
 
 local function choose_player()
 	local plyrs = {}

@@ -1,22 +1,7 @@
 local time = (3*60)*TICRATE
 
 return {
-	gametype = 0,
-
-	escape = false,
-	escape_theme = "SPRHRO",
-	round2_theme = "EXTERM",
-	escape_hurryup = true,
-	escape_on_start = false,
-
-	last_man_standing = false,
-
-	hell_stage = false,
-	hell_stage_teleport = {},
-
-	time_left = time,
-	max_time_left = time,
-	hurry_up = false,
+	gametype = 1,
 
 	map_choices = {},
 
