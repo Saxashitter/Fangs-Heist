@@ -1,5 +1,3 @@
-local escape = FangsHeist.require "Modules/Handlers/escape"
-local music = FangsHeist.require "Modules/Handlers/music"
 local orig_net = FangsHeist.require "Modules/Variables/net"
 local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 
@@ -22,21 +20,7 @@ addHook("NetVars", function(n)
 	FangsHeist.Save = n($)*/
 
 	local net = {
-		"gametype",
-		"escape",
-		"escape_theme",
-		"round2_theme",
-		"escape_hurryup",
-		"escape_on_start",
-		"last_man_standing",
-		"sign",
-		"exit",
-		"hell_stage",
-		"hell_stage_teleport",
-		"hell_stage_mobj",
-		"time_left",
-		"max_time_left",
-		"hurry_up",
+		"gamemode",
 		"map_choices",
 		"game_over",
 		"game_over_ticker",
@@ -64,6 +48,9 @@ addHook("NetVars", function(n)
 	for _,v in ipairs(save) do
 		FangsHeist.Save[v] = n($)
 	end
+
+	local gamemode = FangsHeist.getGamemode()
+	gamemode:sync(n)
 end)
 
 addHook("MapLoad", do
@@ -115,16 +102,44 @@ addHook("ThinkFrame", do
 	local stop = false
 
 	dialogue.tick()
+
 	for i,script in ipairs(scripts) do
 		if script() then
 			return
 		end
 	end
 
-	escape()
-	music()
-	FangsHeist.manageTreasures()
-	FangsHeist.teleportSign()
+	local gamemode = FangsHeist.getGamemode()
+	gamemode:update()
+
+	-- manage music
+	local song
+	local volume
+	local loop
+
+	song, loop, volume = gamemode:music()
+
+	local custom, custom2, custom3 = HeistHook.runHook("Music", song)
+	if type(custom) == "string" then
+		song = custom
+	end
+	if type(custom2) == "boolean" then
+		loop = custom2
+	end
+	if type(custom3) == "number" then
+		volume = custom3
+	end
+
+	if song
+	and mapmusname ~= song then
+		mapmusname = song
+		S_ChangeMusic(song, loop)
+	end
+	if song
+	and volume ~= nil then
+		S_SetInternalMusicVolume(volume)
+	end
+
 	// dialogue.tick()
 end)
 

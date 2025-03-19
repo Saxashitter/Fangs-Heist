@@ -14,8 +14,7 @@ rawset(_G, "FangsHeist", {Net = {}, HUD = {}, Objects = {}, Save = {}})
 // FANGS HEIGHT IS BY SAXASHITTER
 // OFFICIAL SEQUEL TO NICK'S PIZZA TIME!
 
-dofile "HookLib"
-
+dofile "hooks.lua"
 dofile "constants"
 dofile "files"
 dofile "characters"
@@ -26,6 +25,8 @@ dofile "Functions/Getters"
 dofile "Functions/Checks"
 dofile "Functions/Starters"
 dofile "Functions/Triggers"
+
+dofile "gamemodes.lua"
 
 dofile "Hooks/Player/init"
 dofile "Hooks/Game/init"

@@ -182,12 +182,12 @@ function FangsHeist.doSignpostWarning(_took)
 end
 
 function module.init()
-	y = 200*FU
+	y = 201*FU
 	x = 160*FU
 	alpha = 0
 	ticker = 0
 	took = false
-	sl_y = 200*FU
+	sl_y = 201*FU
 	timesuptics = TICRATE*2
 	warning_active = false
 end
@@ -213,6 +213,7 @@ function module.draw(v,p)
 		end
 
 		local scale = FU/2
+		local y = min(y, sl_y)
 
 		if alpha ~= 10 then
 			v.drawScaled(x-(warning.width*scale/2),
@@ -223,25 +224,30 @@ function module.draw(v,p)
 		end
 	end
 
-	if (FangsHeist.Net.escape
-	and not FangsHeist.isHurryUp()) then
+	local gamemode = FangsHeist.getGamemode()
+
+	if (gamemode
+	and gamemode.startEscape
+	and FangsHeist.Net.escape
+	and not (gamemode.isHurryUp
+	and gamemode:isHurryUp())) then
 		if FangsHeist.Net.time_left > 10*TICRATE then
-			sl_y = v.height()*FU/v.dupy()
+			sl_y = 201*FU
 			y = ease.linear(FU/6, $, 180*FU)
 		else
 			if timesuptics then
-				sl_y = ease.linear(FU/6, $, ((v.height()*FU/v.dupy())/2) - (24*FU + 9*FU)/2)
+				sl_y = ease.linear(FU/6, $, 190*FU - (24*FU + 9*FU))
 
 				if not FangsHeist.Net.time_left then
 					timesuptics = $-1
 				end
 			else
-				sl_y = ease.linear(FU/6, $, v.height()*FU/v.dupy()+FU)
+				sl_y = ease.linear(FU/6, $, 201*FU)
 			end
-			y = ease.linear(FU/6, $, 200*FU)
+			y = ease.linear(FU/6, $, 201*FU)
 		end
 	else
-		sl_y = v.height()*FU/v.dupy()
+		sl_y = 201*FU
 	end
 
 	drawBar(v)

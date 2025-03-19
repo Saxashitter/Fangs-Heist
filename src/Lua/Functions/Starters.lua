@@ -11,25 +11,6 @@ FangsHeist.escapeThemes = {
 	--{"LUNCLO", true}
 	// if the second argument is false, the hurry up music wont play
 }
-function FangsHeist.startEscape(p)
-	if FangsHeist.Net.escape
-	or HeistHook.runHook("EscapeStart", p) == true then
-		return
-	end
-
-	FangsHeist.Net.escape = true
-	S_StartSound(nil, sfx_gogogo)
-
-	local data = mapheaderinfo[gamemap]
-	if data.fh_escapelinedef then
-		P_LinedefExecute(tonumber(data.fh_escapelinedef))
-	end
-
-	if displayplayer
-	and displayplayer.valid then
-		FangsHeist.doSignpostWarning(FangsHeist.playerHasSign(displayplayer))
-	end
-end
 
 local function profsort(a, b)
 	return a[4] > b[4]
@@ -81,6 +62,9 @@ function FangsHeist.startIntermission()
 		end
 
 		COM_BufInsertText(server, "fh_receivemapvote "..str)*/
+
+	local gamemode = FangsHeist.getGamemode()
+	gamemode:finish()
 
 	if not FangsHeist.Save.ServerScores[gamemap] then
 		FangsHeist.Save.ServerScores[gamemap] = {}

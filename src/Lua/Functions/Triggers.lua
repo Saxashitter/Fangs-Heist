@@ -160,30 +160,3 @@ function FangsHeist.joinTeam(p, sp)
 
 	table.insert(team, sp)
 end
-
-function FangsHeist.goToRound2(p)
-	if not FangsHeist.Net.hell_stage then return end
-	if p.heist.reached_second then return end
-
-	local pos = FangsHeist.Net.hell_stage_teleport.pos
-
-	P_SetOrigin(p.mo,
-		pos.x,
-		pos.y,
-		pos.z
-	)
-	
-	p.mo.angle = pos.a
-	p.drawangle = pos.a
-	
-	p.heist.reached_second = true
-	
-	S_StartSound(nil, sfx_mixup, p)
-	P_InstaThrust(p.mo, p.mo.angle, FixedHypot(p.rmomx, p.rmomy))
-	
-	local linedef = tonumber(mapheaderinfo[gamemap].fh_round2linedef)
-	
-	if linedef ~= nil then
-		P_LinedefExecute(linedef)
-	end
-end

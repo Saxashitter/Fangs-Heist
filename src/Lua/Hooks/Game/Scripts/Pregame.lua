@@ -25,31 +25,17 @@ return function()
 			FangsHeist.Net.pregame = false
 			S_ChangeMusic(mapmusname, true)
 
-			local randPlyrs = {}
-
 			for p in players.iterate do
 				if p and p.heist then
 					p.heist.invites = {}
 					p.heist.playersList = nil
 					p.heist.invitesList = nil
 					p.powers[pw_flashing] = TICRATE
-
-					if FangsHeist.isPlayerAlive(p)
-					and FangsHeist.isTeamLeader(p) then
-						table.insert(randPlyrs, p)
-					end
 				end
 			end
 
-
-			if #randPlyrs
-			and FangsHeist.Net.escape_on_start then
-				local p = randPlyrs[P_RandomRange(1, #randPlyrs)]
-
-				FangsHeist.giveSignTo(p)
-				FangsHeist.startEscape(p)
-
-			end
+			local gamemode = FangsHeist.getGamemode()
+			gamemode:start()
 
 			HeistHook.runHook("GameStart")
 

@@ -179,10 +179,12 @@ local function manage_unpicked(sign)
 	if not (#nearby) then return end
 
 	local selected_player = nearby[P_RandomRange(1, #nearby)]
+	local gamemode = FangsHeist.getGamemode()
 
 	select_player(sign, selected_player)
-	if not (FangsHeist.Net.escape) then
-		FangsHeist.startEscape(selected_player)
+
+	if gamemode and gamemode.startEscape then
+		gamemode:startEscape()
 	end
 end
 

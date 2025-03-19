@@ -1,11 +1,7 @@
 local orig_plyr = FangsHeist.require"Modules/Variables/player"
-local dialogue = FangsHeist.require"Modules/Handlers/dialogue"
 local function valid_player(p)
 	return p and p.mo and p.mo.health and p.heist and not p.heist.spectator and not p.heist.exiting
 end
-
-sfxinfo[freeslot "sfx_fhtick"].caption = "Tick..."
-sfxinfo[freeslot "sfx_fhuhoh"].caption = "Uh oh!"
 
 local bombs = {}
 addHook("NetVars", function(n) bombs = n($) end)

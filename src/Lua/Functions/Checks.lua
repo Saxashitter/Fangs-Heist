@@ -69,25 +69,6 @@ function FangsHeist.isPlayerNerfed(p)
 	return false
 end
 
-local HURRY_LENGTH = 2693
-
--- Check if the time is in the "Hurry Up" segment.
-function FangsHeist.isHurryUp()
-	if not FangsHeist.Net.escape then
-		return false
-	end
-
-	if not FangsHeist.Net.escape_hurryup then
-		return false
-	end
-
-	if (FangsHeist.Net.max_time_left-FangsHeist.Net.time_left)*MUSICRATE/TICRATE > HURRY_LENGTH then
-		return false
-	end
-
-	return true
-end
-
 function FangsHeist.isPartOfTeam(p, sp)
 	local team = FangsHeist.getTeam(p)
 

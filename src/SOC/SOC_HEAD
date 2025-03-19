@@ -31,6 +31,7 @@ SaveGame = true
 SkyboxScale = 64
 FlickyList = Bluebird,Chipmunk
 SelectHeading = Supported Maps
+Lua.FH_StageType = Escape
 #Flicky selection is final.
 
 Level 2
@@ -47,6 +48,7 @@ SaveGame = true
 SkyboxScale = 64
 FlickyList = Bluebird,Chipmunk
 SelectHeading = Supported Maps
+Lua.FH_StageType = Escape
 #see act 1
 
 Level 4
@@ -63,6 +65,7 @@ RecordAttack = true
 SaveGame = true
 FlickyList = Rabbit,Chicken
 SelectHeading = Supported Maps
+Lua.FH_StageType = Escape
 #Flicky selection is final.
 
 Level 30
@@ -80,6 +83,7 @@ Weather = 2
 FlickyList = Penguin,Seal
 Lua.FH_EscapeTheme = LOSWIN
 Lua.FH_EscapeHurryUp = false
+Lua.FH_StageType = Escape
 
 Level Z0
 Levelname = Tutorial
@@ -92,6 +96,7 @@ SelectHeading = Supported Maps
 SkyNum = 99
 Lua.FH_EscapeTheme = YOKADI
 Lua.FH_EscapeHurryUp = false
+Lua.FH_StageType = Escape
 
 Level 33
 Levelname = FD Greenflower
@@ -107,6 +112,7 @@ InterScreen = INTERSCR
 FlickyList = Demo
 Lua.FH_Time = 240
 Lua.FH_EscapeTheme = FDSPHR
+Lua.FH_StageType = Escape
 
 Level 34
 Levelname = FD Techno Hill
@@ -121,6 +127,7 @@ InterScreen = INTERSCR
 FlickyList = Demo
 Lua.FH_Time = 300
 Lua.FH_EscapeTheme = FDSPHR
+Lua.FH_StageType = Escape
 
 Level P0
 LevelName = Vicious Volcano
@@ -133,6 +140,7 @@ Lua.FH_EscapeOnStart = true
 Lua.FH_DisableRetakes = true
 Lua.FH_EscapeHurryUp = false
 Lua.FH_LastManStanding = true
+Lua.FH_StageType = Escape
 
 Level 16
 Levelname = Red Volcano
@@ -153,3 +161,4 @@ Lua.FH_EscapeTheme = MIGMAG
 Lua.FH_EscapeHurryUp = false
 Lua.FH_EscapeOnStart = true
 Lua.FH_Time = 300
+Lua.FH_StageType = Escape

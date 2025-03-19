@@ -1,9 +1,7 @@
 -- code by unmatched bracket and jisk and luigi
 
-if not rawget(_G,"HeistHook")
-	rawset(_G, "HeistHook", {})
-	HeistHook.events = {}
-end
+rawset(_G, "HeistHook", {})
+HeistHook.events = {}
 
 /*
 	return value: Boolean (override default behavior?)

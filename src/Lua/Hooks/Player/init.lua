@@ -21,6 +21,8 @@ addHook("PlayerThink", function(p)
 	if not FangsHeist.isMode() then return end
 	if not (p and p.valid) then return end
 
+	local gamemode = FangsHeist.getGamemode()
+
 	if not (p and p.heist) then
 		FangsHeist.initPlayer(p)
 	end
@@ -28,6 +30,7 @@ addHook("PlayerThink", function(p)
 	for _,script in ipairs(scripts.playerthink) do
 		script(p)
 	end
+	gamemode:playerthink(p)
 
 	if p.skin ~= p.heist.locked_skin then
 		R_SetPlayerSkin(p, p.heist.locked_skin)
@@ -74,7 +77,9 @@ addHook("MobjDeath", function(t,i,s)
 	if not (FangsHeist.Net.escape or FangsHeist.Net.is_boss) then return end
 	if not (t and t.player and t.player.heist) then return end
 
-	t.player.heist.spectator = true
+	local gamemode = FangsHeist.getGamemode()
+
+	gamemode:playerdeath(t.player)
 end, MT_PLAYER)
 
 addHook("MobjDamage", function(t,i,s,dmg,dt)
