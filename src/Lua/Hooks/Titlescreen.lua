@@ -105,13 +105,7 @@ addHook("ThinkFrame", do
 		end
 	end
 end)
-addHook("KeyDown",function(key)
-	if titlemapinaction
-		if warning or logo_bounces
-			return true --All Keys Are Disabled During Mod Warning or During Bounce
-		end
-	end
-end)
+
 local function draw_alpha_patch(v, x, y, scale, alpha, patch, flags, color)
 	if alpha >= 10 then
 		return
@@ -122,6 +116,7 @@ local function draw_alpha_patch(v, x, y, scale, alpha, patch, flags, color)
 
 	v.drawScaled(x, y, scale, patch, f, color)
 end
+
 addHook("HUD", function(v)
 	if not titlescreen then
 		return

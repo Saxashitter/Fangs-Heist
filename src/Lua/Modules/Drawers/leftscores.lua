@@ -1,6 +1,6 @@
 local module = {}
 
-local SCORE_Y = (50-12)*FU
+local SCORE_Y = (12+14*2)*FU
 
 function module.init()
 end
@@ -26,8 +26,8 @@ local function draw_p(v, team, placement, actualPlacement)
 
 	if not (team[1] and team[1].valid) then return end
 
-	local SCORE_X = 16*FU
-	local target_y = (10*FU)*placement-1
+	local SCORE_X = 12*FU
+	local target_y = (10*FU)*(placement-1)
 
 	local scale = FU/2
 	local profit = team.profit
@@ -82,7 +82,9 @@ local function draw_p(v, team, placement, actualPlacement)
 
 	local sign = false
 	for _,sp in ipairs(team) do
-		if FangsHeist.isPlayerAlive(sp)
+		if sp
+		and sp.valid
+		and FangsHeist.isPlayerAlive(sp)
 		and FangsHeist.playerHasSign(sp) then
 			sign = true
 			break

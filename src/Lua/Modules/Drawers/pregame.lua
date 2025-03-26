@@ -129,13 +129,13 @@ local function draw_cs(v,p)
 	-- text
 
 	local scale = FU
-	local START_TEXT_X = -customhud.CustomFontStringWidth(v, skin.realname:upper(), "CSFNT", scale)
+	local START_TEXT_X = -FangsHeist.GetStringWidth(v, skin.realname:upper(), scale, "CRFNT")
 	local x = ease.outquad(
 		FixedDiv(texttween, TEXT_TWEEN),
 		START_TEXT_X, TEXT_END_X
 	)
 
-	customhud.CustomFontString(v,
+	/*customhud.CustomFontString(v,
 		x,
 		100*FU-(radius/2)+(20*scale/2),
 		skin.realname:upper(),
@@ -144,7 +144,17 @@ local function draw_cs(v,p)
 		"left",
 		scale,
 		skin.prefcolor
-	)
+	)*/
+
+	FangsHeist.DrawString(v,
+		x,
+		100*FU-(radius/2)+(16*scale/2),
+		scale,
+		skin.realname:upper(),
+		"CRFNT",
+		"left",
+		V_SNAPTOLEFT|f,
+		v.getColormap(TC_RAINBOW, skin.prefcolor))
 end
 
 local function draw_menu(v,x,y,width,height,items,selected,dispoffset,flags)

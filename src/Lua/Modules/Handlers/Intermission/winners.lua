@@ -56,8 +56,6 @@ function module.draw(v)
 
 		local pos = POSITION_DATA[i]
 
-		local podium = v.cachePatch(pos.patch)
-
 		local mult = FixedDiv(width, 320*FU)
 		local x = FixedMul(pos.x, mult)
 
@@ -67,10 +65,6 @@ function module.draw(v)
 
 		local length = #team-1
 		local div = length and width/length or width/2
-
-		local podium_scale = tofixed("0.81")
-		local podium_wscale = podium_scale + FU*(length-1)/8
-		v.drawStretched(x-podium.width*podium_wscale/2, 200*FU-podium.height*podium_scale, podium_wscale, podium_scale, podium, V_SNAPTOBOTTOM|V_SNAPTOLEFT)
 
 		for i,sp in ipairs(team) do
 			if not FangsHeist.isPlayerAlive(sp) then continue end
@@ -107,46 +101,20 @@ function module.draw(v)
 			y = $+18*(FU*6/9)
 		end
 
-		customhud.CustomFontString(v,
-			x, y,
-			name,
-			"FHFNT",
-			f,
-			"center",
-			FU*6/9,
-			p.skincolor
-		)
-		y = $+18*(FU*6/9)
-
-		local scale = (FU/3)*2
-		local patch = v.cachePatch("FH_PROFIT")
-
-		v.drawScaled(x-patch.width*scale/2, y, scale, patch, f)
-		local width = customhud.CustomNumWidth(v,
-			team.profit,
-			"PROFNT",
-			0,
-			scale)
-		local sign = v.cachePatch("PROFNTSIGN")
-	
-		v.drawScaled(
-			x - sign.width*scale - width/2,
-			y + 15*scale,
-			scale,
-			sign,
-			f
-		)
-		customhud.CustomNum(v,
+		FangsHeist.DrawString(v,
 			x,
-			y + 16*scale,
-			team.profit,
-			"PROFNT",
-			0,
-			f,
+			y,
+			FU/2,
+			name:upper(),
+			"CRFNT",
 			"center",
-			scale)
-	
-			--v.drawString(x, y, "$"..tostring(FangsHeist.returnProfit(p)), V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_GREENMAP, "thin-fixed-center")
+			f,
+			v.getColormap(TC_RAINBOW, p.skincolor))
+		y = $+18*(FU/2)
+
+		local width = FangsHeist.getProfitWidth(v, team.profit, FU, 60*FU)
+
+		FangsHeist.drawProfit(v, x-width/2, y, FU, team.profit, f, 60*FU)
 	end
 end
 

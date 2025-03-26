@@ -29,8 +29,10 @@ local function select_player(sign, p)
 	end
 
 	p.powers[pw_flashing] = TICRATE*2
-	if p == displayplayer then
-		FangsHeist.doSignpostWarning(FangsHeist.playerHasSign(displayplayer))
+	local gamemode = FangsHeist.getGamemode()
+
+	if gamemode then
+		gamemode:signcapture(true)
 	end
 end
 
@@ -65,32 +67,8 @@ function FangsHeist.teleportSign()
 		pos.z)
 end
 
-FangsHeist.signThings = {
-	[501] = true
-}
-
 --[[@return mobj_t]]
-function FangsHeist.spawnSign()
-	local signpost_pos
-	for thing in mapthings.iterate do
-		if FangsHeist.signThings[thing.type]
-		and not signpost_pos then
-			if thing and thing.mobj and thing.mobj.valid then
-				P_RemoveMobj(thing.mobj)
-			end
-
-			local x = thing.x*FU
-			local y = thing.y*FU
-			local z = spawnpos.getThingSpawnHeight(MT_FH_SIGN, thing, x, y)
-			local a = FixedAngle(thing.angle*FU)
-
-			signpost_pos = {x, y, z, a}
-			break
-		end
-	end
-
-	if not (signpost_pos) then return end
-
+function FangsHeist.spawnSign(signpost_pos)
 	local sign = P_SpawnMobj(signpost_pos[1], signpost_pos[2], signpost_pos[3], MT_FH_SIGN)
 
 	local board = P_SpawnMobjFromMobj(sign, 0, 0, 0, MT_OVERLAY)
@@ -109,39 +87,14 @@ function FangsHeist.spawnSign()
 	return sign
 end
 
-function FangsHeist.respawnSign()
+function FangsHeist.respawnSign(pos)
 	if (FangsHeist.Net.sign
 	and FangsHeist.Net.sign.valid) then
 		--TODO destroy both parts of the sign
 		P_RemoveMobj(FangsHeist.Net.sign)
 	end
 
-	FangsHeist.spawnSign()
-
-	if FangsHeist.Net.hell_stage then
-		local sec = FangsHeist.Net.hell_stage_teleport.sector
-		local pos = FangsHeist.Net.hell_stage_teleport.pos
-
-		local count = 0
-		local secondCount = 0
-
-		for p in players.iterate do
-			if not (FangsHeist.isPlayerAlive(p) and not p.heist.exiting) then continue end
-
-			count = $+1
-			if p.heist.reached_second then
-				secondCount = $+1
-			end
-		end
-
-		if secondCount >= count/2 then
-			P_SetOrigin(FangsHeist.Net.sign,
-				pos.x,
-				pos.y,
-				pos.z)
-		end
-	end
-
+	FangsHeist.spawnSign(pos)
 	print "Sign is back!"
 end
 
@@ -152,21 +105,9 @@ local function manage_picked(sign)
 end
 
 local function blacklist(p)
-	local hadsign = false
-	local team = FangsHeist.getTeam(p)
-
-	if team then
-		for _,plyr in ipairs(team) do
-			if not (plyr and plyr.valid and plyr.heist) then continue end
-
-			if plyr.heist.had_sign then
-				hadsign = true
-				break
-			end
-		end
-	end
-
-	return P_PlayerInPain(p) or (p.heist and (p.heist.exiting or hadsign) or p.powers[pw_flashing])
+	return P_PlayerInPain(p)
+	or p.powers[pw_flashing]
+	or not FangsHeist.isEligibleForSign(p)
 end
 
 local function manage_unpicked(sign)
@@ -174,6 +115,11 @@ local function manage_unpicked(sign)
 	sign.hold_tween = 0
 
 	sign.angle = $ + ANG2
+
+	if (sign.eflags & MFE_TOUCHWATER or sign.eflags & MFE_UNDERWATER) then
+		sign.z = max($, sign.watertop)
+		sign.momz = max($, 0)
+	end
 
 	local nearby = FangsHeist.getNearbyPlayers(sign, nil, blacklist)
 	if not (#nearby) then return end
@@ -183,8 +129,8 @@ local function manage_unpicked(sign)
 
 	select_player(sign, selected_player)
 
-	if gamemode and gamemode.startEscape then
-		gamemode:startEscape()
+	if gamemode then
+		gamemode:signcapture(false)
 	end
 end
 
@@ -194,9 +140,9 @@ addHook("MobjSpawn", function(sign)
 end, MT_FH_SIGN)
 
 addHook("MobjThinker", function(sign)
-	if (sign.holder
+	if sign.holder
 	and not (sign.holder.valid
-	and FangsHeist.isPlayerAlive(sign.holder.player))) then
+	and FangsHeist.isEligibleForSign(sign.holder.player)) then
 		sign.holder = nil
 
 		local launch_angle = FixedAngle(P_RandomRange(0, 360)*FU)

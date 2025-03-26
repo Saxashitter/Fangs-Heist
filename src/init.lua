@@ -25,6 +25,7 @@ dofile "Functions/Getters"
 dofile "Functions/Checks"
 dofile "Functions/Starters"
 dofile "Functions/Triggers"
+dofile "Functions/HUD"
 
 dofile "gamemodes.lua"
 

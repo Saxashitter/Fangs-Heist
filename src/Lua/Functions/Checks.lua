@@ -30,6 +30,14 @@ function FangsHeist.isPlayerAtGate(p)
 	return false
 end
 
+function FangsHeist.isEligibleForSign(p)
+	local team = FangsHeist.getTeam(p)
+
+	return FangsHeist.isPlayerAlive(p)
+	and not p.heist.exiting
+	and not (team and team.had_sign)
+end
+
 function FangsHeist.canUseAbility(p)
 	if not FangsHeist.isMode() then
 		return true
@@ -56,8 +64,10 @@ function FangsHeist.isPlayerNerfed(p)
 	if result ~= nil then
 		return result
 	end
+	local gamemode = FangsHeist.getGamemode()
 
-	if FangsHeist.playerHasSign(p) then
+	if FangsHeist.playerHasSign(p)
+	and gamemode.signnerf then
 		return true
 	end
 

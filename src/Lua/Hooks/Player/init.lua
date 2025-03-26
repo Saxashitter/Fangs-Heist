@@ -50,12 +50,33 @@ addHook("ThinkFrame", function(p)
 	end
 end)
 
-addHook("TouchSpecial", function(special, pmo)
+/*addHook("TouchSpecial", function(special, pmo)
 	if not FangsHeist.isMode() then return end
 	if not FangsHeist.isPlayerAlive(pmo.player) then return end
 
 	FangsHeist.gainProfit(pmo.player, 8)
+end, MT_RING)*/
+
+addHook("MobjDeath", function(ring, _, pmo)
+	if not FangsHeist.isMode() then return end
+	if not (ring and ring.valid) then return end
+	if not (pmo and pmo.valid and pmo.type == MT_PLAYER) then return end
+	if not FangsHeist.isPlayerAlive(pmo.player) then return end
+	
+	FangsHeist.gainProfit(pmo.player, 8)
 end, MT_RING)
+
+-- this check is goofy lol
+function A_RingBox(actor, var1,var2)
+    local player = actor.target.player
+    if FangsHeist.isMode()
+    and FangsHeist.isPlayerAlive(player) then
+        FangsHeist.gainProfit(player, 8*actor.info.reactiontime)
+    end
+    
+    --run original action
+    super(actor, var1,var2)
+end
 
 addHook("MobjDeath", function(t,i,s)
 	if not FangsHeist.isMode() then return end
@@ -82,6 +103,66 @@ addHook("MobjDeath", function(t,i,s)
 	gamemode:playerdeath(t.player)
 end, MT_PLAYER)
 
+states[freeslot "S_PLAY_LAVABURN"] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_PAIN,
+	tics = -1,
+	nextstate = S_PLAY_LAVABURN
+}
+
+local function RingSpill(p, dontSpill)
+	if not p.rings then
+		return false
+	end
+
+	local rings_spill = min(5+(8*FangsHeist.Save.retakes), p.rings)
+	if not dontSpill then
+		P_PlayerRingBurst(p, rings_spill)
+	end
+	S_StartSound(p.mo, sfx_s3kb9)
+	p.rings = $-rings_spill
+	FangsHeist.gainProfit(p, -8*rings_spill)
+
+
+	return rings_spill
+end
+
+local function RemoveCarry(p)
+	if p.powers[pw_carry] == CR_ROLLOUT then
+		local rollout = p.mo.tracer
+
+		if rollout and rollout.valid then
+			rollout.tracer = nil
+			rollout.flags = $|MF_PUSHABLE
+		end
+
+		p.mo.tracer = nil
+	else
+		local mo = p.mo.tracer
+
+		if mo and mo.valid then
+			mo.tracer = nil
+		end
+
+		p.mo.tracer = nil
+	end
+
+	p.powers[pw_carry] = CR_NONE
+end
+
+local function DoBurn(p)
+	if not RingSpill(p, true) then
+		return
+	end
+
+	p.mo.state = S_PLAY_LAVABURN
+	P_SetObjectMomZ(p.mo, 18*FU)
+	p.powers[pw_flashing] = 2*TICRATE
+	RemoveCarry(p)
+	p.powers[pw_shield] = 0
+	return true
+end
+
 addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if not FangsHeist.isMode() then return end
 	if not (t and t.player and t.player.heist) then return end
@@ -98,14 +179,15 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	end
 	t.player.heist.treasures = {}
 
-	if dt & DMG_DEATHMASK then return end
-
 	local givenSign = false
 
 	if s
 	and s.player
 	and s.player.heist then
-		if FangsHeist.playerHasSign(t.player) then
+		local team = FangsHeist.getTeam(s.player)
+
+		if FangsHeist.playerHasSign(t.player)
+		and FangsHeist.isEligibleForSign(s.player) then
 			FangsHeist.giveSignTo(s.player)
 			givenSign = true
 		end
@@ -130,24 +212,25 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 		P_SetObjectMomZ(sign, 4*FU)
 	end
 
+	if dt & DMG_DEATHMASK then return end
+
+	if dt == DMG_FIRE then
+		return DoBurn(t.player)
+	end
+
 	if t.player.powers[pw_shield] then return end
-	if not t.player.rings then return end
+	local rings = RingSpill(t.player)
 
-	local rings_spill = min(5+(8*FangsHeist.Save.retakes), t.player.rings)
+	if not rings then return end
 
-	S_StartSound(t, sfx_s3kb9)
-
-	P_PlayerRingBurst(t.player, rings_spill)
-	
-	t.player.rings = $-rings_spill
-	t.player.powers[pw_shield] = 0
-
+	RemoveCarry(t.player)
 	P_DoPlayerPain(t.player, s, i)
-	FangsHeist.gainProfit(t.player, -8*rings_spill)
 	return true
 end, MT_PLAYER)
 
 addHook("AbilitySpecial", function (p)
+	if not FangsHeist.isMode() then return end
+
 	if not FangsHeist.isPlayerNerfed(p)
 	and FangsHeist.isPlayerAlive(p)
 	and p.charability == CA_THOK

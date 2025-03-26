@@ -179,6 +179,10 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 		return false
 	end
 
+	if dt & DMG_WATER then
+		return false
+	end
+
 	local char = FangsHeist.Characters[t.skin]
 	local damage = FH_BLOCKDEPLETION
 	local canDamage = not (t.player.powers[pw_flashing] or t.player.powers[pw_invulnerability])
@@ -245,11 +249,12 @@ return function(p)
 	end
 
 	local char = FangsHeist.Characters[p.mo.skin]
+	local gamemode = FangsHeist.getGamemode()
 
 	local flags = STR_ATTACK|STR_BUST
 	if p.heist.attack_time then
-
 		p.heist.attack_time = max(0, $-1)
+
 		if not p.heist.strong_attack then
 			p.powers[pw_strong] = $|flags
 			p.heist.strong_attack = true
@@ -315,7 +320,8 @@ return function(p)
 		end
 	end
 
-	if char:isAttacking(p) then
+	if char:isAttacking(p)
+	and gamemode.pvp then
 		local player, speed = FangsHeist.damagePlayers(p)
 
 		if player

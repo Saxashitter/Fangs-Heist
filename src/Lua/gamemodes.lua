@@ -2,7 +2,6 @@ local function _NIL() end
 local DEFAULT = {
 	name = "Default",
 	desc = "Placeholder text.",
-	tol = TOL_COOP,
 
 	retakes = true,
 	pvp = true,
@@ -20,13 +19,14 @@ local DEFAULT = {
 	finish = _NIL,
 	playerinit = _NIL,
 	playerthink = _NIL,
-	playerdeath = _NIL
+	playerdeath = _NIL,
+	signcapture = _NIL,
 }
 
 FangsHeist.Gamemodes = {}
 
 function FangsHeist.addGamemode(gt)
-	for k,v in pairs(gt) do
+	for k,v in pairs(DEFAULT) do
 		if gt[k] == nil
 		or type(gt[k]) ~= type(v) then
 			gt[k] = v

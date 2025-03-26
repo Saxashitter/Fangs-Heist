@@ -6,6 +6,7 @@ local text = FangsHeist.require"Modules/Libraries/text"
 local alpha
 local retakealpha
 local statealpha
+local flashalpha
 local current
 local x
 
@@ -40,6 +41,7 @@ function module.init()
 	alpha = 0
 	statealpha = 10
 	retakealpha = 10
+	flashalpha = 0
 	current = 1
 	buttons = 0
 	lastbuttons = 0
@@ -123,32 +125,19 @@ end
 
 local function draw_bg(v)
 	if statealpha == 10 then return end
+	local patch = v.cachePatch("FH_PINK_SCROLL")
 
-	local bg = v.cachePatch"FH_INTER_BG"
-
-	local xs = FU
-	local ys = FU
-
-	local sw = v.width()*FU/v.dupx()
-	local sh = v.height()*FU/v.dupy()
-
-	local sws = FixedDiv(sw, 320*FU)
-	local shs = FixedDiv(sh, 200*FU)
-
-	if sw > bg.width*FU then
-		xs = sws
-		ys = sws
-	else
-		xs = shs
-		ys = shs
-	end
-
-	v.drawStretched(sw/2 - bg.width*xs/2,
-		sh/2 - bg.height*ys/2,
-		xs,
-		ys,
-		bg,
-		V_SNAPTOLEFT|V_SNAPTOTOP)
+	FangsHeist.DrawParallax(v,
+		0,
+		0,
+		v.width()*FU/v.dupx(),
+		v.height()*FU/v.dupy(), -- to make sure theres no clipping
+		FU,
+		patch,
+		V_SNAPTOLEFT|V_SNAPTOTOP,
+		patch.width*FixedDiv(leveltime % 60, 60),
+		patch.height*FixedDiv(leveltime % 60, 60)
+	)
 end
 
 local function draw_rect(v, x, y, w, h, flags, color)
@@ -192,26 +181,24 @@ local function draw_retake_factor(v)
 		num = $+1
 	end
 
-	customhud.CustomFontString(v,
+	FangsHeist.DrawString(v,
 		160*FU,
-		100*FU - 30*FU + retake_texty,
-		"RETAKES ",
-		"FHFNT",
-		f,
+		100*FU - 8*FU - 16*FU + retake_texty,
+		scale,
+		"RETAKES",
+		"CRFNT",
 		"center",
-		FU,
-		SKINCOLOR_RED
-	)
-	customhud.CustomFontString(v,
+		0,
+		v.getColormap(TC_RAINBOW, SKINCOLOR_RED))
+	FangsHeist.DrawString(v,
 		160*FU,
-		100*FU - 10*FU + retake_texty,
+		100*FU - 8*FU + retake_texty,
+		scale,
 		tostring(num),
-		"FHFNT",
-		f,
+		"LTFNT",
 		"center",
-		FU,
-		SKINCOLOR_RED
-	)
+		0,
+		v.getColormap(TC_RAINBOW, SKINCOLOR_RED))
 
 	retake_texty = ease.linear(FU/4, $, 0)
 end
@@ -337,7 +324,7 @@ then Shakes and Widen to Screen Height
 
 and after Shaking Fades an Color to Black
 */
-local draw_game = function(v)
+/*local draw_game = function(v)
 	local sw = v.width()*FU/v.dupx()
 	local m = 40*FU
 	local e = sw
@@ -384,19 +371,58 @@ local draw_game = function(v)
 		v.drawScaled(x,y,scale,Gameset,alphatext*V_10TRANS)
 		shakeFactor = max(0, $-FU*3/2)
 	end
-end
+end*/
 function module.draw(v)
-	if not (FangsHeist.Net.game_over) then return end
+	if not (FangsHeist.Net.game_over) then
+		shakeFactor = 12*FU
+		flashalpha = 0
+		return
+	end
 
-	draw_game(v)
+	-- GAME
+	local scale = FU*2
+	local x = 160*FU + v.RandomRange(-shakeFactor, shakeFactor)
+	local y = 100*FU - (16*scale/2) + v.RandomRange(-shakeFactor, shakeFactor)
+
+	FangsHeist.DrawParallax(v,
+		0, 0,
+		v.width()*FU/v.dupx(),
+		v.height()*FU/v.dupy(),
+		FU,
+		v.cachePatch("SPECTILE"),
+		V_SNAPTOTOP|V_SNAPTOLEFT
+	)
+
+	FangsHeist.DrawString(v,
+		x,
+		y,
+		scale,
+		"GAME!!",
+		"CRFNT",
+		"center",
+		0,
+		v.getColormap(TC_RAINBOW, SKINCOLOR_RED))
+	shakeFactor = max(0, $-FU*3/2)
+
+	-- flash
+	if flashalpha < 10 then
+		draw_rect(v,
+			0, 0,
+			v.width()*FU/v.dupx(),
+			v.height()*FU/v.dupy(),
+			V_SNAPTOLEFT|V_SNAPTOTOP|(V_10TRANS*flashalpha),
+			SKINCOLOR_WHITE)
+	end
+	flashalpha = min($+1, 10)
 
 	if FangsHeist.Net.end_anim then return end
-	--alpha = min($+1, 10) Removed for the New "GAME!" Animation
+
+	alpha = min($+1, 10)
 	if FangsHeist.Net.game_over_ticker >= FangsHeist.INTER_START_DELAY then
 		statealpha = max(0, $-1)
 	end
 
-	--manage_fade_screen(v)
+	manage_fade_screen(v)
 	if not FangsHeist.Net.retaking then
 		manage_intermission(v)
 	end

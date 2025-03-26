@@ -72,6 +72,25 @@ local function draw_rect(v, x, y, w, h, flags, color)
 	)
 end
 
+local function drawRoundFlag(v, x, y, scale, flags)
+	local round = v.cachePatch("FH_ROUND2")
+	local fill = v.cachePatch("FH_ROUNDFILL")
+
+	local offset = FixedMul(8*scale, FixedDiv(leveltime % (2*TICRATE), 2*TICRATE))
+
+	FangsHeist.DrawParallax(v,
+		x+scale,
+		y+scale,
+		round.width*scale - (scale*2),
+		round.height*scale - (scale*2),
+		scale,
+		fill,
+		flags,
+		offset,
+		offset)
+	v.drawScaled(x, y, scale, round, flags)
+end
+
 function module.draw(v)
 	local p = consoleplayer
 
@@ -79,18 +98,12 @@ function module.draw(v)
 		return
 	end
 
-	local monitor = v.cachePatch("FH_ROUND_MONITOR")
-	local round = v.cachePatch("FH_ROUND_ROUND")
-	local number = v.cachePatch("FH_ROUND2") // TODO: Add support for multiple rounds.
-	local static = v.cachePatch("FH_ROUND_STATIC"..(leveltime % 3))
-	local bg = v.cachePatch("FH_ROUND_BG")
-
-	local scale = tofixed("0.7")
+	local round = v.cachePatch("FH_ROUND2")
+	local scale = FU
 
 	if secondRound ~= p.heist.reached_second then
 		secondRound = p.heist.reached_second
 		visible = 3*TICRATE
-		staticTicker = 15
 		flash = FU
 	end
 
@@ -107,64 +120,19 @@ function module.draw(v)
 
 	flash = max(0, $-(FU/20))
 	visible = max(0, $-1)
-	staticTicker = max(0, $-1)
 
 	if visible then
-		y = ease.linear(FU/7, $, 4*FU + monitor.height*scale)
+		y = ease.linear(FU/7, $, 4*FU + round.height*scale)
 	else
 		y = ease.linear(FU/7, $, -FU)
 	end
 
 	if y <= 0 then return end
 
-	local x = 160*FU - monitor.width*scale/2
-	local y = y-monitor.height*scale
+	local x = 160*FU - round.width*scale/2
+	local y = y-round.height*scale
 
-	// Handle Background
-	local frac = FixedDiv(leveltime % 60, 60)
-	drawParallax(v,
-		x+5*scale,
-		y+5*scale,
-		monitor.width*scale-10*scale,
-		monitor.height*scale-10*scale,
-		scale,
-		bg,
-		V_SNAPTOTOP,
-		FixedMul(bg.width*scale, frac),
-		FixedMul(bg.height*scale, frac)
-	)
-
-	// Round ?
-	v.drawScaled(
-		x + monitor.width*scale/2 - round.width*scale/2,
-		y + 8*scale,
-		scale,
-		round,
-		V_SNAPTOTOP)
-	v.drawScaled(
-		x + monitor.width*scale/2 - number.width*scale/2,
-		y + 32*scale,
-		scale,
-		number,
-		V_SNAPTOTOP)
-
-	// Handle Static
-	if visible == 0
-	or staticTicker then
-		drawParallax(v,
-			x+5*scale,
-			y+5*scale,
-			monitor.width*scale-10*scale,
-			monitor.height*scale-10*scale,
-			scale,
-			static,
-			V_SNAPTOTOP,
-			0,
-			0
-		)
-	end
-
-	v.drawScaled(x, y, scale, monitor, V_SNAPTOTOP)
+	drawRoundFlag(v, x, y, scale, V_SNAPTOTOP)
 end
 
 return module

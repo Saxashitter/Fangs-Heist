@@ -80,7 +80,7 @@ function FangsHeist.startIntermission()
 
 		table.insert(FangsHeist.Save.ServerScores[gamemap], {
 			p.mo.skin,
-			skincolors[p.mo.color].name,
+			skincolors[max(1, p.mo.color)].name,
 			p.name,
 			team.profit
 		})
@@ -103,7 +103,7 @@ function FangsHeist.startIntermission()
 		end
 	end
 
-	S_FadeMusic(0, MUSICRATE/2)
+	S_FadeMusic(0, FixedMul(MUSICRATE, tofixed("0.75")))
 
 	for mobj in mobjs.iterate() do
 		if not (mobj and mobj.valid) then continue end
@@ -112,8 +112,6 @@ function FangsHeist.startIntermission()
 	end
 
 	FangsHeist.Net.game_over = true
-	FangsHeist.Net.end_anim = 6*TICRATE
-	S_ChangeMusic("FH_WIN", false)
 end
 
 local function sac(name, caption)

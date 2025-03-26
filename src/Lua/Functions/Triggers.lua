@@ -39,8 +39,10 @@ function FangsHeist.gainProfit(p, gain, dontDiv, specialSound)
 end
 
 function FangsHeist.damagePlayers(p, friendlyfire, damage)
+	local gamemode = FangsHeist.getGamemode()
+
 	if friendlyfire == nil then
-		friendlyfire = false
+		friendlyfire = (gamemode.friendlyfire)
 	end
 	if damage == nil then
 		damage = FH_BLOCKDEPLETION
@@ -88,19 +90,8 @@ function FangsHeist.damagePlayers(p, friendlyfire, damage)
 		if P_DamageMobj(sp.mo, p.mo, p.mo) then
 			char1:onHit(p, sp)
 
-			// Retake Knockback
-			local mult = FU
-			local zmult = FU
-
-			mult = $ + (FU * FangsHeist.Save.retakes)
-			zmult = $ + (FU * FangsHeist.Save.retakes)
-
-			mult = $ - FixedMul(tofixed("0.28"), FangsHeist.Save.retakes*FU)
-			zmult = $ - FixedMul(tofixed("0.8"), FangsHeist.Save.retakes*FU)
-
-			sp.mo.momx = FixedMul($, mult)
-			sp.mo.momy = FixedMul($, mult)
-			sp.mo.momz = FixedMul($, zmult)
+			sp.mo.momx = p.mo.momx
+			sp.mo.momy = p.mo.momy
 
 			HeistHook.runHook("PlayerDamage", p, sp)
 

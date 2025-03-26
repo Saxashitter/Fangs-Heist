@@ -134,8 +134,8 @@ local function module()
 			FangsHeist.spawnSign()
 	end
 
-	if FangsHeist.Net.hell_stage then
-		local mobj = FangsHeist.Net.hell_stage_mobj
+	if FangsHeist.Net.round_2 then
+		local mobj = FangsHeist.Net.round_2_mobj
 
 		for p in players.iterate do
 			if not FangsHeist.isPlayerAlive(p) then continue end

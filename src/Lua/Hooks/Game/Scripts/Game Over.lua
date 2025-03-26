@@ -39,7 +39,6 @@ return function()
 				and not (mapheaderinfo[map].fh_disableretakes == "true") then
 					-- RETAKING??
 					FangsHeist.Net.retaking = true
-					FangsHeist.Net.retake_anim = 10*TICRATE
 					S_FadeOutStopMusic(2000)
 				end
 			end

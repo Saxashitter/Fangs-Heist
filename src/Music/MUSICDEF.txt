@@ -6,29 +6,13 @@ Soundtestpage = 1
 Soundtestcond = 0
 BPM = 173
 
-Lump FINDAY
-Title = Character_Select
-Alttitle = Fine_Day
-Authors = Yousuke_Yasui_(Mamorukun_Curse!)
-Soundtestpage = 1
-Soundtestcond = 0
-BPM = 129
-
 Lump KINPRI
 Title = Results
-Alttitle = Kiwagana Princess
+Alttitle = Kiwagana_Princess
 Authors = Yousuke_Yasui_(Mamorukun_Curse!)
 Soundtestpage = 1
 Soundtestcond = 0
 BPM = 130
-
-Lump FH_WIN
-Title = Game_Set
-Authors = Yousuke_Yasui_(Mamorukun_Curse!)
-Soundtestpage = 1
-Soundtestcond = 0
-BPM = 104
-Stoppingtime = 5000
 
 Lump FHTUP
 Title = Times_Up!
@@ -80,8 +64,8 @@ BPM = 153
 
 Lump MIGMAG
 Title = Volcano_Escape
-Alttitle = Mighty_Magma_Red
-Authors = Yousuke_Yasui_(Natsuki_Chronicles)
+Alttitle = Mighty_Magma_Red_(Tokonemu_Mix)
+Authors = Tokonemu,_Yousuke_Yasui_(Natsuki_Chronicles)
 Soundtestpage = 1
 Soundtestcond = 0
 BPM = 185
@@ -103,8 +87,8 @@ BPM = 80
 
 Lump MANTRA
 Title = Retake_Escape
-Alttitle = Mantra
-Authors = Yousuke_Yasui_(Mamorukun_Curse!)
+Alttitle = Mantra_(Tokonemu_Mix)
+Authors = Tokonemu,_Yousuke_Yasui_(Mamorukun_Curse!)
 Soundtestpage = 1
 Soundtestcond = 0
 BPM = 172
@@ -116,3 +100,8 @@ Authors = Rumya_(+TEK_Touhou_Arrangements)
 Soundtestpage = 1
 Soundtestcond = 0
 BPM = 168
+
+Lump FH_PRG
+Title = The_Plan
+Alttitle = Pre-Game_(Original)
+Authors = Tokonemu

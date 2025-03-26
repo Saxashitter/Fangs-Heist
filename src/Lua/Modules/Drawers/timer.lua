@@ -1,257 +1,208 @@
 local module = {}
 
-local orig_net = FangsHeist.require "Modules/Variables/net"
-local text = FangsHeist.require "Modules/Libraries/text"
+local scale = FU
+local overlap = 7*FU
 
-local APPEARANCE_TIME = 3*TICRATE
+local enabled = false
+local slideT = 0
+local time = 0
+local max_time = 0
 
-local x
-local y
-local sl_y
-local timesuptics
-local alpha
-local ticker
-local took
-local warning_active
-
-local function drawParallax(v, x, y, w, h, scale, patch, flags, ox, oy)
-	local width = fixdiv(w, scale)
-	local height = fixdiv(h, scale)
-
-	local offsetX = fixdiv(ox or 0, scale)
-	local offsetY = fixdiv(oy or 0, scale)
-
-	local currentX = -offsetX
-	local currentY = -offsetY
-
-	while currentY < height do
-		local sh = patch.height*FU
-
-		if currentY+sh > height then
-			sh = height - currentY
-		end
-
-		while currentX < width do
-			local sw = patch.width*FU
-
-			if currentX+sw > width then
-				sw = width - currentX
-			end
-
-			v.drawCropped(
-				x+FixedMul(max(0, currentX), scale),
-				y+FixedMul(max(0, currentY), scale),
-				scale,
-				scale,
-				patch,
-				flags,
-				nil,
-				-min(currentX, 0),
-				-min(currentY, 0),
-				sw + min(currentX, 0),
-				sh + min(currentY, 0)
-			)
-
-			currentX = $+sw
-		end
-
-		currentY = $+sh
-		currentX = -offsetX
-	end
+function FangsHeist.disableTimer()
+	enabled = false
 end
 
-local function drawBar(v)
-	local bar = v.cachePatch"FH_BAR"
-	local bg = v.cachePatch"FH_BARBG"
+function FangsHeist.isTimerEnabled()
+	return enabled
+end
 
-	local scale = tofixed("0.75")
+function FangsHeist.setTimerTime(newTime, newMaxTime)
+	if not enabled then
+		enabled = true
+	end
 
-	local time = FangsHeist.Net.max_time_left
-	local current = time-FangsHeist.Net.time_left
+	time = newTime
+	max_time = newMaxTime
+end
 
-	local hscale = scale + (FU/50)
-	local x = 160*FU - bar.width*scale/2
+local function getScaleDiv()
+	if not max_time then
+		return FU
+	end
 
-	local fill = v.cachePatch"FH_BLUEFILL"
-	local outfill = v.cachePatch"FH_REDFILL"
-	local fillend = v.cachePatch("FH_FILLEND"..((leveltime/2) % 3))
+	return FU - FixedDiv(time, max_time)
+end
 
-	local speed = 35
-	local fillscale = FixedMul(scale, tofixed("0.75"))
-	local prog = FixedMul(bar.width*scale - 10*scale, FixedDiv(current, time))
+local CROPSETS = {
+	[0] = 5,
+	[1] = 6,
+	[2] = 7,
+	[3] = 8,
+	[4] = 9
+}
 
-	v.drawStretched(x+6*scale, y+2*scale, hscale, scale, bg, V_SNAPTOBOTTOM)
-	drawParallax(v,
-		x + 6*scale,
-		y + 4*scale,
-		prog,
-		14*scale,
-		fillscale,
+local function drawTimer(v, x, y, scale, f)
+	local tmr = v.cachePatch("FH_TMR")
+	local backfill = v.cachePatch("FH_TMR_FILL")
+	local fill = v.cachePatch("FH_TMR_ENDFILL")
+
+	local div = getScaleDiv()
+	local rdiv = FU-div
+
+	local barx = x + 5*scale
+	local bary = y + 17*scale
+	local barw = tmr.width*scale - 6*scale - 5*scale
+
+	-- background fill
+	FangsHeist.DrawParallax(v,
+		barx,
+		bary,
+		barw,
+		backfill.height*scale + (scale*2), -- to make sure theres no clipping
+		scale,
+		backfill,
+		f
+	)
+	-- main fill
+	FangsHeist.DrawParallax(v,
+		barx,
+		bary,
+		FixedMul(barw, div),
+		fill.height*scale + (scale*2), -- to make sure theres no clipping
+		scale,
 		fill,
-		V_SNAPTOBOTTOM,
-		FixedMul(fill.width*fillscale, FixedDiv(leveltime % speed, speed)))
-	v.drawCropped(
-		(x+6*scale+prog) - fillend.width*scale/2,
-		(y+5*scale),
-		scale,
-		scale,
-		fillend,
-		V_SNAPTOBOTTOM,
-		nil,
-		0,
-		0,
-		fillend.width*FU,
-		13*FU)
-	v.drawScaled(x, y, scale, bar, V_SNAPTOBOTTOM)
+		f
+	)
+	-- actual timer sprite
+	v.drawScaled(x, y, scale, tmr, f)
 
-	local secs = string.format("%02d", ((time-current)/TICRATE) % 60)
-	local mins = string.format("%02d", ((time-current)/(TICRATE*60)))
+	-- text
+	local minstr = string.format("%02d",
+		time/(TICRATE*60))
+	local secstr = string.format("%02d",
+		(time/TICRATE) % 60)
 
 	local patches = {}
-	local wid = 5*scale
-	local pad = scale
+	local width = 0
+	local pad = 0
 
-	for i = 1,#mins do
-		local patch = v.cachePatch("FH_TIMER"..string.sub(mins, i, i))
-		wid = $ + patch.width*scale + pad
+	for i = 1,#minstr do
+		local num = minstr:sub(i,i)
+		local patch = v.cachePatch("STTNUM"..num)
+
 		table.insert(patches, patch)
-	end
-	table.insert(patches, v.cachePatch("FH_TIMERSPLIT"))
-	for i = 1,#secs do
-		local patch = v.cachePatch("FH_TIMER"..string.sub(secs, i, i))
-		wid = $ + patch.width*scale + pad
-		table.insert(patches, patch)
+		width = $ + patch.width*scale + pad
 	end
 
-	local x = 160*FU - wid/2
+	local colon = v.cachePatch("STTCOLON")
 
-	for _,patch in ipairs(patches) do
-		local yDiff = (11-patch.height)/2
+	table.insert(patches, colon)
+	width = $ + colon.width*scale + pad
 
-		v.drawScaled(x, y+yDiff*scale+5*scale, scale, patch, V_SNAPTOBOTTOM)
-		x = $ + pad + patch.width*scale
+	for i = 1,#secstr do
+		local num = secstr:sub(i,i)
+		local patch = v.cachePatch("STTNUM"..num)
+
+		table.insert(patches, patch)
+		width = $ + patch.width*scale
+
+		if i < #secstr then
+			width = $+pad
+		end
+	end
+
+	x = $ + (tmr.width*scale/2) - width/2
+	local dx = 0
+
+	for i,patch in ipairs(patches) do
+		v.drawScaled(x+dx, y+17*scale, scale, patch, f)
+
+		if i < #patches then
+			dx = $ + patch.width*scale + pad
+		end
 	end
 end
 
-local function drawSecLeft(v, y)
-	local tics = FangsHeist.Net.time_left
-	local seconds = (tics/TICRATE) % 60
-	local minutes = (tics/TICRATE) / 60
+local function drawTmrText(v, x, y, scale, flags)
+	local tbg = v.cachePatch("FH_TMR_TEXTBG")
 
-	local minStr = string.format("%02d", minutes)
-	local secStr = string.format("%02d", seconds)
+	v.drawScaled(x, y, scale, tbg, flags)
 
-	local scale = FU
+	local secstr = string.format("%02d",
+		(time/TICRATE) % 60)
+	local minstr = string.format("%02d",
+		time/(TICRATE*60))
 
-	local secondsLeft = v.cachePatch"FH_SECONDSLEFT"
-	local split = v.cachePatch"FH_SECONDSLEFTSPLIT"
+	local padding = scale*2
+	local patches = {}
 
-	v.drawScaled(
-		160*FU - secondsLeft.width*scale/2,
-		y+9*scale+4*scale,
-		scale,
-		secondsLeft,
-		V_SNAPTOBOTTOM)
+	x = $+14*scale
+	y = $-4*scale
 
-	local width = ((9*scale)*4) + (4*scale)
-
-	for i = 1,#minStr do
-		local str = string.sub(minStr, i, i)
-		local patch = v.cachePatch("FH_SECONDSLEFT"..str)
-		local x = 160*FU - width/2 + (9*scale)*(i-1)
-
-		v.drawScaled(x, y, scale, patch, V_SNAPTOBOTTOM)
+	for i = 1,#minstr do
+		local num = minstr:sub(i,i)
+		table.insert(patches, v.cachePatch("FH_TMR_NUM"..num))
 	end
 
-	v.drawScaled(160*FU - split.width*scale/2, y, scale, split, V_SNAPTOBOTTOM)
+	table.insert(patches, v.cachePatch("FH_TMR_SC"))
 
-	for i = 1,#secStr do
-		local str = string.sub(secStr, i, i)
-		local patch = v.cachePatch("FH_SECONDSLEFT"..str)
-		local x = 160*FU + (split.width*scale/2) + scale + (9*scale)*(i-1)
-
-		v.drawScaled(x, y, scale, patch, V_SNAPTOBOTTOM)
+	for i = 1,#secstr do
+		local num = secstr:sub(i,i)
+		table.insert(patches, v.cachePatch("FH_TMR_NUM"..num))
 	end
-end
 
-function FangsHeist.doSignpostWarning(_took)
-	took = (_took)
-	ticker = 0
-	alpha = 10
-	warning_active = true
+	x = $+tbg.width*scale/2
+
+	local width = 0
+	local maxHeight = 0
+	for i,patch in ipairs(patches) do
+		width = $+patch.width*scale
+		maxHeight = max($, patch.height*scale)
+		if i < #patches then
+			width = $+padding
+		end
+	end
+
+	local dx = -width/2
+	for i,patch in ipairs(patches) do
+		v.drawScaled(x+dx,
+			y+(maxHeight-patch.height*scale)/2,
+			scale,
+			patch,
+			flags)
+
+		dx = $+patch.width*scale
+		if i < #patches then
+			dx = $+padding
+		end
+	end
 end
 
 function module.init()
-	y = 201*FU
-	x = 160*FU
-	alpha = 0
-	ticker = 0
-	took = false
-	sl_y = 201*FU
-	timesuptics = TICRATE*2
-	warning_active = false
+	enabled = false
+	slideT = 0
+	time = 0
+	max_time = 0
 end
 
-function module.draw(v,p)
-	if warning_active then
-		ticker = $+1
-
-		if ticker < APPEARANCE_TIME then
-			alpha = max(0, $-1)
-		else
-			alpha = min($+1, 10)
-			if alpha == 10 then
-				warning_active = false
-			end
-		end
-
-		local warning
-		if not took then
-			warning = v.cachePatch("FH_SIGNPOST_TAKEN")
-		else
-			warning = v.cachePatch("FH_TOOK_SIGNPOST")
-		end
-
-		local scale = FU/2
-		local y = min(y, sl_y)
-
-		if alpha ~= 10 then
-			v.drawScaled(x-(warning.width*scale/2),
-				y-2*FU-warning.height*scale,
-				scale,
-				warning,
-				V_SNAPTOBOTTOM|(V_10TRANS*alpha))
-		end
-	end
-
-	local gamemode = FangsHeist.getGamemode()
-
-	if (gamemode
-	and gamemode.startEscape
-	and FangsHeist.Net.escape
-	and not (gamemode.isHurryUp
-	and gamemode:isHurryUp())) then
-		if FangsHeist.Net.time_left > 10*TICRATE then
-			sl_y = 201*FU
-			y = ease.linear(FU/6, $, 180*FU)
-		else
-			if timesuptics then
-				sl_y = ease.linear(FU/6, $, 190*FU - (24*FU + 9*FU))
-
-				if not FangsHeist.Net.time_left then
-					timesuptics = $-1
-				end
-			else
-				sl_y = ease.linear(FU/6, $, 201*FU)
-			end
-			y = ease.linear(FU/6, $, 201*FU)
-		end
+function module.draw(v)
+	if enabled then
+		slideT = min($ + FU/35, FU)
 	else
-		sl_y = 201*FU
+		slideT = max($ - FU/35, 0)
 	end
 
-	drawBar(v)
-	drawSecLeft(v, sl_y)
+	if slideT <= 0 then
+		return
+	end
+
+	local tmr = v.cachePatch("FH_TMR")
+
+	local x = 160*FU - tmr.width*FU/2
+	local y = ease.outback(slideT, 200*FU, 200*FU - 8*FU - tmr.height*FU)
+	local f = V_SNAPTOBOTTOM
+
+	drawTimer(v, x, y, FU, f)
 end
 
 return module

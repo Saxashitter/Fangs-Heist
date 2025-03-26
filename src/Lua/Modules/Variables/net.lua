@@ -10,8 +10,8 @@ return {
 	game_over_length = 20*TICRATE,
 	retaking = false,
 	selected_map = 0,
-	end_anim = 0,
-	retake_anim = 2*TICRATE,
+	end_anim = 2*TICRATE,
+	retake_anim = 6*TICRATE,
 
 	pregame = true,
 	pregame_time = 30*TICRATE,

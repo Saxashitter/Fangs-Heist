@@ -36,8 +36,9 @@ local defaultitems = {
 
 customhud.SetupFont("CSFNT")
 customhud.SetupFont("FHFNT")
-customhud.SetupNumberFont("RNGNUM")
-customhud.SetupNumberFont("PROFNT")
+customhud.SetupNumberFont("RNGFNT")
+customhud.SetupNumberFont("RRGFNT")
+customhud.SetupNumberFont("PRTFNT")
 
 local function is_hud_modded(name)
 	for k,v in ipairs(defaultitems) do
@@ -115,8 +116,8 @@ addHud "signtracker"
 addHud "treasuretracker"
 addHud "controls"
 addHud "lives"
-addHud "rings"
 addHud "score"
+addHud "rings"
 addHud "time"
 addHud "textspectator"
 addHud "treasure"

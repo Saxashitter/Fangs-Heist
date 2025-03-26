@@ -146,19 +146,17 @@ Level 16
 Levelname = Red Volcano
 Act = 1
 Keywords = RVZ1
-Music = RVZ1
+Music = OLRVZ1
 TypeOfLevel = Heist
-NextLevel = 22
+NextLevel = 1100
 SkyNum = 159
 SkyboxScaleZ = 32
 RecordAttack = true
 LevelSelect = 1
 SaveGame = true
 FlickyList = Pig,Cat
-StartRings = 10
-Selectheading = Supported Maps
+SelectHeading = Supported Maps
 Lua.FH_EscapeTheme = MIGMAG
-Lua.FH_EscapeHurryUp = false
-Lua.FH_EscapeOnStart = true
-Lua.FH_Time = 300
 Lua.FH_StageType = Escape
+Lua.FH_Time = 300
+#Cow and Pig will be replaced with Monkey and Iguana when complete.

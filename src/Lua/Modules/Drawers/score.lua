@@ -3,11 +3,35 @@ local module = {}
 local text = FangsHeist.require "Modules/Libraries/text"
 
 local _profit
-local y
 
 function module.init()
 	_profit = 0
-	y = 0
+end
+
+function FangsHeist.drawProfit(v, x, y, scale, profit, flags, width)
+	local patch = v.cachePatch("FH_PROFIT")
+
+	v.drawScaled(x, y, scale, patch, flags)
+	
+	if width == nil then
+		width = 80*scale
+	end
+
+	width = max(patch.width*scale, $)
+
+	FangsHeist.DrawNumber(v, x+width, y, scale, profit, "STTNUM", flags)
+end
+
+function FangsHeist.getProfitWidth(v, profit, scale, width)
+	local patch = v.cachePatch("FH_PROFIT")
+	if width == nil then
+		width = 80*scale
+	end
+
+	width = max(patch.width*scale, $)
+	width = $ + FangsHeist.GetNumberWidth(v, profit, scale, "STTNUM")
+
+	return width
 end
 
 function module.draw(v, p)
@@ -18,50 +42,7 @@ function module.draw(v, p)
 		profit = team.profit
 	end
 
-	y = ease.linear(FU/2, $, 0)
-
-	if profit ~= _profit then
-		y = -4*FU
-		_profit = profit
-	end
-
-	local profit_patch = v.cachePatch("FH_PROFIT")
-
-	local scale = (FU/3)*2
-	v.drawScaled(10*FU, 10*FU, scale, profit_patch, V_SNAPTOLEFT|V_SNAPTOTOP)
-
-	--[[text.draw(v,
-		10*FU + profit_patch.width*scale/2,
-		14*FU + y - 9*FU,
-		scale,
-		"$"..tostring(profit),
-		"PRTFT",
-		"center",
-		V_SNAPTOLEFT|V_SNAPTOTOP
-	)]]
-	local width = customhud.CustomNumWidth(v,
-		profit,
-		"PROFNT",
-		0,
-		scale)
-	local sign = v.cachePatch("PROFNTSIGN")
-
-	v.drawScaled(
-		10*FU + (profit_patch.width*scale/2) - sign.width*scale - width/2,
-		10*FU + 15*scale + y,
-		scale,
-		sign,
-		V_SNAPTOLEFT|V_SNAPTOTOP
-	)
-	customhud.CustomNum(v,
-		10*FU + profit_patch.width*scale/2,
-		10*FU + 16*scale + y,
-		profit,
-		"PROFNT",
-		0,
-		V_SNAPTOLEFT|V_SNAPTOTOP,
-		"center",
-		scale)
+	FangsHeist.drawProfit(v, 12*FU, 12*FU, FU, profit, V_SNAPTOLEFT|V_SNAPTOTOP)
 end
 
 return module

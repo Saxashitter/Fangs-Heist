@@ -51,6 +51,8 @@ end
 
 function FangsHeist.FileToServerScores()
 	// SHOULD ONLY BE CALLED ONCE.
+	FangsHeist.Save.ServerScores = {}
+
 	print("FH - Getting scores from file...")
 
 	local scores = FangsHeist.Save.ServerScores
@@ -83,11 +85,6 @@ if not makeFile("serverScores", FangsHeist.ServerScoresToString()) then
 	FangsHeist.FileToServerScores()
 end
 
-addHook("PlayerQuit", function(p)
-	// Safety check to prevent keeping scores from other players.
-
-	if p == consoleplayer
-	and not (isserver or isdedicatedserver) then
-		FangsHeist.FileToServerScores()
-	end
+addHook("GameQuit", function()
+	FangsHeist.FileToServerScores()
 end)

@@ -1,7 +1,7 @@
 return function()
 	if FangsHeist.Net.pregame then
-		if S_MusicName() ~= "FINDAY" then
-			S_ChangeMusic("FINDAY", true)
+		if S_MusicName() ~= "FH_PRG" then
+			S_ChangeMusic("FH_PRG", true)
 		end
 
 		FangsHeist.Net.pregame_time = max(0, $-1)
