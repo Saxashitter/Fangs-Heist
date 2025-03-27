@@ -33,16 +33,15 @@ function module.draw(v)
 	local height = v.height()*FU/v.dupy()
 
 	if not (#plyrs) then
-		customhud.CustomFontString(v,
+		FangsHeist.DrawString(v,
 			width/2,
-			height/2 - 16*FU/2,
-			"No winners!",
-			"FHFNT",
-			V_SNAPTOLEFT|V_SNAPTOTOP,
-			"center",
+			(height/2) - 8*FU,
 			FU,
-			SKINCOLOR_CYAN
-		)
+			"NO WINNERS!!",
+			"CRFNT",
+			"center",
+			f,
+			v.getColormap(TC_RAINBOW, p.skincolor))
 		return
 	end
 
