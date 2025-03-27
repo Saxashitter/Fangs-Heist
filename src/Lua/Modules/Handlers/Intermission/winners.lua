@@ -89,16 +89,16 @@ function module.draw(v)
 		// 21*FU
 
 		if #team > 1 then
-			customhud.CustomFontString(v,
-				x, y,
-				"Team",
-				"FHFNT",
-				V_SNAPTOLEFT|V_SNAPTOTOP,
+			FangsHeist.DrawString(v,
+				x,
+				y,
+				FU/2,
+				"TEAM",
+				"CRFNT",
 				"center",
-				FU*6/9,
-				p.skincolor
-			)
-			y = $+18*(FU*6/9)
+				f,
+				v.getColormap(TC_RAINBOW, p.skincolor))
+			y = $+16*FU/2
 		end
 
 		FangsHeist.DrawString(v,
