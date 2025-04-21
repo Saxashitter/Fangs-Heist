@@ -2,15 +2,9 @@ local gamemode = {
 	name = "Escape",
 	desc = "Get some profit, grab that signpost, and GO! GO! GO!"
 }
+local path = "Gamemodes/Escape/"
 
-sfxinfo[freeslot "sfx_fhtick"].caption = "Tick..."
-sfxinfo[freeslot "sfx_fhuhoh"].caption = "Uh oh!"
-
-states[freeslot "S_FH_ROUNDPORTAL"] = {
-	sprite = freeslot "SPR_HPRT",
-	tics = -1,
-	nextstate = S_FH_ROUNDPORTAL
-}
+dofile(path.."freeslots.lua")
 
 local treasure_things = {
 	[312] = true
@@ -168,7 +162,7 @@ function gamemode:init(map)
 
 	FangsHeist.Net.escape = false
 	FangsHeist.Net.escape_theme = "SPRHRO"
-	FangsHeist.Net.round2_theme = "EXTERM"
+	FangsHeist.Net.round2_theme = "ROUND2"
 	FangsHeist.Net.escape_hurryup = true
 	FangsHeist.Net.escape_on_start = false
 
@@ -380,7 +374,7 @@ end
 function gamemode:music()
 	if not FangsHeist.Net.escape then
 		if FangsHeist.Save.retakes then
-			return "FHRETK", true
+			return "WILFOR", true
 		end
 
 		return
@@ -396,7 +390,7 @@ function gamemode:music()
 	local volume = ease.linear(t, 255, 0)
 
 	if FangsHeist.Save.retakes then
-		return FangsHeist.Save.retakes > 1 and "FIFTTP" or "MANTRA", true, volume
+		return FangsHeist.Save.retakes > 1 and "THCUAG" or "THECUR", true, volume
 	end
 
 	if self:isHurryUp() then
@@ -651,6 +645,11 @@ function gamemode:startEscape(p)
 	end
 
 	FangsHeist.Net.escape = true
+	if FangsHeist.Net.round_2 then
+		local mo = FangsHeist.Net.round_2_mobj
+		local ind = P_SpawnMobj(mo.x, mo.y, mo.z + 90*FU, MT_FH_ROUNDINDICATOR)
+		ind.target = mo
+	end
 	S_StartSound(nil, sfx_gogogo)
 
 	local data = mapheaderinfo[gamemap]

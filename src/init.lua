@@ -47,6 +47,7 @@ dofile "Objects/Bosses/Missile"
 
 dofile "Movesets/Amy"
 dofile "Movesets/Fang"
+dofile "Movesets/Sonic"
 
 dofile "modsupport"
 

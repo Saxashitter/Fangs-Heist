@@ -125,7 +125,7 @@ end
 
 local function draw_bg(v)
 	if statealpha == 10 then return end
-	local patch = v.cachePatch("FH_PINK_SCROLL")
+	local patch = v.cachePatch("HEISTBACK")
 
 	FangsHeist.DrawParallax(v,
 		0,
@@ -135,8 +135,8 @@ local function draw_bg(v)
 		FU,
 		patch,
 		V_SNAPTOLEFT|V_SNAPTOTOP,
-		patch.width*FixedDiv(leveltime % 60, 60),
-		patch.height*FixedDiv(leveltime % 60, 60)
+		patch.width*FixedDiv(leveltime % (7*TICRATE), 7*TICRATE),
+		patch.height*FixedDiv(leveltime % (7*TICRATE), 7*TICRATE)
 	)
 end
 
@@ -380,28 +380,31 @@ function module.draw(v)
 	end
 
 	-- GAME
-	local scale = FU*2
-	local x = 160*FU + v.RandomRange(-shakeFactor, shakeFactor)
-	local y = 100*FU - (16*scale/2) + v.RandomRange(-shakeFactor, shakeFactor)
+	if statealpha == 10 then
+		local scale = FU*2
+		local x = 160*FU + v.RandomRange(-shakeFactor, shakeFactor)
+		local y = 100*FU - (16*scale/2) + v.RandomRange(-shakeFactor, shakeFactor)
+	
+		FangsHeist.DrawParallax(v,
+			0, 0,
+			v.width()*FU/v.dupx(),
+			v.height()*FU/v.dupy(),
+			FU,
+			v.cachePatch("SPECTILE"),
+			V_SNAPTOTOP|V_SNAPTOLEFT
+		)
+	
+		FangsHeist.DrawString(v,
+			x,
+			y,
+			scale,
+			"GAME!!",
+			"CRFNT",
+			"center",
+			0,
+			v.getColormap(TC_RAINBOW, SKINCOLOR_RED))
+	end
 
-	FangsHeist.DrawParallax(v,
-		0, 0,
-		v.width()*FU/v.dupx(),
-		v.height()*FU/v.dupy(),
-		FU,
-		v.cachePatch("SPECTILE"),
-		V_SNAPTOTOP|V_SNAPTOLEFT
-	)
-
-	FangsHeist.DrawString(v,
-		x,
-		y,
-		scale,
-		"GAME!!",
-		"CRFNT",
-		"center",
-		0,
-		v.getColormap(TC_RAINBOW, SKINCOLOR_RED))
 	shakeFactor = max(0, $-FU*3/2)
 
 	-- flash

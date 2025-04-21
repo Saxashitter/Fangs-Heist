@@ -4,10 +4,11 @@ local text = FangsHeist.require"Modules/Libraries/text"
 
 module.name = "Winners"
 
+local PODIUM_Y = 200*FU - 125*FU + 10*FU
 local POSITION_DATA = {
-	{x = 160*FU, y = 110*FU, patch = "FH_PODIUM_FIRST"},
-	{x = 160*FU-100*FU, y = 120*FU, patch = "FH_PODIUM_SECOND"},
-	{x = 160*FU+100*FU, y = 130*FU, patch = "FH_PODIUM_THIRD"}
+	{x = 160*FU, y = PODIUM_Y, patch = "FH_PODIUM_FIRST"},
+	{x = 160*FU-100*FU, y = PODIUM_Y + 14*FU, patch = "FH_PODIUM_SECOND"},
+	{x = 160*FU+100*FU, y = PODIUM_Y + (14*FU*2), patch = "FH_PODIUM_THIRD"}
 }
 
 function module.think(p) // runs when selected
@@ -64,6 +65,16 @@ function module.draw(v)
 
 		local length = #team-1
 		local div = length and width/length or width/2
+
+		local podium = v.cachePatch(pos.patch)
+		local xscale = FU + FixedDiv(#team-1, 2)
+
+		v.drawStretched(x - podium.width*xscale/2,
+			height - podium.height*FU,
+			xscale,
+			FU,
+			podium,
+			V_SNAPTOTOP|V_SNAPTOLEFT)
 
 		for i,sp in ipairs(team) do
 			if not FangsHeist.isPlayerAlive(sp) then continue end

@@ -344,7 +344,9 @@ return function(p)
 			if P_IsObjectOnGround(p.mo) then
 				p.mo.state = S_PLAY_STND
 				P_InstaThrust(p.mo, angle, -10*FU)
+				p.pflags = $ & ~(PF_SPINNING|PF_STARTDASH)
 			else
+				p.pflags = ($|PF_SPINNING) & ~(PF_JUMPED|PF_THOKKED)
 				p.mo.state = S_PLAY_FALL
 				P_InstaThrust(p.mo, angle, -10*FU)
 			end

@@ -73,7 +73,6 @@ function FangsHeist.makeCharacter(skin, data)
 	FangsHeist.Characters[skin] = data
 end
 
-FangsHeist.makeCharacter("sonic", {pregameBackground = "FH_PREGAME_SONIC"})
 FangsHeist.makeCharacter("tails", {pregameBackground = "FH_PREGAME_TAILS"})
 FangsHeist.makeCharacter("knuckles", {pregameBackground = "FH_PREGAME_KNUCKLES"})
 FangsHeist.makeCharacter("metalsonic", {pregameBackground = "FH_PREGAME_METAL"})

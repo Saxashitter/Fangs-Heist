@@ -81,15 +81,13 @@ NoVisitNeeded = true
 SelectHeading = Supported Maps
 Weather = 2
 FlickyList = Penguin,Seal
-Lua.FH_EscapeTheme = LOSWIN
-Lua.FH_EscapeHurryUp = false
 Lua.FH_StageType = Escape
 
 Level Z0
 Levelname = Tutorial
 NoVisitNeeded = true
 Act = 0
-Music = BLYOBO
+Music = _TITLE
 NextLevel = 1
 TypeOfLevel = Heist
 SelectHeading = Supported Maps
@@ -160,3 +158,31 @@ Lua.FH_EscapeTheme = MIGMAG
 Lua.FH_StageType = Escape
 Lua.FH_Time = 300
 #Cow and Pig will be replaced with Monkey and Iguana when complete.
+
+level P2
+LevelName = Acid Overflow
+TypeOfLevel = Heist
+Music = RDLFAC
+SkyNum = 4
+NoVisitNeeded = true
+Recordattack = true
+NextMap = MAP33
+FlickyList = Rat,Bat,Dove
+Selectheading = Supported Maps
+Lua.FH_EscapeTheme = OLNORE
+
+Level 35
+Levelname = FD Castle Eggman
+Music = FDEMO5
+TypeOfLevel = Heist
+NextLevel = 1100
+SkyNum = 65
+LevelSelect = 2
+SelectHeading = Supported Maps
+NoVisitNeeded = true
+InterScreen = INTERSCR
+FlickyList = Demo
+Weather = 1
+Lua.FH_Time = 300
+Lua.FH_EscapeTheme = FDSPHR
+Lua.FH_StageType = Escape

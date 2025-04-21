@@ -95,20 +95,12 @@ end)
 
 addHook("MobjDeath", function(t,i,s)
 	if not FangsHeist.isMode() then return end
-	if not (FangsHeist.Net.escape or FangsHeist.Net.is_boss) then return end
 	if not (t and t.player and t.player.heist) then return end
 
 	local gamemode = FangsHeist.getGamemode()
 
 	gamemode:playerdeath(t.player)
 end, MT_PLAYER)
-
-states[freeslot "S_PLAY_LAVABURN"] = {
-	sprite = SPR_PLAY,
-	frame = SPR2_PAIN,
-	tics = -1,
-	nextstate = S_PLAY_LAVABURN
-}
 
 local function RingSpill(p, dontSpill)
 	if not p.rings then
@@ -148,19 +140,6 @@ local function RemoveCarry(p)
 	end
 
 	p.powers[pw_carry] = CR_NONE
-end
-
-local function DoBurn(p)
-	if not RingSpill(p, true) then
-		return
-	end
-
-	p.mo.state = S_PLAY_LAVABURN
-	P_SetObjectMomZ(p.mo, 18*FU)
-	p.powers[pw_flashing] = 2*TICRATE
-	RemoveCarry(p)
-	p.powers[pw_shield] = 0
-	return true
 end
 
 addHook("MobjDamage", function(t,i,s,dmg,dt)
@@ -212,10 +191,9 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 		P_SetObjectMomZ(sign, 4*FU)
 	end
 
-	if dt & DMG_DEATHMASK then return end
-
-	if dt == DMG_FIRE then
-		return DoBurn(t.player)
+	if dt & DMG_DEATHMASK then
+		print "INSTA DEATH"
+		return
 	end
 
 	if t.player.powers[pw_shield] then return end
@@ -231,11 +209,10 @@ end, MT_PLAYER)
 addHook("AbilitySpecial", function (p)
 	if not FangsHeist.isMode() then return end
 
-	if not FangsHeist.isPlayerNerfed(p)
-	and FangsHeist.isPlayerAlive(p)
-	and p.charability == CA_THOK
-	and not (p.pflags & PF_THOKKED) then
-		p.actionspd = 40*FU
+	if p.charability == CA_THOK then
+		p.charability = CA_DOUBLEJUMP
+		-- under no circumstances will a thok be in this mode
+		-- thoks are op for pvp
 	end
 	
 	if p.charability ~= CA_TWINSPIN then
