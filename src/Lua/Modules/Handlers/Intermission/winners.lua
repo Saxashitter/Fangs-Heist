@@ -41,8 +41,8 @@ function module.draw(v)
 			"NO WINNERS!!",
 			"CRFNT",
 			"center",
-			f,
-			v.getColormap(TC_RAINBOW, p.skincolor))
+			V_SNAPTOLEFT|V_SNAPTOTOP,
+			v.getColormap(TC_RAINBOW, SKINCOLOR_RED))
 		return
 	end
 

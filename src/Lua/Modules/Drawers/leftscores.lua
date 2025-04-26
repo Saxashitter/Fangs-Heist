@@ -103,6 +103,7 @@ local function draw_p(v, team, placement, actualPlacement)
 end
 
 function module.draw(v)
+	if FangsHeist.Net.pregame then return end
 	if not multiplayer then return end
 	if not (displayplayer and displayplayer.valid) then return end
 

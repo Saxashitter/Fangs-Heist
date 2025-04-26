@@ -7,6 +7,20 @@ states[freeslot "S_FH_PANIC"] = {
 	nextstate = S_FH_PANIC
 }
 
+states[freeslot "S_FH_INSTASHIELD"] = {
+	sprite = freeslot"SPR_TWSP",
+	frame = A|FF_ANIMATE|FF_FULLBRIGHT,
+	tics = G,
+	var1 = G,
+	var2 = 1
+}
+
+states[freeslot "S_FH_SHIELD"] = {
+	sprite = freeslot"SPR_FHSH",
+	frame = A|FF_FULLBRIGHT|FF_TRANS30,
+	tics = -1
+}
+
 local DEFAULT = {
 	difficulty = FHD_UNKNOWN,
 	pregameBackground = "FH_PREGAME_UNKNOWN",
@@ -24,6 +38,9 @@ local DEFAULT = {
 
 	useDefaultAttack = true,
 	useDefaultBlock = true,
+
+	attackEffectState = S_FH_INSTASHIELD,
+	blockShieldState = S_FH_SHIELD,
 
 	onAttack = function(self, p) end,
 	onClash = function(self, p) end,

@@ -35,6 +35,7 @@ function FangsHeist.getProfitWidth(v, profit, scale, width)
 end
 
 function module.draw(v, p)
+	if FangsHeist.Net.pregame then return end
 	local profit = 0
 	local team = FangsHeist.getTeam(p)
 

@@ -9,7 +9,7 @@ states[freeslot "S_FH_DROPDASH"] = {
 	tics = 2,
 	nextstate = S_FH_DROPDASH
 }
-local DELAY = 6
+local DELAY = 8
 local TICS = 15
 local STARTSPEED = 20*FU
 local ENDSPEED = 44*FU
@@ -17,6 +17,7 @@ local ENDSPEED = 44*FU
 local function initDropDash(sonic)
 	sonic.dropdash_tics = 0
 	sonic.dropdash_delay = 0
+	sonic.jumpheld = false
 	sonic.dropdashing = false
 end
 
@@ -45,7 +46,7 @@ local function canDropDash(p)
 		return false
 	end
 
-	return not P_IsObjectOnGround(p.mo) and p.pflags & PF_JUMPED > 0 and p.pflags & PF_STARTJUMP == 0
+	return not P_IsObjectOnGround(p.mo) and p.pflags & PF_JUMPED > 0
 end
 
 addHook("PlayerThink", function(p)
@@ -60,10 +61,15 @@ addHook("PlayerThink", function(p)
 		init(p)
 	end
 
+	if p.sonic.jumpheld
+	and not (p.cmd.buttons & BT_JUMP) then
+		p.sonic.jumpheld = false
+	end
+
 	if canDropDash(p)
-	and p.cmd.buttons & BT_JUMP then
+	and p.sonic.jumpheld then
 		if p.sonic.dropdash_delay < DELAY then
-			p.mo.tics = min($, 2)
+			p.mo.tics = min($, 1)
 			p.sonic.dropdash_delay = $+1
 
 			if p.sonic.dropdash_delay == DELAY then
@@ -111,4 +117,12 @@ addHook("ThinkFrame", do
 			S_StartSound(p.mo, sfx_zoom)
 		end
 	end
+end)
+
+addHook("AbilitySpecial", function(p)
+	if not FangsHeist.isMode() then return end
+	if not FangsHeist.isPlayerAlive(p) then return end
+	if not p.sonic then return end
+
+	p.sonic.jumpheld = true
 end)

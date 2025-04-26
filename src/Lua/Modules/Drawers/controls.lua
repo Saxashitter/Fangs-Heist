@@ -2,6 +2,7 @@ local module = {}
 
 function module.init() end
 function module.draw(v,p)
+	if FangsHeist.Net.pregame then return end
 	if not FangsHeist.isPlayerAlive(p) then return end
 
 	local x = 4

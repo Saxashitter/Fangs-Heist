@@ -31,6 +31,7 @@ addHook("NetVars", function(n)
 		"retake_anim",
 		"pregame",
 		"pregame_time",
+		"pregame_cam",
 		"placements",
 		"teams",
 		"treasures",

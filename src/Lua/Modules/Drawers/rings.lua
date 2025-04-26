@@ -9,6 +9,7 @@ function FangsHeist.drawRings(v, x, y, scale, profit, flags)
 end
 
 function module.draw(v, p)
+	if FangsHeist.Net.pregame then return end
 	FangsHeist.drawRings(v, 12*FU, 12*FU+(14*FU), FU, p.rings, V_SNAPTOLEFT|V_SNAPTOTOP)
 end
 

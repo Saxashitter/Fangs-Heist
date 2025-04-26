@@ -140,25 +140,6 @@ Lua.FH_EscapeHurryUp = false
 Lua.FH_LastManStanding = true
 Lua.FH_StageType = Escape
 
-Level 16
-Levelname = Red Volcano
-Act = 1
-Keywords = RVZ1
-Music = OLRVZ1
-TypeOfLevel = Heist
-NextLevel = 1100
-SkyNum = 159
-SkyboxScaleZ = 32
-RecordAttack = true
-LevelSelect = 1
-SaveGame = true
-FlickyList = Pig,Cat
-SelectHeading = Supported Maps
-Lua.FH_EscapeTheme = MIGMAG
-Lua.FH_StageType = Escape
-Lua.FH_Time = 300
-#Cow and Pig will be replaced with Monkey and Iguana when complete.
-
 level P2
 LevelName = Acid Overflow
 TypeOfLevel = Heist

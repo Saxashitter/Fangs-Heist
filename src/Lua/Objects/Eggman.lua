@@ -272,12 +272,12 @@ end
 
 local function PT_CHASE(mo)
 	local p = getNearestPlayer(mo)
+	if not p then return end
+
 	if mo._lastplayer ~= p then
 		doAlert(p.mo)
 		mo._lastplayer = p
 	end
-
-	if not p then return end
 
 	local target = p.mo
 

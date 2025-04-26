@@ -49,6 +49,7 @@ addHook("ThinkFrame", do
 end)
 
 local function manageBlockMobj(p)
+	local char = FangsHeist.Characters[p.mo.skin]
 	if not (p.heist.blockMobj and p.heist.blockMobj.valid) then
 		p.heist.blockMobj = nil
 	end
@@ -72,7 +73,7 @@ local function manageBlockMobj(p)
 	if p.heist.blocking then
 		if not p.heist.blockMobj then
 			local shield = P_SpawnMobjFromMobj(p.mo, 0,0,0, MT_THOK)
-			shield.state = S_FH_SHIELD
+			shield.state = char.blockShieldState
 			shield.dispoffset = 10
 			shield.flags = MF_NOTHINK
 			shield.spriteyoffset = -2*FU
@@ -97,20 +98,6 @@ local function manageBlockMobj(p)
 		end
 	end
 end
-
-states[freeslot "S_FH_INSTASHIELD"] = {
-	sprite = freeslot"SPR_TWSP",
-	frame = A|FF_ANIMATE|FF_FULLBRIGHT,
-	tics = G,
-	var1 = G,
-	var2 = 1
-}
-
-states[freeslot "S_FH_SHIELD"] = {
-	sprite = freeslot"SPR_FHSH",
-	frame = A|FF_FULLBRIGHT|FF_TRANS30,
-	tics = -1
-}
 
 local function L_ReturnThrustXYZ(mo, point, speed)
 	local horz = R_PointToAngle2(mo.x, mo.y, point.x, point.y)
@@ -179,7 +166,7 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 		return false
 	end
 
-	if dt & DMG_WATER then
+	if dt == DMG_WATER then
 		return false
 	end
 
@@ -289,7 +276,7 @@ return function(p)
 		p.heist.attack_time = FH_ATTACKTIME
 
 		local shield = P_SpawnMobjFromMobj(p.mo, 0,0,0, MT_THOK)
-		shield.state = S_FH_INSTASHIELD
+		shield.state = char.attackEffectState
 		shield.target = p.mo
 		table.insert(instashields, shield)
 
@@ -346,7 +333,8 @@ return function(p)
 				P_InstaThrust(p.mo, angle, -10*FU)
 				p.pflags = $ & ~(PF_SPINNING|PF_STARTDASH)
 			else
-				p.pflags = ($|PF_SPINNING) & ~(PF_JUMPED|PF_THOKKED)
+				p.pflags = $|PF_SPINNING
+				p.pflags = $ & ~(PF_JUMPED|PF_STARTJUMP|PF_THOKKED|PF_BOUNCING|PF_GLIDING)
 				p.mo.state = S_PLAY_FALL
 				P_InstaThrust(p.mo, angle, -10*FU)
 			end

@@ -24,6 +24,7 @@ local function draw_sign(v, sign, mo, x, y)
 end
 
 function module.draw(v,p,c)
+	if FangsHeist.Net.pregame then return end
 	local sign = FangsHeist.Net.sign
 
 	local mo = p.realmo

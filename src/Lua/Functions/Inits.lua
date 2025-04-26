@@ -53,7 +53,6 @@ function FangsHeist.initMode(map)
 	FangsHeist.HUD = copy(orig_hud)
 
 	FangsHeist.Net.gamemode = 1
-	FangsHeist.Net.is_boss = string.lower(mapheaderinfo[map].fh_boss or "") == "true"
 
 	local info = mapheaderinfo[map]
 	local gamemode = FangsHeist.getGamemode()
@@ -99,6 +98,31 @@ function FangsHeist.initMode(map)
 	end
 
 	FangsHeist.Save.last_map = map
+
+	if info.fh_pregamecamx
+	and info.fh_pregamecamy
+	and info.fh_pregamecamz then
+		local x = tonumber(info.fh_pregamecamx)*FU
+		local y = tonumber(info.fh_pregamecamy)*FU
+		local z = tonumber(info.fh_pregamecamz)*FU
+
+		print(info.fh_pregamecamx)
+		print(info.fh_pregamecamy)
+		print(info.fh_pregamecamz)
+		print(info.fh_pregamecamdist)
+
+		local angle = FixedAngle((tonumber(info.fh_pregamecamangle) or 0)*FU)
+		local dist = (tonumber(info.fh_pregamecamdist) or 0)*FU
+
+		FangsHeist.Net.pregame_cam = {
+			enabled = true,
+			x = x,
+			y = y,
+			z = z,
+			angle = angle,
+			dist = dist
+		}
+	end
 
 	gamemode:init(map)
 

@@ -148,7 +148,7 @@ local function draw_cs(v,p)
 
 	FangsHeist.DrawString(v,
 		x,
-		100*FU-(radius/2)+(16*scale/2),
+		100*FU-(16*scale/2),
 		scale,
 		skin.realname:upper(),
 		"CRFNT",
@@ -309,26 +309,30 @@ function module.draw(v,p)
 	local sh = v.height()*FU/v.dupy()
 	local f = alpha*V_10TRANS
 
-	local skin = displayplayer
-	and displayplayer.heist
-	and displayplayer.heist.locked_skin or 0
+	local skin = consoleplayer
+	and consoleplayer.heist
+	and consoleplayer.heist.locked_skin or 0
 
 	-- background
-	local patch = v.cachePatch(
-		FangsHeist.Characters[skins[skin].name].pregameBackground
-	)
-	local y = -patch.height*FU + (leveltime*FU/2) % (patch.height*FU)
-	local x = -patch.width*FU + (leveltime*FU/2) % (patch.width*FU)
-
-	while y < sh do
-		local x = x
-
-		while x < sw do
-			v.drawScaled(x, y, FU, patch, V_SNAPTOLEFT|V_SNAPTOTOP|f)
-			x = $+patch.width*FU
-		end
+	if not FangsHeist.Net.pregame_cam.enabled then
+		local patch = v.cachePatch(
+			FangsHeist.Characters[skins[skin].name].pregameBackground
+		)
+		local y = -patch.height*FU + (leveltime*FU/2) % (patch.height*FU)
+		local x = -patch.width*FU + (leveltime*FU/2) % (patch.width*FU)
 	
-		y = $+patch.height*FU
+		while y < sh do
+			local x = x
+	
+			while x < sw do
+				v.drawScaled(x, y, FU, patch, V_SNAPTOLEFT|V_SNAPTOTOP|f)
+				x = $+patch.width*FU
+			end
+		
+			y = $+patch.height*FU
+		end
+	else
+		v.fadeScreen(0xFF00, 31/3)
 	end
 
 	local num = FangsHeist.Net.pregame_time/TICRATE

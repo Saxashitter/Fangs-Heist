@@ -53,6 +53,7 @@ end
 
 function module.init() end
 function module.draw(v,p,c)
+	if FangsHeist.Net.pregame then return end
 	if not (p and p.mo and p.mo.valid) then return end
 
 	for sp in players.iterate do

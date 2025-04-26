@@ -41,8 +41,9 @@ return function()
 		team.added_sign = signGot
 
 		if treasures ~= team.treasures then
-			local gain = team.treasures+(treasures-team.treasures)
-			team.profit = max(0, $+120*gain)
+			local gain = treasures - team.treasures
+	
+			team.profit = max(0, $+(120*gain))
 		end
 
 		team.treasures = treasures
