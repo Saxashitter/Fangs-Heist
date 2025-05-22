@@ -209,12 +209,6 @@ end, MT_PLAYER)
 addHook("AbilitySpecial", function (p)
 	if not FangsHeist.isMode() then return end
 
-	if p.charability == CA_THOK then
-		p.charability = CA_DOUBLEJUMP
-		-- under no circumstances will a thok be in this mode
-		-- thoks are op for pvp
-	end
-	
 	if p.charability ~= CA_TWINSPIN then
 		return FangsHeist.isPlayerNerfed(p)
 	end

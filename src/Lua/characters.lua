@@ -24,6 +24,7 @@ states[freeslot "S_FH_SHIELD"] = {
 local DEFAULT = {
 	difficulty = FHD_UNKNOWN,
 	pregameBackground = "FH_PREGAME_UNKNOWN",
+	customPregameBackground = nil,
 
 	panicState = S_FH_PANIC,
 

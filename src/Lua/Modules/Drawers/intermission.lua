@@ -72,7 +72,7 @@ skincolors[SKINCOLOR_REALLYREALLYBLACK] = {
     accessible = false
 }
 --The Color is the thing: This Color Matches the Player's Color and Fades Out to Black
-freeslot("SKINCOLOR_INTERMISSIONCOLOR")
+--[[freeslot("SKINCOLOR_INTERMISSIONCOLOR")
 addHook("ThinkFrame",do
 	local index = color.rgbToPalette(255,255,255) --All White, That's all
 	if FangsHeist.Net.game_over
@@ -98,14 +98,11 @@ addHook("ThinkFrame",do
 		ramp = {0,0,0,hex,0,0,0,0,0,0,0,0,0,0,0,0}, --All White except the 4th Ramp
 		accessible = false
 	}
-end)
+end)]]
 // UNEXPECTED HOOK GRAAAAHHH
 addHook("PlayerCmd", function(_, _cmd)
+	if not FangsHeist.isMode() then return end
 	if not FangsHeist.Net.game_over then return end
-
-	lastbuttons = buttons
-	lastside = sidemove
-	lastforward = forwardmove
 
 	buttons = _cmd.buttons
 	forwardmove = _cmd.forwardmove
@@ -207,20 +204,44 @@ end
 addHook("PostThinkFrame", do
 	if not FangsHeist.isMode() then return end
 	if not FangsHeist.Net.game_over then return end
+
 	if FangsHeist.Net.retaking then return end
 	if statealpha == 10 then return end
 
-	local state = states[current]
-	if not state then return end
+	local select = 0
 
-	state.think({
-		buttons = buttons;
-		sidemove = sidemove;
-		forwardmove = forwardmove;
-		lastbuttons = lastbuttons;
-		lastside = lastside;
-		lastforward = lastforward
-	})
+	if buttons & BT_WEAPONNEXT
+	and not (lastbuttons & BT_WEAPONNEXT) then
+		select = $+1
+	end
+	if buttons & BT_WEAPONPREV
+	and not (lastbuttons & BT_WEAPONPREV) then
+		select = $-1
+	end
+
+	local lastCurrent = current
+	current = max(1, min($+select, #states))
+
+	if lastCurrent ~= current then
+		S_StartSound(nil, sfx_menu1)
+	end
+
+	local state = states[current]
+
+	if state then
+		state.think({
+			buttons = buttons;
+			sidemove = sidemove;
+			forwardmove = forwardmove;
+			lastbuttons = lastbuttons;
+			lastside = lastside;
+			lastforward = lastforward
+		})
+	end
+
+	lastbuttons = buttons
+	lastside = sidemove
+	lastforward = forwardmove
 end)
 
 local function draw_intermission(v)
@@ -284,29 +305,6 @@ local function draw_tabs(v)
 	end
 end
 
-local function manage_intermission(v)
-	if statealpha == 10 then
-		return
-	end
-
-	local select = 0
-
-	if buttons & BT_WEAPONNEXT
-	and not (lastbuttons & BT_WEAPONNEXT) then
-		select = $+1
-	end
-	if buttons & BT_WEAPONPREV
-	and not (lastbuttons & BT_WEAPONPREV) then
-		select = $-1
-	end
-
-	local lastCurrent = current
-	current = max(1, min($+select, #states))
-
-	if lastCurrent ~= current then
-		S_StartSound(nil, sfx_menu1)
-	end
-end
 --Bouncing Ease i made, If you wanted to Use this code, Let me know
 ease.inbounce = function(tic,s,m,e)
 	local ts = max(0,min(FixedDiv(tic-(FU/2),FU/2),FU))
@@ -426,9 +424,6 @@ function module.draw(v)
 	end
 
 	manage_fade_screen(v)
-	if not FangsHeist.Net.retaking then
-		manage_intermission(v)
-	end
 	draw_intermission(v)
 	draw_tabs(v)
 	draw_retake_factor(v)

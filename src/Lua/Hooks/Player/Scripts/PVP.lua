@@ -49,7 +49,6 @@ addHook("ThinkFrame", do
 end)
 
 local function manageBlockMobj(p)
-	local char = FangsHeist.Characters[p.mo.skin]
 	if not (p.heist.blockMobj and p.heist.blockMobj.valid) then
 		p.heist.blockMobj = nil
 	end
@@ -69,6 +68,8 @@ local function manageBlockMobj(p)
 
 		return
 	end
+
+	local char = FangsHeist.Characters[p.mo.skin]
 
 	if p.heist.blocking then
 		if not p.heist.blockMobj then

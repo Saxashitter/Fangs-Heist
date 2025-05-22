@@ -614,6 +614,7 @@ end
 function gamemode:doRound2(p)
 	if not FangsHeist.Net.round_2 then return end
 	if p.heist.reached_second then return end
+	if HeistHook.runHook("Round2", p) then return end
 
 	local pos = FangsHeist.Net.round_2_teleport.pos
 

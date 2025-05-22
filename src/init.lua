@@ -52,7 +52,6 @@ dofile "Movesets/Sonic"
 dofile "modsupport"
 
 dofile "Compat/Mario"
-dofile "Compat/Soap"
 dofile "Compat/S3 Sonic"
 dofile "Compat/Bean"
 dofile "Compat/Eggman"

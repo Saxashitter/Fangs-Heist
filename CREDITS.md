@@ -1,28 +1,37 @@
 # Saxashitter
 - Director
 - Main Coder
+- Made alot of the UI
 
 # Unmatched Bracket
 ## Side Coder
 - Coded Signpost Visuals
 - Coded Fang's Dialogue
+- Tutorial (Original edit for PTV2)
 - HookLib creator
 ## Concept Maker
 - "GO! GO! GO!" Scene
 - Original Fang dialogue sprites (Fank. It has a 1/69 chance of appearing ingame)
 
-# Neonie.pk3
-- Main Artist/Art Director
+# LeoTheHedgehog12
+- Made A1 and A2 rotations for Marvellous Queen
+
+# I.D.K
+- Made Intermission background
+- Finished Marvellous Queen rotations
+
+# dark kirby
+- Originally created the GFZ1 edit for PTV3
 
 # Pyrodiac
 ## Main Mapper
 - Vicious Volcano
 - GFZ1
 - GFZ2
-- F.D. THZ (Basic)
+- F.D. THZ
+- F.D. CEZ
 - Titlescreen Map
-## ETC
-- Added Sound Test
+- Acid Overflow
 
 # enes2gamer
 ## Mapper
@@ -30,8 +39,8 @@
 
 # Pacola
 ## Mapper
-- THZ (Basic)
-- F.D. GFZ (Basic)
+- THZ1
+- F.D. GFZ
 ## Coder
 - Bug fixer
 - Tweaker
@@ -59,29 +68,30 @@
 ## Ex-Spriter
 - All treasures in-game
 
-# Yousuke Yasui:
+# ZrUltra
+## Composer
+- Ready For Round 2
+
+# Tokonemu
+## Composer
+- Pre-Game
+
+# Yousuke Yasui
 ## Composer
 ### Mamorukun Curse!:
 - YO-KAI Disco!
 - Superhero
 - Kiwagana Princess
-- Mantra
 - Bless you! boy
-- Game Over Theme
-- Fine Day
-- Lost Wind
-- Retake Theme (...What is it called?)
+- Will Force
+- The Curse
+- The Curse Again
+### ESCHATOS
+- Point of No Return
 ### Megalomachia2
 - SUPER-REFLEX
 ### Natsuki Chronicles
 - Mighty Magma Red
-## Eschatos
-- EXTERMINATION
-
-# Rumya
-## Composer
-### +TEK Touhou Arrangements
-- Faith is for the Transient People
 
 # +TEK
 ## Composer
@@ -96,3 +106,8 @@
 # luigi budd
 ## Contributor
 - Provided me his slightly-modded HookLib.
+
+# Dirk the Husky
+- Sonic Drop-Dash sprites
+# NeoZiggy
+- Pretty much the guy who gave me the idea to make this months back. I have no regrets. Thanks

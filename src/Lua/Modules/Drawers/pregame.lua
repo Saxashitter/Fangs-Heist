@@ -254,8 +254,7 @@ local function draw_team(v,p)
 	end
 
 	// ready button
-	local ready = v.cachePatch("FH_READY")
-	local scale = FU
+	--[[local scale = FU
 	local color = v.getColormap(TC_RAINBOW, SKINCOLOR_GREY)
 	if p.heist.cur_menu == 0 then
 		scale = tofixed("1.25")
@@ -267,7 +266,11 @@ local function draw_team(v,p)
 		scale,
 		ready,
 		V_SNAPTOBOTTOM|f,
-		color)
+		color)]]
+
+	local color = p.heist.cur_menu == 0 and V_GREENMAP or 0
+
+	v.drawString(160, 200-12, "READY", V_SNAPTOBOTTOM|color, "center")
 
 
 	local i = 1
@@ -315,21 +318,24 @@ function module.draw(v,p)
 
 	-- background
 	if not FangsHeist.Net.pregame_cam.enabled then
-		local patch = v.cachePatch(
-			FangsHeist.Characters[skins[skin].name].pregameBackground
-		)
-		local y = -patch.height*FU + (leveltime*FU/2) % (patch.height*FU)
-		local x = -patch.width*FU + (leveltime*FU/2) % (patch.width*FU)
-	
-		while y < sh do
-			local x = x
-	
-			while x < sw do
-				v.drawScaled(x, y, FU, patch, V_SNAPTOLEFT|V_SNAPTOTOP|f)
-				x = $+patch.width*FU
-			end
+		local char = FangsHeist.Characters[skins[skin].name]
+		if not char.customPregameBackground then
+			local patch = v.cachePatch(char.pregameBackground)
+			local y = -patch.height*FU + (leveltime*FU/2) % (patch.height*FU)
+			local x = -patch.width*FU + (leveltime*FU/2) % (patch.width*FU)
 		
-			y = $+patch.height*FU
+			while y < sh do
+				local x = x
+		
+				while x < sw do
+					v.drawScaled(x, y, FU, patch, V_SNAPTOLEFT|V_SNAPTOTOP|f)
+					x = $+patch.width*FU
+				end
+			
+				y = $+patch.height*FU
+			end
+		else
+			char.customPregameBackground(v,consoleplayer)
 		end
 	else
 		v.fadeScreen(0xFF00, 31/3)
