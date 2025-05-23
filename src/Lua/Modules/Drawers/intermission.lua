@@ -246,23 +246,22 @@ end)
 
 local function draw_intermission(v)
 	if statealpha == 10 then return end
+	if retakealpha == 0 then return end
 
-	scale = ease.linear(FU/15, $, FU)
-
-	local warp = vwarp(v, {
-		transp = statealpha,
-		xorigin = (v.width()*FU/v.dupx())/2,
-		yorigin = (v.height()*FU/v.dupy())/2,
-		xscale = scale,
-		yscale = scale
-	})
-	draw_bg(warp)
+	draw_bg(v)
 
 	local state = states[current]
 
 	if state then
-		state.draw(warp, consoleplayer)
+		state.draw(v, consoleplayer)
 	end
+
+	local fillalpha = 10 - statealpha
+	if fillalpha < 10 then
+		local f = V_10TRANS*fillalpha
+		draw_rect(v, 0, 0, v.width()*FU/v.dupx(), v.height()*FU/v.dupy(), V_SNAPTOLEFT|V_SNAPTOTOP|f, SKINCOLOR_REALLYREALLYBLACK)
+	end
+
 end
 
 local function calc_tab_order(selected, count)
@@ -283,6 +282,7 @@ end
 
 local function draw_tabs(v)
 	if statealpha == 10 then return end
+	if retakealpha == 0 then return end
 
 	local alpha = statealpha*V_10TRANS
 
