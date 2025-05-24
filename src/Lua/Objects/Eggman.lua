@@ -9,7 +9,7 @@ local function alertZPos(mo)
 
 	if mo.player
 	and mo.player.heist then
-		if p.heist:hasSign(mo.player) then
+		if mo.player.heist:hasSign() then
 			height = $+48*mo.scale
 		end
 		height = $+24*#mo.player.heist.treasures

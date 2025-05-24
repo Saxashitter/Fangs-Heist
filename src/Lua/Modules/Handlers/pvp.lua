@@ -107,7 +107,7 @@ local function attackPlayers(p)
 		if not playerCheck(sp) then continue end
 		if sp == p then continue end
 		if p.heist:isPartOfTeam(sp)
-		and not p.heist:hasSign(sp) then
+		and not sp.heist:hasSign() then
 			continue
 		end
 		if sp.powers[pw_flashing]

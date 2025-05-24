@@ -205,7 +205,7 @@ local function draw_team(v,p)
 	local boxheight = 16
 	local boxwidth = 80
 
-	local teamleng = max(0, FangsHeist.CVars.team_limit.value-1)
+	local teamleng = max(0, FangsHeist.CVars.team_limit.value)
 
 	local names = {}
 	if p.heist.playersList then
@@ -224,7 +224,7 @@ local function draw_team(v,p)
 	end
 
 	if p.heist:isTeamLeader()
-	and FangsHeist.getTeamLength(p) < teamleng then
+	and #p.heist:getTeam() < teamleng then
 		v.drawString(6, 24-8, "JOIN PLAYERS", V_SNAPTOLEFT|f, "thin")
 		draw_menu(v, 6, 24, 80, 16, names, cur_sel, hud_sel, V_SNAPTOLEFT|f)
 	end
@@ -248,7 +248,7 @@ local function draw_team(v,p)
 	end
 
 	if p.heist:isTeamLeader()
-	and FangsHeist.getTeamLength(p) < teamleng then
+	and #p.heist:getTeam() < teamleng then
 		v.drawString(320-86, 24-8, "JOIN REQUESTS", V_SNAPTORIGHT|f, "thin")
 		draw_menu(v, 320-86, 24, 80, 16, requests, cur_sel, hud_sel, V_SNAPTORIGHT|f)
 	end

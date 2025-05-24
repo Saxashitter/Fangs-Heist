@@ -181,7 +181,7 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	end
 
 	if not givenSign
-	and p.heist:hasSign(t.player) then
+	and t.player.heist:hasSign() then
 		local sign = FangsHeist.Net.sign
 		sign.holder = nil
 
