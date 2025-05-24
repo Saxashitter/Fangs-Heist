@@ -172,7 +172,7 @@ local function module()
 			continue
 		end
 
-		if not FangsHeist.isPlayerAtGate(p) then
+		if not p.heist:isAtGate() then
 			if FangsHeist.Save.retakes then
 				table.insert(potential_positions, {
 					player = p
@@ -187,8 +187,8 @@ local function module()
 
 		p.heist.exiting = true
 
-		if FangsHeist.playerHasSign(p) then
-			local team = FangsHeist.getTeam(p)
+		if p.heist:hasSign() then
+			local team = p.heist:getTeam()
 
 			team.had_sign = true
 

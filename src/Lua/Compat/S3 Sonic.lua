@@ -11,7 +11,7 @@ addHook("PlayerThink", function(p)
 
 	if not char.forceSpeedCap then return end
 
-	if FangsHeist.isPlayerNerfed(p) then
+	if p.heist:isNerfed() then
 		-- S3 Sonic's momentum allows him to bypass the speed limit.
 		-- Oh no you don't! Cap his speed, ALWAYS!
 		local speed = FixedHypot(p.rmomx, p.rmomy)

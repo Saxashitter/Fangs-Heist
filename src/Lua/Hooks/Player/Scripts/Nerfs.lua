@@ -2,7 +2,7 @@ return function(p)
 	p.dashmode = 0
 
 	local spindash_limit = 45*FU
-	if FangsHeist.isPlayerNerfed(p) then
+	if p.heist:isNerfed() then
 		p.heist.corrected_speed = false
 		p.climbing = 0
 		p.normalspeed = min(FH_NERFSPEED, $)

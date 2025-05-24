@@ -69,7 +69,7 @@ local function draw_p(v, team, placement, actualPlacement)
 	v.drawString(SCORE_X,
 		SCORE_Y+target_y,
 		name,
-		V_SNAPTOLEFT|V_SNAPTOTOP|(displayplayer.heist and FangsHeist.isPartOfTeam(displayplayer, team[1]) and V_YELLOWMAP or 0),
+		V_SNAPTOLEFT|V_SNAPTOTOP|(displayplayer.heist and displayplayer.heist:isPartOfTeam(team[1]) and V_YELLOWMAP or 0),
 		"thin-fixed")
 
 	local str_width = v.stringWidth(name, 0, "thin")
@@ -85,7 +85,7 @@ local function draw_p(v, team, placement, actualPlacement)
 		if sp
 		and sp.valid
 		and FangsHeist.isPlayerAlive(sp)
-		and FangsHeist.playerHasSign(sp) then
+		and p.heist:hasSign(sp) then
 			sign = true
 			break
 		end
@@ -108,7 +108,7 @@ function module.draw(v)
 	if not (displayplayer and displayplayer.valid) then return end
 
 	local drawedSelf = false
-	local self = FangsHeist.getTeam(displayplayer)
+	local self = displayplayer.heist:getTeam()
 
 	for i = 1,3 do
 		local p = FangsHeist.Net.placements[i]

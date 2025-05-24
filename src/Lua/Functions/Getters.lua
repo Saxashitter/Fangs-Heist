@@ -33,37 +33,6 @@ function FangsHeist.getNearbyPlayers(mobj, distscale, blacklist)
 	return nearby
 end
 
-function FangsHeist.playerHasSign(p)
-	return (FangsHeist.Net.sign
-		and FangsHeist.Net.sign.valid
-		and FangsHeist.Net.sign.holder == p.mo)
-end
-
-function FangsHeist.getTeam(p)
-	for _,team in ipairs(FangsHeist.Net.teams) do
-		for _,player in ipairs(team) do
-			if player == p then
-				return team
-			end
-		end
-	end
-
-	--[[if not team
-	and FangsHeist.isAbleToTeam(p) then
-		team = FangsHeist.initTeam(p)
-	end]]
-
-	return false
-end
-
-function FangsHeist.getTeamLength(p)
-	if not (p and p.heist) then return 0 end
-
-	local team = FangsHeist.getTeam(p)
-
-	return #team-1
-end
-
 function FangsHeist.playerCount()
 	local count = {
 		total = 0,
@@ -88,7 +57,7 @@ function FangsHeist.playerCount()
 			continue
 		end
 
-		if FangsHeist.isTeamLeader(p) then
+		if p.heist:isTeamLeader() then
 			count.team = $+1
 		end
 
@@ -96,19 +65,6 @@ function FangsHeist.playerCount()
 	end
 
 	return count
-end
-
-// Returns -1 if the player isn't placed anywhere.
-function FangsHeist.getPlayerPlacement(p)
-	for i,team in ipairs(FangsHeist.Net.placements) do
-		for _,sp in ipairs(team) do
-			if sp == p then
-				return i
-			end
-		end
-	end
-
-	return -1
 end
 
 // Used for loading colors from files.

@@ -9,7 +9,12 @@ G_AddGametype({
 	description = "Grab that \130signpost\128, get more \131profit,\128\nand GO! GO! GO!"
 })
 
-rawset(_G, "FangsHeist", {Net = {}, HUD = {}, Objects = {}, Save = {}})
+rawset(_G, "FangsHeist", {
+	Net = {},
+	Objects = {},
+	Save = {},
+	PlayerMetaTable = {}
+})
 
 // FANGS HEIGHT IS BY SAXASHITTER
 // OFFICIAL SEQUEL TO NICK'S PIZZA TIME!

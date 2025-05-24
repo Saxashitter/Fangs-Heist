@@ -409,7 +409,7 @@ function gamemode:start()
 
 	for p in players.iterate do
 		if FangsHeist.isPlayerAlive(p)
-		and FangsHeist.isTeamLeader(p) then
+		and p.heist:isTeamLeader() then
 			table.insert(randPlyrs, p)
 		end
 	end
@@ -599,9 +599,9 @@ function gamemode:manageExiting()
 		p.mo.state = S_PLAY_STND
 		p.camerascale = FU*3
 
-		if FangsHeist.playerHasSign(p)
+		if p.heist:hasSign()
 		and not p.heist.exiting then
-			local team = FangsHeist.getTeam(p)
+			local team = p.heist:getTeam()
 
 			team.had_sign = true
 			self:respawnSign()

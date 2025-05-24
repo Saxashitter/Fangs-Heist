@@ -9,7 +9,7 @@ local function alertZPos(mo)
 
 	if mo.player
 	and mo.player.heist then
-		if FangsHeist.playerHasSign(mo.player) then
+		if p.heist:hasSign(mo.player) then
 			height = $+48*mo.scale
 		end
 		height = $+24*#mo.player.heist.treasures
@@ -287,7 +287,7 @@ local function PT_CHASE(mo)
 	if P_PlayerInPain(p) 
 	or p.powers[pw_flashing] then
 		speed = 6*FU
-	elseif FangsHeist.isPlayerNerfed(p) then
+	elseif p.heist:isNerfed() then
 		// We're a bitch, but not that big of a bitch.
 		speed = 18*FU
 	end

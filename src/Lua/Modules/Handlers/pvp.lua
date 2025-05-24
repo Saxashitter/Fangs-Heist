@@ -106,8 +106,8 @@ local function attackPlayers(p)
 	for sp in players.iterate do
 		if not playerCheck(sp) then continue end
 		if sp == p then continue end
-		if FangsHeist.isPartOfTeam(p, sp)
-		and not FangsHeist.playerHasSign(sp) then
+		if p.heist:isPartOfTeam(sp)
+		and not p.heist:hasSign(sp) then
 			continue
 		end
 		if sp.powers[pw_flashing]

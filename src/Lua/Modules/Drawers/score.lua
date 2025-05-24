@@ -37,7 +37,7 @@ end
 function module.draw(v, p)
 	if FangsHeist.Net.pregame then return end
 	local profit = 0
-	local team = FangsHeist.getTeam(p)
+	local team = p.heist:getTeam()
 
 	if team then
 		profit = team.profit

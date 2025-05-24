@@ -28,7 +28,7 @@ function module.draw(v,p)
 		table.insert(strData, {str = str, f = f})
 	end
 
-	if FangsHeist.playerHasSign(p) then
+	if p.heist:hasSign() then
 		table.insert(strData, {
 			str = "[TOSS FLAG] - Toss Sign",
 			f = 0})

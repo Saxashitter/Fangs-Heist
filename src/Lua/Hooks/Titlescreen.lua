@@ -166,7 +166,7 @@ addHook("HUD", function(v)
 			logo)
 	end
 
-	local version = "Demo 1 (The Greenflower Demo)"
+	local version = "Demo 2 Pre-Alpha"
 	local texts = {
 		{y = 192,text = "https://github.com/Saxashitter/Fangs-Heist"},
 		{y = 182,text = "Version: "..version}, --For SRB2MB version or GitHub Commit Version

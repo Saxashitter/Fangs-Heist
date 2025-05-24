@@ -223,7 +223,7 @@ local function draw_team(v,p)
 		hud_sel = 8
 	end
 
-	if FangsHeist.isTeamLeader(p)
+	if p.heist:isTeamLeader()
 	and FangsHeist.getTeamLength(p) < teamleng then
 		v.drawString(6, 24-8, "JOIN PLAYERS", V_SNAPTOLEFT|f, "thin")
 		draw_menu(v, 6, 24, 80, 16, names, cur_sel, hud_sel, V_SNAPTOLEFT|f)
@@ -247,7 +247,7 @@ local function draw_team(v,p)
 		end
 	end
 
-	if FangsHeist.isTeamLeader(p)
+	if p.heist:isTeamLeader()
 	and FangsHeist.getTeamLength(p) < teamleng then
 		v.drawString(320-86, 24-8, "JOIN REQUESTS", V_SNAPTORIGHT|f, "thin")
 		draw_menu(v, 320-86, 24, 80, 16, requests, cur_sel, hud_sel, V_SNAPTORIGHT|f)
@@ -285,7 +285,7 @@ local function draw_team(v,p)
 			local name = sp.name
 			local f = f|V_SNAPTOTOP
 	
-			if FangsHeist.isTeamLeader(sp) then
+			if sp.heist:isTeamLeader() then
 				f = $|V_YELLOWMAP
 			end
 	

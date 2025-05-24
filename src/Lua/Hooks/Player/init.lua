@@ -163,25 +163,25 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if s
 	and s.player
 	and s.player.heist then
-		local team = FangsHeist.getTeam(s.player)
+		local team = s.player.heist:getTeam()
 
-		if FangsHeist.playerHasSign(t.player)
-		and FangsHeist.isEligibleForSign(s.player) then
+		if t.player.heist:hasSign()
+		and s.player.heist:isEligibleForSign() then
 			FangsHeist.giveSignTo(s.player)
 			givenSign = true
 		end
 
 		if not (t.health) then
 			s.player.heist.deadplayers = $+1
-			FangsHeist.gainProfit(s.player, 50)
+			s.player.heist:gainProfit(50)
 		else
 			s.player.heist.hitplayers = $+1
-			FangsHeist.gainProfit(s.player, 28)
+			s.player.heist:gainProfit(28)
 		end
 	end
 
 	if not givenSign
-	and FangsHeist.playerHasSign(t.player) then
+	and p.heist:hasSign(t.player) then
 		local sign = FangsHeist.Net.sign
 		sign.holder = nil
 
@@ -210,7 +210,7 @@ addHook("AbilitySpecial", function (p)
 	if not FangsHeist.isMode() then return end
 
 	if p.charability ~= CA_TWINSPIN then
-		return FangsHeist.isPlayerNerfed(p)
+		return p.heist:isNerfed()
 	end
 end)
 
@@ -225,7 +225,7 @@ addHook("MobjCollide", function(pmo, mo)
 	or not (mo.target.player and mo.target.player.valid) then return end
 	
 	local p = pmo.player
-	if FangsHeist.isPartOfTeam(p, mo.target.player) then
+	if p.heist:isPartOfTeam(mo.target.player) then
 		return false
 	end
 	if p == mo.target.player then

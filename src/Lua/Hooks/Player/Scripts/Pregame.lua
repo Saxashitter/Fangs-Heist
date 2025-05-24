@@ -1,16 +1,16 @@
 local showhud = CV_FindVar("showhud")
 
 local function valid(p, sp)
-	local teamleng = max(0, FangsHeist.CVars.team_limit.value-1)
+	local teamleng = max(0, FangsHeist.CVars.team_limit.value)
 
 	return sp
 	and sp.valid
 	and sp.heist
 	and sp ~= p
 	and not sp.heist.invites[p]
-	and not FangsHeist.isPartOfTeam(p, sp)
-	and FangsHeist.isTeamLeader(sp)
-	and FangsHeist.getTeamLength(sp) < teamleng
+	and not p.heist:isPartOfTeam(sp)
+	and sp.heist:isTeamLeader()
+	and #sp.heist:getTeam() < teamleng
 end
 
 // yes i know this code is weird
@@ -88,8 +88,8 @@ return function(p)
 		// 0 == Ready button
 		// 1 == Requests
 
-		local teamleng = max(0, FangsHeist.CVars.team_limit.value-1)
-		local canSwitch = FangsHeist.getTeamLength(p) < teamleng and FangsHeist.isTeamLeader(p)
+		local teamleng = max(0, FangsHeist.CVars.team_limit.value)
+		local canSwitch = #p.heist:getTeam() < teamleng and p.heist:isTeamLeader()
 
 		if horz
 		and canSwitch then
@@ -131,7 +131,7 @@ return function(p)
 				if sp
 				and sp.valid
 				and sp.heist
-				and FangsHeist.isTeamLeader(sp) then
+				and sp.heist:isTeamLeader() then
 					if sp.bot then
 						FangsHeist.joinTeam(p, sp)
 					else

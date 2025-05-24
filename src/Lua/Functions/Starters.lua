@@ -72,11 +72,11 @@ function FangsHeist.startIntermission()
 
 	for p in players.iterate do
 		if not (FangsHeist.isPlayerAlive(p)
-		and FangsHeist.getTeamLength(p) < 1) then
+		and #p.heist:getTeam() < 1) then
 			continue
 		end
 
-		local team = FangsHeist.getTeam(p)
+		local team = p.heist:getTeam()
 
 		table.insert(FangsHeist.Save.ServerScores[gamemap], {
 			p.mo.skin,

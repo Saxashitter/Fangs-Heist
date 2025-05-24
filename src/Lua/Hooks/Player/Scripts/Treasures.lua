@@ -8,7 +8,7 @@ return function(p)
 	if p ~= displayplayer then return end
 	if not FangsHeist.isPlayerAlive(p) then return end
 
-	local team = FangsHeist.getTeam(p)
+	local team = p.heist:getTeam()
 	if not team then return end
 
 	for _,sp in ipairs(team) do

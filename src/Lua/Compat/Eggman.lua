@@ -3,5 +3,5 @@ addHook("PlayerThink", function(p)
 	if not FangsHeist.isPlayerAlive(p) then return end
 	if p.mo.skin ~= "eggman" then return end
 
-	p.gotflagdebuff = FangsHeist.isPlayerNerfed(p)
+	p.gotflagdebuff = p.heist:isNerfed()
 end)

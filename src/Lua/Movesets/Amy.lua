@@ -162,7 +162,7 @@ addHook("PlayerThink", function(p)
 	if p.mo.state == S_FH_AMY_TWIRL then
 		local gravity = 3
 
-		if FangsHeist.isPlayerNerfed(p) then
+		if p.heist:isNerfed() then
 			gravity = 9
 		end
 
@@ -291,7 +291,7 @@ local function isDamagable(mo, p)
 	and p.heist
 	and mo.player
 	and mo.player.heist
-	and not FangsHeist.isPartOfTeam(p, mo.player) then
+	and not p.heist:isPartOfTeam(mo.player) then
 		return true
 	end
 	

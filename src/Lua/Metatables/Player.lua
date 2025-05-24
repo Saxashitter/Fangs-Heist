@@ -1,0 +1,239 @@
+local mt = {}
+
+function mt:hasSign()
+	return FangsHeist.Net.sign
+		and FangsHeist.Net.sign.valid
+		and FangsHeist.Net.sign.holder == self.player.mo
+end
+
+function mt:isAtGate()
+	local exit = FangsHeist.Net.exit
+
+	local dist = R_PointToDist2(self.player.mo.x, self.player.mo.y, exit.x, exit.y)
+
+	if dist <= self.player.mo.radius+32*FU
+	and self.player.mo.z <= exit.z+48*FU
+	and exit.z <= self.player.mo.z+self.player.mo.height then
+		return true
+	end
+	
+	return false
+end
+
+function mt:isAlive(p)
+	local p = self.player
+	return p and p.mo and p.mo.health and not self.spectator
+end
+
+function mt:canUseAbility()
+	if not self:hasSign() then
+		return true
+	end
+
+	return false
+end
+
+function mt:isNerfed()
+	local result = HeistHook.runHook("IsPlayerNerfed", p)
+	if result ~= nil then
+		return result
+	end
+	local gamemode = FangsHeist.getGamemode()
+
+	if self:hasSign()
+	and gamemode.signnerf then
+		return true
+	end
+
+	if #self.treasures
+	and FangsHeist.Save.retakes then
+		return true
+	end
+
+	return false
+end
+
+function self:isPartOfTeam(sp)
+	local team = self:getTeam()
+
+	if self.player == sp then
+		return true
+	end
+
+	if not team then
+		return false
+	end
+
+	for _,player in ipairs(team) do
+		if sp == player then
+			return true
+		end
+	end
+
+	return false
+end
+
+function self:isTeamLeader()
+	local team = self:getTeam()
+
+	if not team then
+		return true
+	end
+
+	return team[1] == self.player
+end
+
+function mt:isAbleToTeam()
+	return not p.heist.spectator
+end
+
+function mt:isEligibleForSign()
+	local team = self:getTeam()
+
+	return self:isAlive()
+	and not self.exiting
+	and not (team and team.had_sign)
+end
+
+function mt:getTeam()
+	for _,team in ipairs(FangsHeist.Net.teams) do
+		for _,player in ipairs(team) do
+			if player == self.player then
+				return team
+			end
+		end
+	end
+
+	return false
+end
+
+function mt:gainProfit(gain, dontDiv, specialSound)
+	local div = 0
+	local team = self:getTeam()
+
+	if not team then
+		return
+	end
+
+	div = not dontDiv and #team or 1
+
+	team.profit = max(0, $+(gain/div))
+end
+
+function mt:damagePlayers(friendlyfire, damage)
+	local gamemode = FangsHeist.getGamemode()
+
+	if friendlyfire == nil then
+		friendlyfire = (gamemode.friendlyfire)
+	end
+	if damage == nil then
+		damage = FH_BLOCKDEPLETION
+	end
+	local p = self.player
+
+	for sp in players.iterate do
+		if not (sp and sp.mo and sp.mo.health and sp.heist) then
+			continue
+		end
+		if sp == p then continue end
+
+		local distXY = FixedHypot(p.mo.x-sp.mo.x, p.mo.y-sp.mo.y)
+	
+		local char1 = FangsHeist.Characters[p.mo.skin]
+		local char2 = FangsHeist.Characters[sp.mo.skin]
+	
+		local radius1 = fixmul(p.mo.radius, char1.attackRange)
+		local radius2 = fixmul(sp.mo.radius, char2.damageRange)
+	
+		if distXY > radius1+radius2 then continue end
+	
+		local height1 = fixmul(p.mo.height, char1.attackZRange)
+		local height2 = fixmul(sp.mo.height, char2.damageZRange)
+	
+		local z = abs((p.mo.z+p.mo.height/2)-(sp.mo.z+sp.mo.height/2))
+	
+		if z > max(height1, height2) then continue end
+
+		if self:isPartOfTeam(sp)
+		and not friendlyfire then
+			continue
+		end
+
+		if char2:isAttacking(sp) then
+			FangsHeist.clashPlayers(p, sp)
+
+			S_StartSound(p.mo, sfx_s3k7b)
+			S_StartSound(sp.mo, sfx_s3k7b)
+
+			return sp, false
+		end
+
+		local speed = FixedHypot(p.mo.momx, p.mo.momy)-FixedHypot(sp.mo.momx, sp.mo.momy)
+
+		if P_DamageMobj(sp.mo, p.mo, p.mo) then
+			char1:onHit(p, sp)
+
+			sp.mo.momx = p.mo.momx
+			sp.mo.momy = p.mo.momy
+
+			HeistHook.runHook("PlayerDamage", p, sp)
+
+			return sp, speed
+		end
+
+		if char2:isBlocking(sp) then
+			return sp, false
+		end
+	end
+end
+
+function self:depleteBlock(damage)
+	if damage == nil then
+		damage = FH_BLOCKDEPLETION
+	end
+
+	local result = HeistHook.runHook("DepleteBlock", self.player, damage)
+
+	if result ~= nil then
+		return result
+	end
+
+	self.block_time = min(FH_BLOCKTIME, $+damage)
+
+	if self.block_time == FH_BLOCKTIME then
+		self.block_cooldown = 5*TICRATE
+		self.blocking = false
+		S_StartSound(self.player.mo, sfx_fhbbre)
+
+		return true
+	end
+
+	S_StartSound(self.player.mo, sfx_s3k7b)
+	return false
+end
+
+function mt:joinTeam(sp)
+	local team = self:getTeam()
+
+	if team
+	and self:isPartOfTeam(sp) then
+		return
+	end
+
+	local otherteam = self:getTeam(sp)
+	if otherteam then
+		for i = #otherteam, 1, -1 do
+			local plyr = otherteam[i]
+
+			if plyr == sp then
+				table.remove(otherteam, i)
+				break
+			end
+		end
+	end
+
+	table.insert(team, sp)
+end
+
+FangsHeist.PlayerMT = mt
+registerMetatable(FangsHeist.PlayerMT)

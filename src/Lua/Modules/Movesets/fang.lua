@@ -86,7 +86,7 @@ local function newGunslinger(player)
 			//Air function
 			if not(P_IsObjectOnGround(mo))
 				player.pflags = $|PF_THOKKED
-				if not FangsHeist.playerHasSign(player) then
+				if not p.heist:hasSign(player) then
 					player.pflags = $ & ~PF_JUMPED|PF_STARTJUMP
 					P_SetObjectMomZ(mo,max(mo.momz*P_MobjFlip(mo)*5/4, FRACUNIT*6))
 					if mo.momz*P_MobjFlip(mo) > FRACUNIT*10 then

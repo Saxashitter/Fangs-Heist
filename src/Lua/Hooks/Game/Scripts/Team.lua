@@ -11,13 +11,13 @@ return function()
 			for k = #team, 1, -1 do
 				local p = team[k]
 	
-				if not FangsHeist.isAbleToTeam(p) then
+				if not p.heist:isAbleToTeam() then
 					table.remove(team, k)
 					continue
 				end
 
 				if FangsHeist.isPlayerAlive(p) then
-					signGot = $ or FangsHeist.playerHasSign(p)
+					signGot = $ or p.heist:hasSign()
 					treasures = $+#p.heist.treasures
 				end
 			end

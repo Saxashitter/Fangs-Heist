@@ -42,7 +42,7 @@ local function canDropDash(p)
 	if not hasControl(p) then
 		return false
 	end
-	if FangsHeist.isPlayerNerfed(p) then
+	if p.heist:isNerfed() then
 		return false
 	end
 
