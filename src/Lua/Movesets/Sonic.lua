@@ -51,7 +51,8 @@ end
 
 addHook("PlayerThink", function(p)
 	if not (FangsHeist.isMode()
-	and FangsHeist.isPlayerAlive(p)
+	and p.heist
+	and p.heist:isAlive()
 	and p.mo.skin == "sonic") then
 		p.sonic = nil
 		return
@@ -97,7 +98,7 @@ addHook("ThinkFrame", do
 	if not FangsHeist.isMode() then return end
 
 	for p in players.iterate do
-		if not (FangsHeist.isPlayerAlive(p) and p.sonic) then
+		if not (p.heist and p.heist:isAlive() and p.sonic) then
 			continue
 		end
 
@@ -121,7 +122,8 @@ end)
 
 addHook("AbilitySpecial", function(p)
 	if not FangsHeist.isMode() then return end
-	if not FangsHeist.isPlayerAlive(p) then return end
+	if not p.heist then return end
+	if not p.heist:isAlive() then return end
 	if not p.sonic then return end
 
 	p.sonic.jumpheld = true

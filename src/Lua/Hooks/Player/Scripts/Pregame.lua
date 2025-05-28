@@ -133,7 +133,7 @@ return function(p)
 				and sp.heist
 				and sp.heist:isTeamLeader() then
 					if sp.bot then
-						FangsHeist.joinTeam(p, sp)
+						p.heist:addIntoTeam(sp)
 					else
 						sp.heist.invites[p] = true
 					end
@@ -152,7 +152,7 @@ return function(p)
 					for tp,_ in pairs(sp.heist.invites) do
 						sp.heist.invites[tp] = nil
 					end
-					FangsHeist.joinTeam(p, sp)
+					p.heist:addIntoTeam(sp)
 					S_StartSound(nil, sfx_strpst, p)
 				end
 			end

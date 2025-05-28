@@ -84,8 +84,9 @@ local function draw_p(v, team, placement, actualPlacement)
 	for _,sp in ipairs(team) do
 		if sp
 		and sp.valid
-		and FangsHeist.isPlayerAlive(sp)
-		and p.heist:hasSign(sp) then
+		and sp.heist
+		and sp.heist:isAlive()
+		and sp.heist:hasSign() then
 			sign = true
 			break
 		end

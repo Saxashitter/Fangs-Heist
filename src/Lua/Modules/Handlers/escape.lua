@@ -138,7 +138,7 @@ local function module()
 		local mobj = FangsHeist.Net.round_2_mobj
 
 		for p in players.iterate do
-			if not FangsHeist.isPlayerAlive(p) then continue end
+			if not (p.heist and p.heist:isAlive()) then continue end
 			if p.heist.reached_second then continue end
 
 			if R_PointToDist2(p.mo.x,p.mo.y,mobj.x,mobj.y) > 24*FU+p.mo.radius then

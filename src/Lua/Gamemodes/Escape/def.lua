@@ -124,7 +124,7 @@ function gamemode:getSignSpawn()
 		local secondCount = 0
 
 		for p in players.iterate do
-			if not (FangsHeist.isPlayerAlive(p) and not p.heist.exiting) then continue end
+			if not (p.heist and p.heist:isAlive() and not p.heist.exiting) then continue end
 
 			count = $+1
 			if p.heist.reached_second then
@@ -408,7 +408,8 @@ function gamemode:start()
 	local randPlyrs = {}
 
 	for p in players.iterate do
-		if FangsHeist.isPlayerAlive(p)
+		if p.heist
+		and p.heist:isAlive()
 		and p.heist:isTeamLeader() then
 			table.insert(randPlyrs, p)
 		end
@@ -497,7 +498,7 @@ function gamemode:round2Check()
 	local mobj = FangsHeist.Net.round_2_mobj
 
 	for p in players.iterate do
-		if not FangsHeist.isPlayerAlive(p) then continue end
+		if not (p.heist and p.heist:isAlive()) then continue end
 		if p.heist.reached_second then continue end
 
 		if R_PointToDist2(p.mo.x,p.mo.y,mobj.x,mobj.y) > 24*FU+p.mo.radius then
@@ -524,7 +525,7 @@ function gamemode:manageBombs()
 
 	for p in players.iterate do
 		if not p.heist then continue end
-		if not FangsHeist.isPlayerAlive(p) then continue end
+		if not p.heist:isAlive() then continue end
 		if p.heist.exiting then continue end
 
 		table.insert(potential_positions, {
@@ -581,9 +582,9 @@ function gamemode:manageExiting()
 
 	for p in players.iterate do
 		if not p.heist then continue end
-		if not FangsHeist.isPlayerAlive(p) then continue end
+		if not p.heist:isAlive() then continue end
 
-		if not FangsHeist.isPlayerAtGate(p)
+		if not p.heist:isAtGate()
 		and not p.heist.exiting then
 			continue
 		end

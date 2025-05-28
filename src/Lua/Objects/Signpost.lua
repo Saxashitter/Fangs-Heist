@@ -107,7 +107,7 @@ end
 local function blacklist(p)
 	return P_PlayerInPain(p)
 	or p.powers[pw_flashing]
-	or not FangsHeist.isEligibleForSign(p)
+	or not p.heist:isEligibleForSign()
 end
 
 local function manage_unpicked(sign)
@@ -142,7 +142,7 @@ end, MT_FH_SIGN)
 addHook("MobjThinker", function(sign)
 	if sign.holder
 	and not (sign.holder.valid
-	and FangsHeist.isEligibleForSign(sign.holder.player)) then
+	and sign.holder.player.heist:isEligibleForSign()) then
 		sign.holder = nil
 
 		local launch_angle = FixedAngle(P_RandomRange(0, 360)*FU)

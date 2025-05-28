@@ -32,20 +32,12 @@ function FangsHeist.initTeam(p)
 	return team
 end
 
-local _pmt = {
-	__index = function(self, key)
-		if FangsHeist.PlayerMT[key] then
-			return FangsHeist.PlayerMT[key]
-		end
-	end
-}
-
 function FangsHeist.initPlayer(p)
 	local heist = copy(orig_plyr)
 	heist.locked_skin = p.skin
 	heist.player = p
 
-	setmetatable(heist, _pmt)
+	setmetatable(heist, FangsHeist.PlayerMT)
 	p.heist = heist
 
 	FangsHeist.initTeam(p)

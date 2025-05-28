@@ -96,7 +96,7 @@ local function manage_unpicked(tres)
 	mobj.frame = $ & ~FF_TRANS80
 
 	for p in players.iterate do
-		if not FangsHeist.isPlayerAlive(p) then continue end
+		if not (p.heist and p.heist:isAlive()) then continue end
 		if p.powers[pw_flashing] and not p.heist:hasSign() then continue end
 		if P_PlayerInPain(p) then continue end
 
@@ -161,7 +161,8 @@ function FangsHeist.manageTreasures()
 		if mobj.target
 		and not (mobj.target.valid
 		and mobj.target.player
-		and FangsHeist.isPlayerAlive(mobj.target.player)) then
+		and mobj.target.player.heist
+		and mobj.target.player.heist:isAlive()) then
 			mobj.target = nil
 		end
 

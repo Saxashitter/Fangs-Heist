@@ -80,7 +80,7 @@ addHook("PreThinkFrame", do
 		p.heist.forwardmove = p.cmd.forwardmove
 		p.heist.sidemove = p.cmd.sidemove
 
-		if FangsHeist.isPlayerAlive(p) then
+		if p.heist:isAlive() then
 			if p.heist.exiting then
 				p.cmd.buttons = 0
 				p.cmd.forwardmove = 0

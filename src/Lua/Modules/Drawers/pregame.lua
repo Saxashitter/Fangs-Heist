@@ -273,7 +273,7 @@ local function draw_team(v,p)
 	v.drawString(160, 200-12, "READY", V_SNAPTOBOTTOM|color, "center")
 
 	local i = 1
-	local team = FangsHeist.getTeam(p)
+	local team = p.heist:getTeam()
 
 	if team then
 		v.drawString(160, 4+10, "Team:", V_SNAPTOTOP|V_ALLOWLOWERCASE|f, "center")

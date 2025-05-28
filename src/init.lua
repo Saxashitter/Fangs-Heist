@@ -13,7 +13,7 @@ rawset(_G, "FangsHeist", {
 	Net = {},
 	Objects = {},
 	Save = {},
-	PlayerMetaTable = {}
+	PlayerMT = {}
 })
 
 // FANGS HEIGHT IS BY SAXASHITTER
@@ -24,6 +24,8 @@ dofile "constants"
 dofile "files"
 dofile "characters"
 dofile "console"
+
+dofile "Metatables/Player"
 
 dofile "Functions/Inits"
 dofile "Functions/Getters"

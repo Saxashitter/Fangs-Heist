@@ -18,8 +18,12 @@ addHook("PlayerThink", function(p)
 		data.func(p)
 	end
 
-	if not FangsHeist.isMode() then return end
 	if not (p and p.valid) then return end
+
+	if not FangsHeist.isMode() then 
+		p.heist = nil
+		return
+	end
 
 	local gamemode = FangsHeist.getGamemode()
 
@@ -30,6 +34,7 @@ addHook("PlayerThink", function(p)
 	for _,script in ipairs(scripts.playerthink) do
 		script(p)
 	end
+
 	gamemode:playerthink(p)
 
 	if p.skin ~= p.heist.locked_skin then
@@ -52,26 +57,27 @@ end)
 
 /*addHook("TouchSpecial", function(special, pmo)
 	if not FangsHeist.isMode() then return end
-	if not FangsHeist.isPlayerAlive(pmo.player) then return end
+	if not (pmo.player.heist and pmo.player.heist:isAlive()) then return end
 
-	FangsHeist.gainProfit(pmo.player, 8)
+	pmo.player.heist:gainProfit(8)
 end, MT_RING)*/
 
 addHook("MobjDeath", function(ring, _, pmo)
 	if not FangsHeist.isMode() then return end
 	if not (ring and ring.valid) then return end
 	if not (pmo and pmo.valid and pmo.type == MT_PLAYER) then return end
-	if not FangsHeist.isPlayerAlive(pmo.player) then return end
+	if not (pmo.player.heist and pmo.player.heist:isAlive()) then return end
 	
-	FangsHeist.gainProfit(pmo.player, 8)
+	pmo.player.heist:gainProfit(8)
 end, MT_RING)
 
 -- this check is goofy lol
 function A_RingBox(actor, var1,var2)
     local player = actor.target.player
     if FangsHeist.isMode()
-    and FangsHeist.isPlayerAlive(player) then
-        FangsHeist.gainProfit(player, 8*actor.info.reactiontime)
+    and player.heist
+    and player.heist:isAlive() then
+        player.heist:gainProfit(8*actor.info.reactiontime)
     end
     
     --run original action
@@ -85,11 +91,11 @@ addHook("MobjDeath", function(t,i,s)
 
 	if t.flags & MF_ENEMY then
 		s.player.heist.enemies = $+1
-		FangsHeist.gainProfit(s.player, 35)
+		s.player.heist:gainProfit(35)
 	end
 	if t.flags & MF_MONITOR then
 		s.player.heist.monitors = $+1
-		FangsHeist.gainProfit(s.player, 12)
+		s.player.heist:gainProfit(12)
 	end
 end)
 
@@ -113,7 +119,7 @@ local function RingSpill(p, dontSpill)
 	end
 	S_StartSound(p.mo, sfx_s3kb9)
 	p.rings = $-rings_spill
-	FangsHeist.gainProfit(p, -8*rings_spill)
+	p.heist:gainProfit(-8*rings_spill)
 
 
 	return rings_spill

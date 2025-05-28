@@ -48,7 +48,7 @@ local function GetNumberWidth(v, number, scale, font)
 
 	for i = 1,#str do
 		local letter = str:sub(i, i)
-		local name = string.format("%s%d", font, letter)
+		local name = string.format("%s%s", font, letter)
 
 		if not v.patchExists(name) then
 			width = $ + def.space*scale

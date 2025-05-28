@@ -1,5 +1,5 @@
 return function(p)
-	if not FangsHeist.isPlayerAlive(p) then return end
+	if not (p.heist and p.heist:isAlive()) then return end
 	if not p.heist:hasSign() then return end
 
 	local sign = FangsHeist.Net.sign

@@ -8,9 +8,9 @@ return {
 
 	attack_cooldown = 0,
 	attack_time = 0,
-	block_time = 0,
-	block_cooldown = 0,
-	blocking = false,
+
+	parry_cooldown = 0,
+	parry_time = 0,
 
 	death_time = 5*TICRATE,
 

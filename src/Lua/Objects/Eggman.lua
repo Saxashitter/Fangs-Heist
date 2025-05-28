@@ -80,7 +80,8 @@ states[S_FH_EGGMAN_COOLDOWN] = {
 }
 
 local function validCheck(p)
-	return FangsHeist.isPlayerAlive(p)
+	return p.heist
+	and p.heist:isAlive()
 	and not p.heist.exiting
 	and not p.heist.spectator
 end

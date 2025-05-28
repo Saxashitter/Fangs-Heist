@@ -1,5 +1,5 @@
 local function canAttack(p)
-	return not (p.heist.blocking or p.heist.attack_cooldown or (p.amy and p.amy.thrown and p.amy.thrown.valid))
+	return not (p.heist.attack_cooldown or p.heist:isGuarding() or (p.amy and p.amy.thrown and p.amy.thrown.valid))
 end
 
 states[freeslot "S_FH_AMY_TWIRL"] = {
@@ -56,7 +56,7 @@ FangsHeist.makeCharacter("amy", {
 				return not canAttack(p)
 			end,
 			visible = function(self, p)
-				return not p.heist.blocking
+				return true
 			end
 		},
 		{
@@ -66,7 +66,7 @@ FangsHeist.makeCharacter("amy", {
 				return not canAttack(p)
 			end,
 			visible = function(self, p)
-				return not p.heist.blocking
+				return true
 			end
 		},
 		FangsHeist.Characters.sonic.controls[2]
@@ -261,8 +261,7 @@ addHook("SpinSpecial", function(p)
 		return
 	end
 
-	if p.heist.attack_cooldown
-	or p.heist.blocking then
+	if p.heist.attack_cooldown then
 		return true
 	end
 
@@ -343,8 +342,7 @@ local function onObjectFound(mo, found)
 
 	if found.type == MT_PLAYER
 	and found.player
-	and found.player.heist
-	and found.player.heist.blocking then
+	and found.player.heist then
 		mo.momx = $*-1
 		mo.momy = $*-1
 		mo.momz = $*-1

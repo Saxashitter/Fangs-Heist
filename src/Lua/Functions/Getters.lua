@@ -7,7 +7,7 @@ function FangsHeist.getNearbyPlayers(mobj, distscale, blacklist)
 	local nearby = {}
 
 	for p in players.iterate do
-		if not FangsHeist.isPlayerAlive(p) then
+		if not (p.heist and p.heist:isAlive()) then
 			continue
 		end
 
@@ -45,9 +45,8 @@ function FangsHeist.playerCount()
 	for p in players.iterate do
 		count.total = $+1
 
-		if not (FangsHeist.isPlayerAlive(p)
-		and p.heist
-		and not p.heist.spectator) then
+		if not (p.heist
+		and p.heist:isAlive()) then
 			count.dead = $+1
 			continue
 		end

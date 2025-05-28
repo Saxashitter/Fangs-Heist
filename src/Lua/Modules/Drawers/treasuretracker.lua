@@ -57,7 +57,7 @@ function module.draw(v,p,c)
 	if not (p and p.mo and p.mo.valid) then return end
 
 	for sp in players.iterate do
-		if not FangsHeist.isPlayerAlive(sp) then continue end
+		if not (sp.heist and sp.heist:isAlive())then continue end
 		if not isSpecial(p, sp) then continue end
 
 		if p == sp then continue end

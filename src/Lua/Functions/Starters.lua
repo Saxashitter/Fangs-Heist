@@ -71,7 +71,8 @@ function FangsHeist.startIntermission()
 	end
 
 	for p in players.iterate do
-		if not (FangsHeist.isPlayerAlive(p)
+		if not (p.heist
+		and p.heist:isAlive()
 		and #p.heist:getTeam() < 1) then
 			continue
 		end

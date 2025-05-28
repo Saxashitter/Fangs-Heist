@@ -53,7 +53,7 @@ function mt:isNerfed()
 	return false
 end
 
-function self:isPartOfTeam(sp)
+function mt:isPartOfTeam(sp)
 	local team = self:getTeam()
 
 	if self.player == sp then
@@ -73,7 +73,7 @@ function self:isPartOfTeam(sp)
 	return false
 end
 
-function self:isTeamLeader()
+function mt:isTeamLeader()
 	local team = self:getTeam()
 
 	if not team then
@@ -84,7 +84,7 @@ function self:isTeamLeader()
 end
 
 function mt:isAbleToTeam()
-	return not p.heist.spectator
+	return not self.player.heist.spectator
 end
 
 function mt:isEligibleForSign()
@@ -181,38 +181,28 @@ function mt:damagePlayers(friendlyfire, damage)
 			return sp, speed
 		end
 
-		if char2:isBlocking(sp) then
-			return sp, false
+		if sp.heist:isGuarding()
+		and sp.heist.parry_time then
+			sp.mo.state = S_PLAY_WALK
+			sp.heist.parry_cooldown = 0
+			sp.heist.parry_time = 0
+			sp.mo.translation = nil
+			p.heist.attack_time = 0
+
+			local sound = P_RandomRange(sfx_parry1, sfx_parry2)
+			S_StartSound(sp.mo, sound)
+			S_StartSound(p.mo, sound, p)
+
+			return sp, speed, true
 		end
 	end
 end
 
-function self:depleteBlock(damage)
-	if damage == nil then
-		damage = FH_BLOCKDEPLETION
-	end
-
-	local result = HeistHook.runHook("DepleteBlock", self.player, damage)
-
-	if result ~= nil then
-		return result
-	end
-
-	self.block_time = min(FH_BLOCKTIME, $+damage)
-
-	if self.block_time == FH_BLOCKTIME then
-		self.block_cooldown = 5*TICRATE
-		self.blocking = false
-		S_StartSound(self.player.mo, sfx_fhbbre)
-
-		return true
-	end
-
-	S_StartSound(self.player.mo, sfx_s3k7b)
-	return false
+function mt:isGuarding()
+	return self:isAlive() and self.player.mo.state == S_FH_GUARD
 end
 
-function mt:joinTeam(sp)
+function mt:addIntoTeam(sp)
 	local team = self:getTeam()
 
 	if team
@@ -235,5 +225,13 @@ function mt:joinTeam(sp)
 	table.insert(team, sp)
 end
 
-FangsHeist.PlayerMT = mt
+local _netTable = {
+	__index = function(self, key)
+		if mt[key] then
+			return mt[key]
+		end
+	end
+}
+
+FangsHeist.PlayerMT = _netTable
 registerMetatable(FangsHeist.PlayerMT)

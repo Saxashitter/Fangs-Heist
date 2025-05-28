@@ -15,12 +15,6 @@ states[freeslot "S_FH_INSTASHIELD"] = {
 	var2 = 1
 }
 
-states[freeslot "S_FH_SHIELD"] = {
-	sprite = freeslot"SPR_FHSH",
-	frame = A|FF_FULLBRIGHT|FF_TRANS30,
-	tics = -1
-}
-
 local DEFAULT = {
 	difficulty = FHD_UNKNOWN,
 	pregameBackground = "FH_PREGAME_UNKNOWN",
@@ -38,10 +32,9 @@ local DEFAULT = {
 	damageZRange = tofixed("1.5"),
 
 	useDefaultAttack = true,
-	useDefaultBlock = true,
+	useDefaultGuard = true,
 
 	attackEffectState = S_FH_INSTASHIELD,
-	blockShieldState = S_FH_SHIELD,
 
 	onAttack = function(self, p) end,
 	onClash = function(self, p) end,
@@ -49,9 +42,6 @@ local DEFAULT = {
 
 	isAttacking = function(self, p)
 		return (p.heist.attack_time)
-	end,
-	isBlocking = function(self, p)
-		return p.heist.blocking
 	end,
 
 	controls = {
@@ -62,14 +52,14 @@ local DEFAULT = {
 				return (p.heist.attack_cooldown)
 			end,
 			visible = function(self, p)
-				return not p.heist.blocking
+				return not p.heist:isGuarding()
 			end
 		},
 		{
 			key = "FIRE NORMAL",
-			name = "Block",
+			name = "Guard",
 			cooldown = function(self, p)
-				return (p.heist.attack_cooldown or p.heist.block_cooldown)
+				return (p.heist.attack_cooldown or p.heist.parry_cooldown)
 			end,
 			visible = function(self, p)
 				return true

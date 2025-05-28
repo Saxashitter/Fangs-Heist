@@ -77,7 +77,7 @@ function module.draw(v)
 			V_SNAPTOTOP|V_SNAPTOLEFT)
 
 		for i,sp in ipairs(team) do
-			if not FangsHeist.isPlayerAlive(sp) then continue end
+			if not (sp.heist and sp.heist:isAlive()) then continue end
 
 			local color = v.getColormap(sp.skin, sp.skincolor, ((sp.mo and sp.mo.valid) and sp.mo.translation or nil))
 			local scale = skins[sp.skin].highresscale

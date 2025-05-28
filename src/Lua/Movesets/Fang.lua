@@ -16,7 +16,7 @@ FangsHeist.makeCharacter("fang", {
 				return (p.heist.attack_cooldown)
 			end,
 			visible = function(self, p)
-				return not p.heist.blocking
+				return true
 			end
 		},
 		FangsHeist.Characters.sonic.controls[1],
@@ -208,8 +208,7 @@ addHook("PlayerThink", function(p)
 	and not (p.lastbuttons & BT_SPIN)
 	and not (p.fang.popgun)
 	and not (p.heist.attack_cooldown)
-	and not (p.pflags & PF_BOUNCING)
-	and not p.heist.blocking then
+	and not (p.pflags & PF_BOUNCING) then
 		if not (not P_IsObjectOnGround(p.mo) and p.powers[pw_shield]) then
 			doPopgun(p)
 		end
