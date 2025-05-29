@@ -1,6 +1,8 @@
 local gamemode = {
 	name = "Escape",
-	desc = "Get some profit, grab that signpost, and GO! GO! GO!"
+	desc = "Get some profit, grab that signpost, and GO! GO! GO!",
+	id = "ESCAPE",
+	tol = TOL_HEIST
 }
 local path = "Gamemodes/Escape/"
 
@@ -22,7 +24,7 @@ local delete_types = { -- why wasnt this a table like the rest before? -pac
 	[MT_INVULN_BOX] = true,
 	[MT_STARPOST] = true
 }
-FangsHeist.signThings = {
+gamemode.signThings = {
 	[501] = true
 }
 
@@ -92,7 +94,7 @@ function gamemode:initSignPosition()
 	local signpost_pos
 
 	for thing in mapthings.iterate do
-		if FangsHeist.signThings[thing.type] then
+		if self.signThings[thing.type] then
 			if thing and thing.mobj and thing.mobj.valid then
 				P_RemoveMobj(thing.mobj)
 			end
@@ -591,6 +593,11 @@ function gamemode:manageExiting()
 
 		if not p.heist.exiting
 		and HeistHook.runHook("PlayerExit", p) == true then
+			continue
+		end
+
+		if self.playerexit
+		and self:playerexit(p) then
 			continue
 		end
 

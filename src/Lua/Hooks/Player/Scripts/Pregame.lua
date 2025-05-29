@@ -2,6 +2,7 @@ local showhud = CV_FindVar("showhud")
 
 local function valid(p, sp)
 	local teamleng = max(0, FangsHeist.CVars.team_limit.value)
+	local team = sp and sp.valid and sp.heist and sp.heist:getTeam()
 
 	return sp
 	and sp.valid
@@ -10,7 +11,8 @@ local function valid(p, sp)
 	and not sp.heist.invites[p]
 	and not p.heist:isPartOfTeam(sp)
 	and sp.heist:isTeamLeader()
-	and #sp.heist:getTeam() < teamleng
+	and team
+	and #team < teamleng
 end
 
 // yes i know this code is weird
@@ -42,6 +44,8 @@ return function(p)
 	end
 	p.heist.lastlockskin = $ or 0
 	manage_players(p)
+
+	local gamemode = FangsHeist.getGamemode()
 
 	local deadzone = 25
 	local horz = abs(p.heist.sidemove) >= deadzone
@@ -83,7 +87,8 @@ return function(p)
 			S_StartSound(nil, sfx_strpst, p)
 		end
 	// Team Select
-	elseif not p.heist.locked_team then
+	elseif not p.heist.locked_team
+	and gamemode.teams then
 		// -1 == Players
 		// 0 == Ready button
 		// 1 == Requests
@@ -169,7 +174,12 @@ return function(p)
 		end
 	elseif (p.heist.buttons & BT_SPIN)
 	and not (p.heist.lastbuttons & BT_SPIN) then
-		p.heist.locked_team = false
+		if gamemode.teams then
+			p.heist.locked_team = false
+		else
+			p.heist.confirmed_skin = false
+		end
+
 		S_StartSound(nil, sfx_alart, p)
 	end
 

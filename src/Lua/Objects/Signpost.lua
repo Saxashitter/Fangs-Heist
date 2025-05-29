@@ -142,6 +142,9 @@ end, MT_FH_SIGN)
 addHook("MobjThinker", function(sign)
 	if sign.holder
 	and not (sign.holder.valid
+	and sign.holder.player
+	and sign.holder.player.valid
+	and sign.holder.player.heist
 	and sign.holder.player.heist:isEligibleForSign()) then
 		sign.holder = nil
 

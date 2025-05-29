@@ -103,11 +103,40 @@ local function draw_p(v, team, placement, actualPlacement)
 		"thin-fixed")
 end
 
-function module.draw(v)
-	if FangsHeist.Net.pregame then return end
-	if not multiplayer then return end
-	if not (displayplayer and displayplayer.valid) then return end
+local function tag_team(v)
+	if not FangsHeist.Net.hskins then return end
 
+	local SCORE_X = 12*FU
+	local x = SCORE_X
+
+	v.drawString(SCORE_X, SCORE_Y, "TAG TEAM", V_SNAPTOLEFT|V_SNAPTOTOP, "thin-fixed")
+
+	for i = 1, #FangsHeist.Net.hskins do
+		local skin = FangsHeist.Net.hskins[i]
+		local color = v.getColormap(TC_RAINBOW, SKINCOLOR_GREY)
+		local scale = skins[skin.skin].highresscale/2
+		local patch = v.getSprite2Patch(skin.skin,
+			SPR2_LIFE, false, A, 0)
+
+		if (skin.plyr
+		and skin.plyr.valid
+		and skin.plyr.heist
+		and not skin.plyr.heist.spectator) then
+			color = v.getColormap(skin.skin, skin.plyr.skincolor)
+		end
+
+		v.drawScaled(x + patch.leftoffset*scale,
+			SCORE_Y + 10*FU + patch.topoffset*scale,
+			scale,
+			patch,
+			V_SNAPTOTOP|V_SNAPTOLEFT,
+			color)
+
+		x = $ + patch.width*scale
+	end
+end
+
+local function escape(v)
 	local drawedSelf = false
 	local self = displayplayer.heist:getTeam()
 
@@ -132,6 +161,19 @@ function module.draw(v)
 	end
 
 	draw_p(v, self, 4, selfPlace)
+end
+
+function module.draw(v)
+	if FangsHeist.Net.pregame then return end
+	if not multiplayer then return end
+	if not (displayplayer and displayplayer.valid) then return end
+
+	if FangsHeist.getGamemode().index == FangsHeist.TagTeam then
+		tag_team(v)
+		return
+	end
+
+	escape(v)
 end
 
 return module

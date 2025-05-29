@@ -40,6 +40,7 @@ return {
 	conscious_meter_reduce_pick = TICRATE/2,
 
 	spectator = false,
+	spectator_not_dead = false,
 
 	lastbuttons = 0,
 	buttons = 0,

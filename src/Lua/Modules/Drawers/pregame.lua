@@ -254,9 +254,11 @@ local function draw_team(v,p)
 	end
 
 	// ready button
-	--[[local scale = FU
+	local ready = v.cachePatch("FH_READYUNSELECT")
+	local scale = FU
 	local color = v.getColormap(TC_RAINBOW, SKINCOLOR_GREY)
 	if p.heist.cur_menu == 0 then
+		ready = v.cachePatch("FH_READYSELECT")
 		scale = tofixed("1.25")
 		color = nil
 	end
@@ -266,11 +268,7 @@ local function draw_team(v,p)
 		scale,
 		ready,
 		V_SNAPTOBOTTOM|f,
-		color)]]
-
-	local color = p.heist.cur_menu == 0 and V_GREENMAP or 0
-
-	v.drawString(160, 200-12, "READY", V_SNAPTOBOTTOM|color, "center")
+		color)
 
 	local i = 1
 	local team = p.heist:getTeam()
@@ -372,12 +370,15 @@ function module.draw(v,p)
 		textdelay = 0
 	end
 
+	local gamemode = FangsHeist.getGamemode()
+
 	if not p.heist.confirmed_skin then
 		draw_cs(v,p)
 		return
 	end
 
-	if not p.heist.locked_team then
+	if not p.heist.locked_team
+	and gamemode.teams then
 		draw_team(v,p)
 		return
 	end

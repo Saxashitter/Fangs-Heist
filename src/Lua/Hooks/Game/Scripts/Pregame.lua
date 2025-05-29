@@ -40,11 +40,14 @@ return function()
 	FangsHeist.Net.pregame_time = max(0, $-1)
 	local count = 0
 	local confirmcount = 0
+	local gamemode = FangsHeist.getGamemode()
 
 	for p in players.iterate do
 		if p and p.heist then
 			count = $+1
-			if p.heist.locked_team then
+			if p.heist.locked_team
+			or (not gamemode.teams and p.heist.confirmed_skin)
+			or p.bot then
 				confirmcount = $+1
 			end
 		end

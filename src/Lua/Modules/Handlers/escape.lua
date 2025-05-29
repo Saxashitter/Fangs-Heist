@@ -1,6 +1,6 @@
 local orig_plyr = FangsHeist.require"Modules/Variables/player"
 local function valid_player(p)
-	return p and p.mo and p.mo.health and p.heist and not p.heist.spectator and not p.heist.exiting
+	return p and p.mo and p.mo.health and p.heist and not p.heist.spectator and not p.heist.spectator_not_dead and not p.heist.exiting
 end
 
 local bombs = {}

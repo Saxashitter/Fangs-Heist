@@ -12,6 +12,16 @@ local function add(file)
 	end
 end
 
+addHook("PlayerSpawn", function(p)
+	if not FangsHeist.isMode() then return end
+	if not (p and p.heist) then
+		FangsHeist.initPlayer(p)
+	end
+
+	local gamemode = FangsHeist.getGamemode()
+	gamemode:playerspawn(p)
+end)
+
 addHook("PlayerThink", function(p)
 	-- Force every PlayerThink hook to run before our code here.
 	for _,data in ipairs(FangsHeist._HOOKS.PlayerThink) do
@@ -112,8 +122,13 @@ local function RingSpill(p, dontSpill)
 	if not p.rings then
 		return false
 	end
+	local gamemode = FangsHeist.getGamemode()
 
 	local rings_spill = min(5+(8*FangsHeist.Save.retakes), p.rings)
+	if gamemode.spillallrings then
+		rings_spill = p.rings
+	end
+
 	if not dontSpill then
 		P_PlayerRingBurst(p, rings_spill)
 	end
@@ -198,7 +213,6 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	end
 
 	if dt & DMG_DEATHMASK then
-		print "INSTA DEATH"
 		return
 	end
 

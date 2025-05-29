@@ -25,7 +25,7 @@ function mt:isAlive(p)
 	return p and p.mo and p.mo.health and not self.spectator
 end
 
-function mt:canUseAbility()
+function mt:UseAbility()
 	if not self:hasSign() then
 		return true
 	end
@@ -89,10 +89,12 @@ end
 
 function mt:isEligibleForSign()
 	local team = self:getTeam()
+	local gamemode = FangsHeist.getGamemode()
 
 	return self:isAlive()
 	and not self.exiting
 	and not (team and team.had_sign)
+	and not gamemode:signblacklist(self.player)
 end
 
 function mt:getTeam()
@@ -210,7 +212,7 @@ function mt:addIntoTeam(sp)
 		return
 	end
 
-	local otherteam = self:getTeam(sp)
+	local otherteam = sp.heist:getTeam()
 	if otherteam then
 		for i = #otherteam, 1, -1 do
 			local plyr = otherteam[i]

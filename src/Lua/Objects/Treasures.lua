@@ -94,6 +94,7 @@ local function manage_unpicked(tres)
 	local data = tres.data
 
 	mobj.frame = $ & ~FF_TRANS80
+	local gamemode = FangsHeist.getGamemode()
 
 	for p in players.iterate do
 		if not (p.heist and p.heist:isAlive()) then continue end
@@ -104,7 +105,8 @@ local function manage_unpicked(tres)
 		local heightdist = abs(p.mo.z-mobj.z)
 
 		if dist > 64*FU
-		or heightdist > 64*FU then
+		or heightdist > 64*FU
+		or gamemode:treasureblacklist(p) then
 			continue
 		end
 

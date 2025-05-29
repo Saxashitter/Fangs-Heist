@@ -17,16 +17,24 @@ local orig_hud = FangsHeist.require "Modules/Variables/hud"
 
 // Initalize player.
 
+function FangsHeist.initTeamTable()
+	-- for use within gamemodes to force teams
+	local team = {}
+
+	team.profit = 0
+	team.added_sign = false
+	team.treasures = 0
+
+	return team
+end
+
 function FangsHeist.initTeam(p)
 	if not p.heist:isAbleToTeam() then
 		return
 	end
 
-	local team = {p}
-
-	team.profit = 0
-	team.added_sign = false
-	team.treasures = 0
+	local team = FangsHeist.initTeamTable()
+	team[1] = p
 
 	table.insert(FangsHeist.Net.teams, team)
 	return team
@@ -40,7 +48,9 @@ function FangsHeist.initPlayer(p)
 	setmetatable(heist, FangsHeist.PlayerMT)
 	p.heist = heist
 
-	FangsHeist.initTeam(p)
+	if not p.heist:isPartOfTeam() then
+		FangsHeist.initTeam(p)
+	end
 
 	local gamemode = FangsHeist.getGamemode()
 	gamemode:playerinit(p)
