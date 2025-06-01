@@ -10,7 +10,7 @@ local function getReplacementFunc(name, func, ...)
 	if name == "AbilitySpecial" then
 		return function(p)
 			if FangsHeist.isMode() then
-				if not p.heist:canUseAbility() then
+				if p.heist:isNerfed() then
 					return true
 				end
 			end

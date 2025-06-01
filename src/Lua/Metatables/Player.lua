@@ -112,12 +112,16 @@ end
 function mt:gainProfit(gain, dontDiv, specialSound)
 	local div = 0
 	local team = self:getTeam()
+	local gamemode = FangsHeist.getGamemode()
 
 	if not team then
 		return
 	end
 
 	div = not dontDiv and #team or 1
+	if gamemode.dontdivprofit then
+		div = 1
+	end
 
 	team.profit = max(0, $+(gain/div))
 end
@@ -131,7 +135,9 @@ function mt:damagePlayers(friendlyfire, damage)
 	if damage == nil then
 		damage = FH_BLOCKDEPLETION
 	end
+
 	local p = self.player
+	local gamemode = FangsHeist.getGamemode()
 
 	for sp in players.iterate do
 		if not (sp and sp.mo and sp.mo.health and sp.heist) then
@@ -171,8 +177,12 @@ function mt:damagePlayers(friendlyfire, damage)
 		end
 
 		local speed = FixedHypot(p.mo.momx, p.mo.momy)-FixedHypot(sp.mo.momx, sp.mo.momy)
+		local dt
+		if gamemode:shouldinstakill(p, sp) then
+			dt = DMG_INSTAKILL
+		end
 
-		if P_DamageMobj(sp.mo, p.mo, p.mo) then
+		if P_DamageMobj(sp.mo, p.mo, p.mo, 1, dt) then
 			char1:onHit(p, sp)
 
 			sp.mo.momx = p.mo.momx

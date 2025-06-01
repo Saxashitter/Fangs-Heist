@@ -66,6 +66,7 @@ addHook("PreThinkFrame", do
 	if not FangsHeist.isMode() then
 		return
 	end
+	local gamemode = FangsHeist.getGamemode()
 
 	for p in players.iterate do
 		if not p.heist then continue end
@@ -93,6 +94,7 @@ addHook("PreThinkFrame", do
 			p.cmd.sidemove = 0
 			p.cmd.forwardmove = 0
 		end
+		gamemode:preplayerthink(p)
 	end
 end)
 

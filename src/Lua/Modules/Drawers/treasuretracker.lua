@@ -3,10 +3,12 @@ local module = {}
 local sglib = FangsHeist.require "Modules/Libraries/sglib"
 local fracformat = FangsHeist.require "Modules/Libraries/fracformat"
 
-local function draw_player(v, p, tp, mo, x, y)
+local function draw_player(v, p, tp, mo, x, y, args)
 	local arrow = v.cachePatch("FH_ARROW"..(leveltime/2 % 6))
 	local arrow_scale = FU/2
 	local dist = R_PointToDist2(mo.x, mo.y, p.mo.x, p.mo.y)
+
+	if not args then return end
 
 	local plyr_spr, plyr_scale
 	if skins[p.mo.skin].sprites[SPR2_SIGN].numframes then
@@ -21,7 +23,7 @@ local function draw_player(v, p, tp, mo, x, y)
 	v.drawScaled(x, y, plyr_scale/4, plyr_spr, 0, color)
 	y = $-8*FU*2
 
-	if #p.heist.treasures then
+	--[[if #p.heist.treasures then
 		v.drawString(x, y, "TREASURE", 0, "thin-fixed-center")
 		y = $-8*FU
 	end
@@ -31,6 +33,11 @@ local function draw_player(v, p, tp, mo, x, y)
 	end
 	if p.heist:isPartOfTeam(tp) then
 		v.drawString(x, y, "TEAM", 0, "thin-fixed-center")
+		y = $-8*FU
+	end]]
+
+	for _,str in ipairs(args) do
+		v.drawString(x, y, str, V_ALLOWLOWERCASE, "thin-fixed-center")
 		y = $-8*FU
 	end
 
@@ -54,20 +61,27 @@ end
 function module.init() end
 function module.draw(v,p,c)
 	if FangsHeist.Net.pregame then return end
+	local gamemode = FangsHeist.getGamemode()
+
 	if not (p and p.mo and p.mo.valid) then return end
 
 	for sp in players.iterate do
-		if not (sp.heist and sp.heist:isAlive())then continue end
-		if not isSpecial(p, sp) then continue end
-
 		if p == sp then continue end
+		if not (sp.heist and sp.heist:isAlive()) then continue end
+
+		local variables = gamemode:trackplayer(sp)
+		if not variables
+		or #variables == 0 then
+			continue
+		end
+
 		if P_CheckSight(p.mo, sp.mo) then continue end
 		if sp.heist.exiting then continue end
 
 		local result = sglib.ObjectTracking(v,p,c,sp.mo)
 		if not result.onScreen then continue end
 
-		draw_player(v, sp, p, p.mo, result.x, result.y)
+		draw_player(v, sp, p, p.mo, result.x, result.y, variables)
 	end
 end
 

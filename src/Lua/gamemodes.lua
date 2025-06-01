@@ -13,6 +13,7 @@ local DEFAULT = {
 	teamlimit = 3,
 	signnerf = true,
 	spillallrings = false,
+	dontdivprofit = false,
 
 	init = _NIL,
 	load = _NIL,
@@ -28,6 +29,8 @@ local DEFAULT = {
 	playerthink = _NIL,
 	playerdamage = _NIL, -- return 2 to kill, 1 or true to stop damage
 	playerdeath = _NIL,
+	shouldinstakill = _NIL,
+	trackplayer = _NIL,
 	signblacklist = _NIL,
 	treasureblacklist = _NIL
 }

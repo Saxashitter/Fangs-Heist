@@ -9,10 +9,21 @@ return function(p)
 	if not (p.heist and p.heist:isAlive()) then return end
 
 	local team = p.heist:getTeam()
+	local gamemode = FangsHeist.getGamemode()
 	if not team then return end
 
-	for _,sp in ipairs(team) do
-		if not (sp ~= p and sp.valid and sp.heist and sp.heist:isAlive()) then
+	for sp in players.iterate do
+		if not (sp
+		and sp.valid
+		and sp.heist
+		and sp.mo
+		and sp.mo.valid
+		and sp ~= p) then
+			continue
+		end
+
+		local args = gamemode:trackplayer(sp)
+		if not args or #args == 0 then
 			continue
 		end
 

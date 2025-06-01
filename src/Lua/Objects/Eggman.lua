@@ -80,10 +80,13 @@ states[S_FH_EGGMAN_COOLDOWN] = {
 }
 
 local function validCheck(p)
+	local gamemode = FangsHeist.getGamemode()
+
 	return p.heist
 	and p.heist:isAlive()
 	and not p.heist.exiting
 	and not p.heist.spectator
+	and gamemode:eggmanblacklist(p)
 end
 
 local function getRandomPlayer()

@@ -179,6 +179,9 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	end
 	t.player.heist.treasures = {}
 
+	local gamemode = FangsHeist.getGamemode()
+	gamemode:playerdamage(t.player)
+
 	local givenSign = false
 
 	if s

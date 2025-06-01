@@ -328,6 +328,23 @@ function gamemode:update()
 	FangsHeist.teleportSign()
 end
 
+function gamemode:trackplayer(p)
+	local lp = displayplayer
+	local args = {}
+
+	if #p.heist.treasures then
+		table.insert(args, "TREASURE")
+	end
+	if p.heist:hasSign() then
+		table.insert(args, "SIGN")
+	end
+	if p.heist:isPartOfTeam(lp) then
+		table.insert(args, "TEAM")
+	end
+
+	return args
+end
+
 function gamemode:manageEscape()
 	-- sign
 	self:manageSign()
