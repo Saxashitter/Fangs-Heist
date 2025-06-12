@@ -1,14 +1,15 @@
 local module = {}
 
-local test = CV_RegisterVar{
-	name = "blackout",
-	defaultvalue = 60
-}
+local BLACKOUT_TICS = 60
+
 local WINNER_SEP = 90*FU
 local WINNER_WIDTH = 128
 
 local LOSER_SEP = 50*FU
 local LOSER_WIDTH = 86
+
+local FLASH_BUILDUP = 24
+local FLASH_TICS = 10
 
 local function GetXYCoords(v, x, y)
 	local sw = v.width() / v.dupx()
@@ -40,6 +41,14 @@ local function GetTeamLeader(team)
 	end
 end
 
+local function GetPlayerName(p)
+	if #p.name > 12 then
+		return p.name:sub(1, 12)
+	end
+
+	return p.name
+end
+
 local function GetTeamString(team)
 	local p = GetTeamLeader(team)
 
@@ -47,11 +56,13 @@ local function GetTeamString(team)
 		return ""
 	end
 
+	local name = GetPlayerName(p)
+
 	if #team > 1 then
-		return "Team "..p.name
+		return "Team "..name
 	end
 
-	return p.name
+	return name
 end
 
 local function DrawSprite(v, x, y, targRes, scaleBy, sprite, flags, flip, color, offX, offY)
@@ -124,7 +135,7 @@ local WINNERS = {
 	}
 }
 
-local function DrawWinners(v, progress)
+local function DrawWinners(v, percent, blinkWhite)
 	-- Plan: During blackout, the players will be drawn innpure white.
 	-- After which, the screen flashes and then the players stay still.
 
@@ -132,6 +143,7 @@ local function DrawWinners(v, progress)
 	local PATCHES = {}
 
 	local WIDTH = 0
+	local HEIGHT = 0
 
 	for i = 1, 3 do
 		local team = WINNERS[i]
@@ -160,6 +172,8 @@ local function DrawWinners(v, progress)
 		table.insert(PATCHES, {PATCH, FLIP})
 		local scale = GetSpriteScale(PATCH, TARG, true)
 
+		HEIGHT = max($, PATCH.height*scale)
+
 		if i == #WINNERS then
 			local sep = i == 1 and WINNER_SEP or LOSER_SEP
 
@@ -182,7 +196,7 @@ local function DrawWinners(v, progress)
 	local SECOND_X = FIRST_X + WINNER_SEP
 	local THIRD_X = SECOND_X + LOSER_SEP
 
-	for i = #WINNERS, 1, -1 do
+	for i = 3, 1, -1 do
 		local data = WINNERS[i]
 		if not (data and data[1] and data[1].valid) then
 			continue
@@ -211,14 +225,118 @@ local function DrawWinners(v, progress)
 		local scale = GetSpriteScale(PATCH, TARG, true)
 
 		offsetY = $ - 80*scale
+		offsetY = $ + FixedMul(HEIGHT, percent)
 
 		local y = y+offsetY
 		local color = v.getColormap(skins[p.skin].name, p.skincolor)
+
+		if blinkWhite then
+			color = v.getColormap(TC_BLINK, SKINCOLOR_WHITE)
+		end
 
 		DrawSprite(v, x, y, TARG, true, PATCH, V_SNAPTOLEFT|V_SNAPTOTOP, FLIP, color)
 
 		x = $ + PATCH.width*scale/2
 	end
+end
+
+local function GetPlayerStringWidth(v, p, text)
+	local life
+	local scale = FU/2
+	if skins[p.skin].sprites[SPR2_LIFE].numframes then 
+		scale = skins[p.skin].highresscale/2
+		life = v.getSprite2Patch(p.skin,
+			SPR2_LIFE, false, A, 0)
+	else
+		life = v.cachePatch("CONTINS")
+	end
+
+	return v.stringWidth(text, V_ALLOWLOWERCASE, "thin")*FU + life.width*scale + 2*FU
+end
+
+freeslot("SKINCOLOR_SUPERBLACK")
+local ramp = {}
+for i = 1,16 do
+	ramp[i] = 31
+end
+
+skincolors[SKINCOLOR_SUPERBLACK] = {
+	name = "sybau",
+	ramp = ramp,
+	invcolor = SKINCOLOR_ORANGE,
+	invshade = 9,
+	chatcolor = V_BLUEMAP,
+	accessible = true
+}
+
+local function DrawFlash(v, percent)
+	local patch = v.cachePatch("FH_PINK_SCROLL")
+	local sw = v.width() * FU / v.dupx()
+	local sh = v.height() * FU / v.dupy()
+
+	local alpha = V_10TRANS*ease.linear(percent, 10, 0)
+	if alpha > V_90TRANS then return end
+
+	v.drawStretched(
+		0, 0,
+		FixedDiv(sw, patch.width*FU),
+		FixedDiv(sh, patch.height*FU),
+		patch,
+		alpha|V_SNAPTOTOP|V_SNAPTOLEFT,
+		v.getColormap(TC_BLINK, SKINCOLOR_WHITE)
+	)
+end
+
+local function DrawFade(v, percent)
+	local patch = v.cachePatch("FH_PINK_SCROLL")
+
+	local alpha = V_10TRANS*ease.linear(percent, 10, 0)
+	if alpha > V_90TRANS then return end
+
+	local sw = v.width() * FU / v.dupx()
+	local sh = v.height() * FU / v.dupy()
+
+	v.drawStretched(
+		0, 0,
+		FixedDiv(sw, patch.width*FU),
+		FixedDiv(sh, patch.height*FU),
+		patch,
+		alpha|V_SNAPTOTOP|V_SNAPTOLEFT,
+		v.getColormap(TC_BLINK, SKINCOLOR_SUPERBLACK)
+	)
+end
+
+local function DrawPlayerString(v, x, y, p, text, flags, align)
+	local name = GetPlayerName(p)
+
+	local life
+	local scale = FU/2
+	if skins[p.skin].sprites[SPR2_LIFE].numframes then 
+		scale = skins[p.skin].highresscale/2
+		life = v.getSprite2Patch(p.skin,
+			SPR2_LIFE, false, A, 0)
+	else
+		life = v.cachePatch("CONTINS")
+	end
+
+	local color = v.getColormap(skins[p.skin].name, p.skincolor)
+	local chatcolor = skincolors[p.skincolor].chatcolor
+
+	local width = GetPlayerStringWidth(v, p, text)
+
+	x = $*FU
+	y = $*FU
+
+	if align == "center" then
+		x = $ - width/2
+	elseif align == "right" then
+		x = $ - width
+	end
+
+	v.drawString(x, y, text, (flags or 0)|V_ALLOWLOWERCASE|chatcolor, "thin-fixed")
+	x = $ + v.stringWidth(text, V_ALLOWLOWERCASE, "thin")*FU + 2*FU
+
+	v.drawScaled(x+life.leftoffset*scale, y+life.topoffset*scale, scale, life, flags, color)
 end
 
 local function DrawWinnerText(v)
@@ -247,40 +365,79 @@ local function DrawWinnerText(v)
 	local width = v.levelTitleWidth(string)
 
 	v.drawLevelTitle(x - width/2, y, string, V_SNAPTOTOP|chatcolor)
-
 	y = $ + v.levelTitleHeight(string) + 2
 
-	v.drawString(x, y, FangsHeist.Net.game_over_winline, V_SNAPTOTOP|chatcolor, "thin-center")
+	v.drawString(x, y, FangsHeist.Net.game_over_winline, V_SNAPTOTOP|chatcolor|V_ALLOWLOWERCASE, "thin-center")
+	y = $+9+4
+
+	-- RUNNER-UPS
+	if #WINNERS <= 1 then
+		return
+	end
+
+	v.drawString(x, y, "Runner-ups:", V_SNAPTOTOP|V_ALLOWLOWERCASE, "thin-center")
+
+	for i = 2, 4 do
+		if not (WINNERS[i]
+		and WINNERS[i][1]
+		and WINNERS[i][1].valid) then
+			continue
+		end
+
+		local team = WINNERS[i]
+		local p = team[1]
+
+		y = $+10
+		DrawPlayerString(v, x, y, p, GetTeamString(team), V_SNAPTOTOP, "center")
+	end
 end
 
-local function DrawBlackout(v, progress)
+local function DrawBlackout(v, tics)
+	local RAISE_OFFSET = 0
+	local FLASH_OFFSET = 15
+	local FADE_DUR = 8
+
 	v.drawFill()
+
+	local raise_tics = max(0, tics - RAISE_OFFSET)
+	local flash_tics = max(0, tics - FLASH_OFFSET)
+	local fade_tics = min(tics, FADE_DUR)
+
+	DrawWinners(v, FU-fixdiv(raise_tics, BLACKOUT_TICS-RAISE_OFFSET), true)
 	v.drawString(160, 100, "This game's winner is...", V_ALLOWLOWERCASE, "center")
+
+	DrawFlash(v, FixedDiv(flash_tics, BLACKOUT_TICS-FLASH_OFFSET))
+	DrawFade(v, FU-FixedDiv(fade_tics, FADE_DUR))
 end
 
 local function DrawResults(v)
 	local tics = FangsHeist.Net.game_over_ticker - FangsHeist.GAME_TICS
 
-	if tics < test.value then
-		DrawBlackout(v, fixdiv(tics, test.value))
-
+	if tics < BLACKOUT_TICS then
+		DrawBlackout(v, tics)
 		return
 	end
 
 	DrawWinnerParallax(v)
 
 	if FangsHeist.isMapVote() then
+		return
 	end
 
 	DrawWinners(v, 0)
 	DrawWinnerText(v)
+
+	local FLASH_OFFSET = 7
+	local TICS = min(tics-BLACKOUT_TICS, FLASH_OFFSET)
+
+	DrawFlash(v, FU-fixdiv(TICS, FLASH_OFFSET))
 end
 
 local function DrawGame(v)
 	local tics = FangsHeist.Net.game_over_ticker
 
 	v.drawFill()
-	v.drawString(160, 100, "GAME", 0, "center")
+	v.drawString(160, 100, "this text is a w.i.p", 0, "center")
 end
 
 function module.init()
@@ -290,8 +447,6 @@ function module.draw(v)
 	if not FangsHeist.Net.game_over then
 		return
 	end
-
-	local BLACKOUT_TICS = test.value
 
 	if FangsHeist.isGameAnim() then
 		DrawGame(v)

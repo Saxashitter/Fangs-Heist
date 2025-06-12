@@ -275,6 +275,7 @@ add("Nerfs")
 add("Treasures")
 add("Panic")
 add("Sign Toss")
+add("Map Vote")
 
 type = "thinkframe"
 
