@@ -69,6 +69,22 @@ SelectHeading = Supported Maps
 Lua.FH_StageType = Escape
 #Flicky selection is final.
 
+Level 5
+Levelname = Techno Hill
+Act = 2
+Keywords = THZ2
+Music = THZ2
+TypeOfLevel = Heist
+NextLevel = 6
+SkyNum = 6
+RecordAttack = true
+LevelSelect = 1
+SaveGame = true
+SkyboxScale = 16
+FlickyList = Rabbit,Chicken
+Lua.FH_StageType = Escape
+#see act 1
+
 Level 30
 Levelname = Frozen Hillside
 Act = 0
@@ -110,7 +126,7 @@ NoVisitNeeded = true
 InterScreen = INTERSCR
 FlickyList = Demo
 Lua.FH_Time = 240
-Lua.FH_EscapeTheme = FDSPHR
+Lua.FH_EscapeTheme = SPRHRO
 Lua.FH_StageType = Escape
 
 Level 34
@@ -125,7 +141,7 @@ NoVisitNeeded = true
 InterScreen = INTERSCR
 FlickyList = Demo
 Lua.FH_Time = 300
-Lua.FH_EscapeTheme = FDSPHR
+Lua.FH_EscapeTheme = SPRHRO
 Lua.FH_StageType = Escape
 
 Level P0
@@ -166,5 +182,5 @@ InterScreen = INTERSCR
 FlickyList = Demo
 Weather = 1
 Lua.FH_Time = 300
-Lua.FH_EscapeTheme = FDSPHR
+Lua.FH_EscapeTheme = SPRHRO
 Lua.FH_StageType = Escape

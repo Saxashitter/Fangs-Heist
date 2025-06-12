@@ -1,432 +1,304 @@
 local module = {}
 
-local vwarp = FangsHeist.require"Modules/Libraries/vwarp"
-local text = FangsHeist.require"Modules/Libraries/text"
-
-local alpha
-local retakealpha
-local statealpha
-local flashalpha
-local current
-local x
-
-local retake_ticup
-local retake_texty
-local retake_laugh
-
-local buttons
-local lastbuttons
-
-local sidemove
-local lastside
-
-local forwardmove
-local lastforward
-
-local scroll
-local scale
-
-local shakeFactor
-
-local states = {
-	FangsHeist.require"Modules/Handlers/Intermission/winners",
-	FangsHeist.require"Modules/Handlers/Intermission/highscores",
-	FangsHeist.require"Modules/Handlers/Intermission/vote"
+local test = CV_RegisterVar{
+	name = "blackout",
+	defaultvalue = 60
 }
+local WINNER_SEP = 90*FU
+local WINNER_WIDTH = 128
 
-FangsHeist.INTER_START_DELAY = 15
+local LOSER_SEP = 50*FU
+local LOSER_WIDTH = 86
 
-function module.init()
-	shakeFactor = 0
-	alpha = 0
-	statealpha = 10
-	retakealpha = 10
-	flashalpha = 0
-	current = 1
-	buttons = 0
-	lastbuttons = 0
-	sidemove = 0
-	lastside = 0
-	retake_ticup = 2*TICRATE
-	retake_laugh = retake_ticup+20
-	retake_texty = 0
-	forwardmove = 0
-	lastforward = 0
-	scroll = 0
-	scale = FU*2
+local function GetXYCoords(v, x, y)
+	local sw = v.width() / v.dupx()
+	local sh = v.height() / v.dupy()
 
-	for _,state in pairs(states) do
-		if state.init then
-			state.init()
+	return x * sw, y * sh
+end
+
+local function GetSpriteScale(sprite, targRes, scaleBy)
+	local scale = FU
+
+	if scaleBy == true then
+		-- Scale down by the sprite's height.
+		scale = FixedDiv(targRes, sprite.height)
+	else
+		-- Scale down by the sprite's width.
+		scale = FixedDiv(targRes, sprite.width)
+	end
+
+	return scale
+end
+
+local function GetTeamLeader(team)
+	for _, p in ipairs(team) do
+		if p
+		and p.valid then
+			return p
 		end
 	end
 end
 
-freeslot("SKINCOLOR_REALLYREALLYBLACK")
-skincolors[SKINCOLOR_REALLYREALLYBLACK] = {
-    name = "GUHHH",
-    ramp = {31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31},
-    invcolor = SKINCOLOR_BLACK,
-    invshade = 9,
-    chatcolor = V_BLUEMAP,
-    accessible = false
-}
---The Color is the thing: This Color Matches the Player's Color and Fades Out to Black
---[[freeslot("SKINCOLOR_INTERMISSIONCOLOR")
-addHook("ThinkFrame",do
-	local index = color.rgbToPalette(255,255,255) --All White, That's all
-	if FangsHeist.Net.game_over
-		if consoleplayer--Match the Player's Skincolor!
-			local skincolor = skincolors[consoleplayer.skincolor].ramp[4]
-			local r,g,b = color.paletteToRgb(skincolor)
-			index = color.rgbToPalette(r,g,b)
-		end
-		if FangsHeist.Net.end_anim <= 75
-			local r,g,b = color.paletteToRgb(index)
-			local ticsperrgb = ease.linear(FU-max(0,min(FixedDiv(FangsHeist.Net.end_anim-60,15),FU)),255*FU,0)/FU
-			local t = FU-max(0,min(FixedDiv(ticsperrgb,255),FU))
+local function GetTeamString(team)
+	local p = GetTeamLeader(team)
 
-			local r1 = ease.linear(t, r, 0)
-			local r2 = ease.linear(t, g, 0)
-			local r3 = ease.linear(t, b, 0)
-			local rgb = color.packRgb(r1, r2, r3)
-			index = color.rgbToPalette(rgb)
+	if not (p and p.valid) then
+		return ""
+	end
+
+	if #team > 1 then
+		return "Team "..p.name
+	end
+
+	return p.name
+end
+
+local function DrawSprite(v, x, y, targRes, scaleBy, sprite, flags, flip, color, offX, offY)
+	local scale = FU
+	flags = $ or 0
+
+	if targRes ~= nil and targRes > 0 then
+		scale = GetSpriteScale(sprite, targRes, scaleBy)
+	end
+
+	if flip == true then
+		-- Flip the sprite.
+		if flags & V_FLIP then
+			flags = $ & ~V_FLIP
+		else
+			flags = $|V_FLIP
 		end
 	end
-	local hex = index
-	skincolors[SKINCOLOR_INTERMISSIONCOLOR] = {
-		ramp = {0,0,0,hex,0,0,0,0,0,0,0,0,0,0,0,0}, --All White except the 4th Ramp
-		accessible = false
-	}
-end)]]
-// UNEXPECTED HOOK GRAAAAHHH
-addHook("PlayerCmd", function(_, _cmd)
-	if not FangsHeist.isMode() then return end
-	if not FangsHeist.Net.game_over then return end
 
-	buttons = _cmd.buttons
-	forwardmove = _cmd.forwardmove
-	sidemove = _cmd.sidemove
-end)
+	-- Wait! Don't offset the sprite.
+	if not offX then
+		x = $ + sprite.leftoffset * scale
+	end
+	if not offY then
+		y = $ + sprite.topoffset * scale
+	end
 
-local function manage_fade_screen(v)
-	if alpha < 10 then
-		local div = FixedDiv(alpha, 10)/(FU/31)
+	v.drawScaled(x, y, scale, sprite, flags, color)
+end
 
-		v.fadeScreen(0xFF00, div)
+local function DrawWinnerParallax(v)
+	local sw = (v.width() / v.dupx()) * FU
+	local sh = (v.height() / v.dupy()) * FU
+
+	local char = FangsHeist.Characters["sonic"]
+
+	if char.customPregameBackground then
+		char.customPregameBackground(v,consoleplayer)
 		return
 	end
+
+	local patch = v.cachePatch(char.pregameBackground)
+	local y = -patch.height*FU + (leveltime*FU/2) % (patch.height*FU)
+	local x = -patch.width*FU + (leveltime*FU/2) % (patch.width*FU)
+
+	while y < sh do
+		local x = x
+
+		while x < sw do
+			v.drawScaled(x, y, FU, patch, V_SNAPTOLEFT|V_SNAPTOTOP|f)
+			x = $+patch.width*FU
+		end
+	
+		y = $+patch.height*FU
+	end
+end
+
+local WINNERS = {
+	{
+		skin = "sonic",
+		color = SKINCOLOR_BLUE
+	},
+	{
+		skin = "tails",
+		color = SKINCOLOR_ORANGE
+	},
+	{
+		skin = "knuckles",
+		color = SKINCOLOR_RED
+	}
+}
+
+local function DrawWinners(v, progress)
+	-- Plan: During blackout, the players will be drawn innpure white.
+	-- After which, the screen flashes and then the players stay still.
+
+	local WINNERS = FangsHeist.Net.placements
+	local PATCHES = {}
+
+	local WIDTH = 0
+
+	for i = 1, 3 do
+		local team = WINNERS[i]
+
+		if not (team and team[1] and team[1].valid) then
+			break
+		end
+		local p = GetTeamLeader(team)
+
+		-- TODO: make unsupported mods use XTRAB0
+		local SPR2 = SPR2_FHBN
+		local FRAME = B
+		local ROT = 0
+		local TARG = LOSER_WIDTH
+
+		if i == 1 then
+			TARG = WINNER_WIDTH
+		end
+
+		local PATCH, FLIP = v.getSprite2Patch(
+			p.skin,
+			SPR2,
+			false,
+			FRAME,
+			ROT)
+		table.insert(PATCHES, {PATCH, FLIP})
+		local scale = GetSpriteScale(PATCH, TARG, true)
+
+		if i == #WINNERS then
+			local sep = i == 1 and WINNER_SEP or LOSER_SEP
+
+			WIDTH = $ + max(sep, PATCH.width*scale)
+			continue
+		end
+
+		if i == 1 then
+			WIDTH = $ + WINNER_SEP
+			continue
+		end
+
+		WIDTH = $ + LOSER_SEP
+	end
+
+	local x, y = GetXYCoords(v, FU/2, FU)
+	x = $ - WIDTH/2
+
+	local FIRST_X = x
+	local SECOND_X = FIRST_X + WINNER_SEP
+	local THIRD_X = SECOND_X + LOSER_SEP
+
+	for i = #WINNERS, 1, -1 do
+		local data = WINNERS[i]
+		if not (data and data[1] and data[1].valid) then
+			continue
+		end
+
+		local p = GetTeamLeader(data)
+
+		local TARG = LOSER_WIDTH
+		local SEP = LOSER_SEP
+
+		if i == 1 then
+			TARG = WINNER_WIDTH
+			SEP = WINNER_SEP
+		end
+
+		local x = FIRST_X
+		if i == 2 then
+			x = SECOND_X
+		elseif i == 3 then
+			x = THIRD_X
+		end
+
+		local PATCH, FLIP = unpack(PATCHES[i])
+
+		local offsetY = 0
+		local scale = GetSpriteScale(PATCH, TARG, true)
+
+		offsetY = $ - 80*scale
+
+		local y = y+offsetY
+		local color = v.getColormap(skins[p.skin].name, p.skincolor)
+
+		DrawSprite(v, x, y, TARG, true, PATCH, V_SNAPTOLEFT|V_SNAPTOTOP, FLIP, color)
+
+		x = $ + PATCH.width*scale/2
+	end
+end
+
+local function DrawWinnerText(v)
+	local WINNERS = FangsHeist.Net.placements
+
+	local x = 160
+	local y = 8
+
+	if not (WINNERS and WINNERS[1] and WINNERS[1][1] and WINNERS[1][1].valid) then
+		local string = "NO WINNERS"
+		local width = v.levelTitleWidth(string)
+
+		v.drawLevelTitle(x - width/2, y, string, V_SNAPTOTOP)
+	end
+
+	local winner = WINNERS[1]
+	local p = GetTeamLeader(winner)
+	local string = GetTeamString(winner)
+
+	local color = p.skincolor
+	if color == SKINCOLOR_NONE then
+		color = SKINCOLOR_BLUE
+	end
+
+	local chatcolor = skincolors[color].chatcolor
+	local width = v.levelTitleWidth(string)
+
+	v.drawLevelTitle(x - width/2, y, string, V_SNAPTOTOP|chatcolor)
+
+	y = $ + v.levelTitleHeight(string) + 2
+
+	v.drawString(x, y, FangsHeist.Net.game_over_winline, V_SNAPTOTOP|chatcolor, "thin-center")
+end
+
+local function DrawBlackout(v, progress)
+	v.drawFill()
+	v.drawString(160, 100, "This game's winner is...", V_ALLOWLOWERCASE, "center")
+end
+
+local function DrawResults(v)
+	local tics = FangsHeist.Net.game_over_ticker - FangsHeist.GAME_TICS
+
+	if tics < test.value then
+		DrawBlackout(v, fixdiv(tics, test.value))
+
+		return
+	end
+
+	DrawWinnerParallax(v)
+
+	if FangsHeist.isMapVote() then
+	end
+
+	DrawWinners(v, 0)
+	DrawWinnerText(v)
+end
+
+local function DrawGame(v)
+	local tics = FangsHeist.Net.game_over_ticker
 
 	v.drawFill()
+	v.drawString(160, 100, "GAME", 0, "center")
 end
 
-local function draw_bg(v)
-	if statealpha == 10 then return end
-	local patch = v.cachePatch("HEISTBACK")
-
-	FangsHeist.DrawParallax(v,
-		0,
-		0,
-		v.width()*FU/v.dupx(),
-		v.height()*FU/v.dupy(), -- to make sure theres no clipping
-		FU,
-		patch,
-		V_SNAPTOLEFT|V_SNAPTOTOP,
-		patch.width*FixedDiv(leveltime % (7*TICRATE), 7*TICRATE),
-		patch.height*FixedDiv(leveltime % (7*TICRATE), 7*TICRATE)
-	)
+function module.init()
 end
 
-local function draw_rect(v, x, y, w, h, flags, color)
-	local patch = v.cachePatch("FH_PINK_SCROLL")
-	v.drawStretched(
-		x, y,
-		FixedDiv(w, patch.width*FU),
-		FixedDiv(h, patch.height*FU),
-		patch,
-		flags,
-		color and v.getColormap(TC_BLINK, color)
-	)
-end
-
-local function draw_retake_factor(v)
-	if not FangsHeist.Net.retaking then return end
-
-	retakealpha = max(0, $-1)
-	local f = V_10TRANS*retakealpha
-
-	draw_rect(v, 0, 0, v.width()*FU/v.dupx(), v.height()*FU/v.dupy(), V_SNAPTOLEFT|V_SNAPTOTOP|f, SKINCOLOR_REALLYREALLYBLACK)
-
-	if retake_ticup then
-		retake_ticup = max(0, $-1)
-
-		if retake_ticup == 0 then
-			retake_texty = -4*FU
-			S_StartSound(nil, sfx_menu1)
-		end
-	end
-	if retake_laugh then
-		retake_laugh = max(0, $-1)
-
-		if retake_laugh == 0 then
-			S_StartSound(nil, sfx_bewar1)
-		end
-	end
-
-	local num = FangsHeist.Save.retakes
-	if retake_ticup == 0 then
-		num = $+1
-	end
-
-	FangsHeist.DrawString(v,
-		160*FU,
-		100*FU - 8*FU - 16*FU + retake_texty,
-		scale,
-		"RETAKES",
-		"CRFNT",
-		"center",
-		0,
-		v.getColormap(TC_RAINBOW, SKINCOLOR_RED))
-	FangsHeist.DrawString(v,
-		160*FU,
-		100*FU - 8*FU + retake_texty,
-		scale,
-		tostring(num),
-		"LTFNT",
-		"center",
-		0,
-		v.getColormap(TC_RAINBOW, SKINCOLOR_RED))
-
-	retake_texty = ease.linear(FU/4, $, 0)
-end
-
-// sucks to suck but how else am i gonna do this
-addHook("PostThinkFrame", do
-	if not FangsHeist.isMode() then return end
-	if not FangsHeist.Net.game_over then return end
-
-	if FangsHeist.Net.retaking then return end
-	if statealpha == 10 then return end
-
-	local select = 0
-
-	if buttons & BT_WEAPONNEXT
-	and not (lastbuttons & BT_WEAPONNEXT) then
-		select = $+1
-	end
-	if buttons & BT_WEAPONPREV
-	and not (lastbuttons & BT_WEAPONPREV) then
-		select = $-1
-	end
-
-	local lastCurrent = current
-	current = max(1, min($+select, #states))
-
-	if lastCurrent ~= current then
-		S_StartSound(nil, sfx_menu1)
-	end
-
-	local state = states[current]
-
-	if state then
-		state.think({
-			buttons = buttons;
-			sidemove = sidemove;
-			forwardmove = forwardmove;
-			lastbuttons = lastbuttons;
-			lastside = lastside;
-			lastforward = lastforward
-		})
-	end
-
-	lastbuttons = buttons
-	lastside = sidemove
-	lastforward = forwardmove
-end)
-
-local function draw_intermission(v)
-	if statealpha == 10 then return end
-	if retakealpha == 0 then return end
-
-	draw_bg(v)
-
-	local state = states[current]
-
-	if state then
-		state.draw(v, consoleplayer)
-	end
-
-	local fillalpha = 10 - statealpha
-	if fillalpha < 10 then
-		local f = V_10TRANS*fillalpha
-		draw_rect(v, 0, 0, v.width()*FU/v.dupx(), v.height()*FU/v.dupy(), V_SNAPTOLEFT|V_SNAPTOTOP|f, SKINCOLOR_REALLYREALLYBLACK)
-	end
-
-end
-
-local function calc_tab_order(selected, count)
-	local l = {}
-	if selected > 1 then
-		for i=1,(selected-1) do
-			table.insert(l, i)
-		end
-	end
-	if selected < count then
-		for i=count,(selected+1),-1 do
-			table.insert(l, i)
-		end
-	end
-	table.insert(l, selected)
-	return l
-end
-
-local function draw_tabs(v)
-	if statealpha == 10 then return end
-	if retakealpha == 0 then return end
-
-	local alpha = statealpha*V_10TRANS
-
-	local tab_patch = v.cachePatch"FH_INTER_TAB"
-	local dist = (tab_patch.width-16)*FU
-
-	v.drawString(160*FU, tab_patch.height*FU, "Weapon Prev & Next", V_SNAPTOTOP|alpha, "thin-fixed-center")
-
-	local tabOrder = calc_tab_order(current, #states)
-	local xorigin = 160*FU - (dist*(#states-1))/2
-	for _,i in ipairs(tabOrder) do
-		local state = states[i]
-		local x = xorigin+dist*(i-1)
-		v.drawScaled(x, 0, FU, tab_patch, V_SNAPTOTOP|alpha)
-		v.drawString(x,
-			4*FU,
-			state.name,
-			V_ALLOWLOWERCASE|V_SNAPTOTOP|alpha|(current == i and V_YELLOWMAP or 0),
-			"thin-fixed-center")
-	end
-end
-
---Bouncing Ease i made, If you wanted to Use this code, Let me know
-ease.inbounce = function(tic,s,m,e)
-	local ts = max(0,min(FixedDiv(tic-(FU/2),FU/2),FU))
-	local t = ease.linear(ts,0,180*FU)
-	local tc = max(0,min(FixedDiv(tic,FU/2),FU))
-	return ease.incubic(tc,s,e)+FixedMul(m,sin(FixedAngle(t))) --actual Bounce
-end
-/*
-New GAME! Animation
-
-Draws Game Sliding to Center with Boarder
-And raise a little
-
-then Shakes and Widen to Screen Height
-
-and after Shaking Fades an Color to Black
-*/
-/*local draw_game = function(v)
-	local sw = v.width()*FU/v.dupx()
-	local m = 40*FU
-	local e = sw
-	local radius = ease.outback(
-		FU-max(0,min(FixedDiv(FangsHeist.Net.end_anim-(5*TICRATE+15),20),FU)),
-		0, m
-	)
-	local alphatext = 0
-	local intiming = (3*TICRATE+32)
-	if FangsHeist.Net.end_anim <= intiming
-		if FangsHeist.Net.end_anim == intiming
-		and not paused
-			shakeFactor = 24*FU
-		end
-		radius = ease.linear(
-			FU-max(0,min(FixedDiv(FangsHeist.Net.end_anim-(3*TICRATE+22),10),FU)),
-			m, e
-		)
-	end
-	if FangsHeist.Net.end_anim <= 75
-		alphatext = ease.linear(
-			FU-max(0,min(FixedDiv(FangsHeist.Net.end_anim-60,15),FU)),
-			0, 10
-		)
-	end
-	local sx = ease.outquad(
-			FU-max(0,min(FixedDiv(FangsHeist.Net.end_anim-(5*TICRATE+15),20),FU)),
-			-50*FU, 160*FU) 
-	local tic = FU-max(0,min(FixedDiv(FangsHeist.Net.end_anim-(4*TICRATE-2),35),FU))
-	local sy = ease.inquint(tic,175*FU,100*FU)
-	draw_rect(v,
-		0, sy-radius/2,
-		sw,
-		radius,
-		V_SNAPTOLEFT,
-		SKINCOLOR_INTERMISSIONCOLOR
-	)
-	if alphatext != 10
-		local Gameset = v.cachePatch("FH_GAMESET")
-		local x = sx + v.RandomRange(-shakeFactor, shakeFactor)
-		local y = sy + v.RandomRange(-shakeFactor, shakeFactor)
-		local t = FU-max(0,min(FixedDiv(FangsHeist.Net.end_anim-(intiming-10),10),FU))
-		local scale = ease.outcubic(t,FU/2,FU)
-		v.drawScaled(x,y,scale,Gameset,alphatext*V_10TRANS)
-		shakeFactor = max(0, $-FU*3/2)
-	end
-end*/
 function module.draw(v)
-	if not (FangsHeist.Net.game_over) then
-		shakeFactor = 12*FU
-		flashalpha = 0
+	if not FangsHeist.Net.game_over then
 		return
 	end
 
-	-- GAME
-	if statealpha == 10 then
-		local scale = FU*2
-		local x = 160*FU + v.RandomRange(-shakeFactor, shakeFactor)
-		local y = 100*FU - (16*scale/2) + v.RandomRange(-shakeFactor, shakeFactor)
-	
-		FangsHeist.DrawParallax(v,
-			0, 0,
-			v.width()*FU/v.dupx(),
-			v.height()*FU/v.dupy(),
-			FU,
-			v.cachePatch("SPECTILE"),
-			V_SNAPTOTOP|V_SNAPTOLEFT
-		)
-	
-		FangsHeist.DrawString(v,
-			x,
-			y,
-			scale,
-			"GAME!!",
-			"CRFNT",
-			"center",
-			0,
-			v.getColormap(TC_RAINBOW, SKINCOLOR_RED))
+	local BLACKOUT_TICS = test.value
+
+	if FangsHeist.isGameAnim() then
+		DrawGame(v)
+		return
 	end
 
-	shakeFactor = max(0, $-FU*3/2)
-
-	-- flash
-	if flashalpha < 10 then
-		draw_rect(v,
-			0, 0,
-			v.width()*FU/v.dupx(),
-			v.height()*FU/v.dupy(),
-			V_SNAPTOLEFT|V_SNAPTOTOP|(V_10TRANS*flashalpha),
-			SKINCOLOR_WHITE)
-	end
-	flashalpha = min($+1, 10)
-
-	if FangsHeist.Net.end_anim then return end
-
-	alpha = min($+1, 10)
-	if FangsHeist.Net.game_over_ticker >= FangsHeist.INTER_START_DELAY then
-		statealpha = max(0, $-1)
-	end
-
-	manage_fade_screen(v)
-	draw_intermission(v)
-	draw_tabs(v)
-	draw_retake_factor(v)
+	DrawResults(v)
 end
 
-return module,"gameandscores"
+return module, "gameandscores"

@@ -8,6 +8,7 @@ rawset(_G, "FangsHeist", {
 // FANGS HEIGHT IS BY SAXASHITTER
 // OFFICIAL SEQUEL TO NICK'S PIZZA TIME!
 
+dofile "freeslots"
 dofile "hooks.lua"
 dofile "constants"
 dofile "files"

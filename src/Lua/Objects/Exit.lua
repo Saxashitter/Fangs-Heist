@@ -3,12 +3,6 @@
 
 // heres some cool functions and states tho
 
-states[freeslot "S_FH_MARVQUEEN"] = {
-	sprite = freeslot "SPR_MAQU",
-	frame = A,
-	tics = -1
-}
-
 function FangsHeist.defineExit(x, y, z, a)
 	if FangsHeist.Net.exit
 	and FangsHeist.Net.exit.valid then

@@ -8,10 +8,10 @@ return {
 	game_over = false,
 	game_over_ticker = 0,
 	game_over_length = 20*TICRATE,
+	game_over_winline = "",
+
 	retaking = false,
 	selected_map = 0,
-	end_anim = 2*TICRATE,
-	retake_anim = 6*TICRATE,
 
 	pregame = true,
 	pregame_time = 30*TICRATE,

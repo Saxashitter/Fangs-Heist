@@ -3,13 +3,6 @@ local GRABBED_FLAGS = MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY
 
 local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"
 
-mobjinfo[freeslot "MT_FH_SIGN"] = {
-	spawnstate = S_SIGN,
-	flags = UNGRABBED_FLAGS,
-	radius = 40*FU,
-	height = mobjinfo[MT_SIGN].height
-}
-
 local function select_player(sign, p)
 	S_StartSound(sign, sfx_lvpass)
 
@@ -152,6 +145,17 @@ addHook("MobjThinker", function(sign)
 
 		P_InstaThrust(sign, launch_angle, 8*FU)
 		P_SetObjectMomZ(sign, 4*FU)
+	end
+
+	if sign.holder
+	and sign.holder.player == displayplayer then
+		sign.frame = $|FF_TRANS80
+		sign.bustmo.frame = $|FF_TRANS80
+		sign.boardmo.frame = $|FF_TRANS80
+	else
+		sign.frame = $ & ~FF_TRANS80
+		sign.bustmo.frame = $ & ~FF_TRANS80
+		sign.boardmo.frame = $ & ~FF_TRANS80
 	end
 
 	if not (sign.holder) then

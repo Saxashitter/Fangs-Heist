@@ -25,14 +25,6 @@ function mt:isAlive(p)
 	return p and p.mo and p.mo.health and not self.spectator
 end
 
-function mt:UseAbility()
-	if not self:hasSign() then
-		return true
-	end
-
-	return false
-end
-
 function mt:isNerfed()
 	local result = HeistHook.runHook("IsPlayerNerfed", p)
 	if result ~= nil then
@@ -41,7 +33,7 @@ function mt:isNerfed()
 	local gamemode = FangsHeist.getGamemode()
 
 	if self:hasSign()
-	and gamemode.signnerf then
+	and (gamemode.signnerf or FangsHeist.Save.retakes) then
 		return true
 	end
 
@@ -211,7 +203,7 @@ function mt:damagePlayers(friendlyfire, damage)
 end
 
 function mt:isGuarding()
-	return self:isAlive() and self.player.mo.state == S_FH_GUARD
+	return false
 end
 
 function mt:addIntoTeam(sp)

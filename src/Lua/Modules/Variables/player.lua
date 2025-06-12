@@ -10,6 +10,7 @@ return {
 	attack_time = 0,
 
 	parry_cooldown = 0,
+	perf_parry_time = 0,
 	parry_time = 0,
 
 	death_time = 5*TICRATE,

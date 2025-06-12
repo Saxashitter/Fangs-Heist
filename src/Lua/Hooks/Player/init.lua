@@ -118,7 +118,7 @@ addHook("MobjDeath", function(t,i,s)
 	gamemode:playerdeath(t.player)
 end, MT_PLAYER)
 
-local function RingSpill(p, dontSpill)
+local function RingSpill(p, dontSpill, p2)
 	if not p.rings then
 		return false
 	end
@@ -129,13 +129,16 @@ local function RingSpill(p, dontSpill)
 		rings_spill = p.rings
 	end
 
-	if not dontSpill then
+	if not dontSpill 
+	and not p2 then
 		P_PlayerRingBurst(p, rings_spill)
+	elseif p2 then
+		p2.rings = $+rings_spill
 	end
+
 	S_StartSound(p.mo, sfx_s3kb9)
 	p.rings = $-rings_spill
 	p.heist:gainProfit(-8*rings_spill)
-
 
 	return rings_spill
 end
@@ -220,12 +223,22 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	end
 
 	if t.player.powers[pw_shield] then return end
-	local rings = RingSpill(t.player)
+	local rings = RingSpill(t.player, nil, s and s.valid and s.player)
 
 	if not rings then return end
 
-	RemoveCarry(t.player)
-	P_DoPlayerPain(t.player, s, i)
+	if not (s
+	and s.valid
+	and s.type == MT_PLAYER) then
+		RemoveCarry(t.player)
+		P_DoPlayerPain(t.player, s, i)
+	else
+		t.player.powers[pw_flashing] = TICRATE
+
+		t.momx = $/2
+		t.momy = $/2
+	end
+
 	return true
 end, MT_PLAYER)
 
@@ -257,6 +270,7 @@ addHook("MobjCollide", function(pmo, mo)
 end, MT_PLAYER)
 
 add("Pregame")
+add("PVP")
 add("Nerfs")
 add("Treasures")
 add("Panic")
@@ -265,4 +279,3 @@ add("Sign Toss")
 type = "thinkframe"
 
 add("Spectator")
-add("PVP")

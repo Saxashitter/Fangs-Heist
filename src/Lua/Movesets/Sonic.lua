@@ -3,12 +3,6 @@ FangsHeist.makeCharacter("sonic", {
 	pregameBackground = "FH_PREGAME_SONIC"
 })
 
-states[freeslot "S_FH_DROPDASH"] = {
-	sprite = SPR_PLAY,
-	frame = freeslot "SPR2_DRPD",
-	tics = 2,
-	nextstate = S_FH_DROPDASH
-}
 local DELAY = 8
 local TICS = 15
 local STARTSPEED = 20*FU

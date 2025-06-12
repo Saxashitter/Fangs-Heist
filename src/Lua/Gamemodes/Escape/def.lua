@@ -163,7 +163,7 @@ function gamemode:init(map)
 	local info = mapheaderinfo[map]
 
 	FangsHeist.Net.escape = false
-	FangsHeist.Net.escape_theme = "SPRHRO"
+	FangsHeist.Net.escape_theme = "FH_ESC"
 	FangsHeist.Net.round2_theme = "ROUND2"
 	FangsHeist.Net.escape_hurryup = true
 	FangsHeist.Net.escape_on_start = false

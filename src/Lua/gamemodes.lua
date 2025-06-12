@@ -11,7 +11,7 @@ local DEFAULT = {
 	teams = true,
 	friendlyfire = false,
 	teamlimit = 3,
-	signnerf = true,
+	signnerf = false,
 	spillallrings = false,
 	dontdivprofit = false,
 
@@ -76,4 +76,4 @@ function FangsHeist.getGamemode()
 end
 
 FangsHeist.Escape = dofile "Gamemodes/Escape/def.lua"
-FangsHeist.TagTeam = dofile "Gamemodes/Tag Team/def.lua"
+-- FangsHeist.TagTeam = dofile "Gamemodes/Tag Team/def.lua"

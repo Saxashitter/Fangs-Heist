@@ -16,6 +16,25 @@ local function profsort(a, b)
 	return a[4] > b[4]
 end
 
+FangsHeist.GAME_TICS = 2*TICRATE
+FangsHeist.RESULTS_TICS = 8*TICRATE
+FangsHeist.WINNER_LINES = {
+	"is the winner!",
+	"was the greediest!",
+	"took your money!",
+	"ate you for dinner!",
+	"ate you for breakfast!",
+	"took more than a spoonful!",
+	"is the next Lebron!",
+	"saved The Netherworld!",
+	"has saved the day!",
+	"has completed Fang's Heist! HIT IT, TAILS!!",
+	"got silly!",
+	"has deemed that you get their %s steam!",
+	"is sigma!",
+	"was the murderer!"
+}
+
 function FangsHeist.startIntermission()
 	if FangsHeist.Net.game_over
 	or HeistHook.runHook("GameOver") == true then
@@ -52,57 +71,11 @@ function FangsHeist.startIntermission()
 		table.remove(maps, key)
 	end
 
-		/*local str = ""
-	
-		for i,data in ipairs(FangsHeist.Net.map_choices) do
-			str = $..tostring(data.map)..","..tostring(data.votes)
-			if i ~= #FangsHeist.Net.map_choices then
-				str = $.."^"
-			end
-		end
-
-		COM_BufInsertText(server, "fh_receivemapvote "..str)*/
+	local i = P_RandomRange(1, #FangsHeist.WINNER_LINES)
+	FangsHeist.Net.game_over_winline = FangsHeist.WINNER_LINES[i]
 
 	local gamemode = FangsHeist.getGamemode()
 	gamemode:finish()
-
-	if not FangsHeist.Save.ServerScores[gamemap] then
-		FangsHeist.Save.ServerScores[gamemap] = {}
-	end
-
-	for p in players.iterate do
-		if not (p.heist
-		and p.heist:isAlive()
-		and #p.heist:getTeam() < 1) then
-			continue
-		end
-
-		local team = p.heist:getTeam()
-
-		table.insert(FangsHeist.Save.ServerScores[gamemap], {
-			p.mo.skin,
-			skincolors[max(1, p.mo.color)].name,
-			p.name,
-			team.profit
-		})
-	end
-
-	table.sort(FangsHeist.Save.ServerScores[gamemap], profsort)
-
-	if #FangsHeist.Save.ServerScores[gamemap] > 12 then
-		for i = 12,#FangsHeist.Save.ServerScores[gamemap] do
-			FangsHeist.Save.ServerScores[gamemap][i] = nil
-		end
-	end
-
-	if FangsHeist.isServer() then
-		local f = io.openlocal("client/FangsHeist/serverScores.txt", "w+")
-		if f then
-			f:write(FangsHeist.ServerScoresToString())
-			f:flush()
-			f:close()
-		end
-	end
 
 	S_FadeMusic(0, FixedMul(MUSICRATE, tofixed("0.75")))
 

@@ -7,16 +7,17 @@ local SKID_TIME = 3
 FangsHeist.makeCharacter("fang", {
 	difficulty = FHD_MEDIUM,
 	pregameBackground = "FH_PREGAME_FANG",
-	attackCooldown = 68,
 	controls = {
 		{
 			key = "SPIN",
 			name = "Pop-gun",
 			cooldown = function(self, p)
-				return (p.heist.attack_cooldown)
+				return false
 			end,
 			visible = function(self, p)
-				return true
+				return p.mo.state ~= S_FH_STUN
+				and p.mo.state ~= S_FH_GUARD
+				and p.mo.state ~= S_FH_CLASH
 			end
 		},
 		FangsHeist.Characters.sonic.controls[1],
@@ -24,39 +25,7 @@ FangsHeist.makeCharacter("fang", {
 	}
 })
 
-function A_ForceFrame(mo, var1, var2)
-	mo.frame = var1
-end
-
 -- slot states
-states[freeslot "S_FH_FANG_GUN_GRND2"] = {
-	sprite = SPR_PLAY,
-	frame = SPR2_FIRE,
-	action = A_ForceFrame,
-	var1 = D,
-	tics = -1
-}
-states[freeslot "S_FH_FANG_GUN_GRND1"] = {
-	sprite = SPR_PLAY,
-	frame = SPR2_FIRE|FF_SPR2ENDSTATE,
-	tics = 3,
-	nextstate = S_FH_FANG_GUN_GRND1,
-	var1 = S_FH_FANG_GUN_GRND2
-}
-states[freeslot "S_FH_FANG_GUN_AIR2"] = {
-	sprite = SPR_PLAY,
-	frame = SPR2_MLEE,
-	tics = -1,
-	action = A_ForceFrame,
-	var1 = skins["fang"].sprites[SPR2_MLEE].numframes-1
-}
-states[freeslot "S_FH_FANG_GUN_AIR1"] = {
-	sprite = SPR_PLAY,
-	frame = SPR2_MLEE|FF_SPR2ENDSTATE,
-	tics = 3,
-	nextstate = S_FH_FANG_GUN_AIR1,
-	var1 = S_FH_FANG_GUN_AIR2
-}
 
 local popgunStates = {
 	[S_FH_FANG_GUN_GRND1] = true,
@@ -148,10 +117,50 @@ local function doPopgun(p)
 		p.pflags = $|PF_THOKKED
 	end
 
-	p.heist.attack_cooldown = POPGUN_TIME
 	p.fang.popgun = POPGUN_TIME
 
 	S_StartSound(p.mo, sfx_corkp)
+end
+
+local function popgunTmr(p)
+	p.fang.popgun = max(0, $-1)
+
+	if not popgunStates[p.mo.state] then
+		p.fang.popgun = 0
+		p.fang.skidtime = 0
+		return
+	end
+
+	if p.fang.popgun == 0
+	and popgunStates[p.mo.state] then
+		p.mo.state = getState(p)
+		p.fang.skidtime = 0
+		return
+	end
+
+	if popgunStates[p.mo.state]
+	and P_IsObjectOnGround(p.mo)
+	and FixedHypot(p.rmomx, p.rmomy) then
+		p.rmomx = FixedMul($, POPGUN_FRICTION)
+		p.rmomy = FixedMul($, POPGUN_FRICTION)
+		p.mo.momx = p.cmomx+p.rmomx
+		p.mo.momy = p.cmomy+p.rmomy
+
+		p.fang.skidtime = max(0, $-1)
+		if not (p.fang.skidtime) then
+			p.fang.skidtime = SKID_TIME
+			S_StartSound(p.mo,sfx_s3k7e)
+
+			local r = p.mo.radius/FRACUNIT
+
+			P_SpawnMobj(
+				P_RandomRange(-r,r)*FU+p.mo.x,
+				P_RandomRange(-r,r)*FU+p.mo.y,
+				p.mo.z,
+				MT_DUST
+			)
+		end
+	end
 end
 
 addHook("PlayerThink", function(p)
@@ -169,37 +178,7 @@ addHook("PlayerThink", function(p)
 	end
 
 	if p.fang.popgun then
-		p.fang.popgun = max(0, $-1)
-
-		if popgunStates[p.mo.state]
-		and P_IsObjectOnGround(p.mo)
-		and FixedHypot(p.rmomx, p.rmomy) then
-			p.rmomx = FixedMul($, POPGUN_FRICTION)
-			p.rmomy = FixedMul($, POPGUN_FRICTION)
-			p.mo.momx = p.cmomx+p.rmomx
-			p.mo.momy = p.cmomy+p.rmomy
-
-			p.fang.skidtime = max(0, $-1)
-			if not (p.fang.skidtime) then
-				p.fang.skidtime = SKID_TIME
-				S_StartSound(p.mo,sfx_s3k7e)
-
-				local r = p.mo.radius/FRACUNIT
-
-				P_SpawnMobj(
-					P_RandomRange(-r,r)*FU+p.mo.x,
-					P_RandomRange(-r,r)*FU+p.mo.y,
-					p.mo.z,
-					MT_DUST
-				)
-			end
-		end
-
-		if p.fang.popgun == 0
-		and popgunStates[p.mo.state] then
-			p.mo.state = getState(p)
-			p.fang.skidtime = 0
-		end
+		popgunTmr(p)
 	end
 
 	if not hasControl(p) then return end
@@ -207,7 +186,9 @@ addHook("PlayerThink", function(p)
 	if p.cmd.buttons & BT_SPIN
 	and not (p.lastbuttons & BT_SPIN)
 	and not (p.fang.popgun)
-	and not (p.heist.attack_cooldown)
+	and p.mo.state ~= S_FH_STUN
+	and p.mo.state ~= S_FH_GUARD
+	and p.mo.state ~= S_FH_CLASH
 	and not (p.pflags & PF_BOUNCING) then
 		if not (not P_IsObjectOnGround(p.mo) and p.powers[pw_shield]) then
 			doPopgun(p)

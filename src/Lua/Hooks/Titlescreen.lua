@@ -29,8 +29,6 @@ local logo_animated = true
 local logo_delay = 13
 local logo_shake = 0
 
-freeslot("sfx_fhwrn1","sfx_fhwrn2")
-
 addHook("ThinkFrame", do
 	if not titlemapinaction then
 		titlescreen = false

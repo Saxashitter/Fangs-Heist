@@ -1,53 +1,12 @@
 local function canAttack(p)
-	return not (p.heist.attack_cooldown or p.heist:isGuarding() or (p.amy and p.amy.thrown and p.amy.thrown.valid))
+	return not (p.mo.state == S_FH_STUN
+	or p.mo.state == S_FH_GUARD
+	or p.mo.state == S_FH_CLASH
+	or (p.amy and p.amy.thrown and p.amy.thrown.valid))
 end
-
-states[freeslot "S_FH_AMY_TWIRL"] = {
-	sprite = SPR_PLAY,
-	frame = freeslot "SPR2_TWRL",
-	tics = 1,
-	nextstate = S_FH_AMY_TWIRL
-}
-
--- Amy Hammer
-states[freeslot "S_FH_THROWNHAMMER"] = {
-	sprite = freeslot "SPR_AHMR",
-	frame = FF_ANIMATE,
-	tics = -1,
-	var1 = H,
-	var2 = 1
-}
-mobjinfo[freeslot "MT_FH_THROWNHAMMER"] = {
-	spawnstate = S_FH_THROWNHAMMER,
-	radius = 30*FU,
-	height = 26*FU,
-	flags = MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY
-}
 
 FangsHeist.makeCharacter("amy", {
 	pregameBackground = "FH_PREGAME_AMY",
-	attackRange = tofixed("1.3"),
-	attackZRange = tofixed("1.5"),
-	isAttacking = function(self, p)
-		return (p.powers[pw_strong] & STR_ATTACK)
-	end,
-	onHit = function(self, p, projectile, sound)
-		if projectile then return end
-
-		S_StartSound(p.mo, sound)
-		p.mo.momx = $*-1
-		p.mo.momy = $*-1
-
-		if not P_IsObjectOnGround(p.mo) then
-			p.mo.state = S_PLAY_FALL
-			return true
-		end
-
-		p.mo.state = S_PLAY_STND
-		return true
-	end,
-	useDefaultAttack = false,
-
 	controls = {
 		{
 			key = "SPIN/JUMP",
@@ -56,19 +15,12 @@ FangsHeist.makeCharacter("amy", {
 				return not canAttack(p)
 			end,
 			visible = function(self, p)
-				return true
+				return p.mo.state ~= S_FH_CLASH
+				and p.mo.state ~= S_FH_STUN
+				and p.mo.state ~= S_FH_GUARD
 			end
 		},
-		{
-			key = "FIRE",
-			name = "Attack (Throw)",
-			cooldown = function(self, p)
-				return not canAttack(p)
-			end,
-			visible = function(self, p)
-				return true
-			end
-		},
+		FangsHeist.Characters.sonic.controls[1],
 		FangsHeist.Characters.sonic.controls[2]
 	}
 })
@@ -117,14 +69,7 @@ local function throwHammer(p)
 	hammer.angle = p.mo.angle
 	hammer.throwtime = THROW_TIME
 	hammer.throwspeed = FixedHypot(p.mo.momx, p.mo.momy)+25*FU
-	if p.mo.state == S_PLAY_TWINSPIN then
-		p.mo.state = S_PLAY_FALL
-		P_SetObjectMomZ(hammer,
-			(p.mo.momz*P_MobjFlip(hammer)) - 34*FU)
-	else
-		P_InstaThrust(hammer, hammer.angle,
-			fixhypot(p.mo.momx, p.mo.momy) + 34*FU)
-	end
+	P_InstaThrust(hammer, hammer.angle, fixhypot(p.mo.momx, p.mo.momy) + 34*FU)
 
 	S_StartSound(p.mo, sfx_s3k51)
 
@@ -147,14 +92,8 @@ addHook("PlayerThink", function(p)
 
 	local attack = canAttack(p)
 
-	if p.amy.thrown and p.amy.thrown.valid then
-		p.heist.attack_cooldown = 62
-	else
+	if not (p.amy.thrown and p.amy.thrown.valid) then
 		p.amy.thrown = nil
-		if not attack
-		and p.mo.state == S_PLAY_TWINSPIN then
-			attack = true
-		end
 	end
 
 	local attackFlags = STR_ATTACK|STR_WALL|STR_CEILING|STR_SPIKE
@@ -179,7 +118,7 @@ addHook("PlayerThink", function(p)
 		end
 
 		p.amy.twirlframes = $+1
-	elseif attack
+	--[[elseif attack
 	and p.cmd.buttons & BT_ATTACK
 	and not (p.lastbuttons & BT_ATTACK)
 	and not P_PlayerInPain(p)
@@ -187,7 +126,7 @@ addHook("PlayerThink", function(p)
 		-- Hammer Throw
 		local hammer = throwHammer(p)
 
-		p.amy.thrown = hammer
+		p.amy.thrown = hammer]]
 	end
 
 	if p.mo.state ~= S_FH_AMY_TWIRL
@@ -213,7 +152,6 @@ addHook("AbilitySpecial", function(p)
 
 	if p.pflags & PF_JUMPED
 	and not (p.pflags & PF_THOKKED) then
-		p.heist.attack_cooldown = 85
 		S_StartSound(p.mo, sfx_s1ab) -- jet jaw sfx
 		P_SetObjectMomZ(p.mo, 7*FU)
 		p.mo.state = S_FH_AMY_TWIRL
@@ -235,11 +173,6 @@ addHook("JumpSpinSpecial", function(p)
 	if not canAttack(p) then
 		return true
 	end
-
-	if p.pflags & PF_JUMPED
-	and not (p.pflags & PF_THOKKED) then
-		p.heist.attack_cooldown = 50
-	end
 end)
 
 addHook("SpinSpecial", function(p)
@@ -248,24 +181,9 @@ addHook("SpinSpecial", function(p)
 		return
 	end
 
-	local canstand = (not p.mo.standingslope
-		or p.mo.standingslope.flags & SL_NOPHYSICS
-		or abs(p.mo.standingslope.zdelta) < FU/2)
-
-	if not (p.panim ~= PA_ABILITY2
-	and p.cmd.buttons & BT_SPIN
-	and not (p.mo.momz)
-	and P_IsObjectOnGround(p.mo)
-	and not (p.pflags & PF_SPINDOWN)
-	and canstand) then
-		return
-	end
-
-	if p.heist.attack_cooldown then
+	if not canAttack(p) then
 		return true
 	end
-
-	p.heist.attack_cooldown = 50
 end)
 
 local function L_ReturnThrustXYZ(mo, point, speed)

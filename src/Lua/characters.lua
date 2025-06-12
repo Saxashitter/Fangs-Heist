@@ -1,20 +1,5 @@
 FangsHeist.Characters = {}
 
-states[freeslot "S_FH_PANIC"] = {
-	sprite = SPR_PLAY,
-	frame = SPR2_CNT1,
-	tics = 4,
-	nextstate = S_FH_PANIC
-}
-
-states[freeslot "S_FH_INSTASHIELD"] = {
-	sprite = freeslot"SPR_TWSP",
-	frame = A|FF_ANIMATE|FF_FULLBRIGHT,
-	tics = G,
-	var1 = G,
-	var2 = 1
-}
-
 local DEFAULT = {
 	difficulty = FHD_UNKNOWN,
 	pregameBackground = "FH_PREGAME_UNKNOWN",
@@ -23,18 +8,6 @@ local DEFAULT = {
 	panicState = S_FH_PANIC,
 
 	forceSpeedCap = false,
-
-	attackCooldown = TICRATE,
-	attackRange = tofixed("4"),
-	attackZRange = tofixed("2.35"),
-
-	damageRange = tofixed("1.5"),
-	damageZRange = tofixed("1.5"),
-
-	useDefaultAttack = true,
-	useDefaultGuard = true,
-
-	attackEffectState = S_FH_INSTASHIELD,
 
 	onAttack = function(self, p) end,
 	onClash = function(self, p) end,
@@ -52,17 +25,21 @@ local DEFAULT = {
 				return (p.heist.attack_cooldown)
 			end,
 			visible = function(self, p)
-				return not p.heist:isGuarding()
+				return p.mo.state ~= S_FH_GUARD
+				and p.mo.state ~= S_FH_STUN
+				and p.mo.state ~= S_FH_CLASH
 			end
 		},
 		{
 			key = "FIRE NORMAL",
 			name = "Guard",
 			cooldown = function(self, p)
-				return (p.heist.attack_cooldown or p.heist.parry_cooldown)
+				return (p.heist.parry_cooldown)
 			end,
 			visible = function(self, p)
-				return true
+				return p.mo.state ~= S_FH_GUARD
+				and p.mo.state ~= S_FH_STUN
+				and p.mo.state ~= S_FH_CLASH
 			end
 		}
 	}

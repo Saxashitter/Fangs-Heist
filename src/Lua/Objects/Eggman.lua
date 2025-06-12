@@ -86,7 +86,7 @@ local function validCheck(p)
 	and p.heist:isAlive()
 	and not p.heist.exiting
 	and not p.heist.spectator
-	and gamemode:eggmanblacklist(p)
+	--and gamemode:eggmanblacklist(p)
 end
 
 local function getRandomPlayer()
