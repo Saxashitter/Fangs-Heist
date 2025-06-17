@@ -6,7 +6,7 @@ rawset(_G, "FH_DST_ATK_Y", tofixed("1.25"))
 rawset(_G, "FH_DST_WHF_Y", tofixed("1.6"))
 
 -- Attack Constants
-rawset(_G, "FH_ATK_TICS", 15)
+rawset(_G, "FH_ATK_FLASH_TICS", 16)
 
 -- Parry Constants
 rawset(_G, "FH_PRY_DUR", 35)
@@ -79,13 +79,20 @@ local function CanBeHit(p1, p2)
 end
 
 -- Returns the priority that the player's attack should have.
-local PRO_JUMP = 1
-local PRO_MELEE = 1
-local PRO_ROLL = 2
-local PRO_SPINDASH = 3
-local PRO_INVINC = 4
+local PRO_JUMP = 2
+local PRO_MELEE = 2
+local PRO_ROLL = 3
+local PRO_SPINDASH = 4
+local PRO_INVINC = 5
 
 local function GetAttackPriority(p, p2)
+	local char = FangsHeist.Characters[skins[p.skin].name]
+	local customPriority = char:attackPriority(p, p2)
+
+	if customPriority then
+		return customPriority
+	end
+
 	if not P_PlayerCanDamage(p, p2.mo) then
 		return 0
 	end
@@ -136,7 +143,8 @@ local function GetNearestAttackablePlayer(mo, blacklist)
 
 		if not (plyr.valid
 		and plyr.heist
-		and plyr.heist:isAlive()) then
+		and plyr.heist:isAlive()
+		and not plyr.heist.exiting) then
 			continue
 		end
 
@@ -308,7 +316,9 @@ local function Knockback(p1, p2, knockbackOther)
 
 	P_InstaThrust(mo1, rev_angle, xySpd)
 	mo1.momz = zSpd
-	mo1.state = S_PLAY_FALL
+	if not P_IsObjectOnGround(mo1) then
+		mo1.state = S_PLAY_FALL
+	end
 	p1.pflags = $ & ~(FLAGS_RESET)
 
 	if not knockbackOther then
@@ -317,14 +327,18 @@ local function Knockback(p1, p2, knockbackOther)
 
 	P_InstaThrust(mo2, angle, xySpd)
 	mo2.momz = -zSpd
-	mo2.state = S_PLAY_FALL
+	if not P_IsObjectOnGround(mo2) then
+		mo2.state = S_PLAY_FALL
+	end
 	p2.pflags = $ & ~(FLAGS_RESET)
 end
 
 local function PerfectParry(p, p2)
-	p2.drawangle = R_PointToAngle2(p2.mo.x, p2.mo.y, p.mo.x, p.mo.y)
-	p2.mo.state = S_FH_STUN
-	p2.pflags = $ & ~(FLAGS_RESET)
+	if p2 then
+		p2.drawangle = R_PointToAngle2(p2.mo.x, p2.mo.y, p.mo.x, p.mo.y)
+		p2.mo.state = S_FH_STUN
+		p2.pflags = $ & ~(FLAGS_RESET)
+	end
 	
 	p.mo.state = S_PLAY_STND
 	p.mo.translation = nil
@@ -338,10 +352,12 @@ end
 local function OkParry(p, p2)
 	local tics = 35
 
-	Knockback(p2, p)
+	if p2 then
+		Knockback(p2, p)
+		p2.powers[pw_flashing] = tics
+	end
 
 	p.powers[pw_flashing] = tics
-	p2.powers[pw_flashing] = tics
 
 	p.mo.state = S_PLAY_STND
 	p.mo.translation = nil
@@ -383,10 +399,15 @@ local function Damage(p, p2, knockback, pain)
 	if knockback then
 		Knockback(p, p2)
 	end
+
 	if pain
 	and p2.mo.health then
 		P_DoPlayerPain(p2, p.mo, p.mo)
 	end
+
+	p2.heist.attack_cooldown = max($, TICRATE)
+
+	p.powers[pw_flashing] = FH_ATK_FLASH_TICS
 end
 
 local function RegisterGuard(atk, vic)
@@ -406,7 +427,7 @@ local function CreateWhiffEffect(p)
 	local whiff = P_SpawnMobjFromMobj(p.mo,
 		P_ReturnThrustX(nil,angle, dist) + p.mo.momx,
 		P_ReturnThrustY(nil,angle, dist) + p.mo.momy,
-		FixedDiv(p.mo.height,p.mo.scale)/2,
+		p.mo.height/2,
 		MT_THOK
 	)
 
@@ -481,6 +502,8 @@ local function WhiffAttack(p)
 		S_StartSound(found.mo, sfx_s1c9)
 		P_InstaThrust(found.mo, found.drawangle, -27*p.mo.scale)
 		P_SetObjectMomZ(found.mo, 7*p.mo.scale)
+
+		p.powers[pw_flashing] = FH_ATK_FLASH_TICS
 	end
 end
 
@@ -519,6 +542,53 @@ local function DoGuard(p)
 	S_StartSound(p.mo, sfx_s1a2)
 end
 
+local function RingSpill(p, dontSpill, p2)
+	if not p.rings then
+		return false
+	end
+	local gamemode = FangsHeist.getGamemode()
+
+	local rings_spill = min(5+(8*FangsHeist.Save.retakes), p.rings)
+	if gamemode.spillallrings then
+		rings_spill = p.rings
+	end
+
+	if not dontSpill 
+	and not p2 then
+		P_PlayerRingBurst(p, rings_spill)
+	elseif p2 then
+		p2.rings = $+rings_spill
+	end
+
+	S_StartSound(p.mo, sfx_s3kb9)
+	p.rings = $-rings_spill
+	p.heist:gainProfit(-8*rings_spill)
+
+	return rings_spill
+end
+
+local function RemoveCarry(p)
+	if p.powers[pw_carry] == CR_ROLLOUT then
+		local rollout = p.mo.tracer
+
+		if rollout and rollout.valid and rollout.tracer == p.mo then
+			rollout.tracer = nil
+			rollout.flags = $|MF_PUSHABLE
+		end
+
+		p.mo.tracer = nil
+	else
+		local mo = p.mo.tracer
+
+		if mo and mo.valid and mo.tracer == p.mo then
+			mo.tracer = nil
+		end
+
+		p.mo.tracer = nil
+	end
+
+	p.powers[pw_carry] = CR_NONE
+end
 
 addHook("ThinkFrame", do
 	if not FangsHeist.isMode() then return end
@@ -608,9 +678,11 @@ addHook("ThinkFrame", do
 		end
 
 		Knockback(atkP, vicP, true)
-
 		atkP.mo.state = S_FH_CLASH
 		vicP.mo.state = S_FH_CLASH
+
+		S_StartSound(atkP.mo, sfx_fhclsh)
+		S_StartSound(vicP.mo, sfx_fhclsh)
 	end
 end)
 
@@ -641,14 +713,28 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 				return false
 			end
 			
-			damage = $/5
 			forced = true
 		end
 	end
-	
+
 	if t.state == S_FH_GUARD
 	and t.player.heist.parry_time
-	and canDamage then
+	and canDamage
+	and i
+	and i.valid
+	and i.type ~= MT_PLAYER then
+		RegisterGuard(t.player)
+
+		if i.flags & MF_MISSILE then
+			i.target = t
+			i.momx = -$
+			i.momy = -$
+			i.momz = -$
+		elseif i.flags & MF_ENEMY|MF_BOSS then
+			P_DamageMobj(i, t, t)
+		end
+
+		t.player.powers[pw_flashing] = 35
 		return false
 	end
 
@@ -657,6 +743,82 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 	end
 
 	return forced
+end, MT_PLAYER)
+
+addHook("MobjDamage", function(t,i,s,dmg,dt)
+	if not FangsHeist.isMode() then return end
+	if not (t and t.player and t.player.heist) then return end
+
+	for _,tres in ipairs(t.player.heist.treasures) do
+		if not (tres.mobj.valid) then continue end
+
+		local angle = FixedAngle(P_RandomRange(1, 360)*FU)
+
+		P_InstaThrust(tres.mobj, angle, 12*FU)
+		P_SetObjectMomZ(tres.mobj, 4*FU)
+
+		tres.mobj.target = nil
+	end
+	t.player.heist.treasures = {}
+
+	local gamemode = FangsHeist.getGamemode()
+	gamemode:playerdamage(t.player)
+
+	local givenSign = false
+
+	if s
+	and s.player
+	and s.player.heist then
+		local team = s.player.heist:getTeam()
+
+		if t.player.heist:hasSign()
+		and s.player.heist:isEligibleForSign() then
+			FangsHeist.giveSignTo(s.player)
+			givenSign = true
+		end
+
+		if not (t.health) then
+			s.player.heist.deadplayers = $+1
+			s.player.heist:gainProfit(50)
+		else
+			s.player.heist.hitplayers = $+1
+			s.player.heist:gainProfit(28)
+		end
+	end
+
+	if not givenSign
+	and t.player.heist:hasSign() then
+		local sign = FangsHeist.Net.sign
+		sign.holder = nil
+
+		local launch_angle = FixedAngle(P_RandomRange(0, 360)*FU)
+
+		P_InstaThrust(sign, launch_angle, 8*FU)
+		P_SetObjectMomZ(sign, 4*FU)
+	end
+
+	if dt & DMG_DEATHMASK then
+		return
+	end
+
+	if t.player.powers[pw_shield] then return end
+	local rings = RingSpill(t.player, nil, s and s.valid and s.player)
+
+	if not rings then return end
+
+	if not (s
+	and s.valid
+	and s.type == MT_PLAYER) then
+		RemoveCarry(t.player)
+		P_DoPlayerPain(t.player, s, i)
+	else
+		t.player.powers[pw_flashing] = TICRATE
+
+		t.momx = $/2
+		t.momy = $/2
+	end
+
+	return true
 end, MT_PLAYER)
 
 return function(p)
@@ -696,6 +858,7 @@ return function(p)
 
 	if p.mo.state == S_FH_STUN then
 		p.pflags = $|PF_FULLSTASIS
+		P_SpawnGhostMobj(p.mo)
 	end
 
 	if p.mo.state == S_FH_GUARD then

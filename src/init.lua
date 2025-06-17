@@ -11,7 +11,6 @@ rawset(_G, "FangsHeist", {
 dofile "freeslots"
 dofile "hooks.lua"
 dofile "constants"
-dofile "files"
 dofile "characters"
 dofile "console"
 
@@ -42,9 +41,11 @@ dofile "Objects/Hell Stage"
 dofile "Objects/Bosses/GFZ3 Eggman"
 dofile "Objects/Bosses/Missile"
 
+dofile "Movesets/Sonic"
+dofile "Movesets/Tails"
 dofile "Movesets/Amy"
 dofile "Movesets/Fang"
-dofile "Movesets/Sonic"
+dofile "Movesets/Metal Sonic"
 
 dofile "modsupport"
 
@@ -52,3 +53,4 @@ dofile "Compat/Mario"
 dofile "Compat/S3 Sonic"
 dofile "Compat/Bean"
 dofile "Compat/Eggman"
+dofile "Compat/DeltaChars"

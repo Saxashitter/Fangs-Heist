@@ -1,6 +1,6 @@
 local module = {}
 
-local SCORE_Y = (12+14*2)*FU
+local SCORE_Y = (12+13+16+8)*FU
 
 function module.init()
 end

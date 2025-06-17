@@ -34,11 +34,8 @@ local defaultitems = {
 	{"intermissionemeralds", "intermission"},
 }
 
-customhud.SetupFont("CSFNT")
 customhud.SetupFont("FHFNT")
-customhud.SetupNumberFont("RNGFNT")
-customhud.SetupNumberFont("RRGFNT")
-customhud.SetupNumberFont("PRTFNT")
+customhud.SetupFont("FHBFT")
 
 local function is_hud_modded(name)
 	for k,v in ipairs(defaultitems) do
@@ -128,6 +125,6 @@ addHud "swaptimer"
 addHud "escapetext"
 addHud "discord"
 addHud "leftscores"
+addHud "rankings"
 addHud "intermission"
-addHud "dialogue"
 addHud "pregame"

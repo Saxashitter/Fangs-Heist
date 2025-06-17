@@ -10,11 +10,9 @@ return {
 	game_over_length = 20*TICRATE,
 	game_over_winline = "",
 
-	retaking = false,
-	selected_map = 0,
-
 	pregame = true,
 	pregame_time = 30*TICRATE,
+	pregame_transparency = 0,
 	pregame_cam = {enabled = false, x=0,y=0,z=0,angle=0,dist=0},
 
 	placements = {},

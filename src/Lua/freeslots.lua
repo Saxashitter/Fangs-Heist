@@ -9,12 +9,14 @@ skincolors[SKINCOLOR_REALLYREALLYBLACK] = {
     accessible = false
 }
 
-spr2defaults[freeslot "SPR2_FHBN"] = SPR2_XTRA
 
 -- Actions
 function A_ForceFrame(mo, var1, var2)
 	mo.frame = ($ & ~FF_FRAMEMASK)|var1
 end
+
+--Sprites
+freeslot "SPR2_FHBN"
 
 -- States
 states[freeslot "S_FH_PANIC"] = {
@@ -55,18 +57,39 @@ states[freeslot "S_FH_GUARD"] = {
 	var1 = C
 }
 
-states[freeslot "S_FH_AMY_TWIRL"] = {
-	sprite = SPR_PLAY,
-	frame = freeslot "SPR2_TWRL",
-	tics = 1,
-	nextstate = S_FH_AMY_TWIRL
-}
-
 states[freeslot "S_FH_DROPDASH"] = {
 	sprite = SPR_PLAY,
 	frame = freeslot "SPR2_DRPD",
 	tics = 2,
 	nextstate = S_FH_DROPDASH
+}
+
+states[freeslot "S_FH_FLYRELEASE_HOLD"] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_FLY_,
+	tics = 2,
+	nextstate = S_FH_FLYRELEASE_HOLD
+}
+
+states[freeslot "S_FH_FLYRELEASE"] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_FLY_,
+	tics = 1,
+	nextstate = S_FH_FLYRELEASE_HOLD
+}
+
+states[freeslot "S_FH_FLYWINDUP"] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_SPNG,
+	tics = 1,
+	nextstate = S_FH_FLYRELEASE
+}
+
+states[freeslot "S_FH_AMY_TWIRL"] = {
+	sprite = SPR_PLAY,
+	frame = freeslot "SPR2_TWRL",
+	tics = 1,
+	nextstate = S_FH_AMY_TWIRL
 }
 
 states[freeslot "S_FH_FANG_GUN_GRND2"] = {
@@ -99,6 +122,13 @@ states[freeslot "S_FH_FANG_GUN_AIR1"] = {
 	tics = 3,
 	nextstate = S_FH_FANG_GUN_AIR1,
 	var1 = S_FH_FANG_GUN_AIR2
+}
+
+states[freeslot "S_FH_MS_DRIFT"] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_SKID,
+	tics = -1,
+	nextstate = S_FH_MS_DRIFT
 }
 
 -- Amy Hammer
@@ -139,5 +169,15 @@ end
 for i = 1,2 do
 	sfxinfo[freeslot("sfx_parry"..i)].caption = "Parry"
 end
+sfxinfo[freeslot "sfx_fhclsh"].caption = "Clink!"
+
+sfxinfo[freeslot "sfx_gogogo"].caption = "G-G-G-GO! GO! GO!"
+
+sfxinfo[freeslot "sfx_cwdscr"].caption = "WOO!!!!! YAY!!!!!"
+
+sfxinfo[freeslot "sfx_nargam"].caption = "GAME!"
+sfxinfo[freeslot "sfx_narsud"].caption = "Sudden death..."
+sfxinfo[freeslot "sfx_nartgw"].caption = "This game's winner is..."
+sfxinfo[freeslot "sfx_narcon"].caption = "Congratulations!"
 
 freeslot("sfx_fhwrn1","sfx_fhwrn2")

@@ -326,6 +326,22 @@ function gamemode:update()
 
 	FangsHeist.manageTreasures()
 	FangsHeist.teleportSign()
+
+	local sign = FangsHeist.Net.sign
+
+	if sign and sign.valid then
+		if sign.holder
+		and sign.holder.valid
+		and sign.holder.player == displayplayer then
+			sign.frame = $|FF_TRANS80
+			sign.bustmo.frame = $|FF_TRANS80
+			sign.boardmo.frame = $|FF_TRANS80
+		else
+			sign.frame = $ & ~FF_TRANS80
+			sign.bustmo.frame = $ & ~FF_TRANS80
+			sign.boardmo.frame = $ & ~FF_TRANS80
+		end
+	end
 end
 
 function gamemode:trackplayer(p)
@@ -702,5 +718,41 @@ function gamemode:isHurryUp()
 	return true
 end
 
+function gamemode:info()
+	local info = {
+		{"Basics",
+			"In order to win, you must collect enough Profit.",
+			"Profit comes from rings, enemies, and treasures.",
+			"Treasures reveal your location, but are pretty valuable.",
+			"Players can fight you for your treasures."},
+		{"Escape",
+			"Grab the signpost to start the escape sequence.",
+			"The sign also happens to be very, very valuable.",
+			"Unfortunately, it also reveals your location..."
+		}
+	}
+
+	if FangsHeist.Save.retakes then
+		local retake = {"Retake #"..FangsHeist.Save.retakes,
+			"Each time the stage is replayed, it gets more tedious."
+		}
+		table.insert(info, retake)
+
+		if FangsHeist.Save.retakes == 1 then
+			table.insert(retake, "Watch out for bombs dropping from the air!")
+		else
+			table.insert(retake, "Eggman will start to follow players around!")
+		end
+	end
+
+	if FangsHeist.Net.round_2 then
+		table.insert(info, {"Round 2",
+			"This map requires you to run through 2 segments to win.",
+			"Run into the portal at spawn once the escape starts."
+		})
+	end
+
+	return info
+end
 
 return FangsHeist.addGamemode(gamemode)

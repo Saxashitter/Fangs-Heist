@@ -199,7 +199,7 @@ function module.draw(v)
 	local tmr = v.cachePatch("FH_TMR")
 
 	local x = 160*FU - tmr.width*FU/2
-	local y = ease.outback(slideT, 200*FU, 200*FU - 8*FU - tmr.height*FU)
+	local y = ease.outback(slideT, 200*FU, 200*FU - 12*FU - tmr.height*FU)
 	local f = V_SNAPTOBOTTOM
 
 	drawTimer(v, x, y, FU, f)

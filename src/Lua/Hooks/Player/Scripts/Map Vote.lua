@@ -12,7 +12,38 @@ local function SwitchVote(p, i)
 	end
 
 	p.heist.selected = i
-	print("switched")
+
+	if p == consoleplayer then
+		S_StartSound(nil, sfx_wepchg)
+	end
+end
+
+local function ConfirmVote(p)
+	local selected = p.heist.selected
+
+	local maps = FangsHeist.Net.map_choices
+	local map = maps[selected]
+
+	map.votes = $+1
+	p.heist.voted = true
+
+	if p == consoleplayer then
+		S_StartSound(nil, sfx_s221)
+	end
+end
+
+local function DeconfirmVote(p)
+	local selected = p.heist.selected
+
+	local maps = FangsHeist.Net.map_choices
+	local map = maps[selected]
+
+	map.votes = $-1
+	p.heist.voted = false
+
+	if p == consoleplayer then
+		S_StartSound(nil, sfx_alart)
+	end
 end
 
 return function(p)
@@ -28,10 +59,22 @@ return function(p)
 
 	local sidemove = p.heist.sidemove
 	local lastside = p.heist.lastside
-	local switch = 0
+
+	if voted
+	and press & BT_SPIN then
+		DeconfirmVote(p)
+	end
+
+	if voted then
+		return
+	end
 
 	if abs(sidemove) >= DEADZONE
 	and abs(lastside) < DEADZONE then
 		SwitchVote(p, sidemove > 0 and 1 or -1)
+	end
+
+	if press & BT_JUMP then
+		ConfirmVote(p)
 	end
 end

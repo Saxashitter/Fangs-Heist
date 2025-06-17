@@ -1,5 +1,4 @@
 FangsHeist.makeCharacter("sonic", {
-	difficulty = FHD_EASY,
 	pregameBackground = "FH_PREGAME_SONIC"
 })
 

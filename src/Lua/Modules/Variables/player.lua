@@ -26,12 +26,6 @@ return {
 	treasure_name = "",
 	treasure_desc = "",
 
-	weapon_hud = false,
-	weapon_selected = 1,
-
-	weapon = nil,
-	weapon_cooldown = 0,
-
 	selected = 2,
 	voted = false,
 
@@ -40,20 +34,17 @@ return {
 
 	lastbuttons = 0,
 	buttons = 0,
+
 	sidemove = 0,
 	forwardmove = 0,
+
 	lastforw = 0,
 	lastside = 0,
 
 	locked_skin = 0, -- sonic probably
-	confirmed_skin = false,
-	locked_team = false,
+	pregame_state = "",
 
-	cur_sel = 1,
-	hud_sel = 8, -- for some kinda camera thing idfk
-	cur_menu = 0,
-
-	reached_second = false, -- only used in final demo stages
+	reached_second = false, -- only used in round 2
 
 	exiting = false
 }

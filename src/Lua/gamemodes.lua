@@ -32,7 +32,8 @@ local DEFAULT = {
 	shouldinstakill = _NIL,
 	trackplayer = _NIL,
 	signblacklist = _NIL,
-	treasureblacklist = _NIL
+	treasureblacklist = _NIL,
+	info = _NIL,
 }
 
 FangsHeist.Gamemodes = {}

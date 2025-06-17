@@ -1,3 +1,27 @@
+local function GetMostVotedMap()
+	local maps = FangsHeist.Net.map_choices
+
+	local map = 1
+	local votes
+
+	for i, newMap in ipairs(maps) do
+		if votes == nil or newMap.votes > votes then
+			map = newMap.map
+			votes = newMap.votes
+
+			continue
+		end
+
+		if votes == newMap.votes then
+			local tbl = {map, newMap.map}
+
+			map = tbl[P_RandomRange(1, 2)]
+		end
+	end
+
+	return map
+end
+
 return function()
 	local gamemode = FangsHeist.getGamemode()
 
@@ -13,45 +37,28 @@ return function()
 
 	local t = FangsHeist.Net.game_over_ticker
 
-	if t == FangsHeist.GAME_TICS then
+	if t >= FangsHeist.GAME_TICS
+	and S_MusicName() ~= "FH_INT" then
 		S_ChangeMusic("FH_INT", true)
-		mapmusname = "FH_INT"
 	end
 
-	--[[if t >= FangsHeist.INTER_START_DELAY+FangsHeist.Net.game_over_length then
-		if FangsHeist.Net.selected_map == 0 then
-			local map = 1
-			local votes = -1
+	if t == FangsHeist.GAME_TICS then
+		S_StartSound(nil, sfx_nartgw)
+	end
 
-			for i,selmap in ipairs(FangsHeist.Net.map_choices) do
-				if selmap.votes >= votes then
-					map = selmap.map
-					votes = selmap.votes
-				end
-			end
+	if t == FangsHeist.RESULTS_TICS then
+		S_StartSound(nil, sfx_s221)
+	end
 
-			FangsHeist.Net.selected_map = map
+	if t == FangsHeist.GAME_TICS+FangsHeist.BLACKOUT_TICS then
+		S_StartSound(nil, sfx_narcon)
+		S_StartSound(nil, sfx_cwdscr)
+	end
 
-			if map == gamemap
-			and not FangsHeist.Net.retaking
-			and not (mapheaderinfo[map].fh_disableretakes == "true") then
-				-- RETAKING??
-				FangsHeist.Net.retaking = true
-				S_FadeOutStopMusic(2000)
-			end
-		end
-
-		if FangsHeist.Net.retake_anim then
-			FangsHeist.Net.retake_anim = max(0, $-1)
-		end
-
-		if FangsHeist.Net.selected_map
-		and (not FangsHeist.Net.retaking
-		or FangsHeist.Net.retake_anim == 0) then
-			G_SetCustomExitVars(FangsHeist.Net.selected_map, 2)
-			G_ExitLevel()
-		end
-	end]]
+	if t == FangsHeist.SWITCH_TICS then
+		G_SetCustomExitVars(GetMostVotedMap(), 2)
+		G_ExitLevel()
+	end
 
 	return true
 end

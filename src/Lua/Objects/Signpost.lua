@@ -110,7 +110,7 @@ local function manage_unpicked(sign)
 	sign.angle = $ + ANG2
 
 	if (sign.eflags & MFE_TOUCHWATER or sign.eflags & MFE_UNDERWATER) then
-		sign.z = max($, sign.watertop)
+		sign.z = min($, max($, sign.watertop), sign.ceilingz - sign.height)
 		sign.momz = max($, 0)
 	end
 
@@ -145,17 +145,6 @@ addHook("MobjThinker", function(sign)
 
 		P_InstaThrust(sign, launch_angle, 8*FU)
 		P_SetObjectMomZ(sign, 4*FU)
-	end
-
-	if sign.holder
-	and sign.holder.player == displayplayer then
-		sign.frame = $|FF_TRANS80
-		sign.bustmo.frame = $|FF_TRANS80
-		sign.boardmo.frame = $|FF_TRANS80
-	else
-		sign.frame = $ & ~FF_TRANS80
-		sign.bustmo.frame = $ & ~FF_TRANS80
-		sign.boardmo.frame = $ & ~FF_TRANS80
 	end
 
 	if not (sign.holder) then

@@ -1,23 +1,8 @@
-local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
-local orig = FangsHeist.require"Modules/Variables/player"
-
-sfxinfo[freeslot "sfx_gogogo"].caption = "G-G-G-G-GO! GO! GO!"
-sfxinfo[freeslot "sfx_nargam"].caption = "GAME!"
-
-FangsHeist.escapeThemes = {
-	{"SPRHRO", true},
-	--{"THECUR", true},
-	--{"WILFOR", true},
-	--{"LUNCLO", true}
-	// if the second argument is false, the hurry up music wont play
-}
-
-local function profsort(a, b)
-	return a[4] > b[4]
-end
-
 FangsHeist.GAME_TICS = 2*TICRATE
-FangsHeist.RESULTS_TICS = 8*TICRATE
+FangsHeist.RESULTS_TICS = 10*TICRATE
+FangsHeist.BLACKOUT_TICS = 60
+FangsHeist.SWITCH_TICS = FangsHeist.GAME_TICS + FangsHeist.RESULTS_TICS + 15*TICRATE
+
 FangsHeist.WINNER_LINES = {
 	"is the winner!",
 	"was the greediest!",
@@ -30,7 +15,7 @@ FangsHeist.WINNER_LINES = {
 	"has saved the day!",
 	"has completed Fang's Heist! HIT IT, TAILS!!",
 	"got silly!",
-	"has deemed that you get their %s steam!",
+	"has deemed that you get their PlayerName steam!",
 	"is sigma!",
 	"was the murderer!",
 	"has DOMINATED all of you NOOBS!!",

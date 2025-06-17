@@ -1,4 +1,78 @@
-local showhud = CV_FindVar("showhud")
+local DEADZONE = 35
+local STATES = {}
+
+STATES.character = FangsHeist.require "Modules/States/Pregame/character"
+STATES.team = FangsHeist.require "Modules/States/Pregame/team"
+STATES.waiting = FangsHeist.require "Modules/States/Pregame/waiting"
+
+-- Functions
+local function GetPressDirection(p)
+	local sidemove = p.heist.sidemove
+	local forwardmove = p.heist.forwardmove
+
+	local last_sidemove = p.heist.lastside
+	local last_forwardmove = p.heist.lastforw
+
+	local x = 0
+	local y = 0
+
+	if sidemove >= DEADZONE
+	and last_sidemove < DEADZONE then
+		x = 1
+	end
+
+	if sidemove <= -DEADZONE
+	and last_sidemove > -DEADZONE then
+		x = -1
+	end
+
+	if forwardmove >= DEADZONE
+	and last_forwardmove < DEADZONE then
+		y = -1
+	end
+
+	if forwardmove <= -DEADZONE
+	and last_forwardmove > -DEADZONE then
+		y = 1
+	end
+
+	return x, y
+end
+
+local function GetState(p)
+	return STATES[p.heist.pregame_state]
+end
+
+local function SetState(p, name)
+	local oldStateName = p.heist.pregame_state
+	local oldState = STATES[p.heist.pregame_state]
+	local state = STATES[name]
+
+	p.heist.pregame_state = name
+
+	oldState.exit(p, name)
+	state.enter(p, oldStateName)
+end
+
+FangsHeist.getPressDirection = GetPressDirection
+FangsHeist.getPregameState = GetState
+FangsHeist.setPregameState = SetState
+FangsHeist.pregameStates = STATES
+
+return function(p)
+	if not FangsHeist.Net.pregame then
+		return
+	end
+
+	local state = GetState(p)
+	local switch = state.tick and state.tick(p)
+
+	if switch then
+		SetState(p, switch)
+	end
+end
+
+--[[local showhud = CV_FindVar("showhud")
 
 local function valid(p, sp)
 	local teamleng = max(0, FangsHeist.CVars.team_limit.value)
@@ -187,4 +261,4 @@ return function(p)
 	and showhud.value == 0 then -- if the hud isn't being shown
 		CV_StealthSet(showhud, 1) -- then force it to show :P
 	end
-end
+end]]

@@ -141,7 +141,7 @@ NoVisitNeeded = true
 InterScreen = INTERSCR
 FlickyList = Demo
 Lua.FH_Time = 300
-Lua.FH_EscapeTheme = SPRHRO
+Lua.FH_EscapeTheme = KARSPR
 Lua.FH_StageType = Escape
 
 Level P0

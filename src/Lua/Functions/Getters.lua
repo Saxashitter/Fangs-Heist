@@ -1,5 +1,3 @@
-local orig = FangsHeist.require "Modules/Variables/net"
-
 // Get players nearby, mainly used for pickup-ables.
 function FangsHeist.getNearbyPlayers(mobj, distscale, blacklist)
 	if not (distscale) then distscale = FU*3/2 end

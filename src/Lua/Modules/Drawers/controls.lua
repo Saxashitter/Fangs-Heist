@@ -5,8 +5,8 @@ function module.draw(v,p)
 	if FangsHeist.Net.pregame then return end
 	if not (p.heist and p.heist:isAlive()) then return end
 
-	local x = 4
-	local y = 200-4
+	local x = 12
+	local y = 200-12
 	local f = V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_ALLOWLOWERCASE
 
 	local strData = {}

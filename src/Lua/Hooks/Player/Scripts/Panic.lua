@@ -9,7 +9,7 @@ return function(p)
 		end
 
 		if p.mo.state == char.panicState then
-			if FixedHypot(p.rmomx, p.rmomy) then
+			if p.speed then
 				p.mo.state = S_PLAY_WALK
 			end
 		end

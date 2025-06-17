@@ -1,6 +1,5 @@
-local orig_net = FangsHeist.require "Modules/Variables/net"
-local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 
+local orig_net = FangsHeist.require "Modules/Variables/net"
 local scripts = {}
 local add = function(name)
 	table.insert(scripts, dofile("Hooks/Game/Scripts/"..name))
@@ -16,22 +15,19 @@ addHook("MapChange", function(map)
 end)
 
 addHook("NetVars", function(n)
-	/*FangsHeist.Net = n($)
-	FangsHeist.Save = n($)*/
+	FangsHeist.Net = n($)
+	FangsHeist.Save = n($)
 
-	local net = {
+	/*local net = {
 		"gamemode",
 		"map_choices",
 		"game_over",
 		"game_over_ticker",
 		"game_over_length",
-		"retaking",
-		"selected_map",
-		"end_anim",
-		"retake_anim",
+		"game_over_winline",
 		"pregame",
 		"pregame_time",
-		"pregame_cam",
+		"pregame_transparency",
 		"placements",
 		"teams",
 		"treasures",
@@ -39,8 +35,7 @@ addHook("NetVars", function(n)
 	}
 	local save = {
 		"last_map",
-		"retakes",
-		"ServerScores"
+		"retakes"
 	}
 
 	for _,v in ipairs(net) do
@@ -48,10 +43,10 @@ addHook("NetVars", function(n)
 	end
 	for _,v in ipairs(save) do
 		FangsHeist.Save[v] = n($)
-	end
+	end*/
 
-	local gamemode = FangsHeist.getGamemode()
-	gamemode:sync(n)
+	--local gamemode = FangsHeist.getGamemode()
+	--gamemode:sync(n)
 end)
 
 addHook("MapLoad", do
@@ -103,8 +98,6 @@ addHook("ThinkFrame", do
 		return
 	end
 	local stop = false
-
-	dialogue.tick()
 
 	for i,script in ipairs(scripts) do
 		if script() then

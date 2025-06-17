@@ -1,26 +1,17 @@
 FangsHeist.Characters = {}
 
+local function _NIL() end
+
 local DEFAULT = {
-	difficulty = FHD_UNKNOWN,
 	pregameBackground = "FH_PREGAME_UNKNOWN",
 	customPregameBackground = nil,
-
 	panicState = S_FH_PANIC,
-
 	forceSpeedCap = false,
-
-	onAttack = function(self, p) end,
-	onClash = function(self, p) end,
-	onHit = function(self, p, sp) end,
-
-	isAttacking = function(self, p)
-		return (p.heist.attack_time)
-	end,
-
+	attackPriority = _NIL,
 	controls = {
 		{
 			key = "FIRE",
-			name = "Attack",
+			name = "Swipe",
 			cooldown = function(self, p)
 				return (p.heist.attack_cooldown)
 			end,
@@ -32,7 +23,7 @@ local DEFAULT = {
 		},
 		{
 			key = "FIRE NORMAL",
-			name = "Guard",
+			name = "Parry",
 			cooldown = function(self, p)
 				return (p.heist.parry_cooldown)
 			end,
@@ -58,6 +49,4 @@ function FangsHeist.makeCharacter(skin, data)
 	FangsHeist.Characters[skin] = data
 end
 
-FangsHeist.makeCharacter("tails", {pregameBackground = "FH_PREGAME_TAILS"})
 FangsHeist.makeCharacter("knuckles", {pregameBackground = "FH_PREGAME_KNUCKLES"})
-FangsHeist.makeCharacter("metalsonic", {pregameBackground = "FH_PREGAME_METAL"})

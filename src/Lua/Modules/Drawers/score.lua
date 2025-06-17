@@ -1,41 +1,18 @@
 local module = {}
 
-local text = FangsHeist.require "Modules/Libraries/text"
+local X = 12 + 3
+local Y = 12
+local FLAGS = V_SNAPTOLEFT|V_SNAPTOTOP
 
-local _profit
+local TEXT_X = 12 + 16 + 4
+local TEXT_Y = 1
 
-function module.init()
-	_profit = 0
-end
-
-function FangsHeist.drawProfit(v, x, y, scale, profit, flags, width)
-	local patch = v.cachePatch("FH_PROFIT")
-
-	v.drawScaled(x, y, scale, patch, flags)
-	
-	if width == nil then
-		width = 80*scale
-	end
-
-	width = max(patch.width*scale, $)
-
-	FangsHeist.DrawNumber(v, x+width, y, scale, profit, "STTNUM", flags)
-end
-
-function FangsHeist.getProfitWidth(v, profit, scale, width)
-	local patch = v.cachePatch("FH_PROFIT")
-	if width == nil then
-		width = 80*scale
-	end
-
-	width = max(patch.width*scale, $)
-	width = $ + FangsHeist.GetNumberWidth(v, profit, scale, "STTNUM")
-
-	return width
-end
-
+function module.init() end
 function module.draw(v, p)
-	if FangsHeist.Net.pregame then return end
+	if FangsHeist.Net.pregame
+	or FangsHeist.Net.game_over then
+		return
+	end
 	local profit = 0
 	local team = p.heist:getTeam()
 
@@ -43,7 +20,20 @@ function module.draw(v, p)
 		profit = team.profit
 	end
 
-	FangsHeist.drawProfit(v, 12*FU, 12*FU, FU, profit, V_SNAPTOLEFT|V_SNAPTOTOP)
+	local patch = v.cachePatch("FH_PROFIT_SIGN")
+
+	v.draw(X, Y, patch, FLAGS)
+
+	local string = tostring(profit)
+	local x = 0
+
+	for i = 1,#string do
+		local num = string:sub(i,i)
+		local patch = v.cachePatch("FH_PROFIT_NUM"..num)
+
+		v.draw(TEXT_X+x, Y+TEXT_Y, patch, FLAGS)
+		x = $ + 1 + patch.width
+	end
 end
 
 return module

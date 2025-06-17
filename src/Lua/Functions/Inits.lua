@@ -13,7 +13,6 @@ local copy = FangsHeist.require "Modules/Libraries/copy"
 local orig_net = FangsHeist.require "Modules/Variables/net"
 local orig_save = FangsHeist.require "Modules/Variables/save"
 local orig_plyr = FangsHeist.require "Modules/Variables/player"
-local orig_hud = FangsHeist.require "Modules/Variables/hud"
 
 // Initalize player.
 
@@ -53,6 +52,12 @@ function FangsHeist.initPlayer(p)
 	end
 
 	local gamemode = FangsHeist.getGamemode()
+
+	if FangsHeist.Net.pregame then
+		heist.pregame_state = "character"
+		FangsHeist.pregameStates["character"].enter(p)
+	end
+
 	gamemode:playerinit(p)
 
 	HeistHook.runHook("PlayerInit", p)
@@ -64,45 +69,10 @@ function FangsHeist.initMode(map)
 	end
 
 	FangsHeist.Net = copy(orig_net)
-	FangsHeist.HUD = copy(orig_hud)
-
 	FangsHeist.Net.gamemode = 1
 
 	local info = mapheaderinfo[map]
 	local gamemode = FangsHeist.getGamemode()
-
-	if info.fh_stagetype then
-		local stageTypes = {}
-		local isCompatible = false
-
-		for type in info.fh_stagetype:gmatch("[^,]+") do
-			local type = type:gsub("%s+", "")
-	
-			table.insert(stageTypes, type)
-	
-			if type == gamemode.name then
-				isCompatible = true
-			end
-		end
-
-		if #stageTypes
-		and not isCompatible then
-			local foundMode = 0
-			local setMode = stageTypes[1]
-
-			for i,gt in ipairs(FangsHeist.Gamemodes) do
-				if gt.name == setMode then
-					foundMode = i
-					break
-				end
-			end
-	
-			if foundMode then
-				FangsHeist.Net.gamemode = foundMode
-				gamemode = FangsHeist.getGamemode()
-			end
-		end
-	end
 
 	if FangsHeist.Save.last_map == map
 	and not (info.fh_disableretakes == "true") then
