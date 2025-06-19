@@ -12,6 +12,10 @@ local function add(file)
 	end
 end
 
+function FangsHeist.addPlayerScript(type, func)
+	table.insert(scripts[type], func)
+end
+
 addHook("PlayerSpawn", function(p)
 	if not FangsHeist.isMode() then return end
 	if not (p and p.heist) then
@@ -78,7 +82,7 @@ addHook("MobjDeath", function(ring, _, pmo)
 	if not (pmo and pmo.valid and pmo.type == MT_PLAYER) then return end
 	if not (pmo.player.heist and pmo.player.heist:isAlive()) then return end
 	
-	pmo.player.heist:gainProfit(8)
+	pmo.player.heist:gainProfit(FH_RINGPROFIT)
 end, MT_RING)
 
 -- this check is goofy lol
@@ -87,7 +91,7 @@ function A_RingBox(actor, var1,var2)
     if FangsHeist.isMode()
     and player.heist
     and player.heist:isAlive() then
-        player.heist:gainProfit(8*actor.info.reactiontime)
+        player.heist:gainProfit(FH_RINGPROFIT*actor.info.reactiontime)
     end
     
     --run original action
@@ -101,11 +105,11 @@ addHook("MobjDeath", function(t,i,s)
 
 	if t.flags & MF_ENEMY then
 		s.player.heist.enemies = $+1
-		s.player.heist:gainProfit(35)
+		s.player.heist:gainProfit(FH_ENEMYPROFIT)
 	end
 	if t.flags & MF_MONITOR then
 		s.player.heist.monitors = $+1
-		s.player.heist:gainProfit(12)
+		s.player.heist:gainProfit(FH_MONITORPROFIT)
 	end
 end)
 

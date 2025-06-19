@@ -30,12 +30,12 @@ return function()
 
 		if signGot
 		and not team.added_sign then
-			team.profit = max(0, $+1200)
+			team.profit = max(0, $+FH_SIGNPROFIT)
 		end
 
 		if not signGot
 		and team.added_sign then
-			team.profit = max(0, $-1200)
+			team.profit = max(0, $-FH_SIGNPROFIT)
 		end
 
 		team.added_sign = signGot
@@ -43,7 +43,7 @@ return function()
 		if treasures ~= team.treasures then
 			local gain = treasures - team.treasures
 	
-			team.profit = max(0, $+(120*gain))
+			team.profit = max(0, $+(FH_TREASUREPROFIT*gain))
 		end
 
 		team.treasures = treasures

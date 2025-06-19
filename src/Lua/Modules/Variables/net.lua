@@ -4,6 +4,7 @@ return {
 	gamemode = 1,
 
 	map_choices = {},
+	attacks = {},
 
 	game_over = false,
 	game_over_ticker = 0,

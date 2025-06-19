@@ -10,6 +10,7 @@ local MODE_Y = TOPLINE_Y - 10
 local PLAYER_X = 4
 local PLAYER_Y = TOPLINE_Y + 5
 local PLAYER_HEIGHT = 16
+local PLAYER_SMALLHEIGHT = 9
 
 local function IsSpriteValid(skin, sprite, frame)
 	local skin = skins[skin]
@@ -71,7 +72,7 @@ local function DrawOutline(v, x, y, width, height, flags, color)
 	DrawRect(v, x, y, 1, height, flags, color)
 end
 
-local function DrawTeam(v, x, y, team, flags)
+local function DrawTeam(v, x, y, height, team, flags)
 	local leader = team[1]
 
 	if not leader
@@ -87,18 +88,19 @@ local function DrawTeam(v, x, y, team, flags)
 
 		local skin = skins[p.skin]
 		local icon, null = GetSkinIcon(v, skin.name)
-		local scale = GetPatchScale(icon, PLAYER_HEIGHT, false)
+		local scale = GetPatchScale(icon, height, false)
 
 		v.drawScaled(x*FU, y*FU, scale, icon, flags, v.getColormap(skin.name, p.skincolor))
-		x = $ + PLAYER_HEIGHT + 4
+		x = $ + height + 4
 	end
 
 	x = $ + 6
 
-	v.drawString(x, y+4, leader.name, flags|V_ALLOWLOWERCASE, "thin")
+	local ty = y*FU + (height*FU-7*FU)/2
+	v.drawString(x*FU, ty, leader.name, flags|V_ALLOWLOWERCASE, "thin-fixed")
 	x = $ + v.stringWidth(leader.name, V_ALLOWLOWERCASE, "thin") + 6
 
-	v.drawString(x, y+4, "$"..team.profit, flags|V_GREENMAP, "thin")
+	v.drawString(x*FU, ty, "$"..team.profit, flags|V_GREENMAP, "thin-fixed")
 	return true
 end
 
@@ -113,10 +115,21 @@ function module.draw(v)
 	DrawRect(v, 0, TOPLINE_Y, sw, 1, V_SNAPTOLEFT, v.getColormap(TC_BLINK, SKINCOLOR_WHITE))
 	v.drawString(MODE_X, MODE_Y, gamemode.name, V_SNAPTOTOP|V_SNAPTOLEFT|V_ALLOWLOWERCASE, "thin")
 
-	for i, team in ipairs(FangsHeist.Net.placements) do
-		local y = PLAYER_Y + PLAYER_HEIGHT*(i-1)
+	local height = PLAYER_HEIGHT
+	if #FangsHeist.Net.placements > 8 then
+		height = PLAYER_SMALLHEIGHT
+	end
 
-		DrawTeam(v, PLAYER_X, y, team, V_SNAPTOTOP)
+	for i, team in ipairs(FangsHeist.Net.placements) do
+		local x = PLAYER_X
+		local y = PLAYER_Y + height*(i-1)
+
+		if i > 16 then
+			x = 160
+			y = PLAYER_Y + height*((i-1)-16)
+		end
+
+		DrawTeam(v, x, y, height, team, V_SNAPTOTOP)
 	end
 end
 

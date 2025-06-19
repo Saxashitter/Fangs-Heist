@@ -30,7 +30,7 @@ function mt:isNerfed()
 	if result ~= nil then
 		return result
 	end
-	local gamemode = FangsHeist.getGamemode()
+	--[[local gamemode = FangsHeist.getGamemode()
 
 	if self:hasSign()
 	and (gamemode.signnerf or FangsHeist.Save.retakes) then
@@ -40,7 +40,7 @@ function mt:isNerfed()
 	if #self.treasures
 	and FangsHeist.Save.retakes then
 		return true
-	end
+	end]]
 
 	return false
 end
@@ -106,6 +106,8 @@ function mt:gainProfit(gain, dontDiv, specialSound)
 	local team = self:getTeam()
 	local gamemode = FangsHeist.getGamemode()
 
+	if FangsHeist.Net.sudden_death then return end -- haha no proftt
+
 	if not team then
 		return
 	end
@@ -113,6 +115,16 @@ function mt:gainProfit(gain, dontDiv, specialSound)
 	div = not dontDiv and #team or 1
 	if gamemode.dontdivprofit then
 		div = 1
+	end
+
+	for _, p in ipairs(team) do
+		if not (p and p.valid and p.heist) then
+			continue
+		end
+
+		if p.heist:hasSign() then
+			gain = $*FH_SIGNMULT
+		end
 	end
 
 	team.profit = max(0, $+(gain/div))

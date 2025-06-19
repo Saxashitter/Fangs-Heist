@@ -144,19 +144,6 @@ Lua.FH_Time = 300
 Lua.FH_EscapeTheme = KARSPR
 Lua.FH_StageType = Escape
 
-Level P0
-LevelName = Vicious Volcano
-TypeOfLevel = Heist
-Music = FDEMO7
-SelectHeading = Supported Maps
-Lua.FH_EscapeTheme = SUPREF
-Lua.FH_EscapeLinedef = 47
-Lua.FH_EscapeOnStart = true
-Lua.FH_DisableRetakes = true
-Lua.FH_EscapeHurryUp = false
-Lua.FH_LastManStanding = true
-Lua.FH_StageType = Escape
-
 level P2
 LevelName = Acid Overflow
 TypeOfLevel = Heist

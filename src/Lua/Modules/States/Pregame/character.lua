@@ -269,7 +269,9 @@ function state:draw(v, c, transparency)
 	local tics = self.heist.cs_switchtime
 
 	DrawCharacterRibbon(v, 100*FU, skin_data.name, transparency, tics)
-	DrawIconGrid(v, 160*FU - width/2, 100*FU + RIBBON_END_RADIUS, self.heist.locked_skin, transparency)
+	if tics >= TEXT_DELAY + TEXT_TWEEN then
+		DrawIconGrid(v, 160*FU - width/2, 100*FU + RIBBON_END_RADIUS, self.heist.locked_skin, transparency)
+	end
 end
 
 return state

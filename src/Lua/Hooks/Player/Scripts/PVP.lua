@@ -13,6 +13,8 @@ rawset(_G, "FH_PRY_DUR", 35)
 rawset(_G, "FH_PRY_TICS", 16)
 rawset(_G, "FH_PRY_PRF", 7)
 
+mobjinfo[MT_PLAYER].radius = $*3/2
+
 -- Stun Constants
 rawset(_G, "FH_STN_SPD", 8*FU)
 rawset(_G, "FH_STN_AIRSPD", 10*FU)
@@ -375,7 +377,7 @@ local TIERS = {
 	{sfx_dmga4, sfx_dmgb4}
 }
 
-local function Damage(p, p2, knockback, pain)
+local function Damage(p, p2, knockback)
 	if not P_DamageMobj(p2.mo, p.mo, p.mo) then
 		return
 	end
@@ -392,17 +394,9 @@ local function Damage(p, p2, knockback, pain)
 	if knockback == nil then
 		knockback = true
 	end
-	if pain == nil then
-		pain = false
-	end
 
 	if knockback then
 		Knockback(p, p2)
-	end
-
-	if pain
-	and p2.mo.health then
-		P_DoPlayerPain(p2, p.mo, p.mo)
 	end
 
 	p2.heist.attack_cooldown = max($, TICRATE)
@@ -494,13 +488,13 @@ local function WhiffAttack(p)
 		found.mo.state = S_FH_STUN
 		]]
 
-		found.drawangle = R_PointToAngle2(found.mo.x, found.mo.y, p.mo.x, p.mo.y)
+		found.drawangle = InvAngle(p.mo.angle)
 		found.pflags = $ & ~FLAGS_RESET
 		found.powers[pw_flashing] = 12
 
 		found.mo.state = S_PLAY_FALL
 		S_StartSound(found.mo, sfx_s1c9)
-		P_InstaThrust(found.mo, found.drawangle, -27*p.mo.scale)
+		P_InstaThrust(found.mo, p.mo.angle, 27*p.mo.scale)
 		P_SetObjectMomZ(found.mo, 7*p.mo.scale)
 
 		p.powers[pw_flashing] = FH_ATK_FLASH_TICS
@@ -546,23 +540,20 @@ local function RingSpill(p, dontSpill, p2)
 	if not p.rings then
 		return false
 	end
-	local gamemode = FangsHeist.getGamemode()
 
-	local rings_spill = min(5+(8*FangsHeist.Save.retakes), p.rings)
-	if gamemode.spillallrings then
-		rings_spill = p.rings
-	end
+	local gamemode = FangsHeist.getGamemode()
+	local rings_spill = min(5, p.rings)
 
 	if not dontSpill 
 	and not p2 then
 		P_PlayerRingBurst(p, rings_spill)
 	elseif p2 then
-		p2.rings = $+rings_spill
+		FangsHeist.Particles:new("Ring Steal", p.mo, p2.mo, rings_spill)
 	end
 
 	S_StartSound(p.mo, sfx_s3kb9)
 	p.rings = $-rings_spill
-	p.heist:gainProfit(-8*rings_spill)
+	p.heist:gainProfit(-FH_RINGPROFIT*rings_spill)
 
 	return rings_spill
 end
@@ -627,7 +618,7 @@ addHook("ThinkFrame", do
 	local attacks = {}
 
 	-- Iterate through players to see who is attacking who
-	for p in players.iterate do
+	--[[for p in players.iterate do
 		if not (p.valid and p.heist and p.heist:isAlive()) then
 			continue
 		end
@@ -657,15 +648,19 @@ addHook("ThinkFrame", do
 		end
 
 		DefAttack(attacks, p, found)
-	end
+	end]]
 
 	-- Iterate through attacks and see who attacks who.
-	for _, atk in ipairs(attacks) do
+	for _, atk in ipairs(FangsHeist.Net.attacks) do
 		local atkP = atk.atk
 		local vicP = atk.vic
 
 		local atkPro = GetAttackPriority(atkP, vicP)
 		local vicPro = GetAttackPriority(vicP, atkP)
+
+		if atkPro == 0 and vicPro == 0 then
+			continue
+		end
 
 		if atkPro > vicPro then
 			Damage(atkP, vicP, nil, vicP.mo.state == S_FH_STUN)
@@ -684,6 +679,7 @@ addHook("ThinkFrame", do
 		S_StartSound(atkP.mo, sfx_fhclsh)
 		S_StartSound(vicP.mo, sfx_fhclsh)
 	end
+	FangsHeist.Net.attacks = {}
 end)
 
 addHook("ShouldDamage", function(t,i,s,dmg,dt)
@@ -725,12 +721,7 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 	and i.type ~= MT_PLAYER then
 		RegisterGuard(t.player)
 
-		if i.flags & MF_MISSILE then
-			i.target = t
-			i.momx = -$
-			i.momy = -$
-			i.momz = -$
-		elseif i.flags & MF_ENEMY|MF_BOSS then
+		if i.flags & MF_ENEMY|MF_BOSS then
 			P_DamageMobj(i, t, t)
 		end
 
@@ -744,6 +735,40 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 
 	return forced
 end, MT_PLAYER)
+
+local function reflection(mobj,proj)
+	if not FangsHeist.isMode() then return end
+	if not (mobj and mobj.player and mobj.player.heist) then
+		return
+	end
+
+	if not mobj.player.heist:isAlive() then return end
+	if mobj.state ~= S_FH_GUARD then return end
+	if not mobj.player.heist.parry_time then return end
+	if not (proj.flags & MF_MISSILE) then return end
+	if proj.target == mobj then return end
+
+	proj.momx = -$
+	proj.momy = -$
+	proj.momz = -$
+	proj.angle = $ - ANGLE_180
+	proj.target = mobj
+
+	RegisterGuard(mobj.player)
+
+	-- Gain profit based on speed of projectile.
+	local PROFIT = FH_PARRYPROFIT
+	local BASE_SPEED = 24*FU
+	local SPEED = R_PointToDist2(mobj.momx, mobj.momy, proj.momx, proj.momy)
+
+	PROFIT = $ * FixedDiv(SPEED, BASE_SPEED)/FU
+	mobj.player.heist:gainProfit(PROFIT)
+	
+	return false
+end
+
+addHook("MobjCollide", reflection, MT_PLAYER)
+addHook("MobjMoveCollide", reflection, MT_PLAYER)
 
 addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if not FangsHeist.isMode() then return end
@@ -779,10 +804,10 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 
 		if not (t.health) then
 			s.player.heist.deadplayers = $+1
-			s.player.heist:gainProfit(50)
+			s.player.heist:gainProfit(FH_DEADPLAYERPROFIT)
 		else
 			s.player.heist.hitplayers = $+1
-			s.player.heist:gainProfit(28)
+			s.player.heist:gainProfit(FH_HITPLAYERPROFIT)
 		end
 	end
 
@@ -806,19 +831,63 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 
 	if not rings then return end
 
-	if not (s
-	and s.valid
-	and s.type == MT_PLAYER) then
-		RemoveCarry(t.player)
-		P_DoPlayerPain(t.player, s, i)
-	else
-		t.player.powers[pw_flashing] = TICRATE
-
-		t.momx = $/2
-		t.momy = $/2
-	end
+	P_ResetPlayer(t.player)
+	P_DoPlayerPain(t.player, s, i)
 
 	return true
+end, MT_PLAYER)
+
+local function OnPlayerCollide(pmo, mo)
+	local p = pmo.player
+	local sp = mo.player
+
+	if pmo.z > mo.z+mo.height then return end
+	if mo.z > pmo.z+pmo.height then return end
+
+	if p.heist.exiting
+	or sp.heist.exiting then
+		return
+	end
+
+	-- remove for friendly fire
+	if p.heist:getTeam() == sp.heist:getTeam() then
+		return
+	end
+
+	if IsInList(FangsHeist.Net.attacks, p)
+	or pmo.state == S_FH_GUARD then
+		return
+	end
+
+	if not IsInHitBox(pmo, mo) then
+		return
+	end
+
+	if not P_PlayerCanDamage(p, mo) then
+		return
+	end
+
+	if IsInList(ClashList, sp)
+	or IsInList(FangsHeist.Net.attacks, sp) then
+		return
+	end
+
+	if sp.mo.state == S_FH_GUARD
+	and sp.heist.parry_time then
+		RegisterGuard(sp, p)
+		return
+	end
+
+	DefAttack(FangsHeist.Net.attacks, p, sp)
+end
+
+addHook("MobjMoveCollide", function(pmo, mo)
+	if not FangsHeist.isMode() then return end
+	if not (pmo and pmo.player and pmo.player.heist) then return end
+	if (mo and mo.type == MT_PLAYER and mo.player and mo.player.heist) then
+		OnPlayerCollide(pmo, mo)
+		return
+	end
 end, MT_PLAYER)
 
 return function(p)

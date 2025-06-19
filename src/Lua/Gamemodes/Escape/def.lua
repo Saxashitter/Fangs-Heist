@@ -56,38 +56,31 @@ local function predictTicsUntilGrounded(x, y, z, height, momz, gravity)
 	return -1
 end
 
-function gamemode:canEggmanSpawn()
-	if not (FangsHeist.Net.time_left) then
-		return true
-	end
+function gamemode:spawnEggman(type)
+	local sign = FangsHeist.Net.sign
+	local eggman = P_SpawnMobj(sign.x, sign.y, sign.z, MT_FH_EGGMAN)
 
-	if FangsHeist.Save.retakes > 1 then
-		return true
+	FangsHeist.Net.eggman = eggman
+
+	if type == "pt" then
+		eggman.state = S_FH_EGGMAN_COOLDOWN
 	end
 
 	return false
 end
 
 function gamemode:handleEggman()
-	if not self:canEggmanSpawn() then return end
-
 	if not (FangsHeist.Net.eggman
 	and FangsHeist.Net.eggman.valid) then
-		local sign = FangsHeist.Net.sign
-		local eggman = P_SpawnMobj(sign.x, sign.y, sign.z, MT_FH_EGGMAN)
-
-		FangsHeist.Net.eggman = eggman
-
-		if FangsHeist.Save.retakes > 1
-		and FangsHeist.Net.time_left then
-			eggman.state = S_FH_EGGMAN_COOLDOWN
-		end
+		return
 	end
 
-	if FangsHeist.Net.eggman.state ~= S_FH_EGGMAN_DOOMCHASE
+	local eggman = FangsHeist.Net.eggman
+
+	--[[if FangsHeist.Net.eggman.state ~= S_FH_EGGMAN_DOOMCHASE
 	and not (FangsHeist.Net.time_left) then
 		FangsHeist.Net.eggman.state = S_FH_EGGMAN_DOOMCHASE
-	end
+	end]]
 end
 
 function gamemode:initSignPosition()
@@ -167,6 +160,8 @@ function gamemode:init(map)
 	FangsHeist.Net.round2_theme = "ROUND2"
 	FangsHeist.Net.escape_hurryup = true
 	FangsHeist.Net.escape_on_start = false
+	FangsHeist.Net.can_sudden_death = false
+	FangsHeist.Net.sudden_death = false
 
 	FangsHeist.Net.last_man_standing = false
 
@@ -344,6 +339,40 @@ function gamemode:update()
 	end
 end
 
+function gamemode:manageSuddenDeath()
+	if not FangsHeist.Net.can_sudden_death then return end
+	if not FangsHeist.Net.escape then return end
+
+	local teams = FangsHeist.Net.teams
+	if not FangsHeist.Net.time_left then return end
+
+	local teamsLeft = 0
+	for p in players.iterate do
+		if not (p and p.heist and not p.heist.spectator and not p.heist.exiting and p.heist:isTeamLeader()) then
+			continue
+		end
+
+		teamsLeft = $+1
+	end
+
+	if teamsLeft > 1 then
+		return
+	end
+
+	if FangsHeist.Net.sudden_death then return end
+
+	if not FangsHeist.Net.sudden_death then
+		FangsHeist.Net.sudden_death = true
+
+		if not FangsHeist.Net.eggman
+		or not FangsHeist.Net.eggman.valid then
+			self:spawnEggman("pt")
+		end
+
+		S_StartSound(nil, sfx_narsud)
+	end
+end
+
 function gamemode:trackplayer(p)
 	local lp = displayplayer
 	local args = {}
@@ -376,6 +405,9 @@ function gamemode:manageEscape()
 
 	-- BOMBS FOR RETAKES.......
 	self:manageBombs()
+
+	-- haha sudden death
+	self:manageSuddenDeath()
 
 	-- eggman
 	self:handleEggman()
@@ -417,6 +449,10 @@ function gamemode:music()
 
 	local p = displayplayer
 
+	if FangsHeist.Net.sudden_death then
+		return "SUDDTH", true
+	end
+
 	if not FangsHeist.Net.time_left then
 		return "FHTUP", true
 	end
@@ -448,6 +484,10 @@ function gamemode:start()
 		and p.heist:isTeamLeader() then
 			table.insert(randPlyrs, p)
 		end
+	end
+
+	if #randPlyrs >= 2 then
+		FangsHeist.Net.can_sudden_death = true
 	end
 
 	if #randPlyrs
@@ -496,7 +536,7 @@ end
 function gamemode:manageTime()
 	if not FangsHeist.Net.time_left then return end
 
-	FangsHeist.Net.time_left = max(0, $-1)
+	FangsHeist.Net.time_left = $-1
 	FangsHeist.setTimerTime(FangsHeist.Net.time_left, FangsHeist.Net.max_time_left)
 
 	if FangsHeist.Net.time_left <= 30*TICRATE
@@ -519,6 +559,12 @@ function gamemode:manageTime()
 
 		if linedef ~= nil then
 			P_LinedefExecute(linedef)
+		end
+
+		if not (FangsHeist.Net.eggman and FangsHeist.Net.eggman.valid) then
+			self:spawnEggman("doom")
+		else
+			FangsHeist.Net.eggman.state = S_FH_EGGMAN_DOOMCHASE
 		end
 
 		HeistHook.runHook("TimeUp")
@@ -687,12 +733,30 @@ function gamemode:startEscape(p)
 	end
 
 	FangsHeist.Net.escape = true
-	if FangsHeist.Net.round_2 then
-		local mo = FangsHeist.Net.round_2_mobj
-		local ind = P_SpawnMobj(mo.x, mo.y, mo.z + 90*FU, MT_FH_ROUNDINDICATOR)
-		ind.target = mo
-	end
 	S_StartSound(nil, sfx_gogogo)
+
+	local plyrs = {}
+
+	for p in players.iterate do
+		if p.heist
+		and not p.heist.spectator
+		and p.heist:isTeamLeader() then
+			table.insert(plyrs, p)
+		end
+	end
+
+	if #plyrs >= 2 then
+		FangsHeist.Net.can_sudden_death = true
+	end
+
+	if FangsHeist.Save.retakes >= 2 then
+		if not FangsHeist.Net.eggman
+		or not FangsHeist.Net.eggman.valid then
+			self:spawnEggman("pt")
+		else
+			FangsHeist.Net.eggman.state = S_FH_EGGMAN_COOLDOWN
+		end
+	end
 
 	local data = mapheaderinfo[gamemap]
 	if data.fh_escapelinedef then

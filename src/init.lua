@@ -37,9 +37,12 @@ dofile "Objects/Signpost"
 dofile "Objects/Bean"
 dofile "Objects/Tails"
 dofile "Objects/Hell Stage"
+dofile "Objects/Hitbox"
 
 dofile "Objects/Bosses/GFZ3 Eggman"
 dofile "Objects/Bosses/Missile"
+
+dofile "Effects/main"
 
 dofile "Movesets/Sonic"
 dofile "Movesets/Tails"
@@ -49,7 +52,6 @@ dofile "Movesets/Metal Sonic"
 
 dofile "modsupport"
 
-dofile "Compat/Mario"
 dofile "Compat/S3 Sonic"
 dofile "Compat/Bean"
 dofile "Compat/Eggman"

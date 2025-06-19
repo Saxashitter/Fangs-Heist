@@ -3,6 +3,10 @@ local Particles = {}
 Particles.Effects = {}
 Particles.Instances = {}
 
+addHook("NetVars", function(sync)
+	Particles.Instances = sync($)
+end)
+
 local EFFECT_DEF = {
 	new = function(self) end,
 	tick = function(self) end,
@@ -38,6 +42,10 @@ function Particles:new(name, ...)
 	return effect
 end
 
+addHook("MapChange", do
+	Particles.Instances = {}
+end)
+
 addHook("PostThinkFrame", do
 	for i = #Particles.Instances, 1, -1 do
 		local instance = Particles.Instances[i]
@@ -51,3 +59,8 @@ addHook("PostThinkFrame", do
 end)
 
 FangsHeist.Particles = Particles
+
+local PATH = "Modules/Effects/"
+
+Particles:define("Ring Steal",
+	dofile(PATH.."ringsteal"))
