@@ -62,7 +62,7 @@ function FangsHeist.startIntermission()
 	local checked = {}
 
 	for i = 1,1024 do
-		if not (mapheaderinfo[i] and mapheaderinfo[i].typeoflevel & TOL_HEIST) then
+		if not (mapheaderinfo[i] and mapheaderinfo[i].typeoflevel & TOL_HEIST and i ~= gamemap) then
 			continue
 		end
 

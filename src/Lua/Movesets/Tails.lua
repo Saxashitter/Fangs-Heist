@@ -2,14 +2,11 @@ FangsHeist.makeCharacter("tails", {
 	pregameBackground = "FH_PREGAME_TAILS"
 })
 
-local FLY_WINDUP_TICS = 12
 local FLY_WINDUP_FRICTION = tofixed("0.896")
 
 local FLY_TICS = 40
 local FLY_MOM = 24
 local FLY_GRAVITY = FU/2
-
-local FLY_GRAB_RANGE = 48*8
 
 local function HasControl(p)
 	if p.pflags & PF_STASIS then return false end
@@ -144,7 +141,6 @@ local function DoFlight(mo)
 	end
 end
 
-states[S_FH_FLYWINDUP].tics = FLY_WINDUP_TICS
 states[S_FH_FLYRELEASE].action = DoFlight
 
 addHook("PlayerThink", function(p)
@@ -165,17 +161,13 @@ addHook("PlayerThink", function(p)
 		p.mo.momz = $ - gravity
 		p.mo.momz = $ + FixedMul(gravity, FLY_GRAVITY)
 
-		if p.mo.momz*P_MobjFlip(p.mo) < 0 then
+		if p.mo.momz*P_MobjFlip(p.mo) < 0
+		or p.pflags & PF_STARTJUMP == 0 then
+			p.mo.momz = min($*P_MobjFlip(p.mo), 0)*P_MobjFlip(p.mo)
 			p.mo.state = S_PLAY_FALL
 			S_StartSound(p.mo, sfx_skid)
 			S_StartSound(p.mo, sfx_s3k51)
 		end
-	end
-
-	if p.mo.state == S_FH_FLYWINDUP then
-		p.mo.momx = FixedMul($, FLY_WINDUP_FRICTION)
-		p.mo.momy = FixedMul($, FLY_WINDUP_FRICTION)
-		p.mo.momz = FixedMul($, FLY_WINDUP_FRICTION)
 	end
 end)
 
@@ -185,8 +177,8 @@ addHook("AbilitySpecial", function(p)
 		return
 	end
 
-	p.mo.state = S_FH_FLYWINDUP
+	p.mo.state = S_FH_FLYRELEASE
 	p.pflags = $|PF_THOKKED
 
-	S_StartSound(p.mo, sfx_spndsh)
+	S_StartSound(p.mo, sfx_zoom)
 end)

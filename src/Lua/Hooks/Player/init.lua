@@ -1,9 +1,13 @@
 local scripts = {
 	playerthink = {},
-	thinkframe = {}
+	thinkframe = {},
+	prethinkframe = {}
 }
 
+FangsHeist.PlayerScripts = scripts
+
 local type = "playerthink"
+
 local function add(file)
 	local result = dofile("Hooks/Player/Scripts/"..file)
 
@@ -83,6 +87,7 @@ addHook("MobjDeath", function(ring, _, pmo)
 	if not (pmo.player.heist and pmo.player.heist:isAlive()) then return end
 	
 	pmo.player.heist:gainProfit(FH_RINGPROFIT)
+	ring.flags2 = $|MF2_DONTRESPAWN
 end, MT_RING)
 
 -- this check is goofy lol
@@ -110,6 +115,9 @@ addHook("MobjDeath", function(t,i,s)
 	if t.flags & MF_MONITOR then
 		s.player.heist.monitors = $+1
 		s.player.heist:gainProfit(FH_MONITORPROFIT)
+
+		t.flags = $|MF2_DONTRESPAWN
+		t.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOBLOCKMAP
 	end
 end)
 
@@ -149,6 +157,29 @@ addHook("MobjCollide", function(pmo, mo)
 	end
 end, MT_PLAYER)
 
+local function DontFuse(mo)
+	if not FangsHeist.isMode() then return end
+
+	return true
+end
+
+local iter = 1
+local function loadHooks()
+	if iter == #mobjinfo then return end
+
+	for i = iter, #mobjinfo do
+		if not (mobjinfo[i-1].flags & MF_MONITOR) then
+			continue
+		end
+
+		addHook("MobjFuse", DontFuse, i-1)
+	end
+
+	iter = #mobjinfo
+end
+
+loadHooks()
+addHook("AddonLoaded", loadHooks)
 add("Pregame")
 add("PVP")
 add("Nerfs")

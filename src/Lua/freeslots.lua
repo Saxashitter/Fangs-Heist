@@ -64,6 +64,13 @@ states[freeslot "S_FH_DROPDASH"] = {
 	nextstate = S_FH_DROPDASH
 }
 
+states[freeslot "S_FH_STOMP"] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_FALL,
+	tics = -1,
+	nextstate = S_FH_STOMP
+}
+
 states[freeslot "S_FH_FLYRELEASE_HOLD"] = {
 	sprite = SPR_PLAY,
 	frame = SPR2_FLY_,

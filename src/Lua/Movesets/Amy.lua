@@ -99,23 +99,14 @@ addHook("PlayerThink", function(p)
 	local attackFlags = STR_ATTACK|STR_WALL|STR_CEILING|STR_SPIKE
 
 	if p.mo.state == S_FH_AMY_TWIRL then
-		local gravity = 3
-
-		if p.heist:isNerfed() then
-			gravity = 9
-		end
+		local ghost = P_SpawnGhostMobj(p.mo)
+		ghost.fuse = 3
+		ghost.colorized = true
 
 		p.pflags = $|PF_JUMPSTASIS
-		p.mo.momz = max(-gravity*p.mo.scale, $)
 
 		p.amy.twirl = true
 		p.powers[pw_strong] = $|attackFlags
-
-		if p.amy.twirlframes -- stupid abilityspecial runnig before playerthink
-		and p.cmd.buttons & BT_JUMP
-		and not (p.lastbuttons & BT_JUMP) then
-			p.mo.state = S_PLAY_FALL
-		end
 
 		p.amy.twirlframes = $+1
 	--[[elseif attack

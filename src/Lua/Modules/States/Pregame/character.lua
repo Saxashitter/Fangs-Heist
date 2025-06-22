@@ -181,9 +181,9 @@ local function DrawIconGrid(v, x, y, selection, flags)
 			height = 0
 		end
 
-		local dx = x + icon.leftoffset*icon_scale + width
-		local dy = y + icon.topoffset*icon_scale
 		local ds = FixedMul(skin.highresscale, icon_scale)
+		local dx = x + icon.leftoffset*ds + width
+		local dy = y + icon.topoffset*ds
 
 		if null then
 			ds = icon_scale
