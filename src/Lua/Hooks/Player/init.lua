@@ -180,8 +180,8 @@ end
 
 loadHooks()
 addHook("AddonLoaded", loadHooks)
+
 add("Pregame")
-add("PVP")
 add("Nerfs")
 add("Treasures")
 add("Panic")

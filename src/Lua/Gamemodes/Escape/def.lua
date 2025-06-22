@@ -290,7 +290,7 @@ function gamemode:load()
 		FangsHeist.defineExit(x, y, z, a)
 	end
 
-	for i = 1,5 do
+	for i = 1,#treasure_spawns do
 		if not (#treasure_spawns) then
 			break
 		end
@@ -298,7 +298,7 @@ function gamemode:load()
 		local choice = P_RandomRange(1, #treasure_spawns)
 		local thing = treasure_spawns[choice]
 
-		FangsHeist.defineTreasure(thing.x, thing.y, thing.z)
+		FangsHeist.Carriables:new("Treasure", thing.x, thing.y, thing.z)
 		table.remove(treasure_spawns, choice)
 	end
 
@@ -319,7 +319,6 @@ function gamemode:update()
 		round.spriteyoffset = 8*sin(round.spriteroll)
 	end
 
-	FangsHeist.manageTreasures()
 	FangsHeist.teleportSign()
 
 	local sign = FangsHeist.Net.sign
