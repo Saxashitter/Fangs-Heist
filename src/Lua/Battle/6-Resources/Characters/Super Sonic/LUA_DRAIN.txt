@@ -1,0 +1,135 @@
+--Stat Drain?
+--SMS Alfredo?
+--Naaaah...
+
+local supercolors = {}
+for n = 1, 256 --Note: palette starts on index 0. We shift by +1
+	if n <= 16
+		supercolors[n] = SKINCOLOR_SUPERSILVER1
+	elseif n <= 32
+		supercolors[n] = -1
+	elseif n <= 48
+		supercolors[n] = SKINCOLOR_SUPERRED1
+	elseif n <= 64
+		supercolors[n] = SKINCOLOR_SUPERORANGE1
+	elseif n <= 88
+		supercolors[n] = SKINCOLOR_SUPERGOLD1		
+	elseif n <= 120
+		supercolors[n] = SKINCOLOR_SUPERPERIDOT1	
+	elseif n <= 160
+		supercolors[n] = SKINCOLOR_SUPERSKY1
+	elseif n <= 170
+		supercolors[n] = SKINCOLOR_SUPERPURPLE1
+	elseif n <= 176
+		supercolors[n] = SKINCOLOR_SUPERSKY1
+	elseif n <= 188
+		supercolors[n] = SKINCOLOR_SUPERPURPLE1
+	elseif n <= 192
+		supercolors[n] = SKINCOLOR_SUPERPERIDOT1
+	elseif n <= 200
+		supercolors[n] = SKINCOLOR_SUPERPURPLE1
+	elseif n <= 216
+		supercolors[n] = SKINCOLOR_SUPERRED1
+	elseif n <= 224
+		supercolors[n] = SKINCOLOR_SUPERTAN1
+	elseif n <= 252
+		supercolors[n] = SKINCOLOR_SUPERRUST1
+	else
+		supercolors[n] = SKINCOLOR_SUPERSILVER1
+	end
+end
+
+-- supercolors[SKINCOLOR_SILVER] = SKINCOLOR_SUPERSILVER1
+-- supercolors[SKINCOLOR_RED] = SKINCOLOR_SUPERRED1
+-- supercolors[SKINCOLOR_YELLOW] = SKINCOLOR_SUPERGOLD1
+-- supercolors[SKINCOLOR_ORANGE] = SKINCOLOR_SUPERORANGE1
+-- supercolors[SKINCOLOR_PERIDOT] = SKINCOLOR_SUPERPERIDOT1
+-- supercolors[SKINCOLOR_SKY] = SKINCOLOR_SUPERSKY1
+-- supercolors[SKINCOLOR_PURPLE] = SKINCOLOR_SUPERPURPLE1
+-- supercolors[SKINCOLOR_RUST] = SKINCOLOR_RUST
+-- supercolors[SKINCOLOR_TAN] = SKINCOLOR_TAN
+addHook("PlayerThink", function(player)
+	if not (player.mo and player.mo.skin == "supersonic") then
+		if player.mo and player.mo.supersonicvars
+			player.mo.supersonicvars = nil
+		end
+	return end
+	if player.mo.supersonicvars == nil
+		player.mo.supersonicvars = {tics = 0}
+	end
+	player.mo.supersonicvars.tics = $+1
+	local tics = player.mo.supersonicvars.tics
+	
+	-- Ring drain
+	if tics % TICRATE == 0 and player.rings
+		player.rings = $-1
+	end
+	-- Don't allow shields!
+	P_RemoveShield(player)
+
+	
+	--Hyper particles by Man553
+-- 	if not player.spkloc
+-- 		player.spkloc = 0
+-- 	end
+-- 	player.spkloc = $ + 12*FRACUNIT
+
+-- 	local co = cos(FixedAngle(player.spkloc))*FixedMul(75, player.mo.scale)
+-- 	local si = sin(FixedAngle(player.spkloc))*FixedMul(75, player.mo.scale)
+-- 	if player.powers[pw_super] and (tics % 2 == 0)
+-- 		P_SpawnMobj(player.mo.x + co, player.mo.y + si, player.mo.z, MT_SUPERSPARK)
+-- 	end
+	
+	--Color Cycling Code
+-- 	if not player.powers[pw_super]
+	local supercolor
+	if gametyperules & (GTR_TEAMS|GTR_CAMPAIGN) == GTR_TEAMS and player.ctfteam
+		supercolor = player.ctfteam == 2 and SKINCOLOR_SUPERSKY1 or SKINCOLOR_SUPERRED1
+	else
+		local n
+		for r = 8, 15
+			n = skincolors[player.skincolor].ramp[r]-1
+			supercolor = supercolors[n]
+			if supercolor != nil
+				break
+			end
+		end
+	end
+	local frame = abs( (tics/2) % 9 - 4)
+	if supercolor and supercolor != -1
+		player.mo.color = (supercolor + frame)
+	else -- Hyper Sonic palette by Man553
+		player.mo.color = SKINCOLOR_SUPERSILVER1 + frame/4 + 5*(tics % 7)
+	end
+	
+	--Prevent the death animation from looping
+	if player.mo.frame == FF_ANIMATE|E and player.mo.sprite2 == SPR2_DEAD
+		player.mo.anim_duration = -1
+	end
+	
+	if player.powers[pw_carry] == CR_NIGHTSMODE return end
+	
+	--Super afterimage code -- pulled from source
+	if not (player.powers[pw_super] or player.powers[pw_sneakers])
+	and player.speed + abs(player.mo.momz) > FixedMul(20*FRACUNIT,player.mo.scale)
+		local gmobj = P_SpawnGhostMobj(player.mo)
+		gmobj.fuse = 2
+		if gmobj.tracer then gmobj.tracer.fuse = 2 end
+		if (tics & 1)
+			gmobj.frame = $&~FF_TRANSMASK
+			gmobj.frame = $|tr_trans70<<FF_TRANSSHIFT
+			if (gmobj.tracer)
+				gmobj.tracer.frame = $&~FF_TRANSMASK
+				gmobj.tracer.frame = $|tr_trans70<<FF_TRANSSHIFT
+			end
+		end
+	end
+	
+	--Super spark code -- pulled from source
+	if (player.cmd.forwardmove != 0 or player.cmd.sidemove != 0 or player.powers[pw_carry])
+	and not (tics % TICRATE) and (player.mo.momx or player.mo.momy)
+		local spark = P_SpawnMobj(player.mo.x, player.mo.y, player.mo.z, MT_SUPERSPARK)
+		spark.destscale = player.mo.scale
+		P_SetScale(spark, player.mo.scale)
+	end
+end)

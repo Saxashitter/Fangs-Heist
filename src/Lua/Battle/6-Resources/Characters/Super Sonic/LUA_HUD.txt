@@ -1,0 +1,21 @@
+-- //Energy HUD
+-- hud.add(function(v, player, cam)
+-- 	if player.mo and player.mo.skin ~= "ass" return end
+	
+-- 	if player.powers[pw_super] v.drawString(34,176,"A.H.S",V_MONOSPACE|V_YELLOWMAP|V_HUDTRANS|V_PERPLAYER|V_SNAPTOBOTTOM|V_SNAPTOLEFT)
+-- 	else v.drawString(34,176,"A.S.S",V_MONOSPACE|V_YELLOWMAP|V_HUDTRANS|V_PERPLAYER|V_SNAPTOBOTTOM|V_SNAPTOLEFT) end
+	
+-- 	local barwidth = ((player.normalspeed*100/52)/FRACUNIT)+1
+	
+-- 	local i = 0
+-- 	while i < 6 and player.playerstate == PST_LIVE and v.localTransFlag() != FRACUNIT*10
+-- 		local offset = i*22
+-- 		local color = 137-i
+-- 		if i == 0 then color = 152 end
+-- 		if i == 1 then color = 149 end
+-- 		v.drawFill(156+offset, 27-i, barwidth-offset, 10+i, color|V_HUDTRANS|V_PERPLAYER|V_SNAPTOTOP|V_SNAPTORIGHT)
+-- 		i = $+1
+-- 	end
+	
+-- 	v.draw(152, 13, v.cachePatch("ASSHUD"), V_HUDTRANS|V_PERPLAYER|V_SNAPTOTOP|V_SNAPTORIGHT)
+-- end, "game")

@@ -1,0 +1,26 @@
+-- //Literally just a port from the source code aside from the slow fall part
+-- addHook("JumpSpinSpecial", function(player)
+-- 	if player.mo and player.mo.skin == "ass" and player.charability == CA_THOK
+-- 	and player.speed > 5*player.mo.scale
+-- 	and P_MobjFlip(player.mo)*player.mo.momz <= 0
+-- 		if player.speed >= FixedMul(player.runspeed, player.mo.scale)
+-- 			player.mo.state = S_PLAY_FLOAT_RUN
+-- 		else
+-- 			player.mo.state = S_PLAY_FLOAT
+-- 		end
+-- 		P_SetObjectMomZ(player.mo, -3*FRACUNIT)
+-- 		player.pflags = $&~(PF_STARTJUMP|PF_SPINNING)
+-- 	end
+-- end)
+
+-- //Hyper Thok from Man553
+-- addHook("AbilitySpecial", function(player)
+-- 	if player.mo and player.mo.skin == "ass"
+-- 	and not (player.pflags & PF_THOKKED)
+-- 	and G_PlatformGametype()
+-- 	and (player.powers[pw_super])
+-- 		P_NukeEnemies(player.mo, player.mo, 2048*FRACUNIT)
+-- 		P_FlashPal(player, PAL_WHITE, 10)
+-- 		S_StartSound(player.mo, sfx_zoom)
+-- 	end
+-- end)

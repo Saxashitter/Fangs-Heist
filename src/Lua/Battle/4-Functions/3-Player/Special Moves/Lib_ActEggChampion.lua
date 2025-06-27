@@ -1,0 +1,1 @@
+-- All actions are handled in internally. See Resources/Egg Champion/

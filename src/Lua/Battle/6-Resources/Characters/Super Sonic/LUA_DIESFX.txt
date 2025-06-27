@@ -1,0 +1,6 @@
+//Adds a detransformation sound to the death animation
+addHook("MobjDeath", function(mobj)
+	if mobj.player and mobj.skin == "supersonic" and not G_IsSpecialStage(gamemap)
+		S_StartSound(mobj, sfx_s3k66)
+	end
+end, MT_PLAYER)

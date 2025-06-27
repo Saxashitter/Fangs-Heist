@@ -68,21 +68,6 @@ FlickyList = Rabbit,Chicken
 SelectHeading = Supported Maps
 Lua.FH_StageType = Escape
 #Flicky selection is final.
-
-Level 5
-Levelname = Techno Hill
-Act = 2
-Keywords = THZ2
-Music = THZ2
-TypeOfLevel = Heist
-NextLevel = 6
-SkyNum = 6
-RecordAttack = true
-LevelSelect = 1
-SaveGame = true
-SkyboxScale = 16
-FlickyList = Rabbit,Chicken
-Lua.FH_StageType = Escape
 #see act 1
 
 Level 30

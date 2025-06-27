@@ -1,0 +1,16 @@
+-- //Damage enemies just by running into them
+-- addHook("PlayerCanDamage", function(player, mobj)
+-- 	if player.mo and player.mo.skin == "ass" and not P_PlayerInPain(player)
+-- 	and (mobj.flags&MF_ENEMY or mobj.flags&MF_BOSS) return true end
+-- end, MT_PLAYER)
+
+-- //If you get hurt, don't lose rings, but still lose shields
+-- addHook("MobjDamage", function(target, inflictor, source, damage, damagetype)
+-- 	if target.player and target.skin == "ass" and not (damagetype&DMG_DEATHMASK)
+-- 	and target.player.powers[pw_shield] == SH_NONE
+-- 		P_DoPlayerPain(target.player, source, inflictor)
+-- 		P_PlayDeathSound(target)
+-- 		P_PlayerFlagBurst(target.player)
+-- 		return true
+-- 	end
+-- end, MT_PLAYER)

@@ -49,12 +49,17 @@ local function drawTimer(v, x, y, scale, f)
 
 	local div = FU-getScaleDiv()
 
+	local color
+
+	if displayplayer
+	and displayplayer.valid then
+		color = v.getColormap(nil, displayplayer.skincolor)
+	end
 
 	-- background fill
 	v.drawScaled(x, y, scale, bg, f)
 
 	-- main fill
-
 	local barx = x + 3*scale
 	local bary = y + 3*scale
 	local barw = tmr.width*scale - 6*scale
@@ -78,7 +83,7 @@ local function drawTimer(v, x, y, scale, f)
 	local start = x
 	local finish = x + tmr.width*scale - gem.width*scale
 	local twn = ease.linear(div, start, finish)
-	v.drawScaled(twn, y + tmr.height*scale/2 - gem.height*scale/2, scale, gem, f)
+	v.drawScaled(twn, y + tmr.height*scale/2 - gem.height*scale/2, scale, gem, f, color)
 
 	-- text
 	local minstr = string.format("%02d",
@@ -115,7 +120,7 @@ local function drawTimer(v, x, y, scale, f)
 		end
 	end
 
-	x = $ + (tmr.width*scale/2) - width/2
+	x = twn + gem.width*scale/2 - width/2
 	local dx = 0
 
 	for i,patch in ipairs(patches) do
@@ -147,7 +152,7 @@ function module.draw(v)
 
 	local tmr = v.cachePatch("FH_TMR")
 
-	local x = 320*FU - 8*FU - tmr.width*FU
+	local x = 320*FU - 12*FU - tmr.width*FU
 	local y = ease.outback(slideT, 200*FU, 200*FU - 12*FU - tmr.height*FU)
 	local f = V_SNAPTOBOTTOM|V_SNAPTORIGHT
 

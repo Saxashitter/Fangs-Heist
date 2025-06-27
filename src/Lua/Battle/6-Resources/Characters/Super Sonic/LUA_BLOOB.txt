@@ -1,0 +1,13 @@
+-- addHook("PlayerSpawn", function(player)
+-- 	if All7Emeralds(emeralds) == true then return end
+-- 	if netgame or multiplayer and All7Emeralds(player.powers[pw_emeralds]) <= 128 then return end
+-- 	if (player.mo and player.mo.skin == "ass")
+-- 		P_SpawnMobj(player.mo.x, player.mo.y, player.mo.z, MT_EMERALD1)
+-- 		P_SpawnMobj(player.mo.x, player.mo.y, player.mo.z, MT_EMERALD2)
+-- 		P_SpawnMobj(player.mo.x, player.mo.y, player.mo.z, MT_EMERALD3)
+-- 		P_SpawnMobj(player.mo.x, player.mo.y, player.mo.z, MT_EMERALD4)
+-- 		P_SpawnMobj(player.mo.x, player.mo.y, player.mo.z, MT_EMERALD5)
+-- 		P_SpawnMobj(player.mo.x, player.mo.y, player.mo.z, MT_EMERALD6)
+-- 		P_SpawnMobj(player.mo.x, player.mo.y, player.mo.z, MT_EMERALD7)
+-- 	end
+-- end)
