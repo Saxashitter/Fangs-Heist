@@ -57,8 +57,8 @@ local function predictTicsUntilGrounded(x, y, z, height, momz, gravity)
 end
 
 function gamemode:spawnEggman(type)
-	local sign = FangsHeist.Net.sign
-	local eggman = P_SpawnMobj(sign.x, sign.y, sign.z, MT_FH_EGGMAN)
+	local pos = self:getSignSpawn()
+	local eggman = P_SpawnMobj(pos[1], pos[2], pos[3], MT_FH_EGGMAN)
 
 	FangsHeist.Net.eggman = eggman
 
@@ -139,7 +139,9 @@ function gamemode:getSignSpawn()
 end
 
 function gamemode:spawnSign()
-	return FangsHeist.spawnSign(self:getSignSpawn())
+	local pos = self:getSignSpawn()
+
+	FangsHeist.Net.sign = FangsHeist.Carriables:new("Sign", pos[1], pos[2], pos[3], pos[4])
 end
 
 function gamemode:respawnSign()
@@ -160,8 +162,7 @@ function gamemode:init(map)
 	FangsHeist.Net.round2_theme = "ROUND2"
 	FangsHeist.Net.escape_hurryup = true
 	FangsHeist.Net.escape_on_start = false
-	FangsHeist.Net.can_sudden_death = false
-	FangsHeist.Net.sudden_death = false
+
 
 	FangsHeist.Net.last_man_standing = false
 
@@ -318,58 +319,6 @@ function gamemode:update()
 		round.spriteroll = $ + FixedAngle(360*FU/120)
 		round.spriteyoffset = 8*sin(round.spriteroll)
 	end
-
-	FangsHeist.teleportSign()
-
-	local sign = FangsHeist.Net.sign
-
-	if sign and sign.valid then
-		if sign.holder
-		and sign.holder.valid
-		and sign.holder.player == displayplayer then
-			sign.frame = $|FF_TRANS80
-			sign.bustmo.frame = $|FF_TRANS80
-			sign.boardmo.frame = $|FF_TRANS80
-		else
-			sign.frame = $ & ~FF_TRANS80
-			sign.bustmo.frame = $ & ~FF_TRANS80
-			sign.boardmo.frame = $ & ~FF_TRANS80
-		end
-	end
-end
-
-function gamemode:manageSuddenDeath()
-	if not FangsHeist.Net.can_sudden_death then return end
-	if not FangsHeist.Net.escape then return end
-
-	local teams = FangsHeist.Net.teams
-	if not FangsHeist.Net.time_left then return end
-
-	local teamsLeft = 0
-	for p in players.iterate do
-		if not (p and p.heist and not p.heist.spectator and not p.heist.exiting and p.heist:isTeamLeader()) then
-			continue
-		end
-
-		teamsLeft = $+1
-	end
-
-	if teamsLeft > 1 then
-		return
-	end
-
-	if FangsHeist.Net.sudden_death then return end
-
-	if not FangsHeist.Net.sudden_death then
-		FangsHeist.Net.sudden_death = true
-
-		if not FangsHeist.Net.eggman
-		or not FangsHeist.Net.eggman.valid then
-			self:spawnEggman("pt")
-		end
-
-		S_StartSound(nil, sfx_narsud)
-	end
 end
 
 function gamemode:trackplayer(p)
@@ -405,9 +354,6 @@ function gamemode:manageEscape()
 	-- BOMBS FOR RETAKES.......
 	self:manageBombs()
 
-	-- haha sudden death
-	self:manageSuddenDeath()
-
 	-- eggman
 	self:handleEggman()
 end
@@ -431,7 +377,6 @@ function gamemode:sync(sync)
 	FangsHeist.Net.escape_on_start = sync($)
 	FangsHeist.Net.signpos = sync($)
 
-	FangsHeist.Net.sign = sync($)
 	FangsHeist.Net.exit = sync($)
 	FangsHeist.Net.round_2_mobj = sync($)
 	FangsHeist.Net.eggman = sync($)
@@ -447,10 +392,6 @@ function gamemode:music()
 	end
 
 	local p = displayplayer
-
-	if FangsHeist.Net.sudden_death then
-		return "SUDDTH", true
-	end
 
 	if not FangsHeist.Net.time_left then
 		return "FHTUP", true
@@ -483,10 +424,6 @@ function gamemode:start()
 		and p.heist:isTeamLeader() then
 			table.insert(randPlyrs, p)
 		end
-	end
-
-	if #randPlyrs >= 2 then
-		FangsHeist.Net.can_sudden_death = true
 	end
 
 	if #randPlyrs
@@ -526,10 +463,10 @@ function gamemode:playerdeath(p, i, s)
 end
 
 function gamemode:manageSign()
-	if not (FangsHeist.Net.sign
+	--[[if not (FangsHeist.Net.sign
 		and FangsHeist.Net.sign.valid) then
 			self:spawnSign()
-	end
+	end]]
 end
 
 function gamemode:manageTime()
@@ -690,7 +627,13 @@ function gamemode:manageExiting()
 			local team = p.heist:getTeam()
 
 			team.had_sign = true
-			self:respawnSign()
+		end
+
+		for i = #p.heist.pickup_list, 1, -1 do
+			local v = p.heist.pickup_list[i]
+
+			FangsHeist.Carriables.RespawnCarriable(v.mobj)
+			table.remove(p.heist.pickup_list, i)
 		end
 
 		p.heist.exiting = true
@@ -733,20 +676,6 @@ function gamemode:startEscape(p)
 
 	FangsHeist.Net.escape = true
 	S_StartSound(nil, sfx_gogogo)
-
-	local plyrs = {}
-
-	for p in players.iterate do
-		if p.heist
-		and not p.heist.spectator
-		and p.heist:isTeamLeader() then
-			table.insert(plyrs, p)
-		end
-	end
-
-	if #plyrs >= 2 then
-		FangsHeist.Net.can_sudden_death = true
-	end
 
 	if FangsHeist.Save.retakes >= 2 then
 		if not FangsHeist.Net.eggman

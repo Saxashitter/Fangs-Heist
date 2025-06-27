@@ -14,6 +14,7 @@ local STRUCTURE = {
 	easing = ease.outquad, -- easing it uses during tween duration
 	transparentOnPickup = true, -- if picked up by consoleplayer, turns transparent
 	respawnOnExit = false, -- chooses if item respawns when player exits, only works in escape
+	giveToDamager = false, -- if damaged by a valid player, gives the carriable to them automatically.
 	height = 24*FU, -- sets the height that the object is carried by or smth
 	state = S_INVISIBLE, -- sets state upon spawn
 
@@ -23,7 +24,9 @@ local STRUCTURE = {
 	onUngrabThink = _NIL,
 	onGrabThink = _NIL,
 	onExit = _NIL,
-	onRespawn = _NIL
+	onRespawn = _NIL,
+	onPostThink = _NIL,
+	canPickUp = function() return true end
 }
 local COPY_LIST = {
 	"profit",
@@ -32,21 +35,25 @@ local COPY_LIST = {
 	"duration",
 	"transparentOnPickup",
 	"respawnOnExit",
+	"giveToDamager",
 	"height",
 	"state"
 }
+
+local UNGRABBED = MF_SPECIAL
+local GRABBED = MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_NOBLOCKMAP
 
 mobjinfo[freeslot "MT_FH_CARRIABLE"] = {
 	spawnstate = S_INVISIBLE,
 	radius = 128*FU/2,
 	height = 128*FU,
-	flags = 0
+	flags = UNGRABBED
 }
 
 local function IsCarried(mobj)
 	local target = mobj.settings.target
 
-	if not (target and target.valid and target.health) then
+	if not (target and target.valid) then
 		return false
 	end
 
@@ -67,9 +74,11 @@ local function CouldPickUp(p)
 	and p.heist
 	and p.heist:isAlive()
 	and not P_PlayerInPain(p)
+	and not p.powers[pw_flashing]
+	and not p.heist.exiting
 end
 
-local function ReleaseCarriable(mobj, launch, rmvFromPickUp)
+local function ReleaseCarriable(mobj, launch, rmvFromPickUp, dontRmvProfit)
 	if not IsCarried(mobj) then return end
 
 	local def = Carriables.defs[mobj.settings.id]
@@ -89,8 +98,13 @@ local function ReleaseCarriable(mobj, launch, rmvFromPickUp)
 			break
 		end
 	end
+	if pmo
+	and not dontRmvProfit then
+		pmo.player.heist:gainProfit(-mobj.settings.profit, true)
+	end
 
 	mobj.settings.target = nil
+	mobj.flags = UNGRABBED
 
 	if launch then
 		local angle = FixedAngle(P_RandomRange(1, 360)*FU)
@@ -117,9 +131,29 @@ local function PickUpCarriable(pmo, mobj)
 	mobj.settings.target = pmo
 	mobj.settings.tics = 0
 
+	mobj.flags = GRABBED
+	mobj.momx = 0
+	mobj.momy = 0
+	mobj.momz = 0
+
 	table.insert(GetCarryList(mobj), mobj.settings)
+	pmo.player.heist:gainProfit(mobj.settings.profit, true)
 
 	def.onPickUp(mobj, pmo)
+end
+
+local function RespawnCarriable(mobj) -- only intended for exit
+	local pos = mobj.settings.original_position
+	local def = Carriables.defs[mobj.settings.id]
+
+	ReleaseCarriable(mobj, false, false, true)
+
+	P_SetOrigin(mobj,
+		pos.x,
+		pos.y,
+		pos.z)
+
+	def.onRespawn(mobj)
 end
 
 local function SetCarriableSettings(mobj, x, y, z, id)
@@ -176,6 +210,7 @@ function Carriables:new(name, x, y, z, ...)
 	table.insert(self.instances, mobj.settings)
 
 	def.onSpawn(mobj, x, y, z, ...)
+	return mobj.settings
 end
 
 addHook("NetVars", function(sync)
@@ -186,38 +221,65 @@ addHook("MapChange", do
 	Carriables.instances = {}
 end)
 
-addHook("MobjMoveCollide", function(car, pmo)
+local function CarriableSpecial(car, pmo)
 	if not FangsHeist.isMode() then return end
 	if not (pmo and pmo.valid and pmo.health) then return end
 	if not (car and car.valid and car.health) then return end
 	if pmo.type ~= MT_PLAYER then return end
-	print "valid health checks"
 
 	if IsCarried(car) then return end
-	print "its not carried"
+
+	local def = Carriables.defs[car.settings.id]
 
 	if not (pmo and pmo.player and pmo.player.heist) then return end
 	if not CouldPickUp(pmo.player) then return end
-	print "could pick up"
-
-	if pmo.z > car.z+car.height then return end
-	if car.z > pmo.z+pmo.height then return end
+	if not def.canPickUp(pmo.player) then return end
 
 	PickUpCarriable(pmo, car)
+end
+
+addHook("TouchSpecial", function(special, pmo)
+	if not FangsHeist.isMode() then return end
+	CarriableSpecial(special, pmo)
+	return true
 end, MT_FH_CARRIABLE)
 
-addHook("MobjDamage", function(pmo)
+local function OnHit(pmo, _, source)
 	if not FangsHeist.isMode() then return end
 	if not (pmo and pmo.valid) then return end
 	if not (pmo and pmo.player and pmo.player.heist) then return end
 
-	for k, v in ipairs(pmo.player.heist.pickup_list) do
-		ReleaseCarriable(v.mobj, true, false)
-		table.remove(pmo.player.heist.pickup_list, k)
-	end
-end, MT_PLAYER)
+	local give
 
-addHook("PostThinkFrame", do
+	if source
+	and source.valid
+	and source.type == MT_PLAYER
+	and source.player
+	and source.player.heist
+	and source.player.heist:isAlive() then
+		give = source.player
+	end
+
+	for i = #pmo.player.heist.pickup_list, 1, -1 do
+		local v = pmo.player.heist.pickup_list[i]
+		local def = Carriables.defs[v.id]
+
+		if give
+		and v.giveToDamager
+		and def.canPickUp(source.player) then
+			PickUpCarriable(source, v.mobj)
+		else
+			ReleaseCarriable(v.mobj, true, false)
+		end
+
+		table.remove(pmo.player.heist.pickup_list, i)
+	end
+end
+
+addHook("MobjDamage", OnHit, MT_PLAYER)
+addHook("MobjDeath", OnHit, MT_PLAYER)
+
+addHook("ThinkFrame", do
 	if not FangsHeist.isMode() then return end
 
 	for i = #Carriables.instances, 1, -1 do
@@ -242,8 +304,13 @@ addHook("PostThinkFrame", do
 				y = car.target.y,
 				z = car.target.z+car.target.height
 			}
-
-			-- iterate thru rest of carry objects and see where this mf lies
+			local list = GetCarryList(car.mobj)
+	
+			for _, cry in ipairs(list) do
+				if cry == car then break end
+	
+				curPos.z = $ + cry.height
+			end
 
 			if car.duration > 0 then
 				twn = FixedDiv(min(car.tics, car.duration), car.duration)
@@ -272,6 +339,57 @@ addHook("PostThinkFrame", do
 	end
 end)
 
+addHook("PostThinkFrame", do
+	if not FangsHeist.isMode() then return end
+
+	for i = #Carriables.instances, 1, -1 do
+		local car = Carriables.instances[i]
+		local def = Carriables.defs[car.id]
+
+		if car.transparentOnPickup then
+			if IsCarried(car.mobj) then
+				car.mobj.frame = $|FF_TRANS80
+			else
+				car.mobj.frame = $ & ~FF_TRANS80
+			end
+		end
+
+		def.onPostThink(car.mobj)
+	end
+end)
+
 Carriables:define("Treasure", dofile(PATH.."Treasures"))
+Carriables:define("Sign", dofile(PATH.."Sign"))
+
+Carriables.ReleaseCarriable = ReleaseCarriable
+Carriables.PickUpCarriable = PickUpCarriable
+Carriables.RespawnCarriable = RespawnCarriable
+Carriables.FindCarriables = function(name)
+	local carriables = {}
+
+	for _, v in ipairs(Carriables.instances) do
+		if v.id == name then
+			table.insert(carriables, v)
+		end
+	end
+
+	return carriables
+end
+Carriables.RemoveCarriable = function(carriable)
+	for i, v in ipairs(Carriables.instances) do
+		if v == carriable then
+			ReleaseCarriable(v)
+
+			if v.mobj and v.mobj.valid then
+				P_RemoveMobj(v.mobj)
+			end
+
+			table.remove(Carriables.instances, i)
+			return true
+		end
+	end
+
+	return false
+end
 
 FangsHeist.Carriables = Carriables

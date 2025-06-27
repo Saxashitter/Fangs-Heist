@@ -13,8 +13,6 @@ rawset(_G, "FH_PRY_DUR", 35)
 rawset(_G, "FH_PRY_TICS", 16)
 rawset(_G, "FH_PRY_PRF", 7)
 
-mobjinfo[MT_PLAYER].radius = $*3/2
-
 -- Stun Constants
 rawset(_G, "FH_STN_SPD", 8*FU)
 rawset(_G, "FH_STN_AIRSPD", 10*FU)
@@ -318,10 +316,6 @@ local function Knockback(p1, p2, knockbackOther)
 
 	P_InstaThrust(mo1, rev_angle, xySpd)
 	mo1.momz = zSpd
-	if not P_IsObjectOnGround(mo1) then
-		mo1.state = S_PLAY_FALL
-	end
-	p1.pflags = $ & ~(FLAGS_RESET)
 
 	if not knockbackOther then
 		return
@@ -329,10 +323,6 @@ local function Knockback(p1, p2, knockbackOther)
 
 	P_InstaThrust(mo2, angle, xySpd)
 	mo2.momz = -zSpd
-	if not P_IsObjectOnGround(mo2) then
-		mo2.state = S_PLAY_FALL
-	end
-	p2.pflags = $ & ~(FLAGS_RESET)
 end
 
 local function PerfectParry(p, p2)
@@ -553,7 +543,7 @@ local function RingSpill(p, dontSpill, p2)
 
 	S_StartSound(p.mo, sfx_s3kb9)
 	p.rings = $-rings_spill
-	p.heist:gainProfit(-FH_RINGPROFIT*rings_spill)
+	p.heist:gainProfitMultiplied(-FH_RINGPROFIT*rings_spill)
 
 	return rings_spill
 end
@@ -649,37 +639,6 @@ addHook("ThinkFrame", do
 
 		DefAttack(attacks, p, found)
 	end]]
-
-	-- Iterate through attacks and see who attacks who.
-	for _, atk in ipairs(FangsHeist.Net.attacks) do
-		local atkP = atk.atk
-		local vicP = atk.vic
-
-		local atkPro = GetAttackPriority(atkP, vicP)
-		local vicPro = GetAttackPriority(vicP, atkP)
-
-		if atkPro == 0 and vicPro == 0 then
-			continue
-		end
-
-		if atkPro > vicPro then
-			Damage(atkP, vicP, nil, vicP.mo.state == S_FH_STUN)
-			continue
-		end
-
-		if vicPro > atkPro then
-			Damage(vicP, atkP, nil, atkP.mo.state == S_FH_STUN)
-			continue
-		end
-
-		Knockback(atkP, vicP, true)
-		atkP.mo.state = S_FH_CLASH
-		vicP.mo.state = S_FH_CLASH
-
-		S_StartSound(atkP.mo, sfx_fhclsh)
-		S_StartSound(vicP.mo, sfx_fhclsh)
-	end
-	FangsHeist.Net.attacks = {}
 end)
 
 addHook("ShouldDamage", function(t,i,s,dmg,dt)
@@ -729,6 +688,15 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 		return false
 	end
 
+	if s and s.valid and s.player and s.player.heist then
+		local team1 = t.player.heist:getTeam()
+		local team2 = s.player.heist:getTeam()
+
+		if team1 == team2 then
+			return false
+		end
+	end
+
 	if t.state == S_FH_CLASH then
 		return false
 	end
@@ -762,7 +730,7 @@ local function reflection(mobj,proj)
 	local SPEED = R_PointToDist2(mobj.momx, mobj.momy, proj.momx, proj.momy)
 
 	PROFIT = $ * FixedDiv(SPEED, BASE_SPEED)/FU
-	mobj.player.heist:gainProfit(PROFIT)
+	mobj.player.heist:gainProfitMultiplied(PROFIT)
 	
 	return false
 end
@@ -804,22 +772,11 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 
 		if not (t.health) then
 			s.player.heist.deadplayers = $+1
-			s.player.heist:gainProfit(FH_DEADPLAYERPROFIT)
+			s.player.heist:gainProfitMultiplied(FH_DEADPLAYERPROFIT)
 		else
 			s.player.heist.hitplayers = $+1
-			s.player.heist:gainProfit(FH_HITPLAYERPROFIT)
+			s.player.heist:gainProfitMultiplied(FH_HITPLAYERPROFIT)
 		end
-	end
-
-	if not givenSign
-	and t.player.heist:hasSign() then
-		local sign = FangsHeist.Net.sign
-		sign.holder = nil
-
-		local launch_angle = FixedAngle(P_RandomRange(0, 360)*FU)
-
-		P_InstaThrust(sign, launch_angle, 8*FU)
-		P_SetObjectMomZ(sign, 4*FU)
 	end
 
 	if dt & DMG_DEATHMASK then
@@ -854,8 +811,7 @@ local function OnPlayerCollide(pmo, mo)
 		return
 	end
 
-	if IsInList(FangsHeist.Net.attacks, p)
-	or pmo.state == S_FH_GUARD then
+	if pmo.state == S_FH_GUARD then
 		return
 	end
 
@@ -867,8 +823,7 @@ local function OnPlayerCollide(pmo, mo)
 		return
 	end
 
-	if IsInList(ClashList, sp)
-	or IsInList(FangsHeist.Net.attacks, sp) then
+	if IsInList(ClashList, sp) then
 		return
 	end
 
@@ -878,7 +833,25 @@ local function OnPlayerCollide(pmo, mo)
 		return
 	end
 
-	DefAttack(FangsHeist.Net.attacks, p, sp)
+	local atkPro = GetAttackPriority(p, sp)
+	local vicPro = GetAttackPriority(sp, p)
+
+	if atkPro > vicPro then
+		Damage(p, sp, nil, sp.mo.state == S_FH_STUN)
+		return
+	end
+
+	if vicPro > atkPro then
+		Damage(sp, p, nil, p.mo.state == S_FH_STUN)
+		return
+	end
+
+	Knockback(p, sp, true)
+	p.mo.state = S_FH_CLASH
+	sp.mo.state = S_FH_CLASH
+
+	S_StartSound(p.mo, sfx_fhclsh)
+	S_StartSound(sp.mo, sfx_fhclsh)
 end
 
 addHook("MobjMoveCollide", function(pmo, mo)

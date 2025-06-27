@@ -86,7 +86,7 @@ addHook("MobjDeath", function(ring, _, pmo)
 	if not (pmo and pmo.valid and pmo.type == MT_PLAYER) then return end
 	if not (pmo.player.heist and pmo.player.heist:isAlive()) then return end
 	
-	pmo.player.heist:gainProfit(FH_RINGPROFIT)
+	pmo.player.heist:gainProfitMultiplied(FH_RINGPROFIT)
 	ring.flags2 = $|MF2_DONTRESPAWN
 end, MT_RING)
 
@@ -96,7 +96,7 @@ function A_RingBox(actor, var1,var2)
     if FangsHeist.isMode()
     and player.heist
     and player.heist:isAlive() then
-        player.heist:gainProfit(FH_RINGPROFIT*actor.info.reactiontime)
+        player.heist:gainProfitMultiplied(FH_RINGPROFIT*actor.info.reactiontime)
     end
     
     --run original action
@@ -110,11 +110,11 @@ addHook("MobjDeath", function(t,i,s)
 
 	if t.flags & MF_ENEMY then
 		s.player.heist.enemies = $+1
-		s.player.heist:gainProfit(FH_ENEMYPROFIT)
+		s.player.heist:gainProfitMultiplied(FH_ENEMYPROFIT)
 	end
 	if t.flags & MF_MONITOR then
 		s.player.heist.monitors = $+1
-		s.player.heist:gainProfit(FH_MONITORPROFIT)
+		s.player.heist:gainProfitMultiplied(FH_MONITORPROFIT)
 
 		t.flags = $|MF2_DONTRESPAWN
 		t.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOBLOCKMAP
@@ -187,6 +187,7 @@ add("Treasures")
 add("Panic")
 add("Sign Toss")
 add("Map Vote")
+add("PVP")
 
 type = "thinkframe"
 

@@ -51,8 +51,19 @@ FangsHeist.treasures = {
 	};
 }
 
+local function OnCollect(mobj, pmo)
+	local key = (mobj.frame & FF_FRAMEMASK)+1
+	local data = FangsHeist.treasures[key]
+
+	pmo.player.heist.treasure_name = data.name
+	pmo.player.heist.treasure_desc = data.desc
+	pmo.player.heist.treasure_time = 3*TICRATE
+
+	S_StartSound(pmo, sfx_kc30)
+end
+
 return {
-	profit = 450,
+	profit = 160,
 	state = S_FH_TREASURE,
-	onSpawn = function() print("works") end
+	onPickUp = OnCollect
 }
