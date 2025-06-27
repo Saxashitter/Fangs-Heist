@@ -30,7 +30,7 @@ FangsHeist.WINNER_LINES = {
 	"is Ripping and Tearing!",
 	"tada.wav",
 	"pwned you roblox style",
-	"won the game of Hexic HD!",
+	"won a game of Hexic HD!",
 	"used a calcium gun on you and your teammates!",
 	"has cantaloupe'd everyone!",
 	"won a game of Balatro",

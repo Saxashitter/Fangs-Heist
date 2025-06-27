@@ -30,9 +30,11 @@ dofile "Hooks/Game/init"
 dofile "Hooks/HUD"
 dofile "Hooks/Titlescreen"
 
+dofile "Carriables/init"
+
 dofile "Objects/Eggman"
 dofile "Objects/Exit"
-dofile "Objects/Treasures"
+--dofile "Objects/Treasures"
 dofile "Objects/Signpost"
 dofile "Objects/Bean"
 dofile "Objects/Tails"

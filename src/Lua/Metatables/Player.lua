@@ -1,9 +1,13 @@
 local mt = {}
 
 function mt:hasSign()
-	return FangsHeist.Net.sign
-		and FangsHeist.Net.sign.valid
-		and FangsHeist.Net.sign.holder == self.player.mo
+	for k,v in ipairs(self.pickup_list) do
+		if v.id == "Sign" then
+			return true
+		end
+	end
+
+	return false
 end
 
 function mt:isAtGate()
@@ -101,12 +105,28 @@ function mt:getTeam()
 	return false
 end
 
+function mt:gainProfitMultiplied(gain, dontDiv, specialSound)
+	local team = self:getTeam()
+	local gamemode = FangsHeist.getGamemode()
+	local multiplier = 1
+
+	for _, p in ipairs(team) do
+		if not (p and p.valid and p.heist) then
+			continue
+		end
+
+		for k,v in ipairs(p.heist.pickup_list) do
+			multiplier = max($, v.multiplier)
+		end
+	end
+
+	self:gainProfit(gain*multiplier, dontDiv, specialSound)
+end
+
 function mt:gainProfit(gain, dontDiv, specialSound)
 	local div = 0
 	local team = self:getTeam()
 	local gamemode = FangsHeist.getGamemode()
-
-	if FangsHeist.Net.sudden_death then return end -- haha no proftt
 
 	if not team then
 		return
@@ -115,16 +135,6 @@ function mt:gainProfit(gain, dontDiv, specialSound)
 	div = not dontDiv and #team or 1
 	if gamemode.dontdivprofit then
 		div = 1
-	end
-
-	for _, p in ipairs(team) do
-		if not (p and p.valid and p.heist) then
-			continue
-		end
-
-		if p.heist:hasSign() then
-			gain = $*FH_SIGNMULT
-		end
 	end
 
 	team.profit = max(0, $+(gain/div))

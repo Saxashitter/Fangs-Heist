@@ -26,6 +26,8 @@ return {
 	treasure_name = "",
 	treasure_desc = "",
 
+	pickup_list = {},
+
 	selected = 2,
 	voted = false,
 

@@ -43,38 +43,42 @@ local CROPSETS = {
 
 local function drawTimer(v, x, y, scale, f)
 	local tmr = v.cachePatch("FH_TMR")
-	local backfill = v.cachePatch("FH_TMR_FILL")
-	local fill = v.cachePatch("FH_TMR_ENDFILL")
+	local bg = v.cachePatch("FH_TMR_BG")
+	local fill = v.cachePatch("FH_TMR_FILL")
+	local gem = v.cachePatch("FH_TMR_GEM")
 
-	local div = getScaleDiv()
-	local rdiv = FU-div
+	local div = FU-getScaleDiv()
 
-	local barx = x + 5*scale
-	local bary = y + 17*scale
-	local barw = tmr.width*scale - 6*scale - 5*scale
 
 	-- background fill
-	FangsHeist.DrawParallax(v,
-		barx,
-		bary,
-		barw,
-		backfill.height*scale + (scale*2), -- to make sure theres no clipping
-		scale,
-		backfill,
-		f
-	)
+	v.drawScaled(x, y, scale, bg, f)
+
 	-- main fill
+
+	local barx = x + 3*scale
+	local bary = y + 3*scale
+	local barw = tmr.width*scale - 6*scale
+	local barh = tmr.height*scale - 6*scale
+	local width = FixedMul(barw, div)
+
 	FangsHeist.DrawParallax(v,
-		barx,
+		barx+width,
 		bary,
-		FixedMul(barw, div),
-		fill.height*scale + (scale*2), -- to make sure theres no clipping
+		barw-width,
+		barh,
 		scale,
 		fill,
 		f
 	)
+
 	-- actual timer sprite
 	v.drawScaled(x, y, scale, tmr, f)
+
+	-- gem
+	local start = x
+	local finish = x + tmr.width*scale - gem.width*scale
+	local twn = ease.linear(div, start, finish)
+	v.drawScaled(twn, y + tmr.height*scale/2 - gem.height*scale/2, scale, gem, f)
 
 	-- text
 	local minstr = string.format("%02d",
@@ -88,20 +92,20 @@ local function drawTimer(v, x, y, scale, f)
 
 	for i = 1,#minstr do
 		local num = minstr:sub(i,i)
-		local patch = v.cachePatch("STTNUM"..num)
+		local patch = v.cachePatch("FH_TMR"..num)
 
 		table.insert(patches, patch)
 		width = $ + patch.width*scale + pad
 	end
 
-	local colon = v.cachePatch("STTCOLON")
+	local colon = v.cachePatch("FH_TMR_COLON")
 
 	table.insert(patches, colon)
 	width = $ + colon.width*scale + pad
 
 	for i = 1,#secstr do
 		local num = secstr:sub(i,i)
-		local patch = v.cachePatch("STTNUM"..num)
+		local patch = v.cachePatch("FH_TMR"..num)
 
 		table.insert(patches, patch)
 		width = $ + patch.width*scale
@@ -115,65 +119,10 @@ local function drawTimer(v, x, y, scale, f)
 	local dx = 0
 
 	for i,patch in ipairs(patches) do
-		v.drawScaled(x+dx, y+17*scale, scale, patch, f)
+		v.drawScaled(x+dx, y + tmr.height*scale/2 - patch.height*scale/2, scale, patch, f)
 
 		if i < #patches then
 			dx = $ + patch.width*scale + pad
-		end
-	end
-end
-
-local function drawTmrText(v, x, y, scale, flags)
-	local tbg = v.cachePatch("FH_TMR_TEXTBG")
-
-	v.drawScaled(x, y, scale, tbg, flags)
-
-	local secstr = string.format("%02d",
-		(time/TICRATE) % 60)
-	local minstr = string.format("%02d",
-		time/(TICRATE*60))
-
-	local padding = scale*2
-	local patches = {}
-
-	x = $+14*scale
-	y = $-4*scale
-
-	for i = 1,#minstr do
-		local num = minstr:sub(i,i)
-		table.insert(patches, v.cachePatch("FH_TMR_NUM"..num))
-	end
-
-	table.insert(patches, v.cachePatch("FH_TMR_SC"))
-
-	for i = 1,#secstr do
-		local num = secstr:sub(i,i)
-		table.insert(patches, v.cachePatch("FH_TMR_NUM"..num))
-	end
-
-	x = $+tbg.width*scale/2
-
-	local width = 0
-	local maxHeight = 0
-	for i,patch in ipairs(patches) do
-		width = $+patch.width*scale
-		maxHeight = max($, patch.height*scale)
-		if i < #patches then
-			width = $+padding
-		end
-	end
-
-	local dx = -width/2
-	for i,patch in ipairs(patches) do
-		v.drawScaled(x+dx,
-			y+(maxHeight-patch.height*scale)/2,
-			scale,
-			patch,
-			flags)
-
-		dx = $+patch.width*scale
-		if i < #patches then
-			dx = $+padding
 		end
 	end
 end
@@ -198,9 +147,9 @@ function module.draw(v)
 
 	local tmr = v.cachePatch("FH_TMR")
 
-	local x = 160*FU - tmr.width*FU/2
+	local x = 320*FU - 8*FU - tmr.width*FU
 	local y = ease.outback(slideT, 200*FU, 200*FU - 12*FU - tmr.height*FU)
-	local f = V_SNAPTOBOTTOM
+	local f = V_SNAPTOBOTTOM|V_SNAPTORIGHT
 
 	drawTimer(v, x, y, FU, f)
 end
