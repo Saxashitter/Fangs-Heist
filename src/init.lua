@@ -14,7 +14,7 @@ dofile "constants"
 dofile "characters"
 dofile "console"
 
-dofile "Metatables/Player"
+dofile "Metatables/Player/init"
 
 dofile "Functions/Inits"
 dofile "Functions/Getters"

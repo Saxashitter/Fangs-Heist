@@ -76,5 +76,5 @@ function FangsHeist.getGamemode()
 	return FangsHeist.Gamemodes[i]
 end
 
-FangsHeist.Escape = dofile "Gamemodes/Escape/def.lua"
+FangsHeist.Escape = dofile "Modules/Gamemodes/Escape/def.lua"
 -- FangsHeist.TagTeam = dofile "Gamemodes/Tag Team/def.lua"

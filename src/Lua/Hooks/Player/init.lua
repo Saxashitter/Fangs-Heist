@@ -187,7 +187,6 @@ add("Treasures")
 add("Panic")
 add("Sign Toss")
 add("Map Vote")
-add("PVP")
 
 type = "thinkframe"
 

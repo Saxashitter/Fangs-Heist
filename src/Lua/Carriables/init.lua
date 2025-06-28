@@ -3,7 +3,7 @@ local Carriables = {
 	defs = {}
 }
 
-local PATH = "Carriables/Objects/"
+local PATH = "Modules/Carriables/"
 local function _NIL() end
 
 local STRUCTURE = {

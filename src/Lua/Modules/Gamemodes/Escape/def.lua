@@ -4,7 +4,7 @@ local gamemode = {
 	id = "ESCAPE",
 	tol = TOL_HEIST
 }
-local path = "Gamemodes/Escape/"
+local path = "Modules/Gamemodes/Escape/"
 
 dofile(path.."freeslots.lua")
 

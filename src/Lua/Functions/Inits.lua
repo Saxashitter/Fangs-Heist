@@ -41,6 +41,7 @@ end
 
 function FangsHeist.initPlayer(p)
 	local heist = copy(orig_plyr)
+
 	heist.locked_skin = p.skin
 	heist.player = p
 

@@ -75,6 +75,7 @@ return {
 	priority = 2,
 	multiplier = 2,
 	height = 54*FU,
+	giveToDamager = true,
 	state = S_SIGN,
 	canPickUp = CanPickUp,
 	onSpawn = OnSpawn,
