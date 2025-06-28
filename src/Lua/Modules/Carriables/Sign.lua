@@ -17,13 +17,14 @@ local function OnSpawn(sign, _, _, _, angle)
 end
 
 local function CanPickUp(p)
-	local team = p.heist:getTeam()
+	local team = p.heist:GetTeam()
 
 	return team.had_sign ~= true
 end
 
 local function OnCapture(sign, pmo)
-	local gamemode = FangsHeist.getGamemode()
+	local gamemode = FH:GetGamemode()
+
 	sign.spintics = 0
 	S_StartSound(sign, sfx_lvpass)
 
@@ -40,7 +41,7 @@ local function OnCapture(sign, pmo)
 	end
 
 	if gamemode then
-		gamemode:signcapture(false)
+		gamemode:SignCapture(false)
 	end
 
 	pmo.player.powers[pw_flashing] = max($, TICRATE)

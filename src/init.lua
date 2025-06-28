@@ -1,14 +1,13 @@
-rawset(_G, "FangsHeist", {
-	Net = {},
-	Objects = {},
-	Save = {},
-	PlayerMT = {}
-})
+rawset(_G, "FH", {})
+rawset(_G, "FH_NET", {})
+rawset(_G, "FH_SAVE", {})
+rawset(_G, "FH_HUD", {})
+rawset(_G, "FH_API", {})
 
 // FANGS HEIGHT IS BY SAXASHITTER
 // OFFICIAL SEQUEL TO NICK'S PIZZA TIME!
 
-dofile "freeslots"
+--[[dofile "freeslots"
 dofile "hooks.lua"
 dofile "constants"
 dofile "characters"
@@ -57,4 +56,4 @@ dofile "modsupport"
 dofile "Compat/S3 Sonic"
 dofile "Compat/Bean"
 dofile "Compat/Eggman"
-dofile "Compat/DeltaChars"
+dofile "Compat/DeltaChars"]]

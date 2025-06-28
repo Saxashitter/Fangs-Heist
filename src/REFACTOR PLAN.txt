@@ -1,0 +1,58 @@
+├── init.lua
+└── lua/
+    ├── init.lua
+    ├── think.lua
+    ├── setup/
+    │   └── constants.lua
+    │   └── sounds.lua
+    │   └── mobjs.lua
+    │   └── states.lua
+    ├── characters/
+    │   ├── init.lua
+    │   └── sonic/
+    │   |    └── init.lua
+    │   |    └── think.lua
+    │   └── tails/
+    │   |    └── init.lua
+    │   |    └── think.lua
+    ├── runtime/                 -- Renamed from 'hooks/'
+    │   ├── init.lua             -- Now loads all runtime components and registers main hooks
+    │   ├── player.lua     -- Main player logic, called by thinkers/hooks
+    │   ├── game.lua       -- Main game logic, called by thinkers/hooks
+    │   ├── effects.lua    -- Main thinker for effects
+    │   ├── weapons.lua    -- Main thinker for weapons
+    │   ├── carriables.lua -- Main thinker for carriables
+    ├── functions/
+    │   └── util.lua
+    |	└── init.lua
+    |	└── starter.lua
+    |	└── getter.lua
+    |	└── trigger.lua
+    |	└── check.lua
+    ├── behaviors/               -- Contains functions called BY player_logic, game_logic, etc.
+    │   ├── player/
+    │   |	└── *.lua
+    │   ├── game/
+    │   |	└── *.lua
+    │   ├── hud/
+    │   |	└── *.lua
+    ├── modules/
+	|   ├── weapons/
+	|   │   └── custom_weapon_data.lua
+	|   ├── effects/
+	|   │   └── visual_effects.lua
+	|   ├── carriables/
+	|   │   └── example_carriable.lua
+    │   └── variables/
+    │   └── states/
+    │   	└── pregame/
+    │   	└── intermission/
+    ├── gamemodes/
+    │   ├── escape/
+    │   |	└── init.lua
+    │   |	└── update.lua
+    │   |	└── *.lua
+    ├── compat/
+    │   └── common_mod_compat.lua
+    └── modsupport/
+    |    └── api.lua

@@ -1,14 +1,4 @@
-states[freeslot "S_FH_TREASURE"] = {
-	sprite = freeslot "SPR_TRES",
-	frame = A,
-	tics = -1,
-	action = function(mo)
-		local i = #FangsHeist.treasures
-		mo.frame = ($ & ~FF_FRAMEMASK)|P_RandomKey(i)
-	end
-}
-
-FangsHeist.treasures = {
+local treasures = {
 	{
 		name = "Franklin Badge",
 		desc = "This MIGHT have been used in a kite experiment.",
@@ -51,9 +41,19 @@ FangsHeist.treasures = {
 	};
 }
 
+states[freeslot "S_FH_TREASURE"] = {
+	sprite = freeslot "SPR_TRES",
+	frame = A,
+	tics = -1,
+	action = function(mo)
+		local i = #treasures
+		mo.frame = ($ & ~FF_FRAMEMASK)|P_RandomKey(i)
+	end
+}
+
 local function OnCollect(mobj, pmo)
 	local key = (mobj.frame & FF_FRAMEMASK)+1
-	local data = FangsHeist.treasures[key]
+	local data = treasures[key]
 
 	pmo.player.heist.treasure_name = data.name
 	pmo.player.heist.treasure_desc = data.desc
