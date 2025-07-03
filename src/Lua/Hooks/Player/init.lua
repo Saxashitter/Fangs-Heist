@@ -185,6 +185,7 @@ add("Pregame")
 add("Nerfs")
 add("Treasures")
 add("Panic")
+add("PVP")
 add("Sign Toss")
 add("Map Vote")
 
