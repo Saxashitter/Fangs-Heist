@@ -116,18 +116,22 @@ function FangsHeist.initMode(map)
 		FangsHeist.initPlayer(p)
 	end
 
+	FangsHeist.initHUD()
+
+	HeistHook.runHook("GameInit")
+
+	if not multiplayer then
+		FangsHeist.Net._inited = true
+	end
+end
+
+function FangsHeist.initHUD()
 	for _,obj in ipairs(FangsHeist.Objects) do
 		local object = obj[2]
 
 		if object.init then
 			object.init()
 		end
-	end
-
-	HeistHook.runHook("GameInit")
-
-	if not multiplayer then
-		FangsHeist.Net._inited = true
 	end
 end
 

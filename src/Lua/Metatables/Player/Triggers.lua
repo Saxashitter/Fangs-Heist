@@ -3,17 +3,7 @@ local mt = (...)
 function mt:gainProfitMultiplied(gain, dontDiv, specialSound)
 	local team = self:getTeam()
 	local gamemode = FangsHeist.getGamemode()
-	local multiplier = 1
-
-	for _, p in ipairs(team) do
-		if not (p and p.valid and p.heist) then
-			continue
-		end
-
-		for k,v in ipairs(p.heist.pickup_list) do
-			multiplier = max($, v.multiplier)
-		end
-	end
+	local multiplier = self:getMultiplier()
 
 	self:gainProfit(gain*multiplier, dontDiv, specialSound)
 end

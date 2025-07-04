@@ -12,6 +12,27 @@ function mt:getTeam()
 	return false
 end
 
+function mt:getMultiplier()
+	if not self:isAlive() then
+		return 0
+	end
+
+	local team = self:getTeam()
+	local multiplier = 1
+
+	for _, p in ipairs(team) do
+		if not (p and p.valid and p.heist) then
+			continue
+		end
+
+		for k,v in ipairs(p.heist.pickup_list) do
+			multiplier = max($, v.multiplier)
+		end
+	end
+
+	return multiplier
+end
+
 function mt:getNearPlayers(p, range, zrange)
 	local list = {}
 	local search = function(mo, found)

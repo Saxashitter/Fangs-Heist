@@ -278,6 +278,18 @@ end
 
 addHook("MobjDamage", OnHit, MT_PLAYER)
 addHook("MobjDeath", OnHit, MT_PLAYER)
+addHook("PlayerQuit", function(p)
+	if not FangsHeist.isMode() then return end
+	if not p.heist then return end
+
+	for i = #p.heist.pickup_list, 1, -1 do
+		local v = p.heist.pickup_list[i]
+		local def = Carriables.defs[v.id]
+
+		ReleaseCarriable(v.mobj, true, false)
+		table.remove(p.heist.pickup_list, i)
+	end
+end)
 
 addHook("ThinkFrame", do
 	if not FangsHeist.isMode() then return end

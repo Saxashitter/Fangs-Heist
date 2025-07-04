@@ -87,7 +87,6 @@ addHook("MobjDeath", function(ring, _, pmo)
 	if not (pmo.player.heist and pmo.player.heist:isAlive()) then return end
 	
 	pmo.player.heist:gainProfitMultiplied(FH_RINGPROFIT)
-	ring.flags2 = $|MF2_DONTRESPAWN
 end, MT_RING)
 
 -- this check is goofy lol
@@ -156,30 +155,6 @@ addHook("MobjCollide", function(pmo, mo)
 		return false
 	end
 end, MT_PLAYER)
-
-local function DontFuse(mo)
-	if not FangsHeist.isMode() then return end
-
-	return true
-end
-
-local iter = 1
-local function loadHooks()
-	if iter == #mobjinfo then return end
-
-	for i = iter, #mobjinfo do
-		if not (mobjinfo[i-1].flags & MF_MONITOR) then
-			continue
-		end
-
-		addHook("MobjFuse", DontFuse, i-1)
-	end
-
-	iter = #mobjinfo
-end
-
-loadHooks()
-addHook("AddonLoaded", loadHooks)
 
 add("Pregame")
 add("Nerfs")

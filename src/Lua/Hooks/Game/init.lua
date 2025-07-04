@@ -153,6 +153,8 @@ addHook("PostThinkFrame", do
 	end
 end)
 
+addHook("GameQuit", FangsHeist.initHUD)
+
 add("Team")
 add("Placements")
 add("Pregame")
