@@ -60,7 +60,7 @@ local function Grabbed(sign, pmo)
 end
 
 local function PostThink(sign)
-	if not sign.settings.target then
+	if not (sign.settings.target and sign.settings.target.player and sign.settings.target.player == consoleplayer) then
 		sign.bustmo.frame = $ & ~FF_TRANS80
 		sign.boardmo.frame = $ & ~FF_TRANS80
 		return
@@ -68,6 +68,20 @@ local function PostThink(sign)
 
 	sign.bustmo.frame = $|FF_TRANS80
 	sign.boardmo.frame = $|FF_TRANS80
+end
+
+local function _draw(self, v,p,c, result, trans)
+	local spr = v.getSpritePatch(SPR_SIGN, G, 0)
+	local scale = FU/4
+
+	local x = result.x + spr.leftoffset*scale
+	local y = result.y + spr.topoffset*scale
+
+	v.drawScaled(x - spr.width*scale/2, y, scale, spr, trans)
+end
+
+local function Track(sign)
+	FangsHeist.trackObject(sign, {color=SKINCOLOR_RED}, _draw)
 end
 
 return {
@@ -81,5 +95,6 @@ return {
 	onSpawn = OnSpawn,
 	onPickUp = OnCapture,
 	onGrabThink = Grabbed,
+	onUngrabThink = Track,
 	onPostThink = PostThink
 }

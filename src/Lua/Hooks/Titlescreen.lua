@@ -96,7 +96,7 @@ addHook("HUD", function(v)
 	end
 
 	// Logo
-	local scale = FU
+	local scale = tofixed("0.5")
 
 	logo_shake = max(0, $-1)
 	local s = FixedMul(FixedDiv(logo_shake, 12),12*FU)

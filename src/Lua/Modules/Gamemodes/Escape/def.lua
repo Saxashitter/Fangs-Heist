@@ -325,11 +325,13 @@ function gamemode:trackplayer(p)
 	local lp = displayplayer
 	local args = {}
 
-	if #p.heist.treasures then
-		table.insert(args, "TREASURE")
-	end
+	-- TO-DO: treasure track
+
 	if p.heist:hasSign() then
 		table.insert(args, "SIGN")
+	end
+	if p.heist:hasTreasure() then
+		table.insert(args, "TREASURE")
 	end
 	if p.heist:isPartOfTeam(lp) then
 		table.insert(args, "TEAM")

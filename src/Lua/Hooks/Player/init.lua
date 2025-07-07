@@ -30,6 +30,31 @@ addHook("PlayerSpawn", function(p)
 	gamemode:playerspawn(p)
 end)
 
+local function _draw(self, v, p, c, result, trans)
+	local mo = self.mo
+	local plyr = mo.player
+
+	local plyr_spr, plyr_scale
+	if skins[plyr.mo.skin].sprites[SPR2_SIGN].numframes then
+		plyr_spr = v.getSprite2Patch(plyr.mo.skin, SPR2_SIGN, false, A, 0)
+		plyr_scale = skins[plyr.mo.skin].highresscale
+	else
+		plyr_spr = v.getSpritePatch(SPR_SIGN, S, 0)
+		plyr_scale = FU
+	end
+	plyr_scale = $/4
+
+	local x = result.x + plyr_spr.leftoffset*plyr_scale
+	local y = result.y + plyr_spr.topoffset*plyr_scale
+
+	v.drawScaled(x - plyr_spr.width*plyr_scale/2,
+		y,
+		plyr_scale,
+		plyr_spr,
+		trans,
+		v.getColormap(mo.skin, plyr.skincolor))
+end
+
 addHook("PlayerThink", function(p)
 	-- Force every PlayerThink hook to run before our code here.
 	for _,data in ipairs(FangsHeist._HOOKS.PlayerThink) do
@@ -54,6 +79,17 @@ addHook("PlayerThink", function(p)
 	end
 
 	gamemode:playerthink(p)
+
+	if p ~= displayplayer
+	and p.heist:isAlive()
+	and not p.heist.exiting then
+		local variables = gamemode:trackplayer(p)
+
+		if variables and #variables > 0 then
+			variables.color = p.skincolor
+			FangsHeist.trackObject(p.mo, variables, _draw)
+		end
+	end
 
 	if p.skin ~= p.heist.locked_skin then
 		R_SetPlayerSkin(p, p.heist.locked_skin)

@@ -359,7 +359,9 @@ addHook("PostThinkFrame", do
 		local def = Carriables.defs[car.id]
 
 		if car.transparentOnPickup then
-			if IsCarried(car.mobj) then
+			if IsCarried(car.mobj)
+			and car.target.player
+			and car.target.player == consoleplayer then
 				car.mobj.frame = $|FF_TRANS80
 			else
 				car.mobj.frame = $ & ~FF_TRANS80

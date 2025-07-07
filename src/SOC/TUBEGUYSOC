@@ -1,0 +1,73 @@
+Freeslot
+MT_RISTARENEMY
+S_RISTARENEMY1
+S_RISTARENEMY2
+S_RISTARENEMY3
+S_RISTARENEMY4
+S_RISTARENEMY5
+S_RISTARENEMY6
+S_RISTARENEMY7
+S_RISTARENEMY8
+SPR_RIST
+
+State S_RISTARENEMY1
+next = S_RISTARENEMY2
+SpriteName = SPR_RIST
+SpriteFrame = A
+Duration = 6
+
+State S_RISTARENEMY2
+next = S_RISTARENEMY3
+SpriteName = SPR_RIST
+SpriteFrame = B
+Duration = 6
+
+State S_RISTARENEMY3
+next = S_RISTARENEMY4
+SpriteName = SPR_RIST
+SpriteFrame = C
+Duration = 6
+
+State S_RISTARENEMY4
+next = S_RISTARENEMY5
+SpriteName = SPR_RIST
+SpriteFrame = D
+Duration = 6
+
+State S_RISTARENEMY5
+next = S_RISTARENEMY6
+SpriteName = SPR_RIST
+SpriteFrame = E
+Duration = 6
+
+State S_RISTARENEMY6
+next = S_RISTARENEMY7
+SpriteName = SPR_RIST
+SpriteFrame = F
+Duration = 6
+
+State S_RISTARENEMY7
+next = S_RISTARENEMY8
+SpriteName = SPR_RIST
+SpriteFrame = G
+Duration = 6
+
+State S_RISTARENEMY8
+next = S_RISTARENEMY1
+SpriteName = SPR_RIST
+SpriteFrame = H
+Duration = 6
+
+Object MT_RISTARENEMY
+MapThingNum = 5205
+SpawnState = S_RISTARENEMY1
+Deathstate = S_RISTARENEMY1
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Prison Keeper
+#$Sprite RISTA0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled

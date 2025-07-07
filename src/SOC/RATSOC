@@ -1,0 +1,36 @@
+Freeslot
+MT_STUPIDRAT
+S_STUPIDRAT1
+S_STUPIDRAT2
+S_STUPIDRAT3
+SPR_SRAT
+
+State S_STUPIDRAT1
+next = S_STUPIDRAT2
+SpriteName = SPR_SRAT
+SpriteFrame = A
+Duration = 3
+
+State S_STUPIDRAT2
+next = S_STUPIDRAT3
+SpriteName = SPR_SRAT
+SpriteFrame = B
+Duration = 3
+
+State S_STUPIDRAT3
+next = S_STUPIDRAT1
+SpriteName = SPR_SRAT
+SpriteFrame = C
+Duration = 3
+
+Object MT_STUPIDRAT
+#$Name Stupid Rat Prop
+#$Sprite SRATA0
+#$Category Fangs Heist Decco
+MapThingNum = 1990
+SpawnState = S_STUPIDRAT1
+Deathstate = S_STUPIDRAT1
+Spawnhealth = 1000
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_SOLID

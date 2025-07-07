@@ -1,0 +1,45 @@
+Freeslot
+MT_METROID
+S_METROID1
+S_METROID2
+S_METROID3
+S_METROID4
+SPR_METR
+
+State S_METROID1
+next = S_METROID2
+SpriteName = SPR_METR
+SpriteFrame = A
+Duration = 6
+
+State S_METROID2
+next = S_METROID3
+SpriteName = SPR_METR
+SpriteFrame = B
+Duration = 6
+
+State S_METROID3
+next = S_METROID4
+SpriteName = SPR_METR
+SpriteFrame = C
+Duration = 6
+
+State S_METROID4
+next = S_METROID1
+SpriteName = SPR_METR
+SpriteFrame = B
+Duration = 6
+
+Object MT_METROID
+MapThingNum = 5209
+SpawnState = S_METROID1
+Deathstate = S_METROID1
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title A Final Survivor
+#$Sprite METRB0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled

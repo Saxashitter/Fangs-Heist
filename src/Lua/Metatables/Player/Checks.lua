@@ -10,6 +10,16 @@ function mt:hasSign()
 	return false
 end
 
+function mt:hasTreasure()
+	for k,v in ipairs(self.pickup_list) do
+		if v.id == "Treasure" then
+			return true
+		end
+	end
+
+	return false
+end
+
 function mt:isAtGate()
 	local exit = FangsHeist.Net.exit
 

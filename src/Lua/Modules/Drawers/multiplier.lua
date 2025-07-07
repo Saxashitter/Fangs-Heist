@@ -28,7 +28,7 @@ function module.draw(v, p)
 	local y = Y*FU
 	local bg = v.cachePatch("FH_MULTIPLIER")
 
-	v.drawScaled(x, y, FU, bg, FLAGS)
+	v.drawScaled(x, y, FU, bg, FLAGS, v.getColormap(TC_RAINBOW, p.skincolor))
 
 	local tw = 9
 	local patchQueue = {v.cachePatch("FH_MULTIPLIER_X")}
@@ -45,7 +45,7 @@ function module.draw(v, p)
 	y = $ + bg.height*FU/2 - 13*FU/2 - 2*FU
 
 	for k, patch in ipairs(patchQueue) do
-		v.drawScaled(x, y, FU, patch, FLAGS)
+		v.drawScaled(x, y, FU, patch, FLAGS, v.getColormap(TC_RAINBOW, p.skincolor))
 		x = $ + patch.width*FU
 	end
 end

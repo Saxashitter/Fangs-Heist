@@ -1,0 +1,302 @@
+Freeslot
+MT_TUBEREF1
+MT_TUBEREF2
+MT_TUBEREF3
+MT_TUBEREF4
+MT_TUBEREF5
+MT_TUBEREF7
+MT_TUBEREF8
+MT_TUBEREF9
+MT_TUBEREFB
+MT_TUBEREFC
+MT_TUBEREFD
+MT_TUBEREFE
+MT_TUBEREFF
+MT_TUBEREFG
+MT_TUBEREFH
+S_TUBEREF1
+S_TUBEREF2
+S_TUBEREF3
+S_TUBEREF4
+S_TUBEREF5
+S_TUBEREF7
+S_TUBEREF8
+S_TUBEREF9
+S_TUBEREFB
+S_TUBEREFC
+S_TUBEREFD
+S_TUBEREFE
+S_TUBEREFF
+S_TUBEREFG
+S_TUBEREFH
+SPR_TBRF
+
+State S_TUBEREF1
+SpriteName = SPR_TBRF
+SpriteFrame = A
+Duration = -1
+
+State S_TUBEREF2
+SpriteName = SPR_TBRF
+SpriteFrame = B
+Duration = -1
+
+State S_TUBEREF3
+SpriteName = SPR_TBRF
+SpriteFrame = C
+Duration = -1
+
+State S_TUBEREF4
+SpriteName = SPR_TBRF
+SpriteFrame = D
+Duration = -1
+
+State S_TUBEREF5
+SpriteName = SPR_TBRF
+SpriteFrame = E
+Duration = -1
+
+State S_TUBEREF7
+SpriteName = SPR_TBRF
+SpriteFrame = F
+Duration = -1
+
+State S_TUBEREF8
+SpriteName = SPR_TBRF
+SpriteFrame = G
+Duration = -1
+
+State S_TUBEREF9
+SpriteName = SPR_TBRF
+SpriteFrame = H
+Duration = -1
+
+State S_TUBEREFB
+SpriteName = SPR_TBRF
+SpriteFrame = I
+Duration = -1
+
+State S_TUBEREFC
+SpriteName = SPR_TBRF
+SpriteFrame = J
+Duration = -1
+
+State S_TUBEREFD
+SpriteName = SPR_TBRF
+SpriteFrame = K
+Duration = -1
+
+State S_TUBEREFE
+SpriteName = SPR_TBRF
+SpriteFrame = L
+Duration = -1
+
+State S_TUBEREFF
+SpriteName = SPR_TBRF
+SpriteFrame = M
+Duration = -1
+
+State S_TUBEREFG
+SpriteName = SPR_TBRF
+SpriteFrame = N
+Duration = -1
+
+State S_TUBEREFH
+SpriteName = SPR_TBRF
+SpriteFrame = O
+Duration = -1
+
+Object MT_TUBEREF1
+MapThingNum = 5200
+SpawnState = S_TUBEREF1
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Mysterious Mushroom
+#$Sprite TBRFA0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled
+
+Object MT_TUBEREF2
+MapThingNum = 5201
+SpawnState = S_TUBEREF2
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Sentient Stone
+#$Sprite TBRFB0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled
+
+Object MT_TUBEREF3
+MapThingNum = 5202
+SpawnState = S_TUBEREF3
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Puppeteered Soldier
+#$Sprite TBRFC0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled
+
+Object MT_TUBEREF4
+MapThingNum = 5203
+SpawnState = S_TUBEREF4
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Star-Sented Squid
+#$Sprite TBRFD0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled
+
+Object MT_TUBEREF5
+MapThingNum = 5204
+SpawnState = S_TUBEREF5
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Destroyer of Worlds
+#$Sprite TBRFE0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled
+
+Object MT_TUBEREF7
+MapThingNum = 5206
+SpawnState = S_TUBEREF7
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Alien Sustinance
+#$Sprite TBRFF0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled
+
+Object MT_TUBEREF8
+MapThingNum = 5207
+SpawnState = S_TUBEREF8
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Celesital Sorcerer
+#$Sprite TBRFG0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled
+
+Object MT_TUBEREF9
+MapThingNum = 5208
+SpawnState = S_TUBEREF9
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Incorporeal Ghoul
+#$Sprite TBRFH0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled
+
+Object MT_TUBEREFB
+MapThingNum = 5210
+SpawnState = S_TUBEREFB
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Companion Bean
+#$Sprite TBRFI0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled
+
+Object MT_TUBEREFC
+MapThingNum = 5211
+SpawnState = S_TUBEREFC
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Anonymous Individual
+#$Sprite TBRFJ0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled
+
+Object MT_TUBEREFD
+MapThingNum = 5212
+SpawnState = S_TUBEREFD
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Rebel ID #572
+#$Sprite TBRFK0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled
+
+Object MT_TUBEREFE
+MapThingNum = 5213
+SpawnState = S_TUBEREFE
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Cuptain
+#$Sprite TBRFL0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled
+
+Object MT_TUBEREFF
+MapThingNum = 5214
+SpawnState = S_TUBEREFF
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Darkness Bringer
+#$Sprite TBRFM0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled
+
+Object MT_TUBEREFG
+MapThingNum = 5215
+SpawnState = S_TUBEREFG
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title Transporter Critter
+#$Sprite TBRFN0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled
+
+Object MT_TUBEREFH
+MapThingNum = 5216
+SpawnState = S_TUBEREFH
+Radius = 32*FRACUNIT
+Height = 74*FRACUNIT
+Flags = MF_NOCLIP|MF_SCENERY|MF_NOTHINK|MF_NOGRAVITY
+SpawnHealth = 1000
+ReactionTime = 20
+#$Title [CORRUPTED ENTRY]
+#$Sprite TBRFO0
+#$Category Fangs Heist Decco\Test Tube Subjects
+#$NotAngled

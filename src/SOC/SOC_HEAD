@@ -83,6 +83,7 @@ SaveGame = true
 SkyboxScale = 16
 FlickyList = Rabbit,Chicken
 Lua.FH_StageType = Escape
+Lua.FH_Time = 220
 #see act 1
 
 Level 30
@@ -171,3 +172,22 @@ Weather = 1
 Lua.FH_Time = 300
 Lua.FH_EscapeTheme = SPRHRO
 Lua.FH_StageType = Escape
+
+Level P1
+Levelname = Acidic Overflux
+TypeOfLevel = Heist
+LevelFlags = 518
+FlickyList = BlueBird,Rabbit,Chipmunk,Penguin,Puffin,Rat,Cat,Spider,Bat
+NoReload = true
+Skynum = 86
+Weather = 5
+Music = BRCRPW
+SelectHeading = Original Maps
+ForceResetMusic = 0
+MusicInterFadeOut = 3000
+TitleCardZigZag = ACIDZIGZAG
+TitleCardZigZagText = ACIDTEXT
+Lua.FH_EscapeHurryUp = false
+Lua.FH_EscapeTheme = OLNORE
+Lua.FH_Time = 177
+lua.FH_EscapeLinedef = 9000

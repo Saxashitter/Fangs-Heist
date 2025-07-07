@@ -21,12 +21,5 @@ return function(p)
 		and sp ~= p) then
 			continue
 		end
-
-		local args = gamemode:trackplayer(sp)
-		if not args or #args == 0 then
-			continue
-		end
-
-		P_SpawnLockOn(p, sp.mo, S_LOCKON1)
 	end
 end
