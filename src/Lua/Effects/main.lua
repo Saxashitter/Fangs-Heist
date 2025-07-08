@@ -62,5 +62,6 @@ FangsHeist.Particles = Particles
 
 local PATH = "Modules/Effects/"
 
-Particles:define("Ring Steal",
-	dofile(PATH.."ringsteal"))
+Particles:define("Ring Steal", dofile(PATH.."ringsteal"))
+Particles:define("Tails Wall Clip", dofile(PATH.."tailswallclip"))
+Particles:define("Tails Double Jump", dofile(PATH.."tailsdoublejump"))

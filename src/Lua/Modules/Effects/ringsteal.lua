@@ -14,7 +14,7 @@ function RingSteal:new(mo, tmo, rings)
 
 	self.tics = 0
 
-	-- Spawn fake rings fron mobj.
+	-- Spawn fake rings from mobj.
 	self.rings = {}
 
 	for i = 1, rings do
