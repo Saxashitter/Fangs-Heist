@@ -112,6 +112,24 @@ addHook("MobjMoveBlocked", function(mo, _, line)
 	p.pflags = ($|PF_THOKKED) & ~(PF_STARTJUMP|PF_JUMPED|PF_STARTJUMP)
 
 	local momz = p.mo.momz*P_MobjFlip(p.mo)
+
+	if momz > 0 then
+		local speed = R_PointToDist2(0,0, p.rmomx, p.rmomy)
+		local speedang = R_PointToAngle2(0,0, p.rmomx, p.rmomy)
+		local lineang = GetLineAngle(mo, line)
+		local adiff = FixedAngle(
+			AngleFixed(lineang) - AngleFixed(speedang)
+		)
+
+		if AngleFixed(adiff) > 180*FU then
+			adiff = InvAngle($)
+		end
+
+		local mult = (180*FU - AngleFixed(adiff))/180
+
+		P_SetObjectMomZ(mo, FixedMul(speed, mult), true)
+	end
+
 	p.mo.momz = max(momz, momz*3/2)
 
 	FangsHeist.Particles:new("Tails Wall Clip", p, line)
