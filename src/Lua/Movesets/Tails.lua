@@ -115,11 +115,6 @@ addHook("PlayerThink", function(p)
 		p.mo.tails.doublejump_times = nil
 		p.mo.tails.doublejump_ticker = nil
 	end
-
-	if p.mo.tails.doublejump_ticker then
-		p.mo.tails.doublejump_ticker = $ - 1
-		print("decrease")
-	end
 end)
 
 addHook("MobjMoveBlocked", function(mo, _, line)
@@ -217,6 +212,6 @@ addHook("AbilitySpecial", function(p)
 	FangsHeist.Particles:new("Tails Double Jump", p)
 
 	p.mo.tails.doublejump_times = ($ or 0) + 1
-	p.mo.tails.doublejump_ticker = 5
+	p.mo.tails.doublejump_ticker = 10
 	p.pflags = $|PF_THOKKED
 end)

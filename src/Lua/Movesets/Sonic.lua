@@ -8,8 +8,12 @@ local DROPDASH_GRAVITY = tofixed("3.7")
 
 local DROPDASH_MOMZSTART = 5
 local DROPDASH_MOMZEND = 20
+
 local DROPDASH_SPEEDSTART = 12
 local DROPDASH_SPEEDEND = 50
+
+local DROPDASH_BOUNCESTART = 5
+local DROPDASH_BOUNCEEND = 20
 
 local function hasControl(p)
 	if p.pflags & PF_STASIS then return false end
@@ -48,6 +52,16 @@ local function DropDashLand(p)
 	local momz = p.mo.sonic.dropdash
 	local momzstart = max(momz - DROPDASH_MOMZSTART*p.mo.scale, 0)
 	local t = FixedDiv(momzstart, (DROPDASH_MOMZEND-DROPDASH_MOMZSTART)*p.mo.scale)
+
+	if p.cmd.buttons & BT_JUMP then
+		local bounce = ease.linear(min(t, FU), DROPDASH_BOUNCESTART*p.mo.scale, DROPDASH_BOUNCEEND*p.mo.scale)
+
+		P_SetObjectMomZ(p.mo, bounce)
+		p.mo.state = S_PLAY_JUMP
+		p.pflags = ($|PF_JUMPED|PF_STARTJUMP|PF_THOKKED) & ~PF_SPINNING
+		return
+	end
+
 	local speed = ease.linear(min(t, FU), DROPDASH_SPEEDSTART*p.mo.scale, DROPDASH_SPEEDEND*p.mo.scale)
 
 	p.mo.state = S_PLAY_ROLL

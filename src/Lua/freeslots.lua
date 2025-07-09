@@ -120,7 +120,7 @@ states[freeslot "S_FH_FANG_GUN_AIR2"] = {
 	frame = SPR2_MLEE,
 	tics = -1,
 	action = A_ForceFrame,
-	var1 = skins["fang"].sprites[SPR2_MLEE].numframes-1
+	var1 = D
 }
 
 states[freeslot "S_FH_FANG_GUN_AIR1"] = {
