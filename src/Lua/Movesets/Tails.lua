@@ -81,8 +81,8 @@ local function StickToWall(p)
 		p.mo.momz = FixedMul($, tofixed("0.82"))
 	end
 
-	if momz <= -4*p.mo.scale then
-		P_SetObjectMomZ(p.mo, -4*p.mo.scale)
+	if momz <= -2*p.mo.scale then
+		P_SetObjectMomZ(p.mo, -2*p.mo.scale)
 	end
 end
 
@@ -114,6 +114,10 @@ addHook("PlayerThink", function(p)
 		p.mo.tails.walljump_times = nil
 		p.mo.tails.doublejump_times = nil
 		p.mo.tails.doublejump_ticker = nil
+	end
+
+	if p.mo.tails.doublejump_ticker then
+		p.mo.tails.doublejump_ticker = $-1
 	end
 end)
 
@@ -192,15 +196,10 @@ addHook("AbilitySpecial", function(p)
 		return
 	end
 
-	if p.pflags & PF_THOKKED
-	and not p.mo.tails.doublejump_times then
+	if p.pflags & PF_THOKKED then
 		return
 	end
 
-	-- double jump
-	if p.mo.tails.doublejump_times == 3 then
-		return
-	end
 	if p.mo.tails.doublejump_ticker then
 		return
 	end
@@ -213,5 +212,8 @@ addHook("AbilitySpecial", function(p)
 
 	p.mo.tails.doublejump_times = ($ or 0) + 1
 	p.mo.tails.doublejump_ticker = 10
-	p.pflags = $|PF_THOKKED
+
+	if p.mo.tails.doublejump_times == 3 then
+		p.pflags = $|PF_THOKKED
+	end
 end)
