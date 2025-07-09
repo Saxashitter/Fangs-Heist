@@ -29,6 +29,10 @@ local function Valid(p)
 end
 
 local function DisableWallJump(p, forced)
+	if p.mo.momz*P_MobjFlip(p.mo) > 0 then
+		p.mo.momz = $/2 -- no
+	end
+
 	p.mo.tails.walljump = nil
 	p.mo.tails.walljump_tics = nil
 end
@@ -52,8 +56,17 @@ local function StickToWall(p)
 		p.mo.tails.walljump_tics = $ - 1
 	end
 
-	if not P_LineIsBlocking(p.mo, line)
-	or not p.mo.tails.walljump_tics then
+	if not p.mo.tails.walljump_tics
+	or P_CheckSkyHit(p.mo, line)
+	or p.mo.state == S_FH_GUARD
+	or p.mo.state == S_FH_STUN
+	or p.mo.state == S_FH_CLASH then
+		DisableWallJump(p, true)
+		S_StartSound(p.mo, sfx_s3k51)
+		return
+	end
+
+	if P_IsObjectOnGround(p.mo) then
 		DisableWallJump(p, true)
 		return
 	end
@@ -63,9 +76,13 @@ local function StickToWall(p)
 		p.mo.state = S_PLAY_FALL
 	end
 
-	P_InstaThrust(p.mo, angle, FU)
+	local momz = p.mo.momz*P_MobjFlip(p.mo)
 
-	if p.mo.momz*P_MobjFlip(p.mo) <= -4*p.mo.scale then
+	if momz > 0 then
+		p.mo.momz = FixedMul($, tofixed("0.82"))
+	end
+
+	if momz <= -4*p.mo.scale then
 		P_SetObjectMomZ(p.mo, -4*p.mo.scale)
 	end
 end
@@ -90,7 +107,7 @@ addHook("PlayerThink", function(p)
 		p.mo.tails = {}
 	end
 
-	if p.mo.tails.walljump then
+	if p.mo.tails.walljump_tics then
 		StickToWall(p)
 	end
 end)
@@ -105,34 +122,38 @@ addHook("MobjMoveBlocked", function(mo, _, line)
 	if P_IsObjectOnGround(mo) then return end
 	if not (p.pflags & PF_JUMPED) then return end
 	if (p.pflags & PF_THOKKED) then return end
-	if tails.walljump then return end
-
-	tails.walljump = line
-	tails.walljump_tics = TICRATE
-	p.pflags = ($|PF_THOKKED) & ~(PF_STARTJUMP|PF_JUMPED|PF_STARTJUMP)
+	if P_CheckSkyHit(mo, line) then return end
+	if line.flags & ML_NOCLIMB then return end
+	if mo.state == S_FH_GUARD
+	or mo.state == S_FH_STUN
+	or mo.state == S_FH_CLASH then
+		return
+	end
 
 	local momz = p.mo.momz*P_MobjFlip(p.mo)
 
-	if momz > 0 then
-		local speed = R_PointToDist2(0,0, p.rmomx, p.rmomy)
-		local speedang = R_PointToAngle2(0,0, p.rmomx, p.rmomy)
-		local lineang = GetLineAngle(mo, line)
-		local adiff = FixedAngle(
-			AngleFixed(lineang) - AngleFixed(speedang)
-		)
+	local speed = R_PointToDist2(0,0, p.rmomx, p.rmomy)
+	local speedang = R_PointToAngle2(0,0, p.rmomx, p.rmomy)
+	local lineang = GetLineAngle(mo, line)
+	local adiff = FixedAngle(
+		AngleFixed(lineang) - AngleFixed(speedang)
+	)
 
-		if AngleFixed(adiff) > 180*FU then
-			adiff = InvAngle($)
-		end
-
-		local mult = (180*FU - AngleFixed(adiff))/180
-
-		P_SetObjectMomZ(mo, FixedMul(speed, mult), true)
+	if AngleFixed(adiff) > 180*FU then
+		adiff = InvAngle($)
 	end
 
-	p.mo.momz = max(momz, momz*3/2)
+	local mult = (180*FU - AngleFixed(adiff))/180
 
-	FangsHeist.Particles:new("Tails Wall Clip", p, line)
+	P_SetObjectMomZ(mo, FixedMul(FixedMul(speed, tofixed("0.6")), mult), true)
+
+	if not tails.walljump_tics then
+		S_StartSound(pmo, sfx_s3k4a)
+		FangsHeist.Particles:new("Tails Wall Clip", p, line)
+	end
+	
+	tails.walljump = line
+	tails.walljump_tics = 7
 end, MT_PLAYER)
 
 addHook("MobjDamage", function(mo)
@@ -147,13 +168,15 @@ addHook("AbilitySpecial", function(p)
 		return
 	end
 
-	if p.mo.tails.walljump then
-		p.drawangle = GetLineAngle(p.mo, p.mo.tails.walljump) + ANGLE_180
-		p.pflags = $ & ~(PF_JUMPED|PF_STARTJUMP|PF_STARTDASH|PF_SPINNING|PF_THOKKED)
-		P_DoJump(p)
-		P_InstaThrust(p.mo, p.drawangle, 19*p.mo.scale)
-		p.mo.state = S_PLAY_SPRING
+	if p.mo.tails.walljump_tics then
+		local angle = GetLineAngle(p.mo, p.mo.tails.walljump) + ANGLE_180
 		DisableWallJump(p)
+
+		p.drawangle = angle
+		p.pflags = $ & ~(PF_JUMPED|PF_STARTJUMP|PF_STARTDASH|PF_SPINNING|PF_THOKKED)
+		P_DoJump(p, true)
+		P_Thrust(p.mo, p.drawangle, 19*p.mo.scale)
+		p.mo.state = S_PLAY_SPRING
 		return
 	end
 
