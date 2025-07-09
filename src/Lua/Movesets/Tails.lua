@@ -57,7 +57,6 @@ local function StickToWall(p)
 	end
 
 	if not p.mo.tails.walljump_tics
-	or P_CheckSkyHit(p.mo, line)
 	or p.mo.state == S_FH_GUARD
 	or p.mo.state == S_FH_STUN
 	or p.mo.state == S_FH_CLASH then
@@ -110,6 +109,17 @@ addHook("PlayerThink", function(p)
 	if p.mo.tails.walljump_tics then
 		StickToWall(p)
 	end
+
+	if P_IsObjectOnGround(p.mo) then
+		p.mo.tails.walljump_times = nil
+		p.mo.tails.doublejump_times = nil
+		p.mo.tails.doublejump_ticker = nil
+	end
+
+	if p.mo.tails.doublejump_ticker then
+		p.mo.tails.doublejump_ticker = $ - 1
+		print("decrease")
+	end
 end)
 
 addHook("MobjMoveBlocked", function(mo, _, line)
@@ -119,6 +129,7 @@ addHook("MobjMoveBlocked", function(mo, _, line)
 	local p = mo.player
 	local tails = p.mo.tails
 
+	if tails.walljump_times == 3 then return end
 	if P_IsObjectOnGround(mo) then return end
 	if not (p.pflags & PF_JUMPED) then return end
 	if (p.pflags & PF_THOKKED) then return end
@@ -130,25 +141,24 @@ addHook("MobjMoveBlocked", function(mo, _, line)
 		return
 	end
 
-	local momz = p.mo.momz*P_MobjFlip(p.mo)
-
-	local speed = R_PointToDist2(0,0, p.rmomx, p.rmomy)
-	local speedang = R_PointToAngle2(0,0, p.rmomx, p.rmomy)
-	local lineang = GetLineAngle(mo, line)
-	local adiff = FixedAngle(
-		AngleFixed(lineang) - AngleFixed(speedang)
-	)
-
-	if AngleFixed(adiff) > 180*FU then
-		adiff = InvAngle($)
-	end
-
-	local mult = (180*FU - AngleFixed(adiff))/180
-
-	P_SetObjectMomZ(mo, FixedMul(FixedMul(speed, tofixed("0.6")), mult), true)
-
 	if not tails.walljump_tics then
-		S_StartSound(pmo, sfx_s3k4a)
+		local momz = p.mo.momz*P_MobjFlip(p.mo)
+	
+		local speed = R_PointToDist2(0,0, p.rmomx, p.rmomy)
+		local speedang = R_PointToAngle2(0,0, p.rmomx, p.rmomy)
+		local lineang = GetLineAngle(mo, line)
+		local adiff = FixedAngle(
+			AngleFixed(lineang) - AngleFixed(speedang)
+		)
+	
+		if AngleFixed(adiff) > 180*FU then
+			adiff = InvAngle($)
+		end
+	
+		local mult = (180*FU - AngleFixed(adiff))/180
+	
+		P_SetObjectMomZ(mo, FixedMul(FixedMul(speed, tofixed("0.6")), mult), true)
+		S_StartSound(mo, sfx_s3k4a)
 		FangsHeist.Particles:new("Tails Wall Clip", p, line)
 	end
 	
@@ -177,18 +187,36 @@ addHook("AbilitySpecial", function(p)
 		P_DoJump(p, true)
 		P_Thrust(p.mo, p.drawangle, 19*p.mo.scale)
 		p.mo.state = S_PLAY_SPRING
+		p.mo.tails.doublejump_times = 2 -- only allow 1 double jump
+
+		if not p.mo.tails.walljump_times then
+			p.mo.tails.walljump_times = 0
+		end
+
+		p.mo.tails.walljump_times = $+1
 		return
 	end
 
-	if p.pflags & PF_THOKKED then
+	if p.pflags & PF_THOKKED
+	and not p.mo.tails.doublejump_times then
 		return
 	end
 
 	-- double jump
+	if p.mo.tails.doublejump_times == 3 then
+		return
+	end
+	if p.mo.tails.doublejump_ticker then
+		return
+	end
 
 	p.pflags = $ & ~(PF_JUMPED|PF_STARTJUMP|PF_STARTDASH|PF_SPINNING)
 	P_DoJump(p)
-	p.pflags = $|PF_THOKKED
-	p.mo.state = S_PLAY_SPRING
+	P_SetObjectMomZ(p.mo, 7*p.jumpfactor)
+	p.mo.state = S_PLAY_FLY
 	FangsHeist.Particles:new("Tails Double Jump", p)
+
+	p.mo.tails.doublejump_times = ($ or 0) + 1
+	p.mo.tails.doublejump_ticker = 5
+	p.pflags = $|PF_THOKKED
 end)
