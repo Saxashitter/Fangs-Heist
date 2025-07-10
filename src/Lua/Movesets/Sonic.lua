@@ -59,6 +59,7 @@ local function DropDashLand(p)
 		P_SetObjectMomZ(p.mo, bounce)
 		p.mo.state = S_PLAY_JUMP
 		p.pflags = ($|PF_JUMPED|PF_STARTJUMP|PF_THOKKED) & ~PF_SPINNING
+		S_StartSound(p.mo, sfx_sbounc)
 		return
 	end
 
@@ -67,6 +68,7 @@ local function DropDashLand(p)
 	p.mo.state = S_PLAY_ROLL
 	p.pflags = ($|PF_SPINNING) & ~PF_STARTDASH
 	P_InstaThrust(p.mo, p.mo.angle, speed)
+	S_StartSound(p.mo, sfx_zoom)
 end
 
 addHook("ThinkFrame", do
@@ -95,4 +97,5 @@ addHook("AbilitySpecial", function(p)
 	p.mo.sonic.dropdash = true
 	p.pflags = $|PF_THOKKED
 	P_SetObjectMomZ(p.mo, DROPDASH_LAUNCH*p.mo.scale)
+	S_StartSoundAtVolume(p.mo, sfx_s3k82, 150)
 end)

@@ -187,4 +187,6 @@ sfxinfo[freeslot "sfx_narsud"].caption = "Sudden death..."
 sfxinfo[freeslot "sfx_nartgw"].caption = "This game's winner is..."
 sfxinfo[freeslot "sfx_narcon"].caption = "Congratulations!"
 
+sfxinfo[freeslot "sfx_sbounc"].caption = "Bounce"
+
 freeslot("sfx_fhwrn1","sfx_fhwrn2")
