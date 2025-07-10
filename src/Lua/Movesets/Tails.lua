@@ -110,14 +110,23 @@ addHook("PlayerThink", function(p)
 		StickToWall(p)
 	end
 
-	if P_IsObjectOnGround(p.mo) then
-		p.mo.tails.walljump_times = nil
-		p.mo.tails.doublejump_times = nil
-		p.mo.tails.doublejump_ticker = nil
-	end
-
 	if p.mo.tails.doublejump_ticker then
 		p.mo.tails.doublejump_ticker = $-1
+	end
+end)
+
+addHook("ThinkFrame", do
+	if not FangsHeist.isMode() then return end
+
+	for p in players.iterate do
+		if not Valid(p) then continue end
+
+		if P_IsObjectOnGround(p.mo)
+		and p.mo.tails then
+			p.mo.tails.walljump_times = nil
+			p.mo.tails.doublejump_times = nil
+			p.mo.tails.doublejump_ticker = nil
+		end
 	end
 end)
 
@@ -212,6 +221,8 @@ addHook("AbilitySpecial", function(p)
 
 	p.mo.tails.doublejump_times = ($ or 0) + 1
 	p.mo.tails.doublejump_ticker = 10
+	p.mo.momx = $/2
+	p.mo.momy = $/2
 
 	if p.mo.tails.doublejump_times == 3 then
 		p.pflags = $|PF_THOKKED

@@ -55,11 +55,18 @@ local function DropDashLand(p)
 
 	if p.cmd.buttons & BT_JUMP then
 		local bounce = ease.linear(min(t, FU), DROPDASH_BOUNCESTART*p.mo.scale, DROPDASH_BOUNCEEND*p.mo.scale)
+		local speed = R_PointToDist2(0,0, p.rmomx, p.rmomy)
 
 		P_SetObjectMomZ(p.mo, bounce)
 		p.mo.state = S_PLAY_JUMP
 		p.pflags = ($|PF_JUMPED|PF_STARTJUMP|PF_THOKKED) & ~PF_SPINNING
 		S_StartSound(p.mo, sfx_sbounc)
+
+		if speed > p.normalspeed then
+			local speedang = R_PointToAngle2(0,0, p.rmomx, p.rmomy)
+
+			P_InstaThrust(p.mo, speedang, speed/2)
+		end
 		return
 	end
 

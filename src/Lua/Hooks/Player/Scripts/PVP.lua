@@ -78,128 +78,32 @@ local function CanBeHit(p1, p2)
 	return true
 end
 
--- Returns the priority that the player's attack should have.
-local PRO_JUMP = 2
-local PRO_MELEE = 2
-local PRO_ROLL = 3
-local PRO_SPINDASH = 4
-local PRO_INVINC = 5
+-- Returns the hitbox that the player's attack should have.
 
-local function GetAttackPriority(p, p2)
+local function GetHitbox(p)
 	local char = FangsHeist.Characters[skins[p.skin].name]
-	local customPriority = char:attackPriority(p, p2)
+	--local customHitbox = char:customHitbox (p, p2)
 
-	if customPriority then
-		return customPriority
+	if p.mo.state == S_FH_STUN or p.mo.state == S_FH_GUARD or p.mo.state == S_FH_CLASH then
+		return
 	end
 
-	if not P_PlayerCanDamage(p, p2.mo) then
-		return 0
+	-- Define Jump Hitbox
+	if p.pflags & PF_JUMPED
+	and not (p.pflags & PF_NOJUMPDAMAGE) then
+		return FangsHeist.makeHitbox(
+			p.mo.x,
+			p.mo.y,
+			p.mo.z+p.mo.height/2,
+			p.mo.radius*2,
+			p.mo.radius*2,
+			p.mo.height*10/12,
+			p.drawangle)
 	end
-
-	if p.powers[pw_invulnerability] then
-		return PRO_INVINC
-	end
-
-	-- Melee
-	if p.powers[pw_strong] & STR_MELEE then
-		return PRO_MELEE
-	end
-
-	-- Spindash
-	if P_IsObjectOnGround(p.mo)
-	and p.pflags & PF_SPINNING
-	and p.pflags & PF_STARTDASH then
-		return PRO_SPINDASH
-	end
-
-	-- Jumping
-	if not P_IsObjectOnGround(p.mo)
-	and p.pflags & PF_JUMPED then
-		return PRO_JUMP
-	end
-
-	-- Rolling
-	if p.pflags & PF_SPINNING then
-		return PRO_ROLL
-	end
-
-	return PRO_JUMP
-end
-
--- Returns the nearest valid player within 2048 FRACUNITs.
-local function GetNearestAttackablePlayer(mo, blacklist)
-	local found
-	local dist
-
-	local x = mo.x
-	local y = mo.y
-
-	for plyr in players.iterate do
-		if blacklist
-		and blacklist[plyr] then
-			continue
-		end
-
-		if not (plyr.valid
-		and plyr.heist
-		and plyr.heist:isAlive()
-		and not plyr.heist.exiting) then
-			continue
-		end
-
-		if mo.player then
-			if not (mo.player ~= plyr
-			and CanBeHit(mo.player, plyr)) then
-				continue
-			end
-		end
-
-		local mo2 = plyr.mo
-
-		local xyDist = R_PointToDist2(mo.x, mo.y, mo2.x, mo2.y)
-		local circularDist = R_PointToDist2(0, xyDist, 0, abs((mo.z+mo.height/2) - (mo2.z+mo2.height/2)))
-
-		if dist == nil then
-			found = plyr
-			dist = circularDist
-
-			continue
-		end
-
-		if xyDist > dist then
-			continue
-		end
-
-		found = plyr
-		dist = circularDist
-	end
-
-	return found, dist
-end
-
--- Makes an attack for self, which is a list.
-local function DefAttack(self, atk, vic)
-	table.insert(self, {
-		atk = atk,
-		vic = vic})
-end
-
--- Returns true if the player is in self.
-local function IsInList(self, p)
-	for i, tbl in ipairs(self) do
-		if tbl.atk == p
-		or tbl.vic == p
-		or tbl == p then
-			return true
-		end
-	end
-
-	return false
 end
 
 -- Setting the player to this state will stun them if they hit a perfect parry.
-function A_FHStun(mo)
+local function FHStun(mo)
 	if not FangsHeist.isMode() then return end
 	if not (mo and mo.player and mo.player.heist and mo.player.heist:isAlive()) then
 		return
@@ -225,7 +129,7 @@ function A_FHStun(mo)
 end
 
 -- Setting the player to this state has them unable to move, but invincible until they land.
-function A_FHClash(mo)
+local function FHClash(mo)
 	if not FangsHeist.isMode() then return end
 	if not (mo and mo.player and mo.player.heist and mo.player.heist:isAlive()) then
 		return
@@ -240,8 +144,8 @@ function A_FHClash(mo)
 	table.insert(ClashList, mo.player)
 end
 
-states[S_FH_STUN].action = A_FHStun
-states[S_FH_CLASH].action = A_FHClash
+states[S_FH_STUN].action = FHStun
+states[S_FH_CLASH].action = FHClash
 
 local function StunThinker(p)
 	local mo = p.mo
@@ -291,12 +195,6 @@ local function ClashThinker(p)
 	end
 
 	p.powers[pw_flashing] = 3
-end
-
-local function SpawnShield(p)
-	local shield = P_SpawnMobjFromMobj(p.mo, 0,0,0, MT_THOK)
-	shield.state = char.attackEffectState
-	shield.target = p.mo
 end
 
 local function Knockback(p1, p2, knockbackOther)
@@ -517,41 +415,6 @@ addHook("ThinkFrame", do
 			end
 		end
 	end
-
-	local attacks = {}
-
-	-- Iterate through players to see who is attacking who
-	--[[for p in players.iterate do
-		if not (p.valid and p.heist and p.heist:isAlive()) then
-			continue
-		end
-		if IsInList(attacks, p)
-		or p.mo.state == S_FH_GUARD then
-			continue
-		end
-
-		local found = GetNearestAttackablePlayer(p.mo)
-		if not found then continue end
-
-		if not IsInHitBox(p.mo, found.mo) then
-			continue
-		end
-		if not P_PlayerCanDamage(p, found.mo) then
-			continue
-		end
-		if IsInList(ClashList, found)
-		or IsInList(attacks, found) then
-			continue
-		end
-
-		if found.mo.state == S_FH_GUARD
-		and found.heist.parry_time then
-			RegisterGuard(found, p)
-			continue
-		end
-
-		DefAttack(attacks, p, found)
-	end]]
 end)
 
 addHook("ShouldDamage", function(t,i,s,dmg,dt)
@@ -655,18 +518,6 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if not FangsHeist.isMode() then return end
 	if not (t and t.player and t.player.heist) then return end
 
-	for _,tres in ipairs(t.player.heist.treasures) do
-		if not (tres.mobj.valid) then continue end
-
-		local angle = FixedAngle(P_RandomRange(1, 360)*FU)
-
-		P_InstaThrust(tres.mobj, angle, 12*FU)
-		P_SetObjectMomZ(tres.mobj, 4*FU)
-
-		tres.mobj.target = nil
-	end
-	t.player.heist.treasures = {}
-
 	local gamemode = FangsHeist.getGamemode()
 	gamemode:playerdamage(t.player)
 
@@ -707,9 +558,11 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	return true
 end, MT_PLAYER)
 
-local function OnPlayerCollide(pmo, mo)
-	local p = pmo.player
-	local sp = mo.player
+local function OnPlayerCollide(p, atkBox, sp)
+	local pmo = p.mo
+	local mo = sp.mo
+
+	if not (sp.heist and sp.heist:isAlive()) then return end
 
 	if pmo.z > mo.z+mo.height then return end
 	if mo.z > pmo.z+pmo.height then return end
@@ -736,45 +589,31 @@ local function OnPlayerCollide(pmo, mo)
 		return
 	end
 
-	if IsInList(ClashList, sp) then
-		return
-	end
-
 	if sp.mo.state == S_FH_GUARD
 	and sp.heist.parry_time then
 		RegisterGuard(sp, p)
 		return
 	end
 
-	local atkPro = GetAttackPriority(p, sp)
-	local vicPro = GetAttackPriority(sp, p)
+	local vicBox = GetHitbox(sp)
 
-	if atkPro > vicPro then
-		Damage(p, sp, nil, sp.mo.state == S_FH_STUN)
-		return
-	end
-
-	if vicPro > atkPro then
-		Damage(sp, p, nil, p.mo.state == S_FH_STUN)
-		return
-	end
-
-	Knockback(p, sp, true)
+	Damage(p, sp, nil, sp.mo.state == S_FH_STUN)
+	--[[Knockback(p, sp, true)
 	p.mo.state = S_FH_CLASH
 	sp.mo.state = S_FH_CLASH
 
 	S_StartSound(p.mo, sfx_fhclsh)
-	S_StartSound(sp.mo, sfx_fhclsh)
+	S_StartSound(sp.mo, sfx_fhclsh)]]
 end
 
-addHook("MobjMoveCollide", function(pmo, mo)
+--[[addHook("MobjMoveCollide", function(pmo, mo)
 	if not FangsHeist.isMode() then return end
 	if not (pmo and pmo.player and pmo.player.heist) then return end
 	if (mo and mo.type == MT_PLAYER and mo.player and mo.player.heist) then
 		OnPlayerCollide(pmo, mo)
 		return
 	end
-end, MT_PLAYER)
+end, MT_PLAYER)]]
 
 return function(p)
 	if not p.heist:isAlive() then
@@ -850,5 +689,11 @@ return function(p)
 
 			S_StartSound(p.mo, sfx_ngskid)
 		end
+	end
+
+	local hitbox = GetHitbox(p)
+
+	if hitbox then
+		FangsHeist.useHitbox(p, hitbox, OnPlayerCollide)
 	end
 end

@@ -72,7 +72,7 @@ FangsHeist.useHitbox = function(source, hitbox, func)
 		if not CheckCollision(hitbox, found) then return end
 
 		func(source, hitbox, found.player)
-	end, source.mo, hitbox.x+minX, hitbox.x+maxX, hitbox.y+minY, hitbox.y+maxY)
+	end, source.mo, hitbox.x+minX*2, hitbox.x+maxX*2, hitbox.y+minY*2, hitbox.y+maxY*2)
 
 	return foundPlayers
 end
