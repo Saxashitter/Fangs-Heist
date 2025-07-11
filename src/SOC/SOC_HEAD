@@ -100,6 +100,7 @@ SelectHeading = Supported Maps
 Weather = 2
 FlickyList = Penguin,Seal
 Lua.FH_StageType = Escape
+Lua.FH_EscapeTheme = LOSWIN
 
 Level Z0
 Levelname = Tutorial

@@ -200,8 +200,9 @@ addHook("AbilitySpecial", function(p)
 		P_DoJump(p, true)
 		P_Thrust(p.mo, p.drawangle, 19*p.mo.scale)
 		p.mo.state = S_PLAY_SPRING
-		p.mo.tails.doublejump_times = 2 -- only allow 1 double jump
 		S_StartSoundAtVolume(p.mo, sfx_cdfm50, 150)
+
+		p.mo.tails.doublejump_times = 1 -- only allow 2 double jump
 
 		if not p.mo.tails.walljump_times then
 			p.mo.tails.walljump_times = 0
