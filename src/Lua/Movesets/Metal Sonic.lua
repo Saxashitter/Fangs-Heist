@@ -14,7 +14,7 @@ states[S_X3UPDASH] = {
 //DRIFT TURN SPEED!
 local DTS = ANG10
 
-//MINIMUM SPEED FOR DRIFT!
+//MINIMUN SPEED FOR DRIFT!
 local MINSPEED = FU * 15
 
 //It's easy to comprehend.
@@ -31,7 +31,9 @@ local DMBASESPEED = 36 * FU
 local DMSPEEDUP = FU/8
 local DMMAXSPEED = 46 * FU
 
-local AIRDASHSPEED = 15 * FU
+local AIRDASHSPEED = 12 * FU
+
+local DASHFLAGS = STR_ATTACK|STR_WALL|STR_CEILING|STR_SPIKE
 
 local function Valid(p)
 	return FangsHeist.isMode(p)
@@ -49,6 +51,7 @@ local function DashModeDisable(p)
 	p.mo.color = p.skincolor
 	p.mo.metalsonic.dmspeed = DMBASESPEED
 	p.normalspeed = skins[p.skin].normalspeed
+	p.powers[pw_strong] = $ & ~DASHFLAGS
 end
 
 local function AirDashDisable(p)
@@ -93,6 +96,7 @@ local function DashModeTick(p)
 	end
 
 	if p.mo.metalsonic.dmt > DASHMODETICS then
+		p.powers[pw_strong] = $|DASHFLAGS
 		p.mo.metalsonic.dmspeed = min($ + DMSPEEDUP, DMMAXSPEED)
 		p.normalspeed = p.mo.metalsonic.dmspeed
 
@@ -136,18 +140,18 @@ local function AirDashTick(p)
 		p.mo.state = S_PLAY_SPRING
 
 		if P_GetPlayerControlDirection(p)
-			P_Thrust(p.mo, p.mo.angle, p.mo.metalsonic.sspd/(1 + (p.mo.metalsonic.adp / 6))/64)
+			P_Thrust(p.mo, p.mo.angle, p.mo.metalsonic.sspd/(1 + (p.mo.metalsonic.adp / 6))/24)
 		end
 	end
 
 	if p.mo.metalsonic.adp > 24 or not (p.cmd.buttons & BT_SPIN) then
-		if P_GetPlayerControlDirection(p)
-			P_InstaThrust(p.mo, p.mo.angle, p.mo.metalsonic.sspd/(1 + (p.mo.metalsonic.adp / 6)))
-		end
-
 		AirDashDisable(p)
 		p.mo.state = S_PLAY_FALL
 		p.mo.momz = $/3
+
+		if P_GetPlayerControlDirection(p)
+			P_InstaThrust(p.mo, p.mo.angle, p.mo.metalsonic.sspd/(1 + (p.mo.metalsonic.adp / 6)))
+		end
 	end
 end
 
