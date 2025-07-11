@@ -209,4 +209,6 @@ for i = 1, 3 do
 	sfxinfo[freeslot("sfx_tlfly"..i)].caption = "Flight"
 end
 
+sfxinfo[freeslot "sfx_msdrft"].caption = "Drifting"
+
 freeslot("sfx_fhwrn1","sfx_fhwrn2")

@@ -235,11 +235,21 @@ addHook("AbilitySpecial", function(p)
 end)
 
 addHook("FollowMobj", function(p, mo)
-	if p.mo
-	and p.mo.valid
-	and p.mo.state == S_PLAY_CLING then
-		mo.state = S_TAILSOVERLAY_MINUS30DEGREES
-	end
+    if p.mo
+    and p.mo.valid
+    and p.mo.state == S_PLAY_CLING then
+        local frontOffset = 0*p.mo.scale
+        local zOffset = -3*p.mo.scale
+
+        mo.state = S_TAILSOVERLAY_MINUS30DEGREES
+        mo.angle = p.drawangle
+        P_MoveOrigin(mo,
+            p.mo.x + P_ReturnThrustX(nil, p.drawangle, frontOffset),
+            p.mo.y + P_ReturnThrustY(nil, p.drawangle, frontOffset),
+            p.mo.z + zOffset*P_MobjFlip(mo)
+        )
+        return true
+    end
 end, MT_TAILSOVERLAY)
 
 FangsHeist.addPlayerScript("postthinkframe", function(p)

@@ -74,14 +74,24 @@ local function DashModeTick(p)
 	if (P_IsObjectOnGround(p.mo)
 	and not (p.pflags & PF_SPINNING)
 	and not p.mo.metalsonic.drifthold
-	and p.speed < MINDASHMODE)
+	and FixedDiv(p.speed, p.mo.scale) < MINDASHMODE)
 	or P_PlayerInPain(p)
 	or not (p.mo and p.mo.health) then
+		if p.mo and p.mo.health and p.mo.metalsonic.dmt >= DASHMODETICS then
+			S_StartSound(p.mo, sfx_kc65)
+			p.normalspeed = skins[p.mo.skin].normalspeed
+		end
+
 		DashModeDisable(p)
 		return
 	end
 
 	p.mo.metalsonic.dmt = $ + 1
+
+	if p.mo.metalsonic.dmt == DASHMODETICS then
+		S_StartSound(p.mo, sfx_cdfm40)
+	end
+
 	if p.mo.metalsonic.dmt > DASHMODETICS then
 		p.mo.metalsonic.dmspeed = min($ + DMSPEEDUP, DMMAXSPEED)
 		p.normalspeed = p.mo.metalsonic.dmspeed
@@ -94,7 +104,6 @@ local function DashModeTick(p)
 			p.mo.color = skincolors[p.skincolor].invcolor
 		else
 			p.mo.color = p.skincolor + leveltime%2
-			p.normalspeed = skins[p.mo.skin].normalspeed
 		end
 	end
 end
@@ -105,35 +114,46 @@ local function AirDashTick(p)
 	end
 
 	p.mo.metalsonic.adp = $ + 1
+
 	if p.mo.metalsonic.adp < 7 then
 		p.mo.state = S_PLAY_SPINDASH
-		p.mo.momx = 0
-		p.mo.momy = 0
-		p.mo.momz = (FU/2) * P_MobjFlip(p.mo)
+		p.mo.momx = $*2/3
+		p.mo.momy = $*2/3
+		P_SetObjectMomZ(p.mo, FU/2)
 		p.pflags = $&~PF_JUMPED&~PF_SPINNING
 	end
+
 	if p.mo.metalsonic.adp == 7 then
 		local dust = P_SpawnGhostMobj(p.mo)
 		dust.fuse = 99999
 		dust.state = S_X3UPDASH
-		dust.scale = (FU * 2) + (FU/2)
+		dust.scale = $*5/2
 		S_StartSound(p.mo, sfx_msupds)
 	end
+
 	if p.mo.metalsonic.adp > 7 then
-		p.mo.momz = (AIRDASHSPEED * P_MobjFlip(p.mo))
+		P_SetObjectMomZ(p.mo, AIRDASHSPEED)
 		p.mo.state = S_PLAY_SPRING
+
+		if P_GetPlayerControlDirection(p)
+			P_Thrust(p.mo, p.mo.angle, p.mo.metalsonic.sspd/(1 + (p.mo.metalsonic.adp / 6))/24)
+		end
 	end
+
 	if p.mo.metalsonic.adp > 24 or not (p.cmd.buttons & BT_SPIN) then
 		AirDashDisable(p)
 		p.mo.state = S_PLAY_FALL
 		p.mo.momz = $/3
-		p.mo.momx = FixedMul(p.mo.metalsonic.sspd, cos(p.drawangle))/(1 + (p.mo.metalsonic.adp / 6))
-		p.mo.momy = FixedMul(p.mo.metalsonic.sspd, sin(p.drawangle))/(1 + (p.mo.metalsonic.adp / 6))
+
+		if P_GetPlayerControlDirection(p)
+			P_InstaThrust(p.mo, p.mo.angle, p.mo.metalsonic.sspd/(1 + (p.mo.metalsonic.adp / 6)))
+		end
 	end
 end
 
 local function DriftTick(p)
-	if p.speed > MINSPEED
+	local speed = FixedDiv(p.speed, p.mo.scale)
+	if speed > MINSPEED
 	and p.cmd.buttons & BT_SPIN
 	and P_IsObjectOnGround(p.mo)
 	and not p.mo.metalsonic.drift then
@@ -147,7 +167,7 @@ local function DriftTick(p)
 	if not (p.cmd.buttons & BT_SPIN)
 	and p.mo.metalsonic.drifthold
 	or not P_IsObjectOnGround(p.mo)
-	or p.speed < MINSPEED then
+	or speed < MINSPEED then
 		p.mo.rollangle = 0
 		p.pflags = $&~PF_SPINNING
 
@@ -156,6 +176,10 @@ local function DriftTick(p)
 		elseif p.mo.state ~= S_PLAY_SPRING
 		and p.mo.state ~= S_PLAY_ROLL then
 			p.mo.state = S_PLAY_FALL
+		end
+
+		if S_SoundPlaying(p.mo, sfx_msdrft)
+			S_StopSoundByID(p.mo, sfx_msdrft)
 		end
 
 		DriftDisable(p)
@@ -170,24 +194,28 @@ local function DriftTick(p)
 	if sidemove then
 		if not p.mo.metalsonic.drifthold then
 			p.mo.metalsonic.da = R_PointToAngle2(0,0, p.rmomx, p.rmomy)
-			p.mo.metalsonic.speed = p.speed
+			p.mo.metalsonic.speed = speed*13/14 --small start punishment
 			p.mo.metalsonic.drifthold = true
 		end
 
-		p.mo.metalsonic.da = $ - FixedMul(max((DTS - (ANG1 * (p.speed/FU/10))), ANG2), sidemove)
+		p.mo.metalsonic.da = $ - FixedMul(max((DTS - (ANG1 * (speed/FU/10))), ANG2), sidemove)
 		p.mo.state = S_PLAY_SPINDASH
 		p.mo.rollangle = 0 - FixedMul(ANGLE_22h, sidemove)
 		p.drawangle = p.mo.metalsonic.da - FixedMul(ANGLE_22h, sidemove)
 	
-		P_InstaThrust(p.mo, p.mo.metalsonic.da, p.mo.metalsonic.speed)
 		p.mo.metalsonic.speed = $ - (DSLOT/12)
 
 		if p.mo.metalsonic.speed > DSMAX then
 			p.mo.metalsonic.speed = $ - DSLOT
 		end
+		P_InstaThrust(p.mo, p.mo.metalsonic.da, FixedMul(p.mo.metalsonic.speed, p.mo.scale))
 
 		local dust = P_SpawnMobjFromMobj(p.mo, 0, 0, 0, MT_SPINDUST)
 		dust.fuse = 5
+
+		if not S_SoundPlaying(p.mo, sfx_msdrft)
+			S_StartSoundAtVolume(p.mo, sfx_msdrft, 200)
+		end
 	else
 		if p.mo.metalsonic.drifthold then
 			p.drawangle = p.mo.metalsonic.da
@@ -196,6 +224,10 @@ local function DriftTick(p)
 		end
 
 		p.mo.metalsonic.drifthold = false
+
+		if S_SoundPlaying(p.mo, sfx_msdrft)
+			S_StopSoundByID(p.mo, sfx_msdrft)
+		end
 	end
 end
 
@@ -245,4 +277,5 @@ addHook("JumpSpinSpecial", function(p)
 	p.mo.metalsonic.airdash = true
 	p.mo.metalsonic.sspd = p.speed
 	p.pflags = $|PF_THOKKED&~PF_SPINNING
+	S_StartSoundAtVolume(p.mo, sfx_cdfm35, 150)
 end)

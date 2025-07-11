@@ -57,6 +57,8 @@ addHook("PlayerThink", function(player)
 			if player.pflags & PF_ANALOGMODE == 0 then
 				player.pflags = $1|PF_DIRECTIONCHAR
 			end
+
+			if player.pflags & PF_AUTOBRAKE then player.pflags = $1|PF_APPLYAUTOBRAKE end
 		end
 	elseif player.pflags & PF_THOKKED
 	and player.mo.knuckles.knoktime > 35 then
@@ -66,6 +68,8 @@ addHook("PlayerThink", function(player)
 		if player.pflags & PF_ANALOGMODE == 0 then
 			player.pflags = $1|PF_DIRECTIONCHAR
 		end
+
+		if player.pflags & PF_AUTOBRAKE then player.pflags = $1|PF_APPLYAUTOBRAKE end
 	end
 
 	-- Climbing timer
