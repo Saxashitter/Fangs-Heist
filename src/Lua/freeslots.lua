@@ -17,6 +17,7 @@ end
 
 --Sprites
 freeslot "SPR2_FHBN"
+freeslot "SPR_THIK"
 
 -- States
 states[freeslot "S_FH_PANIC"] = {
@@ -32,6 +33,13 @@ states[freeslot "S_FH_WHIFF"] = {
 	tics = G,
 	var1 = G,
 	var2 = 1
+}
+
+states[freeslot "S_FH_THIK"] = {
+	sprite = SPR_THIK,
+	frame = A|TR_TRANS20,
+	tics = 1,
+	nextstate = S_FH_THIK
 }
 
 states[freeslot "S_FH_STUN"] = {
@@ -154,6 +162,13 @@ states[freeslot "S_FH_MARVQUEEN"] = {
 }
 
 -- Mobjs
+mobjinfo[freeslot "MT_FH_THIK"] = {
+	spawnstate = S_FH_THIK,
+	radius = 32*FU,
+	height = 64*FU,
+	flags = MF_NOBLOCKMAP|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_SCENERY
+}
+
 mobjinfo[freeslot "MT_FH_THROWNHAMMER"] = {
 	spawnstate = S_FH_THROWNHAMMER,
 	radius = 30*FU,

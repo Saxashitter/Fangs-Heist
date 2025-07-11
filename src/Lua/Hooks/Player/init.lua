@@ -150,9 +150,6 @@ addHook("MobjDeath", function(t,i,s)
 	if t.flags & MF_MONITOR then
 		s.player.heist.monitors = $+1
 		s.player.heist:gainProfitMultiplied(FH_MONITORPROFIT)
-
-		t.flags = $|MF2_DONTRESPAWN
-		t.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOBLOCKMAP
 	end
 end)
 

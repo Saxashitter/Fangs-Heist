@@ -109,6 +109,13 @@ addHook("PlayerThink", function(p)
 		p.powers[pw_strong] = $|attackFlags
 
 		p.amy.twirlframes = $+1
+		if not (p.amy.twirlframes % 3) then
+			local thokring = P_SpawnMobjFromMobj(p.mo, 0, 0, 0, MT_THOK)
+			thokring.state = S_FH_THIK
+			thokring.fuse = 10
+			thokring.scale = 3*p.mo.scale/2
+			thokring.destscale = 0
+		end
 	--[[elseif attack
 	and p.cmd.buttons & BT_ATTACK
 	and not (p.lastbuttons & BT_ATTACK)
@@ -135,22 +142,51 @@ addHook("AbilitySpecial", function(p)
 	if not check(p) then
 		return
 	end
-
+	
 	if not canAttack(p)
 	or not p.amy then
 		return true
 	end
 
-	if p.pflags & PF_JUMPED
-	and not (p.pflags & PF_THOKKED) then
-		S_StartSound(p.mo, sfx_s1ab) -- jet jaw sfx
-		P_SetObjectMomZ(p.mo, 7*FU)
-		p.mo.state = S_FH_AMY_TWIRL
+	if not (p.pflags & PF_THOKKED) then
 		p.pflags = $|PF_THOKKED
+		S_StartSound(p.mo, sfx_kc5b) -- idk this sfx's name
+		P_SetObjectMomZ(p.mo, 7*FU)
+		P_InstaThrust(p.mo, p.mo.angle, 45*FU) -- not that fast but balanced enough
+		local thokring = P_SpawnMobjFromMobj(p.mo, 0, 0, 0, MT_THOK)
+		thokring.state = S_FH_THIK
+		thokring.fuse = 10
+		thokring.scale = 3*p.mo.scale/2
+		thokring.destscale = 0
+		p.mo.state = S_FH_AMY_TWIRL
 		p.amy.twirlframes = 0
 		return true
 	end
 end)
+
+addHook("PlayerThink", function(p)
+	if not FangsHeist.isMode() then return end
+	if not check(p) then
+		return
+	end
+
+	if not canAttack(p)
+	or not p.amy then
+		return true
+	end
+	
+	if (p.mo.state == S_PLAY_MELEE_LANDING)
+	and (p.speed >= 36*FRACUNIT)
+	and (p.playerstate == PST_LIVE)
+	and not (p.pflags & PF_STASIS)
+	and not (p.pflags & PF_FULLSTASIS)
+	and (P_IsObjectOnGround(p.mo) == true)
+		p.mo.state = S_PLAY_JUMP
+		P_SetObjectMomZ(p.mo, 15*FRACUNIT)
+		return true
+	end
+end)
+
 addHook("JumpSpinSpecial", function(p)
 	if not FangsHeist.isMode() then return end
 	if not check(p) then

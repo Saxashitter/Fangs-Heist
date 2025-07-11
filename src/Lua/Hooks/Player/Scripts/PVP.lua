@@ -240,6 +240,7 @@ end
 local function DoGuard(p)
 	if not P_IsObjectOnGround(p.mo) then
 		p.mo.state = S_PLAY_FALL
+		p.pflags = $ & ~FLAGS_RESET
 		p.heist.parry_cooldown = 2*TICRATE
 		p.powers[pw_flashing] = 2*TICRATE
 		P_InstaThrust(p.mo, p.mo.angle, 12*p.mo.scale)
