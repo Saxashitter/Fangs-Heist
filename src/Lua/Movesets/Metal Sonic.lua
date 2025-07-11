@@ -1,284 +1,248 @@
--- Constants
-local DASH_TICS = TICRATE
-local DASH_COLORMODULO = 3
-local DASH_DRIFTTICS = 17
-local DASH_DRIFTFRICTION = tofixed("0.68")
+freeslot "spr_msud"
+freeslot "S_X3UPDASH"
+freeslot "sfx_msupds"
+states[S_X3UPDASH] = {
+	sprite = SPR_MSUD,
+	frame = A|FF_ANIMATE|FF_FULLBRIGHT,
+	var1 = 8,
+	var2 = 1,
+	tics = 9,
+	nextstate = S_NULL
+	}
+//Some values to modify it!
 
-local FLOAT_TICS = TICRATE
+//DRIFT TURN SPEED!
+local DTS = ANG10
 
--- Functions
+//MINIMUN SPEED FOR DRIFT!
+local MINSPEED = FU * 15
+
+//It's easy to comprehend.
+local DASHMODETICS = 90
+
+//Minimum speed for getting dash mode!
+local MINDASHMODE = 26 * FU
+
+//Drift speed loss over time! 
+local DSLOT = FU / 8
+local DSMAX = FU * 46
+
+local DMBASESPEED = 36 * FU
+local DMSPEEDUP = FU/8
+local DMMAXSPEED = 46 * FU
+
+local AIRDASHSPEED = 15 * FU
+
 local function Valid(p)
-	return FangsHeist.isMode()
-	and p.mo
-	and p.mo.valid
+	return FangsHeist.isMode(p)
+	and p
+	and p.valid
+	and p.heist
+	and p.heist:isAlive()
 	and p.mo.skin == "metalsonic"
 end
 
-local function HasControl(p, noStasis)
-	if not noStasis then
-		if p.pflags & PF_STASIS then return false end
-		if p.pflags & PF_FULLSTASIS then return false end
-		if p.powers[pw_nocontrol] then return false end
-	end
+local function DashModeDisable(p)
+	if not p.mo.metalsonic.dmt then return end
 
-	if p.pflags & PF_SLIDING then return false end
-	if P_PlayerInPain(p) then return false end
-	if p.mo.health <= 0 then return false end
-
-	return true
+	p.mo.metalsonic.dmt = 0
+	p.mo.color = p.skincolor
+	p.mo.metalsonic.dmspeed = DMBASESPEED
+	p.normalspeed = skins[p.skin].normalspeed
 end
 
-local function IsMovementState(state)
-	return state == S_PLAY_WALK or state == S_PLAY_RUN
-end
-
--- Dash Mode
-local function InitDashMode(p)
-	local dash = {}
-	dash.tics = 0
-
-	p.mo.metaldash = dash
-end
-
-local function StartDashMode(p)
-	local dash = p.mo.metaldash
-	local skin = skins[p.mo.skin]
-
-	S_StartSound(p.mo, sfx_s3ka2)
-end
-
-local function StopDashMode(p)
-	local dash = p.mo.metaldash
-	local skin = skins[p.mo.skin]
-	local dashing = dash.tics >= DASH_TICS
-
-	dash.tics = 0
-
-	if not dashing then
+local function AirDashDisable(p)
+	if not p.mo.metalsonic.airdash then
 		return
 	end
 
-	S_StartSound(p.mo, sfx_kc65)
-	p.mo.color = p.skincolor
+	p.mo.metalsonic.airdash = false
+	p.mo.metalsonic.adp = 0
 end
 
-local function ManageDashMode(p)
-	local skin = skins[p.mo.skin]
-
-	if not p.mo.metaldash then
-		InitDashMode(p)
+local function DriftDisable(p)
+	if not p.mo.metalsonic.drift then
+		return
 	end
 
-	local dash = p.mo.metaldash
+	p.mo.metalsonic.drifthold = false
+	p.mo.metalsonic.drift = false
+	p.mo.metalsonic.speed = 0
+end
 
-	local speed = R_PointToDist2(0,0,p.rmomx,p.rmomy)
-	local runspeed = FixedMul(skin.runspeed, p.mo.scale)
+local function DashModeTick(p)
+	if (P_IsObjectOnGround(p.mo)
+	and not (p.pflags & PF_SPINNING)
+	and not p.mo.metalsonic.drifthold
+	and p.speed < MINDASHMODE)
+	or P_PlayerInPain(p)
+	or not (p.mo and p.mo.health) then
+		DashModeDisable(p)
+		return
+	end
 
-	if (speed < runspeed and P_IsObjectOnGround(p.mo))
-	or not HasControl(p) then
-		if dash.tics then
-			StopDashMode(p)
+	p.mo.metalsonic.dmt = $ + 1
+	if p.mo.metalsonic.dmt > DASHMODETICS then
+		p.mo.metalsonic.dmspeed = min($ + DMSPEEDUP, DMMAXSPEED)
+		p.normalspeed = p.mo.metalsonic.dmspeed
+
+		if p.mo.state == S_PLAY_RUN then
+			p.mo.state = S_PLAY_DASH
 		end
 
+		if leveltime%4 < 2 then
+			p.mo.color = skincolors[p.skincolor].invcolor
+		else
+			p.mo.color = p.skincolor + leveltime%2
+			p.normalspeed = skins[p.mo.skin].normalspeed
+		end
+	end
+end
+
+local function AirDashTick(p)
+	if not p.mo.metalsonic.airdash then
 		return
 	end
 
-	if P_IsObjectOnGround(p.mo)
-	or dash.tics >= DASH_TICS then
-		dash.tics = $+1
+	p.mo.metalsonic.adp = $ + 1
+	if p.mo.metalsonic.adp < 7 then
+		p.mo.state = S_PLAY_SPINDASH
+		p.mo.momx = 0
+		p.mo.momy = 0
+		p.mo.momz = (FU/2) * P_MobjFlip(p.mo)
+		p.pflags = $&~PF_JUMPED&~PF_SPINNING
+	end
+	if p.mo.metalsonic.adp == 7 then
+		local dust = P_SpawnGhostMobj(p.mo)
+		dust.fuse = 99999
+		dust.state = S_X3UPDASH
+		dust.scale = (FU * 2) + (FU/2)
+		S_StartSound(p.mo, sfx_msupds)
+	end
+	if p.mo.metalsonic.adp > 7 then
+		p.mo.momz = (AIRDASHSPEED * P_MobjFlip(p.mo))
+		p.mo.state = S_PLAY_SPRING
+	end
+	if p.mo.metalsonic.adp > 24 or not (p.cmd.buttons & BT_SPIN) then
+		AirDashDisable(p)
+		p.mo.state = S_PLAY_FALL
+		p.mo.momz = $/3
+		p.mo.momx = FixedMul(p.mo.metalsonic.sspd, cos(p.drawangle))/(1 + (p.mo.metalsonic.adp / 6))
+		p.mo.momy = FixedMul(p.mo.metalsonic.sspd, sin(p.drawangle))/(1 + (p.mo.metalsonic.adp / 6))
+	end
+end
+
+local function DriftTick(p)
+	if p.speed > MINSPEED
+	and p.cmd.buttons & BT_SPIN
+	and P_IsObjectOnGround(p.mo)
+	and not p.mo.metalsonic.drift then
+		p.mo.metalsonic.drift = true
 	end
 
-	if dash.tics < DASH_TICS then
+	if not p.mo.metalsonic.drift then
 		return
 	end
 
-	if dash.tics == DASH_TICS then
-		StartDashMode(p)
+	if not (p.cmd.buttons & BT_SPIN)
+	and p.mo.metalsonic.drifthold
+	or not P_IsObjectOnGround(p.mo)
+	or p.speed < MINSPEED then
+		p.mo.rollangle = 0
+		p.pflags = $&~PF_SPINNING
+
+		if P_IsObjectOnGround(p.mo) then
+			p.mo.state = S_PLAY_WALK
+		elseif p.mo.state ~= S_PLAY_SPRING
+		and p.mo.state ~= S_PLAY_ROLL then
+			p.mo.state = S_PLAY_FALL
+		end
+
+		DriftDisable(p)
+		return
 	end
 
-	if P_IsObjectOnGround(p.mo)
-	and IsMovementState(p.mo.state) then
-		p.mo.state = S_PLAY_DASH
+	local sidemove = 0
+	if abs(p.cmd.sidemove) > 12 then
+		sidemove = p.cmd.sidemove*FU/50
 	end
 
-	local tics = dash.tics - DASH_TICS
-	local modulo = (tics/DASH_COLORMODULO) % 2
+	if sidemove then
+		if not p.mo.metalsonic.drifthold then
+			p.mo.metalsonic.da = R_PointToAngle2(0,0, p.rmomx, p.rmomy)
+			p.mo.metalsonic.speed = p.speed
+			p.mo.metalsonic.drifthold = true
+		end
 
-	if modulo then
-		p.mo.color = SKINCOLOR_WHITE
+		p.mo.metalsonic.da = $ - FixedMul(max((DTS - (ANG1 * (p.speed/FU/10))), ANG2), sidemove)
+		p.mo.state = S_PLAY_SPINDASH
+		p.mo.rollangle = 0 - FixedMul(ANGLE_22h, sidemove)
+		p.drawangle = p.mo.metalsonic.da - FixedMul(ANGLE_22h, sidemove)
+	
+		P_InstaThrust(p.mo, p.mo.metalsonic.da, p.mo.metalsonic.speed)
+		p.mo.metalsonic.speed = $ - (DSLOT/12)
+
+		if p.mo.metalsonic.speed > DSMAX then
+			p.mo.metalsonic.speed = $ - DSLOT
+		end
+
+		local dust = P_SpawnMobjFromMobj(p.mo, 0, 0, 0, MT_SPINDUST)
+		dust.fuse = 5
 	else
-		p.mo.color = p.skincolor
-	end
+		if p.mo.metalsonic.drifthold then
+			p.drawangle = p.mo.metalsonic.da
+			p.mo.state = S_PLAY_ROLL
+			p.mo.rollangle = 0
+		end
 
-	local ghost = P_SpawnGhostMobj(p.mo)
-
-	ghost.fuse = 3
-	ghost.translation = "FH_ParryColor"
-	ghost.momz = (8*ghost.scale)*P_MobjFlip(ghost)
-end
-
-local function DashPriority(self, p)
-	if not Valid(p)
-	or not p.mo.metaldash then
-		return
-	end
-
-	local dash = p.mo.metaldash
-
-	if dash.tics >= DASH_TICS then
-		return 3
+		p.mo.metalsonic.drifthold = false
 	end
 end
 
--- Drifting
-local function DoDrift(p)
-	local mo = p.mo
-
-	mo.state = S_FH_MS_DRIFT
-	mo.metaldrift = true
-	mo.color = p.skincolor
-
-	mo.metaldrift_tics = DASH_DRIFTTICS
-	mo.metaldrift_angle = p.drawangle
-	mo.metaldrift_moveangle = R_PointToAngle2(0,0, p.rmomx, p.rmomy)
-	mo.metaldrift_speed = R_PointToDist2(0,0, p.rmomx, p.rmomy)
-
-	S_StartSound(mo, sfx_skid)
-	S_StartSound(mo, sfx_alart)
-end
-
-local function ManageDrift(p)
-	local skin = skins[p.mo.skin]
-
-	p.pflags = $|PF_JUMPSTASIS
-
-	p.mo.metaldrift_tics = max(0, $-1)
-	p.drawangle = p.mo.metaldrift_angle
-
-	P_InstaThrust(p.mo, p.mo.metaldrift_moveangle, p.mo.metaldrift_speed)
-	p.mo.metaldrift_speed = max(6*p.mo.scale, $ - 2*p.mo.scale)
-
-	if p.mo.metaldrift_tics > 0
-	or not P_IsObjectOnGround(p.mo) then
-		return
-	end
-
-	p.pflags = $ & ~PF_JUMPSTASIS
-	local angle = p.cmd.angleturn << 16
-
-	if p.cmd.sidemove
-	or p.cmd.forwardmove then
-		angle = $ + R_PointToAngle2(0,0, p.cmd.forwardmove*FU, -p.cmd.sidemove*FU)
-	end
-
-	p.drawangle = angle
-
-	P_InstaThrust(p.mo, angle, skin.normalspeed)
-	P_MovePlayer(p)
-
-	p.mo.state = S_PLAY_DASH
-
-	p.mo.metaldrift_tics = nil
-	p.mo.metaldrift_angle = nil
-	p.mo.metaldrift_speed  = nil
-	p.mo.metaldrift_moveangle = nil
-	p.mo.metaldrift = nil
-
-	S_StartSound(p.mo, sfx_zoom)
-	S_StartSound(p.mo, sfx_thok)
-	S_StartSound(p.mo, sfx_s3ka2)
-end
-
--- Hooks
 addHook("PlayerThink", function(p)
 	if not Valid(p) then
-		if p.mo
-		and p.mo.valid then
-			p.mo.metaldash = nil
-			p.mo.metaldrift_tics = nil
-			p.mo.metaldrift_angle = nil
-			p.mo.metaldrift_speed  = nil
-			p.mo.metaldrift_moveangle = nil
-			p.mo.metaldrift = nil
-		end
-
+		p.mo.metalsonic = nil
 		return
 	end
 
-	if p.mo.metaldrift
-	and HasControl(p, true) then
-		ManageDrift(p)
-		return
+	p.dashmode = 0
+
+	if not p.mo.metalsonic then
+		p.mo.metalsonic = {
+			dmt = 0,
+			drift = false,
+			drifthold = false,
+			da = 0,
+			speed = 0,
+			dmspeed = DMBASESPEED,
+			airdash = false,
+			adp = 0,
+			sspd = 0
+		}
 	end
 
-	p.mo.metaldrift = nil
-	p.mo.metaldrift_tics = nil
-	p.mo.metaldrift_angle = nil
-	p.mo.metaldrift_speed  = nil
-	p.mo.metaldrift_moveangle = nil
-
-	ManageDashMode(p)
+	DashModeTick(p)
+	AirDashTick(p)
+	DriftTick(p)
 end)
 
-addHook("ThinkFrame", function(p)
-	for p in players.iterate do
-		if not Valid(p) then
-			continue
-		end
+addHook("MobjDamage", function(mo)
+	if not Valid(mo.player) then return end
+	if not mo.player.metalsonic then return end
 
-		if not p.mo.metaldrift 
-		or not p.mo.metaldash then
-			p.mo.mds_tics = nil
-			p.mo.mds_frame = nil
-			continue
-		end
+	DashModeDisable(mo.player)
+	AirDashDisable(mo.player)
+	DriftDisable(mo.player)
+end, MT_PLAYER)
 
-		if p.mo.state ~= S_FH_MS_DRIFT then
-			p.mo.state = S_FH_MS_DRIFT
-			p.mo.tics = p.mo.mds_tics or $
-			p.mo.frame = ($ & ~FF_FRAMEMASK)|(p.mo.mds_frame or ($ & FF_FRAMEMASK))
-		end
+addHook("JumpSpinSpecial", function(p)
+	if not Valid(p) then return end
+	if p.pflags & PF_THOKKED then return end
+	if p.mo.state == S_PLAY_PAIN
+	or p.mo.state == S_PLAY_DEAD then return end
+	if (p.lastbuttons & BT_SPIN) then return end
 
-		p.mo.mds_tics = p.mo.tics
-		p.mo.mds_frame = p.mo.frame & FF_FRAMEMASK
-	end
+	p.mo.metalsonic.airdash = true
+	p.mo.metalsonic.sspd = p.speed
+	p.pflags = $|PF_THOKKED&~PF_SPINNING
 end)
-
-addHook("SpinSpecial", function(p)
-	if not Valid(p)
-	or not p.mo.metaldash
-	or p.pflags & PF_SPINDOWN then
-		return
-	end
-
-	local dash = p.mo.metaldash
-
-	if P_IsObjectOnGround(p.mo)
-	and dash.tics >= DASH_TICS
-	and not p.mo.metaldrift then
-		DoDrift(p)
-		return true
-	end
-
-	if p.mo.metaldrift then
-		return true
-	end
-end)
-
-addHook("PlayerCanDamage", function(p)
-	if not Valid(p)
-	or not p.mo.metaldash then
-		return
-	end
-
-	local dash = p.mo.metaldash
-
-	if dash.tics >= DASH_TICS then
-		return true
-	end
-end)
-
-FangsHeist.makeCharacter("metalsonic", {
-	pregameBackground = "FH_PREGAME_METAL",
-	attackPriority = DashPriority
-})
