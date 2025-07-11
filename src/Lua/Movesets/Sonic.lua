@@ -45,6 +45,9 @@ addHook("PlayerThink", function(p)
 
 		p.mo.momz = $ - gravity + FixedMul(gravity, DROPDASH_GRAVITY)
 		p.mo.sonic.dropdash = -p.mo.momz*P_MobjFlip(p.mo)
+
+		local mo = P_SpawnGhostMobj(p.mo)
+		mo.fuse = 6
 	end
 end)
 
@@ -52,6 +55,8 @@ local function DropDashLand(p)
 	local momz = p.mo.sonic.dropdash
 	local momzstart = max(momz - DROPDASH_MOMZSTART*p.mo.scale, 0)
 	local t = FixedDiv(momzstart, (DROPDASH_MOMZEND-DROPDASH_MOMZSTART)*p.mo.scale)
+
+	FangsHeist.Particles:new("Tails Double Jump", p)
 
 	if p.cmd.buttons & BT_JUMP then
 		local bounce = ease.linear(min(t, FU), DROPDASH_BOUNCESTART*p.mo.scale, DROPDASH_BOUNCEEND*p.mo.scale)

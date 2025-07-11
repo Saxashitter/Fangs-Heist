@@ -26,36 +26,8 @@ rawset(_G, "FH_HRT_DUR", 35)
 
 local FLAGS_RESET = PF_JUMPED|PF_THOKKED|PF_SPINNING|PF_STARTDASH|PF_BOUNCING|PF_GLIDING
 
-local StunList = {}
-local ClashList = {}
-addHook("NetVars", function(sync)
-	StunList = sync($)
-	ClashList = sync($)
-end)
-
--- Checks if the player is in the hitbox to get hurt.
-local function IsInHitBox(mo1, mo2, xmul, ymul)
-	xmul = $ or FH_DST_ATK
-	ymul = $ or FH_DST_ATK_Y
-
-	local dist = R_PointToDist2(mo1.x, mo1.y, mo2.x, mo2.y)
-
-	if dist <= fixmul(mo1.radius+mo2.radius, xmul) then
-		local h1 = fixmul(mo1.height, ymul)
-		local h2 = fixmul(mo2.height, ymul)
-
-		return mo2.z <= mo1.z+h1
-		and mo1.z <= mo2.z+h2
-	end
-
-	return false
-end
-
 -- Returns the angle of p2 from p1's position.
-local function ReturnAngles(p1, p2)
-	local pmo1 = p1.mo
-	local pmo2 = p2.mo
-
+local function ReturnAngles(pmo1, pmo2)
 	local dist = R_PointToDist2(pmo1.x, pmo1.y, pmo2.x, pmo2.y)
 	local zdist = (pmo2.z + pmo2.height/2) - (pmo1.z + pmo1.height/2)
 
@@ -78,7 +50,42 @@ local function CanBeHit(p1, p2)
 	return true
 end
 
--- Returns the hitbox that the player's attack should have.
+local function GetAttackerAndAttacked(p, sp, hitbox, shitbox)
+	if not shitbox then
+		return p, sp
+	end
+
+	if hitbox.priority > shitbox.priority then
+		return p, sp
+	end
+
+	if shitbox.priority > hitbox.priority then
+		return sp, p
+	end
+
+	-- Determine who hits who using speed.
+	local speed = R_PointToDist2(0,0, p.mo.momx, p.mo.momy)
+	local sspeed = R_PointToDist2(0,0, sp.mo.momx, sp.mo.momy)
+
+	local tier1 = speed/FixedDiv(FU, 25*FU)
+	local tier2 = sspeed/FixedDiv(FU, 25*FU)
+
+	if tier1 > tier2 then
+		return p, sp
+	end
+
+	if tier2 > tier1 then
+		return sp, p
+	end
+
+	-- RANDOM-NESS, GO!
+	if P_RandomRange(0, 1) then
+		return p, sp
+	end
+
+	return sp, p
+end
+
 
 local function GetHitbox(p)
 	local char = FangsHeist.Characters[skins[p.skin].name]
@@ -91,145 +98,59 @@ local function GetHitbox(p)
 	-- Define Jump Hitbox
 	if p.pflags & PF_JUMPED
 	and not (p.pflags & PF_NOJUMPDAMAGE) then
-		return FangsHeist.makeHitbox(
+		local hitbox = FangsHeist.makeHitbox(
 			p.mo.x,
 			p.mo.y,
 			p.mo.z+p.mo.height/2,
 			p.mo.radius*2,
 			p.mo.radius*2,
+			p.mo.height*3/2,
+			p.drawangle)
+
+		hitbox.priority = 1
+		return hitbox
+	end
+
+	if p.pflags & PF_SPINNING then
+		local hitbox = FangsHeist.makeHitbox(
+			p.mo.x,
+			p.mo.y,
+			p.mo.z+p.mo.height/2,
+			p.mo.radius*3,
+			p.mo.radius*3/2,
 			p.mo.height*10/12,
 			p.drawangle)
+
+		hitbox.priority = p.pflags & PF_STARTDASH > 0 and 2 or 1
+		return hitbox
+	end
+
+	if p.powers[pw_strong] & STR_MELEE then
+		local hitbox = FangsHeist.makeHitbox(
+			p.mo.x,
+			p.mo.y,
+			p.mo.z+p.mo.height/2,
+			p.mo.radius*3,
+			p.mo.radius*3,
+			p.mo.height,
+			p.drawangle)
+
+		hitbox.priority = 1
+		return hitbox
 	end
 end
 
--- Setting the player to this state will stun them if they hit a perfect parry.
-local function FHStun(mo)
-	if not FangsHeist.isMode() then return end
-	if not (mo and mo.player and mo.player.heist and mo.player.heist:isAlive()) then
-		return
-	end
-
-	local spd = FixedMul(FH_STN_SPD, mo.scale)
-	local airspd = FixedMul(FH_STN_AIRSPD, mo.scale)
-
-	P_InstaThrust(mo, mo.player.drawangle, -spd)
-	P_SetObjectMomZ(mo, airspd)
-	S_StartSound(mo, sfx_s1c9)
-
-	mo.fh_stun = {
-		forced_angle = mo.player.drawangle,
-		start_angle = mo.player.drawangle,
-		tics = 0
-	}
-	mo.player.pflags = $ & ~(FLAGS_RESET)
-
-	if not IsInList(StunList, mo.player) then
-		table.insert(StunList, mo.player)
-	end
-end
-
--- Setting the player to this state has them unable to move, but invincible until they land.
-local function FHClash(mo)
-	if not FangsHeist.isMode() then return end
-	if not (mo and mo.player and mo.player.heist and mo.player.heist:isAlive()) then
-		return
-	end
-
-	if P_IsObjectOnGround(mo) then
-		mo.tics = 28
-	end
-
-	mo.fh_clash = true
-
-	table.insert(ClashList, mo.player)
-end
-
-states[S_FH_STUN].action = FHStun
-states[S_FH_CLASH].action = FHClash
-
-local function StunThinker(p)
-	local mo = p.mo
-
-	if P_IsObjectOnGround(mo) then
-		mo.state = S_PLAY_FALL
-
-		local spd = FixedMul(FH_STN_SPD, mo.scale)
-		local airspd = FixedMul(FH_STN_AIRSPD, mo.scale)
-
-		p.drawangle = mo.fh_stun.start_angle
-
-		P_InstaThrust(mo, p.drawangle, -spd/2)
-		P_SetObjectMomZ(mo, airspd/2)
-
-		S_StartSound(mo, sfx_s1b4)
-		S_StartSound(mo, sfx_s3k4c)
-		mo.player.powers[pw_flashing] = 13
-
-		return true
-	end
-
-	if mo.state ~= S_FH_STUN then
-		return true
-	end
-
-	local speed = ease.linear(
-		FixedDiv(mo.fh_stun.tics, FH_STN_SPD),
-		FH_STN_SPN_MAX,
-		FH_STN_SPN_MIN)
-
-	local thrust = FixedMul(FH_STN_SPD, mo.scale)
-
-	mo.fh_stun.forced_angle = $ + FixedAngle(speed)
-	p.drawangle = mo.fh_stun.forced_angle
-
-	P_InstaThrust(mo, mo.fh_stun.start_angle, -thrust)
-	mo.fh_stun.tics = min($+1, FH_STN_SPN)
-end
-
-local function ClashThinker(p)
-	local mo = p.mo
-
-	if mo.state ~= S_FH_CLASH then
-		p.powers[pw_flashing] = 0
-		return true
-	end
-
-	p.powers[pw_flashing] = 3
-end
-
-local function Knockback(p1, p2, knockbackOther)
-	local mo1 = p1.mo
-	local mo2 = p2.mo
-
-	local angle, zangle = ReturnAngles(p1, p2)
-
-	local rev_angle = angle+ANGLE_180
-
-	p1.drawangle = angle
-	p2.drawangle = rev_angle
-
-	local spd = 12*mo1.scale
+local function Knockback(target, source)
+	local angle, zangle = ReturnAngles(target, source)
+	local spd = 7*source.scale
 	local xySpd = FixedMul(spd, sin(zangle))
 	local zSpd = -FixedMul(spd, cos(zangle))
 
-	P_InstaThrust(mo1, rev_angle, xySpd)
-	mo1.momz = zSpd
-
-	if not knockbackOther then
-		return
-	end
-
-	P_InstaThrust(mo2, angle, xySpd)
-	mo2.momz = -zSpd
+	P_InstaThrust(target, angle, xySpd)
+	target.momz = zSpd
 end
 
 local function PerfectParry(p, p2)
-	if p2 then
-		p2.drawangle = R_PointToAngle2(p2.mo.x, p2.mo.y, p.mo.x, p.mo.y)
-		p2.mo.state = S_FH_STUN
-		p2.pflags = $ & ~(FLAGS_RESET)
-	end
-	
 	p.mo.state = S_PLAY_STND
 	p.mo.translation = nil
 	
@@ -240,14 +161,7 @@ local function PerfectParry(p, p2)
 end
 
 local function OkParry(p, p2)
-	local tics = 35
-
-	if p2 then
-		Knockback(p2, p)
-		p2.powers[pw_flashing] = tics
-	end
-
-	p.powers[pw_flashing] = tics
+	p.powers[pw_flashing] = 25
 
 	p.mo.state = S_PLAY_STND
 	p.mo.translation = nil
@@ -265,9 +179,9 @@ local TIERS = {
 	{sfx_dmga4, sfx_dmgb4}
 }
 
-local function Damage(p, p2, knockback)
+local function Damage(p, p2)
 	if not P_DamageMobj(p2.mo, p.mo, p.mo) then
-		return
+		return false
 	end
 
 	local xySpeed = R_PointToDist2(0,0,p.mo.momx-p2.mo.momx,p.mo.momy-p2.mo.momy)
@@ -277,22 +191,30 @@ local function Damage(p, p2, knockback)
 	local sound = tier[P_RandomRange(1, #tier)]
 
 	S_StartSound(p2.mo, sound)
-	S_StartSound(p.mo, sound, p)
 
-	if knockback == nil then
-		knockback = true
-	end
-
-	if knockback then
-		Knockback(p, p2)
-	end
-
-	p2.heist.attack_cooldown = max($, TICRATE)
-
-	p.powers[pw_flashing] = FH_ATK_FLASH_TICS
+	return true
 end
 
 local function RegisterGuard(atk, vic)
+	if vic then
+		local knockbackSpeed = 15
+
+		if atk.heist.perf_parry_time then
+			knockbackSpeed = 20
+		end
+
+		local dist = R_PointToDist2(atk.mo.x, atk.mo.y, vic.mo.x, vic.mo.y)
+		local zdist = (vic.mo.z+vic.mo.height/2)-(atk.mo.z+atk.mo.height/2)
+		local angle = R_PointToAngle2(atk.mo.x, atk.mo.y, vic.mo.x, vic.mo.y)
+		local zangle = R_PointToAngle2(0,0, dist, zdist)
+	
+		local xySpd = knockbackSpeed*cos(zangle)
+		local zSpd = knockbackSpeed*sin(zangle)
+
+		P_InstaThrust(vic.mo, InvAngle(angle), xySpd)
+		P_SetObjectMomZ(vic.mo, zSpd)
+	end
+
 	if atk.heist.perf_parry_time then
 		PerfectParry(atk, vic)
 		return 2
@@ -316,16 +238,21 @@ local function DoWhiff(p)
 end
 
 local function DoGuard(p)
+	if not P_IsObjectOnGround(p.mo) then
+		p.mo.state = S_PLAY_FALL
+		p.heist.parry_cooldown = 2*TICRATE
+		p.powers[pw_flashing] = 2*TICRATE
+		P_InstaThrust(p.mo, p.mo.angle, 12*p.mo.scale)
+		P_SetObjectMomZ(p.mo, 8*p.mo.scale)
+		return
+	end
+
 	p.mo.state = S_FH_GUARD
 	p.pflags = $ & ~(FLAGS_RESET)
 
-	local tics = -1
+	local tics = FH_PRY_DUR
 	local parry_tics = FH_PRY_TICS
 	local perf_parry_tics = FH_PRY_PRF
-
-	if P_IsObjectOnGround(p.mo) then
-		tics = FH_PRY_DUR
-	end
 
 	p.mo.tics = tics
 	p.mo.translation = "FH_ParryColor"
@@ -359,62 +286,8 @@ local function RingSpill(p, dontSpill, p2)
 	return rings_spill
 end
 
-local function RemoveCarry(p)
-	if p.powers[pw_carry] == CR_ROLLOUT then
-		local rollout = p.mo.tracer
-
-		if rollout and rollout.valid and rollout.tracer == p.mo then
-			rollout.tracer = nil
-			rollout.flags = $|MF_PUSHABLE
-		end
-
-		p.mo.tracer = nil
-	else
-		local mo = p.mo.tracer
-
-		if mo and mo.valid and mo.tracer == p.mo then
-			mo.tracer = nil
-		end
-
-		p.mo.tracer = nil
-	end
-
-	p.powers[pw_carry] = CR_NONE
-end
-
 addHook("ThinkFrame", do
 	if not FangsHeist.isMode() then return end
-
-	for i = #StunList, 1, -1 do
-		local p = StunList[i]
-
-		if not (p
-		and p.valid
-		and p.heist
-		and p.heist:isAlive()
-		and p.mo.fh_stun
-		and not StunThinker(p)) then
-			table.remove(StunList, i)
-			if p.mo and p.mo.valid then
-				p.mo.fh_stun = nil
-			end
-		end
-	end
-	for i = #ClashList, 1, -1 do
-		local p = ClashList[i]
-
-		if not (p
-		and p.valid
-		and p.heist
-		and p.heist:isAlive()
-		and p.mo.fh_clash
-		and not ClashThinker(p)) then
-			table.remove(ClashList, i)
-			if p.mo and p.mo.valid then
-				p.mo.fh_clash = nil
-			end
-		end
-	end
 end)
 
 addHook("ShouldDamage", function(t,i,s,dmg,dt)
@@ -564,9 +437,6 @@ local function OnPlayerCollide(p, atkBox, sp)
 
 	if not (sp.heist and sp.heist:isAlive()) then return end
 
-	if pmo.z > mo.z+mo.height then return end
-	if mo.z > pmo.z+pmo.height then return end
-
 	if p.heist.exiting
 	or sp.heist.exiting then
 		return
@@ -577,18 +447,6 @@ local function OnPlayerCollide(p, atkBox, sp)
 		return
 	end
 
-	if pmo.state == S_FH_GUARD then
-		return
-	end
-
-	if not IsInHitBox(pmo, mo) then
-		return
-	end
-
-	if not P_PlayerCanDamage(p, mo) then
-		return
-	end
-
 	if sp.mo.state == S_FH_GUARD
 	and sp.heist.parry_time then
 		RegisterGuard(sp, p)
@@ -596,10 +454,13 @@ local function OnPlayerCollide(p, atkBox, sp)
 	end
 
 	local vicBox = GetHitbox(sp)
+	local atk, vic = GetAttackerAndAttacked(p, sp, atkBox, vicBox)
 
-	Damage(p, sp, nil, sp.mo.state == S_FH_STUN)
-	--[[Knockback(p, sp, true)
-	p.mo.state = S_FH_CLASH
+	if Damage(atk, vic) then
+		Knockback(atk.mo, vic.mo)
+	end
+
+	--[[p.mo.state = S_FH_CLASH
 	sp.mo.state = S_FH_CLASH
 
 	S_StartSound(p.mo, sfx_fhclsh)
@@ -693,7 +554,9 @@ return function(p)
 
 	local hitbox = GetHitbox(p)
 
-	if hitbox then
+	if p.powers[pw_flashing] == 0
+	and p.mo.state ~= S_FH_GUARD
+	and hitbox then
 		FangsHeist.useHitbox(p, hitbox, OnPlayerCollide)
 	end
 end

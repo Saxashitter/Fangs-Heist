@@ -215,14 +215,12 @@ addHook("AbilitySpecial", function(p)
 
 	p.pflags = $ & ~(PF_JUMPED|PF_STARTJUMP|PF_STARTDASH|PF_SPINNING)
 	P_DoJump(p)
-	P_SetObjectMomZ(p.mo, 7*p.jumpfactor)
+	P_SetObjectMomZ(p.mo, 9*p.jumpfactor)
 	p.mo.state = S_PLAY_FLY
 	FangsHeist.Particles:new("Tails Double Jump", p)
 
 	p.mo.tails.doublejump_times = ($ or 0) + 1
 	p.mo.tails.doublejump_ticker = 10
-	p.mo.momx = $/2
-	p.mo.momy = $/2
 
 	if p.mo.tails.doublejump_times == 3 then
 		p.pflags = $|PF_THOKKED

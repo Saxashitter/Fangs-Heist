@@ -1,4 +1,4 @@
-local POPGUN_TIME = 45
+local POPGUN_TIME = 22
 local POPGUN_FRICTION = tofixed("0.95")
 
 local SKID_TIME = 3
@@ -95,7 +95,10 @@ local function doPopgun(p)
 		local speed = FixedHypot(p.mo.momx,p.mo.momy)
 		P_InstaThrust(cork, p.mo.angle, speed+24*FU)
 
-		cork.scale = $*3/2
+		cork.spritexscale = 2*FU
+		cork.spriteyscale = 2*FU
+		cork.radius = $*2
+		cork.height = $*2
 		cork.momz = 2*FU*P_MobjFlip(p.mo)
 		cork.flags = $ & ~MF_NOGRAVITY
 		cork.angle = p.mo.angle
@@ -124,12 +127,6 @@ end
 
 local function popgunTmr(p)
 	p.fang.popgun = max(0, $-1)
-
-	if not popgunStates[p.mo.state] then
-		p.fang.popgun = 0
-		p.fang.skidtime = 0
-		return
-	end
 
 	if p.fang.popgun == 0
 	and popgunStates[p.mo.state] then
