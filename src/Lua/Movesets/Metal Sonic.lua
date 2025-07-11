@@ -136,18 +136,18 @@ local function AirDashTick(p)
 		p.mo.state = S_PLAY_SPRING
 
 		if P_GetPlayerControlDirection(p)
-			P_Thrust(p.mo, p.mo.angle, p.mo.metalsonic.sspd/(1 + (p.mo.metalsonic.adp / 6))/24)
+			P_Thrust(p.mo, p.mo.angle, p.mo.metalsonic.sspd/(1 + (p.mo.metalsonic.adp / 6))/64)
 		end
 	end
 
 	if p.mo.metalsonic.adp > 24 or not (p.cmd.buttons & BT_SPIN) then
-		AirDashDisable(p)
-		p.mo.state = S_PLAY_FALL
-		p.mo.momz = $/3
-
 		if P_GetPlayerControlDirection(p)
 			P_InstaThrust(p.mo, p.mo.angle, p.mo.metalsonic.sspd/(1 + (p.mo.metalsonic.adp / 6)))
 		end
+
+		AirDashDisable(p)
+		p.mo.state = S_PLAY_FALL
+		p.mo.momz = $/3
 	end
 end
 

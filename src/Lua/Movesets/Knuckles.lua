@@ -79,16 +79,15 @@ addHook("PlayerThink", function(player)
 		player.mo.knuckles.climbtime = $ - 1
 	end
 
+	--reset it a different way so you don't get neon knuckles
+	player.mo.colorized = false
+	player.mo.color = player.skincolor
 	if player.mo.knuckles.climbtime <= 70 then
 		-- Indicator for Knuckles... getting tired? Yeah let's go with that
 		if (leveltime % 4 == 0) then
 			player.mo.colorized = true
 			player.mo.color = skincolors[player.skincolor].invcolor
 			S_StartSound(player.mo, sfx_pudpud)
-		elseif (leveltime % 4 != 0)
-		or player.fh_climbtime == 0 then
-			player.mo.colorized = false
-			player.mo.color = player.skincolor
 		end
 	end
 

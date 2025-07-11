@@ -150,9 +150,13 @@ addHook("AbilitySpecial", function(p)
 
 	if not (p.pflags & PF_THOKKED) then
 		p.pflags = $|PF_THOKKED
-		S_StartSound(p.mo, sfx_kc5b) -- idk this sfx's name
+		S_StartSound(p.mo, (p.mo.eflags & MFE_UNDERWATER) and sfx_s3k7d or sfx_kc5b) -- idk this sfx's name
 		P_SetObjectMomZ(p.mo, 7*FU)
 		P_InstaThrust(p.mo, p.mo.angle, 45*FU) -- not that fast but balanced enough
+		if p.mo.eflags & MFE_UNDERWATER --op
+			p.mo.momx,p.mo.momy,p.mo.momz = $1/2,$2/2,$3/2
+		end
+
 		local thokring = P_SpawnMobjFromMobj(p.mo, 0, 0, 0, MT_THOK)
 		thokring.state = S_FH_THIK
 		thokring.fuse = 10
