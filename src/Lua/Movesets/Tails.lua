@@ -8,6 +8,11 @@ local FLY_TICS = 40
 local FLY_MOM = 24
 local FLY_GRAVITY = FU/2
 
+local function Wrap(value, minValue, maxValue)
+    local range = maxValue - minValue + 1
+    return ((value - minValue) % range + range) % range + minValue
+end
+
 local function HasControl(p)
 	if p.pflags & PF_STASIS then return false end
 	if p.pflags & PF_FULLSTASIS then return false end
@@ -226,5 +231,24 @@ addHook("AbilitySpecial", function(p)
 
 	if p.mo.tails.doublejump_times == 3 then
 		p.pflags = $|PF_THOKKED
+	end
+end)
+
+addHook("FollowMobj", function(p, mo)
+	if p.mo
+	and p.mo.valid
+	and p.mo.state == S_PLAY_CLING then
+		mo.state = S_TAILSOVERLAY_MINUS30DEGREES
+	end
+end, MT_TAILSOVERLAY)
+
+FangsHeist.addPlayerScript("postthinkframe", function(p)
+	if not Valid(p) then return end
+	if not p.followmobj then return end
+	if not p.followmobj.valid then return end
+
+	if p.mo.state == S_PLAY_CLING then
+		p.followmobj.state = S_TAILSOVERLAY_MINUS30DEGREES
+		p.followmobj.frame = ($ & ~FF_FRAMEMASK)|Wrap(leveltime/3, A, G)
 	end
 end)

@@ -1,7 +1,8 @@
 local scripts = {
 	playerthink = {},
 	thinkframe = {},
-	prethinkframe = {}
+	prethinkframe = {},
+	postthinkframe = {}
 }
 
 FangsHeist.PlayerScripts = scripts
@@ -139,6 +140,18 @@ addHook("ThinkFrame", function(p)
 		if not (p and p.valid and p.heist) then continue end
 
 		for _,script in ipairs(scripts.thinkframe) do
+			script(p)
+		end
+	end
+end)
+
+addHook("PostThinkFrame", function(p)
+	if not FangsHeist.isMode() then return end
+
+	for p in players.iterate do
+		if not (p and p.valid and p.heist) then continue end
+
+		for _,script in ipairs(scripts.postthinkframe) do
 			script(p)
 		end
 	end
