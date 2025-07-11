@@ -244,6 +244,7 @@ local function DoGuard(p)
 		p.powers[pw_flashing] = 2*TICRATE
 		P_InstaThrust(p.mo, p.mo.angle, 12*p.mo.scale)
 		P_SetObjectMomZ(p.mo, 8*p.mo.scale)
+		S_StartSound(p.mo, sfx_s3k7c)
 		return
 	end
 
@@ -262,6 +263,7 @@ local function DoGuard(p)
 	p.heist.parry_cooldown = 2*TICRATE
 
 	S_StartSound(p.mo, sfx_s1a2)
+	S_StartSound(p.mo, sfx_s3k7c)
 end
 
 local function RingSpill(p, dontSpill, p2)

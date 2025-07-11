@@ -169,11 +169,12 @@ mobjinfo[freeslot "MT_FH_SIGN"] = {
 }
 
 -- Sounds
-for i = 1,4 do
+for i = 1, 4 do
 	sfxinfo[freeslot("sfx_dmga"..i)].caption = "Attack"
 	sfxinfo[freeslot("sfx_dmgb"..i)].caption = "Attack"
 end
-for i = 1,2 do
+
+for i = 1, 2 do
 	sfxinfo[freeslot("sfx_parry"..i)].caption = "Parry"
 end
 sfxinfo[freeslot "sfx_fhclsh"].caption = "Clink!"
@@ -188,5 +189,9 @@ sfxinfo[freeslot "sfx_nartgw"].caption = "This game's winner is..."
 sfxinfo[freeslot "sfx_narcon"].caption = "Congratulations!"
 
 sfxinfo[freeslot "sfx_sbounc"].caption = "Bounce"
+
+for i = 1, 3 do
+	sfxinfo[freeslot("sfx_tlfly"..i)].caption = "Flight"
+end
 
 freeslot("sfx_fhwrn1","sfx_fhwrn2")

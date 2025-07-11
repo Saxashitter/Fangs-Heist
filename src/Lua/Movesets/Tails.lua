@@ -61,7 +61,7 @@ local function StickToWall(p)
 	or p.mo.state == S_FH_STUN
 	or p.mo.state == S_FH_CLASH then
 		DisableWallJump(p, true)
-		S_StartSound(p.mo, sfx_s3k51)
+		S_StartSoundAtVolume(p.mo, sfx_s1ab, 150)
 		return
 	end
 
@@ -196,6 +196,7 @@ addHook("AbilitySpecial", function(p)
 		P_Thrust(p.mo, p.drawangle, 19*p.mo.scale)
 		p.mo.state = S_PLAY_SPRING
 		p.mo.tails.doublejump_times = 2 -- only allow 1 double jump
+		S_StartSoundAtVolume(p.mo, sfx_cdfm50, 150)
 
 		if not p.mo.tails.walljump_times then
 			p.mo.tails.walljump_times = 0
@@ -214,11 +215,12 @@ addHook("AbilitySpecial", function(p)
 	end
 
 	p.pflags = $ & ~(PF_JUMPED|PF_STARTJUMP|PF_STARTDASH|PF_SPINNING)
-	P_DoJump(p)
+	P_DoJump(p, false)
 	P_SetObjectMomZ(p.mo, 9*p.jumpfactor)
 	p.mo.state = S_PLAY_FLY
 	FangsHeist.Particles:new("Tails Double Jump", p)
 
+	S_StartSound(p.mo, sfx_tlfly1+(p.mo.tails.doublejump_times or 0))
 	p.mo.tails.doublejump_times = ($ or 0) + 1
 	p.mo.tails.doublejump_ticker = 10
 
