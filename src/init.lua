@@ -48,6 +48,7 @@ dofile "Effects/main"
 
 dofile "Movesets/Sonic"
 dofile "Movesets/Tails"
+dofile "Movesets/Knuckles"
 dofile "Movesets/Amy"
 dofile "Movesets/Fang"
 dofile "Movesets/Metal Sonic"

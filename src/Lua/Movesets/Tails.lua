@@ -70,9 +70,9 @@ local function StickToWall(p)
 		return
 	end
 
-	p.drawangle = FixedAngle(AngleFixed(angle) + 180*FU)
-	if p.mo.state ~= S_PLAY_FALL then
-		p.mo.state = S_PLAY_FALL
+	p.drawangle = angle
+	if p.mo.state ~= S_PLAY_CLING then
+		p.mo.state = S_PLAY_CLING
 	end
 
 	local momz = p.mo.momz*P_MobjFlip(p.mo)
