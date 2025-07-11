@@ -180,9 +180,11 @@ addHook("PlayerThink", function(p)
 	and (p.playerstate == PST_LIVE)
 	and not (p.pflags & PF_STASIS)
 	and not (p.pflags & PF_FULLSTASIS)
+	and (p.cmd.buttons & BT_JUMP)
 	and (P_IsObjectOnGround(p.mo) == true)
-		p.mo.state = S_PLAY_JUMP
-		P_SetObjectMomZ(p.mo, 15*FRACUNIT)
+		P_SetObjectMomZ(p.mo, 15*p.mo.scale)
+		p.pflags = $|PF_JUMPED|PF_STARTJUMP|PF_THOKKED
+		p.mo.state = S_PLAY_ROLL
 		return true
 	end
 end)

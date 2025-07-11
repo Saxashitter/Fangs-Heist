@@ -192,3 +192,27 @@ addHook("PlayerThink", function(p)
 		end
 	end
 end)
+
+-- modify fangs stupid fucking cork
+-- romoney gave me thisbcode from elifin
+local function CheckAndCrumble2(mo, sec)
+	for fof in sec.ffloors(sec) do
+		if not (fof.flags & FF_EXISTS) then continue end -- Does it exist?
+		if not (fof.flags & FF_BUSTUP) then continue end -- Is it bustable?
+		
+		if mo.z + mo.momz + mo.height < fof.bottomheight then continue end -- Are we too low?
+		if mo.z + mo.momz > fof.topheight then continue end -- Are we too high?
+		
+		-- Check for whatever else you may want to    
+		EV_CrumbleChain(fof) -- Crumble
+	end
+end
+
+addHook("MobjLineCollide", function(mo, line)
+	if not FangsHeist.isMode() then return end
+	if not mo and mo.health return end
+
+	for _, sec in ipairs({line.frontsector, line.backsector})
+		CheckAndCrumble2(mo, sec)
+	end
+end, MT_CORK)

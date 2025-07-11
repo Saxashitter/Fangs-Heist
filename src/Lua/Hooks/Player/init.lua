@@ -55,6 +55,41 @@ local function _draw(self, v, p, c, result, trans)
 		v.getColormap(mo.skin, plyr.skincolor))
 end
 
+addHook("PreThinkFrame", do
+	if not FangsHeist.isMode() then
+		return
+	end
+	local gamemode = FangsHeist.getGamemode()
+
+	for p in players.iterate do
+		if not p.heist then continue end
+
+		p.heist.lastbuttons = p.heist.buttons
+		p.heist.buttons = p.cmd.buttons
+
+		p.heist.lastforw = p.heist.forwardmove
+		p.heist.lastside = p.heist.sidemove
+
+		p.heist.forwardmove = p.cmd.forwardmove
+		p.heist.sidemove = p.cmd.sidemove
+
+		if (p.heist:isAlive()
+		and p.heist.exiting)
+		or FangsHeist.Net.game_over
+		or FangsHeist.Net.pregame then
+			p.cmd.buttons = 0
+			p.cmd.forwardmove = 0
+			p.cmd.sidemove = 0
+		end
+
+		for _,script in ipairs(scripts.prethinkframe) do
+			script(p)
+		end
+		gamemode:preplayerthink(p)
+	end
+end)
+
+
 addHook("PlayerThink", function(p)
 	-- Force every PlayerThink hook to run before our code here.
 	for _,data in ipairs(FangsHeist._HOOKS.PlayerThink) do

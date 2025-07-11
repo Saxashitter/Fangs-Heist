@@ -57,42 +57,6 @@ addHook("MapLoad", do
 	FangsHeist.loadMap()
 end)
 
-addHook("PreThinkFrame", do
-	if not FangsHeist.isMode() then
-		return
-	end
-	local gamemode = FangsHeist.getGamemode()
-
-	for p in players.iterate do
-		if not p.heist then continue end
-
-		p.heist.lastbuttons = p.heist.buttons
-
-		p.heist.buttons = p.cmd.buttons
-
-		p.heist.lastforw = p.heist.forwardmove
-		p.heist.lastside = p.heist.sidemove
-
-		p.heist.forwardmove = p.cmd.forwardmove
-		p.heist.sidemove = p.cmd.sidemove
-
-		if p.heist:isAlive() then
-			if p.heist.exiting then
-				p.cmd.buttons = 0
-				p.cmd.forwardmove = 0
-				p.cmd.sidemove = 0
-			end
-		end
-		if FangsHeist.Net.game_over
-		or FangsHeist.Net.pregame then
-			p.cmd.buttons = 0
-			p.cmd.sidemove = 0
-			p.cmd.forwardmove = 0
-		end
-		gamemode:preplayerthink(p)
-	end
-end)
-
 addHook("ThinkFrame", do
 	if not FangsHeist.isMode() then
 		return

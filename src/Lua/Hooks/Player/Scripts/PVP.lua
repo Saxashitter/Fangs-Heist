@@ -242,6 +242,7 @@ local function DoGuard(p)
 		p.mo.state = S_PLAY_FALL
 		p.pflags = $ & ~FLAGS_RESET
 		p.heist.parry_cooldown = 2*TICRATE
+		p.mo.heist_airdodge = true
 		p.powers[pw_flashing] = 2*TICRATE
 		P_InstaThrust(p.mo, p.mo.angle, 12*p.mo.scale)
 		P_SetObjectMomZ(p.mo, 8*p.mo.scale)
@@ -478,6 +479,24 @@ end
 		return
 	end
 end, MT_PLAYER)]]
+
+FangsHeist.addPlayerScript("thinkframe", function(p)
+	if not p.heist:isAlive() then return end
+	if not p.mo.heist_airdodge then return end
+
+	if P_IsObjectOnGround(p.mo)
+	or P_PlayerInPain(p)
+	or not p.mo.health then
+		p.mo.heist_airdodge = nil
+	end
+end)
+
+FangsHeist.addPlayerScript("prethinkframe", function(p)
+	if not p.heist:isAlive() then return end
+	if not p.mo.heist_airdodge then return end
+
+	p.cmd.buttons = 0 -- no actions, just things joystick related
+end)
 
 return function(p)
 	if not p.heist:isAlive() then
