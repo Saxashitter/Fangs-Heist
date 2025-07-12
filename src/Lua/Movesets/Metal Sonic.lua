@@ -41,6 +41,8 @@ local function Valid(p)
 	and p.valid
 	and p.heist
 	and p.heist:isAlive()
+	and p.mo
+	and p.mo.valid
 	and p.mo.skin == "metalsonic"
 end
 

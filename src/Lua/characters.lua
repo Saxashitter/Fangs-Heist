@@ -9,9 +9,9 @@ local DEFAULT = {
 	forceSpeedCap = false,
 	attackPriority = _NIL,
 	controls = {
-	--[[	{
+		{
 			key = "FIRE",
-			name = "Swipe",
+			name = "Attack",
 			cooldown = function(self, p)
 				return (p.heist.attack_cooldown)
 			end,
@@ -20,7 +20,7 @@ local DEFAULT = {
 				and p.mo.state ~= S_FH_STUN
 				and p.mo.state ~= S_FH_CLASH
 			end
-		},]]
+		},
 		{
 			key = "FIRE NORMAL",
 			name = "Parry",

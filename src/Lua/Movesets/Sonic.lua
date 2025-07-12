@@ -30,6 +30,8 @@ addHook("PlayerThink", function(p)
 	if not (FangsHeist.isMode()
 	and p.heist
 	and p.heist:isAlive()
+	and p.mo
+	and p.mo.valid
 	and p.mo.skin == "sonic") then
 		p.mo.sonic = nil
 		return

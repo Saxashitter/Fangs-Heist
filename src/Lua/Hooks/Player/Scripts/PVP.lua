@@ -1,40 +1,27 @@
--- Distance Constants
-rawset(_G, "FH_DST_ATK", tofixed("2.5"))
-rawset(_G, "FH_DST_WHF", tofixed("4.35"))
-
-rawset(_G, "FH_DST_ATK_Y", tofixed("1.25"))
-rawset(_G, "FH_DST_WHF_Y", tofixed("1.6"))
-
 -- Attack Constants
-rawset(_G, "FH_ATK_FLASH_TICS", 16)
+rawset(_G, "FH_ATK_FLASH_TICS", 10)
+rawset(_G, "FH_ATK_XYMULT", FU*4)
+rawset(_G, "FH_ATK_ZMULT", FU*3)
 
 -- Parry Constants
 rawset(_G, "FH_PRY_DUR", 35)
 rawset(_G, "FH_PRY_TICS", 16)
 rawset(_G, "FH_PRY_PRF", 7)
 
--- Stun Constants
-rawset(_G, "FH_STN_SPD", 8*FU)
-rawset(_G, "FH_STN_AIRSPD", 10*FU)
-
-rawset(_G, "FH_STN_SPN", 7)
-rawset(_G, "FH_STN_SPN_MAX", 360*FU/8)
-rawset(_G, "FH_STN_SPN_MIN", 360*FU/70)
-
 -- Hurt Constants
 rawset(_G, "FH_HRT_DUR", 35)
 
 local FLAGS_RESET = PF_JUMPED|PF_THOKKED|PF_SPINNING|PF_STARTDASH|PF_BOUNCING|PF_GLIDING
 
--- Returns the angle of p2 from p1's position.
-local function ReturnAngles(pmo1, pmo2)
-	local dist = R_PointToDist2(pmo1.x, pmo1.y, pmo2.x, pmo2.y)
-	local zdist = (pmo2.z + pmo2.height/2) - (pmo1.z + pmo1.height/2)
+local function L_ReturnThrustXYZ(mo, point, speed)
+	local horz = R_PointToAngle2(mo.x, mo.y, point.x, point.y)
+	local vert = R_PointToAngle2(0, mo.z+mo.height/2, FixedHypot(mo.x-point.x, mo.y-point.y), point.z)
 
-	local angle = R_PointToAngle2(pmo1.x, pmo1.y, pmo2.x, pmo2.y)
-	local zangle = R_PointToAngle2(0,0, zdist, dist)
+	local x = FixedMul(FixedMul(speed, cos(horz)), cos(vert))
+	local y = FixedMul(FixedMul(speed, sin(horz)), cos(vert))
+	local z = FixedMul(speed, sin(vert))
 
-	return angle, zangle
+	return x, y, z
 end
 
 -- Returns true if the player can be hit.
@@ -48,96 +35,6 @@ local function CanBeHit(p1, p2)
 	end
 
 	return true
-end
-
-local function GetAttackerAndAttacked(p, sp, hitbox, shitbox)
-	if not shitbox then
-		return p, sp
-	end
-
-	if hitbox.priority > shitbox.priority then
-		return p, sp
-	end
-
-	if shitbox.priority > hitbox.priority then
-		return sp, p
-	end
-
-	-- Determine who hits who using speed.
-	local speed = R_PointToDist2(0,0, p.mo.momx, p.mo.momy)
-	local sspeed = R_PointToDist2(0,0, sp.mo.momx, sp.mo.momy)
-
-	local tier1 = speed/FixedDiv(FU, 25*FU)
-	local tier2 = sspeed/FixedDiv(FU, 25*FU)
-
-	if tier1 > tier2 then
-		return p, sp
-	end
-
-	if tier2 > tier1 then
-		return sp, p
-	end
-
-	-- RANDOM-NESS, GO!
-	if P_RandomRange(0, 1) then
-		return p, sp
-	end
-
-	return sp, p
-end
-
-
-local function GetHitbox(p)
-	local char = FangsHeist.Characters[skins[p.skin].name]
-	--local customHitbox = char:customHitbox (p, p2)
-
-	if p.mo.state == S_FH_STUN or p.mo.state == S_FH_GUARD or p.mo.state == S_FH_CLASH then
-		return
-	end
-
-	-- Define Jump Hitbox
-	if p.pflags & PF_JUMPED
-	and not (p.pflags & PF_NOJUMPDAMAGE) then
-		local hitbox = FangsHeist.makeHitbox(
-			p.mo.x,
-			p.mo.y,
-			p.mo.z+p.mo.height/2,
-			p.mo.radius*2,
-			p.mo.radius*2,
-			p.mo.height*3/2,
-			p.drawangle)
-
-		hitbox.priority = 1
-		return hitbox
-	end
-
-	if p.pflags & PF_SPINNING then
-		local hitbox = FangsHeist.makeHitbox(
-			p.mo.x,
-			p.mo.y,
-			p.mo.z+p.mo.height/2,
-			p.mo.radius*3,
-			p.mo.radius*3/2,
-			p.mo.height*10/12,
-			p.drawangle)
-
-		hitbox.priority = p.pflags & PF_STARTDASH > 0 and 2 or 1
-		return hitbox
-	end
-
-	if p.powers[pw_strong] & STR_MELEE then
-		local hitbox = FangsHeist.makeHitbox(
-			p.mo.x,
-			p.mo.y,
-			p.mo.z+p.mo.height/2,
-			p.mo.radius*3,
-			p.mo.radius*3,
-			p.mo.height,
-			p.drawangle)
-
-		hitbox.priority = 1
-		return hitbox
-	end
 end
 
 local function Knockback(target, source)
@@ -197,22 +94,24 @@ end
 
 local function RegisterGuard(atk, vic)
 	if vic then
-		local knockbackSpeed = 15
+		local knockbackSpeed = 20
 
 		if atk.heist.perf_parry_time then
-			knockbackSpeed = 20
+			knockbackSpeed = 35
 		end
 
-		local dist = R_PointToDist2(atk.mo.x, atk.mo.y, vic.mo.x, vic.mo.y)
-		local zdist = (vic.mo.z+vic.mo.height/2)-(atk.mo.z+atk.mo.height/2)
+		vic.heist.attack_time = 0
+		local mx, my, mz = L_ReturnThrustXYZ(atk.mo, {
+			x = vic.mo.x,
+			y = vic.mo.y,
+			z = vic.mo.z+vic.mo.height/2
+		}, knockbackSpeed*atk.mo.scale)
 		local angle = R_PointToAngle2(atk.mo.x, atk.mo.y, vic.mo.x, vic.mo.y)
-		local zangle = R_PointToAngle2(0,0, dist, zdist)
-	
-		local xySpd = knockbackSpeed*cos(zangle)
-		local zSpd = knockbackSpeed*sin(zangle)
 
-		P_InstaThrust(vic.mo, InvAngle(angle), xySpd)
-		P_SetObjectMomZ(vic.mo, zSpd)
+		vic.mo.momx = mx
+		vic.mo.momy = my
+		vic.mo.momz = mz
+		P_MovePlayer(vic)
 	end
 
 	if atk.heist.perf_parry_time then
@@ -224,15 +123,93 @@ local function RegisterGuard(atk, vic)
 	return 1
 end
 
-local function DoWhiff(p)
+local function AttemptAttack(p, sp)
+	if not (sp and sp.valid and sp.heist and sp.heist:isAlive()) then
+		return
+	end
+
+	local x = p.mo.x + p.mo.momx
+	local y = p.mo.y + p.mo.momx
+	local z = p.mo.z + p.mo.momz
+	local radius = FixedMul(p.mo.radius, FH_ATK_XYMULT)
+	local height = FixedMul(p.mo.height, FH_ATK_ZMULT)
+
+	local distance = R_PointToDist2(x, y, sp.mo.x, sp.mo.y)
+
+	if distance > sp.mo.radius+radius
+	or z > sp.mo.z+sp.mo.height
+	or sp.mo.z > z+height then
+		return
+	end
+
+	if P_PlayerInPain(sp) then return end
+	if p.heist:getTeam() == sp.heist:getTeam() then return end
+
+	if sp.mo.state == S_FH_GUARD
+	and sp.heist.parry_time then
+		RegisterGuard(sp, p)
+		return true
+	end
+
+	if sp.heist.attack_time then
+		local speed = 18*FU
+		local mx, my, mz = L_ReturnThrustXYZ(p.mo, {
+			x = sp.mo.x,
+			y = sp.mo.y,
+			z = sp.mo.z+sp.mo.height/2
+		}, speed)
+
+		p.mo.momx = -mx
+		p.mo.momy = -my
+		p.mo.momz = -mz
+		sp.mo.momx = mx
+		sp.mo.momy = my
+		sp.mo.momz = mz
+
+		P_MovePlayer(p)
+		P_MovePlayer(sp)
+
+		sp.heist.attack_time = 0
+		p.heist.attack_time = 0
+
+		return
+	end
+
+	if Damage(p, sp) then
+		local speed =max(4*p.mo.scale, R_PointToDist2(0,0, p.speed, p.mo.momz))
+		local mx, my, mz = L_ReturnThrustXYZ(p.mo, {
+			x = sp.mo.x,
+			y = sp.mo.y,
+			z = sp.mo.z+sp.mo.height/2
+		}, -speed)
+
+		p.mo.momx = mx
+		p.mo.momy = my
+		p.mo.momz = mz
+		P_MovePlayer(p)
+
+		p.heist.attack_time = 0
+		p.heist.attack_cooldown = 5
+		p.powers[pw_flashing] = max($, FH_ATK_FLASH_TICS)
+	end
+end
+
+local function DoAttack(p)
 	if p.mo.heistwhiff
 	and p.mo.heistwhiff.valid then
 		P_RemoveMobj(p.mo.heistwhiff)
 	end
 
-	p.mo.heistwhiff = CreateWhiffEffect(p)
-	p.heist.attack_cooldown = 3*TICRATE
-	p.heist.attack_time = 10
+	local shield = P_SpawnMobjFromMobj(p.mo, 0,0,p.mo.height/2, MT_THOK)
+	shield.state = S_FH_WHIFF
+	shield.frame = $|FF_FULLBRIGHT
+	shield.scale = 2*FU
+	shield.destscale = shield.scale
+
+	p.heist.instashield = shield
+
+	p.heist.attack_cooldown = TICRATE
+	p.heist.attack_time = G+1
 
 	S_StartSound(p.mo, sfx_s3k42)
 end
@@ -247,6 +224,7 @@ local function DoGuard(p)
 		P_InstaThrust(p.mo, p.mo.angle, 12*p.mo.scale)
 		P_SetObjectMomZ(p.mo, 8*p.mo.scale)
 		S_StartSound(p.mo, sfx_s3k7c)
+	
 		return
 	end
 
@@ -289,10 +267,6 @@ local function RingSpill(p, dontSpill, p2)
 
 	return rings_spill
 end
-
-addHook("ThinkFrame", do
-	if not FangsHeist.isMode() then return end
-end)
 
 addHook("ShouldDamage", function(t,i,s,dmg,dt)
 	if not FangsHeist.isMode() then return end
@@ -435,51 +409,6 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	return true
 end, MT_PLAYER)
 
-local function OnPlayerCollide(p, atkBox, sp)
-	local pmo = p.mo
-	local mo = sp.mo
-
-	if not (sp.heist and sp.heist:isAlive()) then return end
-
-	if p.heist.exiting
-	or sp.heist.exiting then
-		return
-	end
-
-	-- remove for friendly fire
-	if p.heist:getTeam() == sp.heist:getTeam() then
-		return
-	end
-
-	if sp.mo.state == S_FH_GUARD
-	and sp.heist.parry_time then
-		RegisterGuard(sp, p)
-		return
-	end
-
-	local vicBox = GetHitbox(sp)
-	local atk, vic = GetAttackerAndAttacked(p, sp, atkBox, vicBox)
-
-	if Damage(atk, vic) then
-		Knockback(atk.mo, vic.mo)
-	end
-
-	--[[p.mo.state = S_FH_CLASH
-	sp.mo.state = S_FH_CLASH
-
-	S_StartSound(p.mo, sfx_fhclsh)
-	S_StartSound(sp.mo, sfx_fhclsh)]]
-end
-
---[[addHook("MobjMoveCollide", function(pmo, mo)
-	if not FangsHeist.isMode() then return end
-	if not (pmo and pmo.player and pmo.player.heist) then return end
-	if (mo and mo.type == MT_PLAYER and mo.player and mo.player.heist) then
-		OnPlayerCollide(pmo, mo)
-		return
-	end
-end, MT_PLAYER)]]
-
 FangsHeist.addPlayerScript("thinkframe", function(p)
 	if not p.heist:isAlive() then return end
 	if not p.mo.heist_airdodge then return end
@@ -496,6 +425,21 @@ FangsHeist.addPlayerScript("prethinkframe", function(p)
 	if not p.mo.heist_airdodge then return end
 
 	p.cmd.buttons = 0 -- no actions, just things joystick related
+end)
+
+FangsHeist.addPlayerScript("thinkframe", function(p)
+	if not (p.heist.instashield
+	and p.heist.instashield.valid)
+	or not p.heist:isAlive() then
+		p.heist.instashield = nil
+		return
+	end
+
+	local shield = p.heist.instashield
+	P_MoveOrigin(shield,
+		p.mo.x,
+		p.mo.y,
+		p.mo.z+p.mo.height/2)
 end)
 
 return function(p)
@@ -547,8 +491,17 @@ return function(p)
 		-- Parry
 		if press & BT_FIRENORMAL
 		and p.heist.attack_time == 0
+		and p.heist.attack_cooldown == 0
 		and p.heist.parry_cooldown == 0 then
 			DoGuard(p)
+		end
+
+		-- Attack
+		if press & BT_ATTACK
+		and p.heist.attack_time == 0
+		and p.heist.attack_cooldown == 0
+		and p.mo.state ~= S_FH_GUARD then
+			DoAttack(p)
 		end
 	end
 
@@ -573,12 +526,14 @@ return function(p)
 			S_StartSound(p.mo, sfx_ngskid)
 		end
 	end
+	if p.heist.attack_time
+	or p.powers[pw_strong] & STR_MELEE then
+		p.heist.attack_time = max(0, $-1)
 
-	local hitbox = GetHitbox(p)
-
-	if p.powers[pw_flashing] == 0
-	and p.mo.state ~= S_FH_GUARD
-	and hitbox then
-		FangsHeist.useHitbox(p, hitbox, OnPlayerCollide)
+		for sp in players.iterate do
+			if AttemptAttack(p, sp) then
+				break
+			end
+		end
 	end
 end

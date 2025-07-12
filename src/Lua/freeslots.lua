@@ -32,7 +32,8 @@ states[freeslot "S_FH_WHIFF"] = {
 	frame = A|FF_ANIMATE|FF_FULLBRIGHT,
 	tics = G,
 	var1 = G,
-	var2 = 1
+	var2 = 1,
+	nextstate = S_NULL
 }
 
 states[freeslot "S_FH_THIK"] = {
