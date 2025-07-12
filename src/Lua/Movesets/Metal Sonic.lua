@@ -14,17 +14,17 @@ states[S_X3UPDASH] = {
 //DRIFT TURN SPEED!
 local DTS = ANG10
 
-//MINIMUM SPEED FOR DRIFT!
+//MINIMUN SPEED FOR DRIFT!
 local MINSPEED = FU * 15
 
 //It's easy to comprehend.
 local DASHMODETICS = 90
 
-//Minimun speed for getting dash mode!
+//Minimum speed for getting dash mode!
 local MINDASHMODE = 26 * FU
 
 //Drift speed loss over time! 
-local DSLOT = FU / 8
+local DSLOT = FU / 5
 local DSMAX = FU * 46
 
 local DMBASESPEED = 36 * FU
@@ -33,7 +33,7 @@ local DMMAXSPEED = 46 * FU
 
 local AIRDASHSPEED = 12 * FU
 
-local DASHFLAGS = STR_ATTACK|STR_WALL|STR_CEILING|STR_SPIKE
+local DASHFLAGS = STR_WALL|STR_CEILING|STR_SPIKE
 
 local function Valid(p)
 	return FangsHeist.isMode(p)
@@ -52,7 +52,6 @@ local function DashModeDisable(p)
 	p.mo.metalsonic.dmt = 0
 	p.mo.color = p.skincolor
 	p.mo.metalsonic.dmspeed = DMBASESPEED
-	p.normalspeed = skins[p.skin].normalspeed
 	p.powers[pw_strong] = $ & ~DASHFLAGS
 end
 
@@ -77,30 +76,31 @@ end
 
 local function DashModeTick(p)
 	if (P_IsObjectOnGround(p.mo)
-	and not (p.pflags & PF_SPINNING)
-	and not p.mo.metalsonic.drifthold
-	and FixedDiv(p.speed, p.mo.scale) < MINDASHMODE)
+	and FixedDiv(R_PointToDist2(0,0, p.rmomx, p.rmomy), p.mo.scale) < MINDASHMODE)
 	or P_PlayerInPain(p)
 	or not (p.mo and p.mo.health) then
-		if p.mo and p.mo.health and p.mo.metalsonic.dmt >= DASHMODETICS then
+		if p.mo
+		and p.mo.health
+		and p.mo.metalsonic.dmt >= DASHMODETICS then
 			S_StartSound(p.mo, sfx_kc65)
-			p.normalspeed = skins[p.mo.skin].normalspeed
 		end
 
 		DashModeDisable(p)
 		return
 	end
 
-	p.mo.metalsonic.dmt = $ + 1
-
-	if p.mo.metalsonic.dmt == DASHMODETICS then
-		S_StartSound(p.mo, sfx_cdfm40)
+	if P_IsObjectOnGround(p.mo)
+	and not p.mo.metalsonic.drift then
+		p.mo.metalsonic.dmt = $ + 1
+	
+		if p.mo.metalsonic.dmt == DASHMODETICS+1 then
+			S_StartSound(p.mo, sfx_cdfm40)
+		end
 	end
 
 	if p.mo.metalsonic.dmt > DASHMODETICS then
 		p.powers[pw_strong] = $|DASHFLAGS
 		p.mo.metalsonic.dmspeed = min($ + DMSPEEDUP, DMMAXSPEED)
-		p.normalspeed = p.mo.metalsonic.dmspeed
 
 		if p.mo.state == S_PLAY_RUN then
 			p.mo.state = S_PLAY_DASH
@@ -162,8 +162,10 @@ local function DriftTick(p)
 	if speed > MINSPEED
 	and p.cmd.buttons & BT_SPIN
 	and P_IsObjectOnGround(p.mo)
+	and p.pflags & PF_SPINNING
 	and not p.mo.metalsonic.drift then
 		p.mo.metalsonic.drift = true
+		p.mo.metalsonic.speed = p.speed
 	end
 
 	if not p.mo.metalsonic.drift then
@@ -173,6 +175,8 @@ local function DriftTick(p)
 	if not (p.cmd.buttons & BT_SPIN)
 	and p.mo.metalsonic.drifthold
 	or not P_IsObjectOnGround(p.mo)
+	or not (p.pflags & PF_SPINNING)
+	or p.mo.metalsonic.speed == 0
 	or speed < MINSPEED then
 		p.mo.rollangle = 0
 		p.pflags = $&~PF_SPINNING
@@ -193,7 +197,7 @@ local function DriftTick(p)
 	end
 
 	local sidemove = 0
-	if abs(p.cmd.sidemove) > 12 then
+	if abs(p.cmd.sidemove) > 7 then
 		sidemove = p.cmd.sidemove*FU/50
 	end
 
@@ -209,11 +213,7 @@ local function DriftTick(p)
 		p.mo.rollangle = 0 - FixedMul(ANGLE_22h, sidemove)
 		p.drawangle = p.mo.metalsonic.da - FixedMul(ANGLE_22h, sidemove)
 	
-		p.mo.metalsonic.speed = $ - (DSLOT/12)
-
-		if p.mo.metalsonic.speed > DSMAX then
-			p.mo.metalsonic.speed = $ - DSLOT
-		end
+		p.mo.metalsonic.speed = max(0, $ - DSLOT)
 		P_InstaThrust(p.mo, p.mo.metalsonic.da, FixedMul(p.mo.metalsonic.speed, p.mo.scale))
 
 		local dust = P_SpawnMobjFromMobj(p.mo, 0, 0, 0, MT_SPINDUST)
