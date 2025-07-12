@@ -14,13 +14,13 @@ states[S_X3UPDASH] = {
 //DRIFT TURN SPEED!
 local DTS = ANG10
 
-//MINIMUN SPEED FOR DRIFT!
+//MINIMUM SPEED FOR DRIFT!
 local MINSPEED = FU * 15
 
 //It's easy to comprehend.
 local DASHMODETICS = 90
 
-//Minimum speed for getting dash mode!
+//Minimun speed for getting dash mode!
 local MINDASHMODE = 26 * FU
 
 //Drift speed loss over time! 
