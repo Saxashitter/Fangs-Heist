@@ -1,7 +1,7 @@
 -- Attack Constants
 rawset(_G, "FH_ATK_FLASH_TICS", 10)
-rawset(_G, "FH_ATK_XYMULT", FU*4)
-rawset(_G, "FH_ATK_ZMULT", FU*3)
+rawset(_G, "FH_ATK_XYMULT", FU*5)
+rawset(_G, "FH_ATK_ZMULT", FU*4)
 
 -- Parry Constants
 rawset(_G, "FH_PRY_DUR", 35)
@@ -128,11 +128,11 @@ local function AttemptAttack(p, sp)
 		return
 	end
 
-	local x = p.mo.x + p.mo.momx
-	local y = p.mo.y + p.mo.momx
-	local z = p.mo.z + p.mo.momz
 	local radius = FixedMul(p.mo.radius, FH_ATK_XYMULT)
 	local height = FixedMul(p.mo.height, FH_ATK_ZMULT)
+	local x = p.mo.x + p.mo.momx
+	local y = p.mo.y + p.mo.momx
+	local z = p.mo.z + p.mo.momz - height/2
 
 	local distance = R_PointToDist2(x, y, sp.mo.x, sp.mo.y)
 
