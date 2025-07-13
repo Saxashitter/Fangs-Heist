@@ -33,7 +33,9 @@ addHook("PlayerThink", function(p)
 	and p.mo
 	and p.mo.valid
 	and p.mo.skin == "sonic") then
-		p.mo.sonic = nil
+		if p.mo and p.mo.valid then
+			p.mo.sonic = nil
+		end
 		return
 	end
 

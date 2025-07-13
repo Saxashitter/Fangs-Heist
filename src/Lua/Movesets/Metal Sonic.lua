@@ -18,7 +18,7 @@ local DTS = ANG10
 local MINSPEED = FU * 15
 
 //It's easy to comprehend.
-local DASHMODETICS = 90
+local DASHMODETICS = 35*2
 
 //Minimum speed for getting dash mode!
 local MINDASHMODE = 26 * FU
@@ -31,9 +31,12 @@ local DMBASESPEED = 36 * FU
 local DMSPEEDUP = FU/8
 local DMMAXSPEED = 46 * FU
 
-local AIRDASHSPEED = 12 * FU
+local AIRDASHSPEEDZ = 4 * FU
+local AIRDASHSPEEDXY = 30 * FU
 
-local DASHFLAGS = STR_WALL|STR_CEILING|STR_SPIKE
+local DASHFLAGS = STR_WALL|STR_CEILING|STR_SPIKE|STR_ATTACK
+
+local MetalSlams = {}
 
 local function Valid(p)
 	return FangsHeist.isMode(p)
@@ -44,6 +47,15 @@ local function Valid(p)
 	and p.mo
 	and p.mo.valid
 	and p.mo.skin == "metalsonic"
+end
+
+local function SlamValid(p)
+	return p
+	and p.valid
+	and p.heist
+	and p.heist:isAlive()
+	and p.mo
+	and p.mo.valid
 end
 
 local function DashModeDisable(p)
@@ -72,6 +84,56 @@ local function DriftDisable(p)
 	p.mo.metalsonic.drifthold = false
 	p.mo.metalsonic.drift = false
 	p.mo.metalsonic.speed = 0
+end
+
+local function IsSlamming(p)
+	for k,v in ipairs(MetalSlams) do
+		if v.player == p then
+			return v
+		end
+	end
+
+	return false
+end
+
+local function IsSlamTarget(mo)
+	for k,v in ipairs(MetalSlams) do
+		if v.mobj == mo then
+			return v
+		end
+	end
+
+	return false
+end
+
+local function StopSlam(k)
+	if type(k) ~= "number" then
+		for key,v in ipairs(MetalSlams) do
+			if v == k then
+				k = key
+				break
+			end
+		end
+	end
+
+	local slam = MetalSlams[k]
+	if Valid(slam.player) then
+		slam.player.powers[pw_strong] = $ & ~STR_HEAVY
+	end
+	table.remove(MetalSlams, k)
+end
+
+local function StartSlam(p, mobj)
+	p.powers[pw_strong] = $|STR_HEAVY
+	DashModeDisable(p)
+	AirDashDisable(p)
+	DriftDisable(p)
+
+	table.insert(MetalSlams, {
+		player = p,
+		mobj = mobj,
+		tics = 0
+	})
 end
 
 local function DashModeTick(p)
@@ -134,26 +196,21 @@ local function AirDashTick(p)
 		dust.fuse = 99999
 		dust.state = S_X3UPDASH
 		dust.scale = $*5/2
+		p.mo.metalsonic.adthrust = p.mo.angle
 		S_StartSound(p.mo, sfx_msupds)
 	end
 
 	if p.mo.metalsonic.adp > 7 then
-		P_SetObjectMomZ(p.mo, AIRDASHSPEED)
-		p.mo.state = S_PLAY_SPRING
-
-		if P_GetPlayerControlDirection(p)
-			P_Thrust(p.mo, p.mo.angle, p.mo.metalsonic.sspd/(1 + (p.mo.metalsonic.adp / 6))/24)
-		end
+		P_SetObjectMomZ(p.mo, AIRDASHSPEEDZ)
+		P_InstaThrust(p.mo, p.mo.metalsonic.adthrust, AIRDASHSPEEDXY)
+		p.mo.state = S_PLAY_DASH
+		p.drawangle = p.mo.metalsonic.adthrust
 	end
 
 	if p.mo.metalsonic.adp > 24 or not (p.cmd.buttons & BT_SPIN) then
 		AirDashDisable(p)
 		p.mo.state = S_PLAY_FALL
 		p.mo.momz = $/3
-
-		if P_GetPlayerControlDirection(p)
-			P_InstaThrust(p.mo, p.mo.angle, p.mo.metalsonic.sspd/(1 + (p.mo.metalsonic.adp / 6)))
-		end
 	end
 end
 
@@ -188,7 +245,7 @@ local function DriftTick(p)
 			p.mo.state = S_PLAY_FALL
 		end
 
-		if S_SoundPlaying(p.mo, sfx_msdrft)
+		if S_SoundPlaying(p.mo, sfx_msdrft) then
 			S_StopSoundByID(p.mo, sfx_msdrft)
 		end
 
@@ -219,7 +276,7 @@ local function DriftTick(p)
 		local dust = P_SpawnMobjFromMobj(p.mo, 0, 0, 0, MT_SPINDUST)
 		dust.fuse = 5
 
-		if not S_SoundPlaying(p.mo, sfx_msdrft)
+		if not S_SoundPlaying(p.mo, sfx_msdrft) then
 			S_StartSoundAtVolume(p.mo, sfx_msdrft, 200)
 		end
 	else
@@ -231,15 +288,87 @@ local function DriftTick(p)
 
 		p.mo.metalsonic.drifthold = false
 
-		if S_SoundPlaying(p.mo, sfx_msdrft)
+		if S_SoundPlaying(p.mo, sfx_msdrft) then
 			S_StopSoundByID(p.mo, sfx_msdrft)
 		end
 	end
 end
 
+local function SlamTick(slam)
+	local p = slam.player
+	local mobj = slam.mobj
+
+	if not Valid(p) then
+		return true
+	end
+	if not p.mo.metalsonic then return true end
+	if not (mobj and mobj.valid and mobj.health) then
+		return true
+	end
+	if mobj.type == MT_PLAYER
+	and not SlamValid(mobj.player) then
+		return true
+	end
+
+	local looptics = 24
+	local t = FixedDiv(slam.tics % looptics, looptics)
+	local angle = FixedAngle(360*t)
+
+	local xy = FixedMul(p.mo.radius+mobj.radius, cos(angle))
+	local z = FixedMul(p.mo.height/2+mobj.height, sin(angle))
+
+	P_MoveOrigin(mobj,
+		p.mo.x + P_ReturnThrustX(nil, p.drawangle, xy),
+		p.mo.y + P_ReturnThrustY(nil, p.drawangle, xy),
+		max(mobj.floorz, min(p.mo.z + p.mo.height/2 + z, mobj.ceilingz - mobj.height))
+	)
+
+	if mobj.type ~= MT_PLAYER then
+		mobj.angle = p.drawangle
+	elseif mobj.player then
+		mobj.player.drawangle = p.drawangle
+		mobj.state = S_PLAY_PAIN
+	end
+
+	slam.tics = $+1
+
+	if P_IsObjectOnGround(p.mo) then
+		P_SetOrigin(mobj, p.mo.x, p.mo.y, p.mo.z)
+		p.mo.__forcedamage = true -- hax
+
+		if mobj
+		and mobj.valid
+		and P_DamageMobj(mobj, p.mo, p.mo) then
+			P_SetObjectMomZ(p.mo, 6*p.mo.scale)
+		else
+			p.powers[pw_flashing] = max($, TICRATE)
+		end
+
+		p.mo.__forcedamage = nil
+		return true
+	end
+end
+
+local function SlamPlayerTick(p)
+	local slam = IsSlamming(p)
+
+	if not slam then return end
+
+	local gravity = P_GetMobjGravity(p.mo)
+	local mo = slam.mobj
+
+	p.pflags = $|PF_JUMPSTASIS
+	p.mo.momz = $ - gravity + FixedMul(gravity, tofixed("2.25"))
+	if p.mo.state ~= S_PLAY_ROLL then
+		p.mo.state = S_PLAY_ROLL
+	end
+end
+
 addHook("PlayerThink", function(p)
 	if not Valid(p) then
-		p.mo.metalsonic = nil
+		if p.mo and p.mo.valid then
+			p.mo.metalsonic = nil
+		end
 		return
 	end
 
@@ -262,11 +391,25 @@ addHook("PlayerThink", function(p)
 	DashModeTick(p)
 	AirDashTick(p)
 	DriftTick(p)
+	SlamPlayerTick(p)
+end)
+
+addHook("ThinkFrame", do
+	if not FangsHeist.isMode() then return end
+
+	for k = #MetalSlams, 1, -1 do
+		local v = MetalSlams[k]
+
+		if SlamTick(v) then
+			StopSlam(k)
+			continue
+		end
+	end
 end)
 
 addHook("MobjDamage", function(mo)
 	if not Valid(mo.player) then return end
-	if not mo.player.metalsonic then return end
+	if not mo.metalsonic then return end
 
 	DashModeDisable(mo.player)
 	AirDashDisable(mo.player)
@@ -284,4 +427,48 @@ addHook("JumpSpinSpecial", function(p)
 	p.mo.metalsonic.sspd = p.speed
 	p.pflags = $|PF_THOKKED&~PF_SPINNING
 	S_StartSoundAtVolume(p.mo, sfx_cdfm35, 150)
+end)
+
+local function DashModeCollide(mo, target)
+	if not Valid(mo.player) then return end
+	if not target.valid then return end
+	if not (target.flags & MF_ENEMY or target.type == MT_PLAYER) then return end
+	if not mo.metalsonic then return end
+	if not mo.metalsonic.airdash then return end
+	if IsSlamming(mo.player) then return end
+
+	if target.type == MT_PLAYER
+	and not SlamValid(target.player) then
+		return
+	end
+
+	StartSlam(mo.player, target)
+	return true
+end
+
+addHook("MobjCollide", DashModeCollide, MT_PLAYER)
+addHook("MobjMoveCollide", DashModeCollide, MT_PLAYER)
+
+addHook("ShouldDamage", function(mo, inf, target)
+	if not Valid(mo.player) then return end
+	if not mo.metalsonic then return end
+
+	local slam = IsSlamming(mo.player)
+	if not slam then return end
+
+	if slam.mobj == inf then
+		return false
+	end
+end, MT_PLAYER)
+addHook("ShouldDamage", function(mo, _, target)
+	if not mo.valid then return end
+
+	local slam = IsSlamTarget(mo)
+	if not slam then return end
+
+	if not (target
+	and target.valid
+	and target.__forcedamage) then
+		return false
+	end
 end)

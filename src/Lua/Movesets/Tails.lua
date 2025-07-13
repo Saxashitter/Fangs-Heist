@@ -202,14 +202,14 @@ addHook("AbilitySpecial", function(p)
 		p.mo.state = S_PLAY_SPRING
 		S_StartSoundAtVolume(p.mo, sfx_cdfm50, 150)
 
-		p.mo.tails.doublejump_times = 1 -- only allow 2 double jump
+		p.mo.tails.doublejump_times = max($ or 0, 1)
 
 		if not p.mo.tails.walljump_times then
 			p.mo.tails.walljump_times = 0
 		end
 
 		p.mo.tails.walljump_times = $+1
-		return
+		return true
 	end
 
 	if p.pflags & PF_THOKKED then
@@ -233,13 +233,14 @@ addHook("AbilitySpecial", function(p)
 	if p.mo.tails.doublejump_times == 3 then
 		p.pflags = $|PF_THOKKED
 	end
+	return true
 end)
 
 addHook("FollowMobj", function(p, mo)
     if p.mo
     and p.mo.valid
     and p.mo.state == S_PLAY_CLING then
-        local frontOffset = 0*p.mo.scale
+        local frontOffset = -FU/100000 -- smallest offset yet bc i want to fix a displayboffdet bug
         local zOffset = -3*p.mo.scale
 
         mo.state = S_TAILSOVERLAY_MINUS30DEGREES

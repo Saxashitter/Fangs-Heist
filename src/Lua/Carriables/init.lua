@@ -51,6 +51,7 @@ mobjinfo[freeslot "MT_FH_CARRIABLE"] = {
 }
 
 local function IsCarried(mobj)
+	if not (mobj and mobj.valid) then return false end
 	local target = mobj.settings.target
 
 	if not (target and target.valid) then
@@ -79,7 +80,8 @@ local function CouldPickUp(p)
 end
 
 local function ReleaseCarriable(mobj, launch, rmvFromPickUp, dontRmvProfit)
-	if not IsCarried(mobj) then return end
+	--if not IsCarried(mobj) then print "NOT CARRIED" return end
+	--print "carried"
 
 	local def = Carriables.defs[mobj.settings.id]
 	local pmo = mobj.settings.target
@@ -186,6 +188,7 @@ local function SetCarriableSettings(mobj, x, y, z, id)
 	settings.tics = 0
 
 	mobj.state = settings.state
+	mobj.height = settings.height
 	mobj.settings = settings
 end
 
@@ -281,6 +284,7 @@ addHook("MobjDeath", OnHit, MT_PLAYER)
 addHook("PlayerQuit", function(p)
 	if not FangsHeist.isMode() then return end
 	if not p.heist then return end
+	print "running..."
 
 	for i = #p.heist.pickup_list, 1, -1 do
 		local v = p.heist.pickup_list[i]
@@ -300,12 +304,14 @@ addHook("ThinkFrame", do
 
 		if not (car.mobj and car.mobj.valid) then
 			-- re-define mobj if it was suddenly killed
-			local mobj = P_SpawnMobj(car.x, car.y, car.z, MT_FH_CARRIABLE)
-
-			def.onSpawn(mobj)
+			local mobj = P_SpawnMobj(car.original_position.x, car.original_position.y, car.original_position.z, MT_FH_CARRIABLE)
 
 			mobj.settings = car
+			mobj.state = car.state
+			mobj.height = car.height
 			car.mobj = mobj
+
+			def.onSpawn(mobj, car.original_position.x, car.original_position.y, car.original_position.z)
 		end
 
 		if IsCarried(car.mobj) then
@@ -358,7 +364,9 @@ addHook("PostThinkFrame", do
 		local car = Carriables.instances[i]
 		local def = Carriables.defs[car.id]
 
-		if car.transparentOnPickup then
+		if car.transparentOnPickup
+		and car.mobj
+		and car.mobj.valid then
 			if IsCarried(car.mobj)
 			and car.target.player
 			and car.target.player == consoleplayer then

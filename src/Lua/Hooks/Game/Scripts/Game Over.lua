@@ -36,11 +36,7 @@ return function()
 	FangsHeist.Net.game_over_ticker = max(0, $+1)
 
 	local t = FangsHeist.Net.game_over_ticker
-
-	if t >= FangsHeist.GAME_TICS
-	and S_MusicName() ~= "FH_INT" then
-		S_ChangeMusic("FH_INT", true)
-	end
+	local song = "FH_INT"
 
 	if t == FangsHeist.GAME_TICS then
 		S_StartSound(nil, sfx_nartgw)
@@ -53,6 +49,15 @@ return function()
 	if t == FangsHeist.GAME_TICS+FangsHeist.BLACKOUT_TICS then
 		S_StartSound(nil, sfx_narcon)
 		S_StartSound(nil, sfx_cwdscr)
+	end
+
+	if t >= FangsHeist.RESULTS_TICS then
+		song = "FH_MPV"
+	end
+
+	if t >= FangsHeist.GAME_TICS
+	and S_MusicName() ~= song then
+		S_ChangeMusic(song, true)
 	end
 
 	if t == FangsHeist.SWITCH_TICS then

@@ -176,7 +176,7 @@ local function AttemptAttack(p, sp)
 	end
 
 	if Damage(p, sp) then
-		local speed =max(4*p.mo.scale, R_PointToDist2(0,0, p.speed, p.mo.momz))
+		local speed = max(4*p.mo.scale, R_PointToDist2(0,0, p.speed, p.mo.momz))
 		local mx, my, mz = L_ReturnThrustXYZ(p.mo, {
 			x = sp.mo.x,
 			y = sp.mo.y,
@@ -526,8 +526,7 @@ return function(p)
 			S_StartSound(p.mo, sfx_ngskid)
 		end
 	end
-	if p.heist.attack_time
-	or p.powers[pw_strong] & STR_MELEE then
+	if p.heist.attack_time then
 		p.heist.attack_time = max(0, $-1)
 
 		for sp in players.iterate do
@@ -535,5 +534,28 @@ return function(p)
 				break
 			end
 		end
+
+		local radius = FixedMul(p.mo.radius, FH_ATK_XYMULT)
+		local height = FixedMul(p.mo.height, FH_ATK_ZMULT)
+		local x = p.mo.x + p.mo.momx
+		local y = p.mo.y + p.mo.momx
+		local z = p.mo.z + p.mo.momz - height/2
+
+		-- ok luigi you can stop complaining now
+		searchBlockmap("objects", function(_, found)
+			if not found.valid then return end
+			if not (found.flags & MF_ENEMY)
+			and not (found.flags & MF_MONITOR) then return end
+
+			local distance = R_PointToDist2(x, y, found.x, found.y)
+			if distance > radius+found.radius then
+				return
+			end
+
+			if z > found.z+found.height then return end
+			if found.z > z+height then return end
+
+			P_DamageMobj(found, p.mo, p.mo)
+		end, p.mo, x-radius*2, x+radius*2, y-radius*2, y+radius*2)
 	end
 end

@@ -1,7 +1,7 @@
 local SPIN_TICS = 35
 
 local function OnSpawn(sign, _, _, _, angle)
-	sign.angle = angle
+	sign.angle = angle or 0
 	sign.spintics = 0
 
 	local board = P_SpawnMobjFromMobj(sign, 0, 0, 0, MT_OVERLAY)

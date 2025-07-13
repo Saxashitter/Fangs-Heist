@@ -9,6 +9,16 @@ local LOSER_WIDTH = 86
 local FLASH_BUILDUP = 24
 local FLASH_TICS = 10
 
+local function RotatePoint(x_original, y_original, angle_fixedpoint)
+	local cos_angle = cos(angle_fixedpoint) -- Use fixed-point cos
+	local sin_angle = sin(angle_fixedpoint) -- Use fixed-point sin
+	
+	local x_rotated = FixedMul(x_original, cos_angle) - FixedMul(y_original, sin_angle)
+	local y_rotated = FixedMul(x_original, sin_angle) + FixedMul(y_original, cos_angle)
+	
+	return x_rotated, y_rotated
+end
+
 local function GetXYCoords(v, x, y)
 	local sw = v.width() / v.dupx()
 	local sh = v.height() / v.dupy()
@@ -282,7 +292,7 @@ skincolors[SKINCOLOR_SUPERBLACK] = {
 	invcolor = SKINCOLOR_ORANGE,
 	invshade = 9,
 	chatcolor = V_BLUEMAP,
-	accessible = true
+	accessible = false
 }
 
 local function DrawFlash(v, percent)
@@ -524,6 +534,7 @@ local function DrawBlackout(v, tics)
 	DrawFade(v, FU-FixedDiv(fade_tics, FADE_DUR))
 end
 
+freeslot("SPR_MCVD") -- SAXA: srb2 limitations
 local function DrawResults(v)
 	local tics = FangsHeist.Net.game_over_ticker - FangsHeist.GAME_TICS
 	local remaining = FangsHeist.SWITCH_TICS - FangsHeist.Net.game_over_ticker

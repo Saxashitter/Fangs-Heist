@@ -1,4 +1,4 @@
-local POPGUN_TIME = 22
+local POPGUN_TIME = 2*TICRATE
 local POPGUN_FRICTION = tofixed("0.95")
 
 local SKID_TIME = 3
@@ -12,7 +12,7 @@ FangsHeist.makeCharacter("fang", {
 			key = "SPIN",
 			name = "Pop-gun",
 			cooldown = function(self, p)
-				return false
+				return p.fang and p.fang.popgun > 0
 			end,
 			visible = function(self, p)
 				return p.mo.state ~= S_FH_STUN
@@ -33,6 +33,10 @@ local popgunStates = {
 	[S_FH_FANG_GUN_AIR1] = true,
 	[S_FH_FANG_GUN_AIR2] = true
 }
+
+local function valid(p)
+	return FangsHeist.isMode() and p.mo and p.mo.skin == "fang" and p.heist
+end
 
 local function initialize(p)
 	p.fang = {
@@ -161,11 +165,7 @@ local function popgunTmr(p)
 end
 
 addHook("PlayerThink", function(p)
-	if not FangsHeist.isMode() then
-		p.fang = nil
-		return
-	end
-	if not (p.mo and p.mo.skin == "fang" and p.heist) then
+	if not valid(p) then
 		p.fang = nil
 		return
 	end
@@ -179,18 +179,24 @@ addHook("PlayerThink", function(p)
 	end
 
 	if not hasControl(p) then return end
+end)
 
-	if p.cmd.buttons & BT_SPIN
-	and not (p.lastbuttons & BT_SPIN)
-	and not (p.fang.popgun)
-	and p.mo.state ~= S_FH_STUN
-	and p.mo.state ~= S_FH_GUARD
-	and p.mo.state ~= S_FH_CLASH
-	and not (p.pflags & PF_BOUNCING) then
-		if not (not P_IsObjectOnGround(p.mo) and p.powers[pw_shield]) then
-			doPopgun(p)
-		end
-	end
+addHook("SpinSpecial", function(p)
+	if not valid(p) then return end
+	if p.pflags & PF_SPINDOWN then return end
+	if p.pflags & PF_JUMPED then return end
+	if p.fang.popgun then return end
+	if p.mo.state == S_FH_GUARD then return end
+
+	doPopgun(p)
+end)
+addHook("JumpSpinSpecial", function(p)
+	if not valid(p) then return end
+	if p.pflags & PF_SPINDOWN then return end
+	if p.fang.popgun then return end
+	if p.mo.state == S_FH_GUARD then return end
+
+	doPopgun(p)
 end)
 
 -- modify fangs stupid fucking cork

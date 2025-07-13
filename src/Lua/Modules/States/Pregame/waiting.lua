@@ -51,8 +51,20 @@ function state:tick()
 end
 
 function state:draw(v, c, transparency)
-	DrawRoundInfo(v, 4, V_SNAPTOTOP|V_SNAPTOLEFT|transparency)
+	--DrawRoundInfo(v, 4, V_SNAPTOTOP|V_SNAPTOLEFT|transparency)
 	v.drawString(160, 200 - 12, "Waiting for players...", V_ALLOWLOWERCASE|V_SNAPTOBOTTOM|transparency, "thin-center")
+
+	local team = self.heist:getTeam()
+
+	v.drawString(160, 8, "Team:", V_SNAPTOTOP|transparency, "thin-center")
+	local y = 8+10
+	for i, p in ipairs(team) do
+		if not (p and p.valid) then continue end
+
+		local color = skincolors[max(0,p.skincolor)].chatcolor
+		v.drawString(160, y, p.name, V_SNAPTOTOP|color|transparency, "thin-center")
+		y = $+10
+	end
 end
 
 return state
