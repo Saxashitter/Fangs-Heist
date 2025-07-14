@@ -1,4 +1,22 @@
 local SPIN_TICS = 35
+local FADED_OUT_MUSIC = false
+
+addHook("MapChange", do FADED_OUT_MUSIC = false end)
+
+local function ManageMusicFade(sign)
+	if FangsHeist.Net.escape then return end
+	if FangsHeist.Net.pregame then return end
+	if FangsHeist.Net.game_over then return end
+
+	local p = displayplayer
+	if not (p and p.valid and p.mo and p.mo.valid) then
+		return
+	end
+
+	local dist = R_PointToDist2(p.mo.x, p.mo.y, sign.x, sign.y)
+
+	return dist < 750*FU
+end
 
 local function OnSpawn(sign, _, _, _, angle)
 	sign.angle = angle or 0
@@ -60,6 +78,19 @@ local function Grabbed(sign, pmo)
 end
 
 local function PostThink(sign)
+	local result = ManageMusicFade(sign)
+	if result == true
+	and not FADED_OUT_MUSIC then
+		FADED_OUT_MUSIC = result
+		S_FadeMusic(0, MUSICRATE)
+	end
+	if result == false
+	and FADED_OUT_MUSIC then
+		FADED_OUT_MUSIC = result
+		S_FadeMusic(255, MUSICRATE)
+	end
+		
+
 	if not (sign.settings.target and sign.settings.target.player and sign.settings.target.player == consoleplayer) then
 		sign.bustmo.frame = $ & ~FF_TRANS80
 		sign.boardmo.frame = $ & ~FF_TRANS80
