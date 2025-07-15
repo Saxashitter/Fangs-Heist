@@ -37,9 +37,9 @@ local AIRDASHSPEEDXY = 30 * FU
 local DASHFLAGS = STR_WALL|STR_CEILING|STR_SPIKE|STR_ATTACK
 
 local MetalSlams = {}
-addHook("MetalSlams", function(sync)
+addHook("NetVars", function(sync)
 	MetalSlams = sync($)
-end
+end)
 
 local function Valid(p)
 	return FangsHeist.isMode(p)
