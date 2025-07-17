@@ -175,6 +175,7 @@ Weather = 1
 Lua.FH_Time = 300
 Lua.FH_EscapeTheme = SPRHRO
 Lua.FH_StageType = Escape
+Lua.FH_EscapeLinedef = 358
 
 Level P1
 Levelname = Acidic Overflux
