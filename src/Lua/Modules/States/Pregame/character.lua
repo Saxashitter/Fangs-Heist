@@ -219,6 +219,12 @@ local function ChangeSelection(self, x, unrelative)
 		self.heist.locked_skin = x
 	end
 
+	if self.heist.locked_skin > #skins-1 then
+		self.heist.locked_skin = 0
+	elseif self.heist.locked_skin < 0 then
+		self.heist.locked_skin = #skins-1
+	end
+	
 	self.heist.locked_skin = max(0, min($, #skins-1))
 	if prev == self.heist.locked_skin then
 		return
