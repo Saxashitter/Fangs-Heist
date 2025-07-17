@@ -17,7 +17,7 @@ addHook("AbilitySpecial", function(player)
 	P_InstaThrust(player.mo, player.mo.angle, 30*player.mo.scale)
 	P_SpawnThokMobj(player)
 	S_StartSound(player.mo, sfx_thok)
-	player.pflags = $ & (PF_GLIDING|PF_THOKKED)
+	player.pflags = $|(PF_GLIDING|PF_THOKKED) -- wasnt this the intended one? -pac
 end)
 		
 addHook("PlayerThink", function(player)
@@ -42,6 +42,7 @@ addHook("PlayerThink", function(player)
 	
 	-- Knok stuff - pretty simple, really
 	if player.pflags & PF_THOKKED
+	and not (player.pflags & PF_SHIELDABILITY) -- we don't want shield abilities triggering it -pac
 	and player.mo.knuckles.knoktime <= 35 then
 		player.mo.state = S_PLAY_GLIDE
 		P_InstaThrust(player.mo, player.mo.angle, 30*player.mo.scale)
@@ -52,24 +53,13 @@ addHook("PlayerThink", function(player)
 		if player.pflags & PF_JUMPDOWN == 0 then 
 			player.mo.state = S_PLAY_JUMP
 			player.mo.knuckles.knoktime = 36
-			player.pflags = $ & ~(PF_GLIDING|PF_THOKKED)
-	
-			if player.pflags & PF_ANALOGMODE == 0 then
-				player.pflags = $1|PF_DIRECTIONCHAR
-			end
-
-			if player.pflags & PF_AUTOBRAKE then player.pflags = $1|PF_APPLYAUTOBRAKE end
+			player.pflags = $ & ~PF_GLIDING -- why was it removing PF_THOKKED?? -pac
 		end
 	elseif player.pflags & PF_THOKKED
+	and not (player.pflags & PF_SHIELDABILITY) -- we don't want shield abilities triggering it -pac
 	and player.mo.knuckles.knoktime > 35 then
 		player.mo.state = S_PLAY_JUMP
-		player.pflags = $ & ~(PF_GLIDING|PF_THOKKED)
-
-		if player.pflags & PF_ANALOGMODE == 0 then
-			player.pflags = $1|PF_DIRECTIONCHAR
-		end
-
-		if player.pflags & PF_AUTOBRAKE then player.pflags = $1|PF_APPLYAUTOBRAKE end
+		player.pflags = $ & ~PF_GLIDING
 	end
 
 	-- Climbing timer
