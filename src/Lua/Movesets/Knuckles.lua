@@ -53,13 +53,13 @@ addHook("PlayerThink", function(player)
 		if player.pflags & PF_JUMPDOWN == 0 then 
 			player.mo.state = S_PLAY_JUMP
 			player.mo.knuckles.knoktime = 36
-			player.pflags = $ & ~(PF_GLIDING|PF_THOKKED)
+			player.pflags = $ & ~PF_GLIDING -- why was it removing PF_THOKKED?? -pac
 		end
 	elseif player.pflags & PF_THOKKED
 	and not (player.pflags & PF_SHIELDABILITY) -- we don't want shield abilities triggering it -pac
 	and player.mo.knuckles.knoktime > 35 then
 		player.mo.state = S_PLAY_JUMP
-		player.pflags = $ & ~(PF_GLIDING|PF_THOKKED)
+		player.pflags = $ & ~PF_GLIDING
 	end
 
 	-- Climbing timer
