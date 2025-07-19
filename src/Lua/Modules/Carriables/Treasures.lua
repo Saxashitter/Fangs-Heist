@@ -62,8 +62,15 @@ local function OnCollect(mobj, pmo)
 	S_StartSound(pmo, sfx_kc30)
 end
 
+local function CanPickUp(p)
+	local gamemode = FangsHeist.getGamemode()
+
+	return not gamemode:treasureblacklist()
+end
+
 return {
 	profit = 160,
 	state = S_FH_TREASURE,
-	onPickUp = OnCollect
+	onPickUp = OnCollect,
+	canPickUp = caCanPickUp
 }

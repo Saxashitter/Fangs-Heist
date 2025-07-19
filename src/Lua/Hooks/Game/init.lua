@@ -61,7 +61,6 @@ addHook("ThinkFrame", do
 	if not FangsHeist.isMode() then
 		return
 	end
-	local stop = false
 
 	for i,script in ipairs(scripts) do
 		if script() then
@@ -104,17 +103,24 @@ addHook("ThinkFrame", do
 end)
 
 addHook("PostThinkFrame", do
-	local p = displayplayer
-
 	if not FangsHeist.isMode() then return end
-	if multiplayer then return end
-	if not (p and p.heist) then return end
-
-	if (p.exiting or p.pflags & PF_FINISHED)
-	and not p.heist.exiting then
-		p.exiting = 0
-		p.pflags = $ & ~(PF_FINISHED|PF_FULLSTASIS)
+	if FangsHeist.Net.pregame
+	or FangsHeist.Net.game_over then
+		return
 	end
+
+	local gamemode = FangsHeist.getGamemode()
+	gamemode:postthink()
+end)
+addHook("PreThinkFrame", do
+	if not FangsHeist.isMode() then return end
+	if FangsHeist.Net.pregame
+	or FangsHeist.Net.game_over then
+		return
+	end
+
+	local gamemode = FangsHeist.getGamemode()
+	gamemode:prethink()
 end)
 
 addHook("GameQuit", FangsHeist.initHUD)

@@ -427,6 +427,7 @@ function gamemode:start()
 		end
 	end
 
+	-- TODO: make compatible with new carriable system
 	if #randPlyrs
 	and FangsHeist.Net.escape_on_start then
 		local p = randPlyrs[P_RandomRange(1, #randPlyrs)]

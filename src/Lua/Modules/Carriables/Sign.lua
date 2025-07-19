@@ -35,9 +35,7 @@ local function OnSpawn(sign, _, _, _, angle)
 end
 
 local function CanPickUp(p)
-	local team = p.heist:getTeam()
-
-	return team.had_sign ~= true
+	return p.heist:isEligibleForSign()
 end
 
 local function OnCapture(sign, pmo)

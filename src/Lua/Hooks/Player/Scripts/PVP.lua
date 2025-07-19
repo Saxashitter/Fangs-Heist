@@ -372,18 +372,10 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	local gamemode = FangsHeist.getGamemode()
 	gamemode:playerdamage(t.player)
 
-	local givenSign = false
-
 	if s
 	and s.player
 	and s.player.heist then
 		local team = s.player.heist:getTeam()
-
-		if t.player.heist:hasSign()
-		and s.player.heist:isEligibleForSign() then
-			FangsHeist.giveSignTo(s.player)
-			givenSign = true
-		end
 
 		if not (t.health) then
 			s.player.heist.deadplayers = $+1

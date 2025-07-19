@@ -135,6 +135,7 @@ end)
 
 addHook("ThinkFrame", function(p)
 	if not FangsHeist.isMode() then return end
+	local gamemode = FangsHeist.getGamemode()
 
 	for p in players.iterate do
 		if not (p and p.valid and p.heist) then continue end
@@ -142,6 +143,7 @@ addHook("ThinkFrame", function(p)
 		for _,script in ipairs(scripts.thinkframe) do
 			script(p)
 		end
+		gamemode:postplayerthink(p)
 	end
 end)
 
