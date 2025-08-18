@@ -8,6 +8,9 @@ local FLY_TICS = 40
 local FLY_MOM = 24
 local FLY_GRAVITY = FU/2
 
+local WALL_JUMP_LIMIT = 2
+local FLIGHT_LIMIT = 1
+
 local function Wrap(value, minValue, maxValue)
     local range = maxValue - minValue + 1
     return ((value - minValue) % range + range) % range + minValue
@@ -40,6 +43,48 @@ local function DisableWallJump(p, forced)
 
 	p.mo.tails.walljump = nil
 	p.mo.tails.walljump_tics = nil
+end
+
+local function CanWallJump(p)
+	local tails = p.mo.tails
+
+	if P_IsObjectOnGround(p.mo) then
+		return false
+	end
+
+	if not (p.pflags & PF_JUMPED) then
+		return false
+	end
+
+	if p.pflags & PF_THOKKED then
+		return false
+	end
+
+	if tails.walljump_times == WALL_JUMP_LIMIT then
+		return false
+	end
+
+	if tails.doublejump_times then
+		return false
+	end
+
+	return true
+end
+
+local function CanDoubleJump(p)
+	if p.pflags & PF_THOKKED then
+		return false
+	end
+
+	if p.mo.tails.doublejump_ticker then
+		return false
+	end
+
+	if p.mo.tails.doublejump_times == FLIGHT_LIMIT then
+		return false
+	end
+
+	return true
 end
 
 local function GetLineAngle(mo, line)
@@ -142,10 +187,8 @@ addHook("MobjMoveBlocked", function(mo, _, line)
 	local p = mo.player
 	local tails = p.mo.tails
 
-	if tails.walljump_times == 3 then return end
 	if P_IsObjectOnGround(mo) then return end
-	if not (p.pflags & PF_JUMPED) then return end
-	if (p.pflags & PF_THOKKED) then return end
+	if not CanWallJump(p) then return end
 	if P_CheckSkyHit(mo, line) then return end
 	if line.flags & ML_NOCLIMB then return end
 	if mo.state == S_FH_GUARD
@@ -154,14 +197,22 @@ addHook("MobjMoveBlocked", function(mo, _, line)
 		return
 	end
 
+	local camang = p.cmd.angleturn << 16
+	local contang = R_PointToAngle2(0,0, p.cmd.forwardmove*FU, -p.cmd.sidemove*FU)
+	local lineang = GetLineAngle(mo, line)
+
+	if abs(AngleFixed(lineang - (camang + contang))) > 45*FU then
+		return
+	end
+
 	if not tails.walljump_tics then
 		local momz = p.mo.momz*P_MobjFlip(p.mo)
 	
 		local speed = R_PointToDist2(0,0, p.rmomx, p.rmomy)
 		local speedang = R_PointToAngle2(0,0, p.rmomx, p.rmomy)
-		local lineang = GetLineAngle(mo, line)
+
 		local adiff = FixedAngle(
-			AngleFixed(lineang) - AngleFixed(speedang)
+			lineang - (camang - contang)
 		)
 	
 		if AngleFixed(adiff) > 180*FU then
@@ -202,8 +253,6 @@ addHook("AbilitySpecial", function(p)
 		p.mo.state = S_PLAY_SPRING
 		S_StartSoundAtVolume(p.mo, sfx_cdfm50, 150)
 
-		p.mo.tails.doublejump_times = max($ or 0, 1)
-
 		if not p.mo.tails.walljump_times then
 			p.mo.tails.walljump_times = 0
 		end
@@ -212,11 +261,7 @@ addHook("AbilitySpecial", function(p)
 		return true
 	end
 
-	if p.pflags & PF_THOKKED then
-		return
-	end
-
-	if p.mo.tails.doublejump_ticker then
+	if not CanDoubleJump(p) then
 		return
 	end
 
@@ -228,7 +273,7 @@ addHook("AbilitySpecial", function(p)
 
 	S_StartSound(p.mo, sfx_tlfly1+(p.mo.tails.doublejump_times or 0))
 	p.mo.tails.doublejump_times = ($ or 0) + 1
-	p.mo.tails.doublejump_ticker = 10
+	p.mo.tails.doublejump_ticker = 18
 
 	if p.mo.tails.doublejump_times == 3 then
 		p.pflags = $|PF_THOKKED

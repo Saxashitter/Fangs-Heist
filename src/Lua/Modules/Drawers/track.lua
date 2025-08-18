@@ -3,7 +3,7 @@ local module = {}
 local sglib = FangsHeist.require "Modules/Libraries/sglib"
 local fracformat = FangsHeist.require "Modules/Libraries/fracformat"
 
-local SIGHT_RANGE = 4096*FU
+local SIGHT_RANGE = (4096*FU)*4
 local SIGHT_TRANSSTART = 1024*FU*3
 local TRACK_RANGE = 1024*FU
 
@@ -35,8 +35,8 @@ function module.draw(v, p, c)
 		local y = 0
 		local track = sglib.ObjectTracking(v,p,c, t.mo)
 
-		if not track.onScreen then
-		--or P_CheckSight(p.mo, t.mo) then
+		if not track.onScreen
+		or P_CheckSight(p.mo, t.mo) then
 			continue
 		end
 

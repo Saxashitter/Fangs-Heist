@@ -7,6 +7,24 @@ local endtime = 24
 local delay = 10
 local offset = 12
 
+local function DrawFlash(v, percent)
+	local patch = v.cachePatch("FH_PINK_SCROLL")
+	local sw = v.width() * FU / v.dupx()
+	local sh = v.height() * FU / v.dupy()
+
+	local alpha = V_10TRANS*ease.linear(percent, 10, 0)
+	if alpha > V_90TRANS then return end
+
+	v.drawStretched(
+		0, 0,
+		FixedDiv(sw, patch.width*FU),
+		FixedDiv(sh, patch.height*FU),
+		patch,
+		alpha|V_SNAPTOTOP|V_SNAPTOLEFT,
+		v.getColormap(TC_BLINK, SKINCOLOR_WHITE)
+	)
+end
+
 local function gravityTypeEase(t, start, finish, param)
 	local tweenStuff = FU/3
 	if t < tweenStuff then
@@ -32,6 +50,8 @@ function module.draw(v)
 	if elapsed >= maxtime+offsettime+endtime+delay then
 		return
 	end
+
+	DrawFlash(v, FU - FixedDiv(min(elapsed, 10), 10))
 
 	local go = v.cachePatch("FH_GOGOGO")
 	local scale = FU

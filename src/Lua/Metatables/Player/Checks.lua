@@ -40,11 +40,12 @@ function mt:isAlive(p)
 end
 
 function mt:isNerfed()
-	local result = HeistHook.runHook("IsPlayerNerfed", p)
+	--[[local result = HeistHook.runHook("IsPlayerNerfed", p)
 	if result ~= nil then
 		return result
 	end
-	--[[local gamemode = FangsHeist.getGamemode()
+
+	local gamemode = FangsHeist.getGamemode()
 
 	if self:hasSign()
 	and (gamemode.signnerf or FangsHeist.Save.retakes) then

@@ -90,36 +90,28 @@ events["GameOver"] = {}
 	// return true: Stops the game from ending.
 	// No arguments are passed.
 
-events["PlayerDamage"] = {}
-// PlayerDamage:
-	// Runs after a player hits another via FangsHeist.damagePlayers
+events["PlayerAttack"] = {}
+// PlayerAttack:
+	// Runs before the player attacks using Fire.
+	// return true: Stop the default behavior.
 	// Arguments:
-		// hitter == player_t
-		// damaged == player_t
+		// player == player_t
+
+events["PlayerClash"] = {}
+// PlayerClash:
+	// Runs before the player clashes with another.
+	// return true: Stop the default behavior.
+	// Arguments:
+		// first_clasher == player_t
+		// second_clasher == player_t
 
 events["PlayerHit"] = {}
 // PlayerHit:
-	// Runs before the hit code in Player/Scripts/PVP.
-	// return true: Stops the code from running.
+	// Runs before the player hits another using the insta-shield.
+	// return true: Stop the default behavior.
 	// Arguments:
-		// hitter == player_t
-		// damaged == player_t
-		// speed == bool/fixed_t - speed is false if the player wasn't hurt. Otherwise, it returns a fixed value.
-
-events["IsPlayerNerfed"] = {handler = handler_snapany}
-// IsPlayerNerfed:
-	// Runs before the regular nerfed check, used for determining whether if the player was nerfed or not.
-	// return true/false: Stops the code from running, and returns the variable that was given.
-	// Arguments:
-		// player == player_t
-
-events["DepleteBlock"] = {handler = handler_snapany}
-// DepleteBlock:
-	// Runs before the depleting code when something hits the player.
-	// return true/false: Stop the code from running, and determines if the block was broken.
-	// Arguments:
-		// player == player_t
-		// damage == int
+		// attacker == player_t
+		// victim == player_t
 
 events["Round2"] = {}
 // Round2:

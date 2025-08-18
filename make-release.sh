@@ -31,20 +31,17 @@ function optimizeSongs() {
 	local optivorbis=".tmp/optivorbis/"
 
 	mkdir "$ffmpeg"
-	mkdir "$optivorbis"
 
 	for file in .tmp/Music/*.ogg;
 	do
 		local i=${file:10}
 
 		ffmpeg -i $music$i -c:a libvorbis -ar 32000 $ffmpeg$i
-		/$HOME/optivorbis $ffmpeg$i $optivorbis$i
 	done
 
-	rm -r "$ffmpeg"
 	rm -r "$music"
 
-	mv "$optivorbis" "$music"
+	mv "$ffmpeg" "$music"
 }
 
 if [[ "$optimize" == 0 ]]; then

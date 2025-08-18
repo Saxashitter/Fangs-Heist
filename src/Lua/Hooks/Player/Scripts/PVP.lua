@@ -1,7 +1,7 @@
 -- Attack Constants
 rawset(_G, "FH_ATK_FLASH_TICS", 10)
-rawset(_G, "FH_ATK_XYMULT", FU*5)
-rawset(_G, "FH_ATK_ZMULT", FU*4)
+rawset(_G, "FH_ATK_XYMULT", FU*7)
+rawset(_G, "FH_ATK_ZMULT", FU*5)
 
 -- Parry Constants
 rawset(_G, "FH_PRY_DUR", 35)
@@ -15,7 +15,8 @@ local FLAGS_RESET = PF_JUMPED|PF_THOKKED|PF_SPINNING|PF_STARTDASH|PF_BOUNCING|PF
 
 local function L_ReturnThrustXYZ(mo, point, speed)
 	local horz = R_PointToAngle2(mo.x, mo.y, point.x, point.y)
-	local vert = R_PointToAngle2(0, mo.z+mo.height/2, FixedHypot(mo.x-point.x, mo.y-point.y), point.z)
+	local dist = R_PointToDist2(mo.x, mo.y, point.x, point.y)
+	local vert = R_PointToAngle2(0, mo.z+mo.height/2, dist, point.z)
 
 	local x = FixedMul(FixedMul(speed, cos(horz)), cos(vert))
 	local y = FixedMul(FixedMul(speed, sin(horz)), cos(vert))
@@ -152,6 +153,10 @@ local function AttemptAttack(p, sp)
 	end
 
 	if sp.heist.attack_time then
+		if HeistHook.runHook("PlayerClash", p, sp) == true then
+			return
+		end
+
 		local speed = 18*FU
 		local mx, my, mz = L_ReturnThrustXYZ(p.mo, {
 			x = sp.mo.x,
@@ -172,16 +177,35 @@ local function AttemptAttack(p, sp)
 		sp.heist.attack_time = 0
 		p.heist.attack_time = 0
 
+		S_StartSound(p.mo, sfx_fhclsh)
+		S_StartSound(sp.mo, sfx_fhclsh)
+
+		if p == displayplayer
+		or sp == displayplayer then
+			P_StartQuake(7*FU, 12)
+		end
+
 		return
 	end
 
-	if Damage(p, sp) then
-		local speed = max(4*p.mo.scale, R_PointToDist2(0,0, p.speed, p.mo.momz))
+	if Damage(p, sp)
+	and HeistHook.runHook("PlayerHit", p, sp) ~= true then
+		local speed = max(
+			4*p.mo.scale,
+			FixedSqrt(
+				FixedMul(p.rmomx, p.rmomx) +
+				FixedMul(p.rmomy, p.rmomy) +
+				FixedMul(p.mo.momz, p.mo.momz)
+			)
+		)
 		local mx, my, mz = L_ReturnThrustXYZ(p.mo, {
 			x = sp.mo.x,
 			y = sp.mo.y,
 			z = sp.mo.z+sp.mo.height/2
 		}, -speed)
+
+		sp.mo.momx = p.mo.momx
+		sp.mo.momy = p.mo.momy
 
 		p.mo.momx = mx
 		p.mo.momy = my
@@ -191,10 +215,19 @@ local function AttemptAttack(p, sp)
 		p.heist.attack_time = 0
 		p.heist.attack_cooldown = 5
 		p.powers[pw_flashing] = max($, FH_ATK_FLASH_TICS)
+
+		if p == displayplayer
+		or sp == displayplayer then
+			P_StartQuake(28*FU, 12)
+		end
 	end
 end
 
 local function DoAttack(p)
+	if HeistHook.runHook("PlayerAttack", p) == true then
+		return
+	end
+
 	if p.mo.heistwhiff
 	and p.mo.heistwhiff.valid then
 		P_RemoveMobj(p.mo.heistwhiff)
@@ -220,9 +253,9 @@ local function DoGuard(p)
 		p.pflags = $ & ~FLAGS_RESET
 		p.heist.parry_cooldown = 2*TICRATE
 		p.mo.heist_airdodge = true
-		p.powers[pw_flashing] = 2*TICRATE
+		p.powers[pw_flashing] = 15
 		P_InstaThrust(p.mo, p.mo.angle, 12*p.mo.scale)
-		P_SetObjectMomZ(p.mo, 8*p.mo.scale)
+		P_SetObjectMomZ(p.mo, 0)
 		S_StartSound(p.mo, sfx_s3k7c)
 	
 		return
@@ -476,9 +509,7 @@ return function(p)
 
 	local press = p.cmd.buttons & ~p.lastbuttons
 
-	if p.mo.state ~= S_FH_STUN
-	and p.mo.state ~= S_FH_CLASH
-	and p.mo.state ~= S_FH_GUARD
+	if p.mo.state ~= S_FH_GUARD
 	and not P_PlayerInPain(p) then
 		-- Parry
 		if press & BT_FIRENORMAL

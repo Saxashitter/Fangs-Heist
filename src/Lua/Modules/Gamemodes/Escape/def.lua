@@ -5,6 +5,7 @@ local gamemode = {
 	tol = TOL_HEIST
 }
 local path = "Modules/Gamemodes/Escape/"
+local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"
 
 dofile(path.."freeslots.lua")
 
@@ -24,37 +25,18 @@ local delete_types = { -- why wasnt this a table like the rest before? -pac
 	[MT_INVULN_BOX] = true,
 	[MT_STARPOST] = true
 }
+
+local function loadAndInherit(self, path)
+	local file = dofile(path)
+
+	for k,v in pairs(file) do
+		self[k] = $ or v
+	end
+end
+
 gamemode.signThings = {
 	[501] = true
 }
-
-local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"
-
-local function predictTicsUntilGrounded(x, y, z, height, momz, gravity)
-	local floorz = P_FloorzAtPos(x, y, z, height)
-	local grav = gravity
-	local tics = 0
-
-	local floorheight = z-floorz
-
-	--[[local t_in_secs = FixedDiv(-momz + FixedSqrt(FixedMul(momz, momz) + 2 * FixedMul(grav, floorheight)), grav)
-	print(t_in_secs/FU)
-
-	return t_in_secs]]
-
-	for i = 1,2048 do
-		tics = $+1
-		momz = $+grav
-		z = $+momz
-
-		if z <= floorz then
-			return tics
-		end
-
-	end
-
-	return -1
-end
 
 function gamemode:spawnEggman(type)
 	local pos = self:getSignSpawn()
@@ -69,88 +51,10 @@ function gamemode:spawnEggman(type)
 	return false
 end
 
-function gamemode:handleEggman()
-	if not (FangsHeist.Net.eggman
-	and FangsHeist.Net.eggman.valid) then
-		return
-	end
-
-	local eggman = FangsHeist.Net.eggman
-
-	--[[if FangsHeist.Net.eggman.state ~= S_FH_EGGMAN_DOOMCHASE
-	and not (FangsHeist.Net.time_left) then
-		FangsHeist.Net.eggman.state = S_FH_EGGMAN_DOOMCHASE
-	end]]
-end
-
-function gamemode:initSignPosition()
-	local signpost_pos
-
-	for thing in mapthings.iterate do
-		if self.signThings[thing.type] then
-			if thing and thing.mobj and thing.mobj.valid then
-				P_RemoveMobj(thing.mobj)
-			end
-
-			local x = thing.x*FU
-			local y = thing.y*FU
-			local z = spawnpos.getThingSpawnHeight(MT_FH_SIGN, thing, x, y)
-			local a = FixedAngle(thing.angle*FU)
-
-			signpost_pos = {x, y, z, a}
-			break
-		end
-	end
-
-	if not (signpost_pos) then return false end
-
-	FangsHeist.Net.signpos = signpost_pos
-	return signpost_pos
-end
-
-function gamemode:getSignSpawn()
-	local pos = FangsHeist.Net.signpos
-
-	if FangsHeist.Net.round_2
-	and FangsHeist.Net.escape then
-		local pos2 = FangsHeist.Net.round_2_teleport.pos
-
-		local count = 0
-		local secondCount = 0
-
-		for p in players.iterate do
-			if not (p.heist and p.heist:isAlive() and not p.heist.exiting) then continue end
-
-			count = $+1
-			if p.heist.reached_second then
-				secondCount = $+1
-			end
-		end
-
-		if (count > 1
-		and secondCount >= count/2)
-		or (count <= 1
-		and secondCount == count) then
-			pos = pos2
-		end
-	end
-
-	return pos
-end
-
-function gamemode:spawnSign()
-	local pos = self:getSignSpawn()
-
-	FangsHeist.Net.sign = FangsHeist.Carriables:new("Sign", pos[1], pos[2], pos[3], pos[4])
-end
-
-function gamemode:respawnSign()
-	return FangsHeist.respawnSign(self:getSignSpawn())
-end
-
 function gamemode:signcapture(stolen)
 	if FangsHeist.Net.escape then return end
 
+	S_StartSound(nil, sfx_lvpass)
 	self:startEscape()
 end
 
@@ -233,6 +137,7 @@ function gamemode:load()
 
 		if thing.type == 3842 then
 			FangsHeist.Net.round_2 = true
+
 			local pos = {
 				thing.x*FU,
 				thing.y*FU,
@@ -252,14 +157,7 @@ function gamemode:load()
 				z = spawnpos.getThingSpawnHeight(MT_PLAYER, thing, thing.x*FU, thing.y*FU),
 				a = thing.angle*ANG1
 			}
-	
-			local mobj = P_SpawnMobj(pos.x, pos.y, pos.z, MT_THOK)
-			mobj.angle = pos.a
-			mobj.state = S_FH_ROUNDPORTAL
-			mobj.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOTHINK|MF_NOGRAVITY
-			mobj.scale = tofixed("1.3")
-
-			FangsHeist.Net.round_2_mobj = mobj
+			self:spawnRound2Portal(pos)
 		end
 
 		if treasure_things[thing.type] then
@@ -290,16 +188,10 @@ function gamemode:load()
 		FangsHeist.defineExit(x, y, z, a)
 	end
 
-	for i = 1,#treasure_spawns do
-		if not (#treasure_spawns) then
-			break
-		end
+	for i = 1, #treasure_spawns do
+		local thing = treasure_spawns[i]
 
-		local choice = P_RandomRange(1, #treasure_spawns)
-		local thing = treasure_spawns[choice]
-
-		FangsHeist.Carriables:new("Treasure", thing.x, thing.y, thing.z)
-		table.remove(treasure_spawns, choice)
+		self:spawnTreasure(thing)
 	end
 
 	self:initSignPosition()
@@ -311,13 +203,7 @@ function gamemode:update()
 		self:manageEscape()
 	end
 
-	-- yay rounr portal
-	local round = FangsHeist.Net.round_2_mobj
-
-	if round and round.valid then
-		round.spriteroll = $ + FixedAngle(360*FU/120)
-		round.spriteyoffset = 8*sin(round.spriteroll)
-	end
+	self:manageRound2Portal()
 end
 
 function gamemode:trackplayer(p)
@@ -340,47 +226,17 @@ function gamemode:trackplayer(p)
 end
 
 function gamemode:manageEscape()
-	-- sign
-	self:manageSign()
+	-- exiting
+	self:manageExiting()
 
 	-- time
 	self:manageTime()
-
-	-- exiting
-	self:manageExiting()
 
 	-- hell stage tp
 	self:round2Check()
 
 	-- BOMBS FOR RETAKES.......
 	self:manageBombs()
-
-	-- eggman
-	self:handleEggman()
-end
-
-function gamemode:sync(sync)
-	FangsHeist.Net.escape = sync($)
-	FangsHeist.Net.escape_theme = sync($)
-	FangsHeist.Net.round2_theme = sync($)
-	FangsHeist.Net.escape_hurryup = sync($)
-	FangsHeist.Net.escape_on_start = sync($)
-
-	FangsHeist.Net.last_man_standing = sync($)
-
-	FangsHeist.Net.round_2 = sync($)
-	FangsHeist.Net.round_2_teleport = sync($)
-
-	FangsHeist.Net.time_left = sync($)
-	FangsHeist.Net.max_time_left = sync($)
-	FangsHeist.Net.hurry_up = sync($)
-
-	FangsHeist.Net.escape_on_start = sync($)
-	FangsHeist.Net.signpos = sync($)
-
-	FangsHeist.Net.exit = sync($)
-	FangsHeist.Net.round_2_mobj = sync($)
-	FangsHeist.Net.eggman = sync($)
 end
 
 function gamemode:music()
@@ -456,6 +312,16 @@ function gamemode:playerinit(p)
 end
 
 function gamemode:playerthink(p)
+	--[[
+	TODO: re-add when v2 comes around as an option
+	if FangsHeist.Net.escape then
+		local tics = leveltime - FangsHeist.Net.time_escape_started
+		local time = TICRATE * 7
+		local turn = 7
+		local angle = FixedAngle(360*FixedDiv(tics % time, time))
+
+		p.viewrollangle = FixedAngle(turn*sin(angle))
+	end]]
 	if not (p.mo and p.mo.health) then return end
 
 	local char = FangsHeist.Characters[p.mo.skin]
@@ -478,13 +344,6 @@ function gamemode:playerdeath(p, i, s)
 	if not FangsHeist.Net.escape then return end
 
 	p.heist.spectator = true
-end
-
-function gamemode:manageSign()
-	--[[if not (FangsHeist.Net.sign
-		and FangsHeist.Net.sign.valid) then
-			self:spawnSign()
-	end]]
 end
 
 function gamemode:manageTime()
@@ -522,93 +381,6 @@ function gamemode:manageTime()
 		end
 
 		HeistHook.runHook("TimeUp")
-	end
-end
-
-function gamemode:round2Check()
-	if not FangsHeist.Net.round_2 then
-		return
-	end
-
-	local mobj = FangsHeist.Net.round_2_mobj
-
-	for p in players.iterate do
-		if not (p.heist and p.heist:isAlive()) then continue end
-		if p.heist.reached_second then continue end
-
-		if R_PointToDist2(p.mo.x,p.mo.y,mobj.x,mobj.y) > 24*FU+p.mo.radius then
-			continue
-		end
-		if p.mo.z > mobj.z+48*FU then
-			continue
-		end
-		if mobj.z > p.mo.z+p.mo.height then
-			continue
-		end
-
-		self:doRound2(p)
-	end
-end
-
-function gamemode:manageBombs()
-	if not FangsHeist.Save.retakes then
-		return
-	end
-
-	local potential_positions = {}
-	local range = 80
-
-	for p in players.iterate do
-		if not p.heist then continue end
-		if not p.heist:isAlive() then continue end
-		if p.heist.exiting then continue end
-
-		table.insert(potential_positions, {
-			player = p
-		})
-	end
-
-	local tics = TICRATE+24
-	if FangsHeist.Save.retakes >= 2 then
-		tics = TICRATE
-	end
-	if FangsHeist.Save.retakes >= 3 then
-		tics = max(8, $ - 15*(FangsHeist.Save.retakes-2))
-	end
-
-	if #potential_positions
-	and not (leveltime % tics) then
-		for _,position in ipairs(potential_positions) do
-			local scale = 1
-			local p = position.player
-			local z = min(position.player.mo.z+380*FU, p.mo.ceilingz - mobjinfo[MT_FBOMB].height*scale)
-
-			local x = p.mo.x
-			local y = p.mo.y
-			local g = -2*FU
-
-			local bomb = P_SpawnMobj(x, y, z, MT_FBOMB)
-			if bomb and bomb.valid then
-				if p.mo.momx
-				and p.mo.momy then
-					local speed = R_PointToDist2(0,0,p.mo.momx,p.mo.momy)
-					local momangle = R_PointToAngle2(0,0,p.mo.momx,p.mo.momy)
-					local thrustangle = FixedAngle(P_RandomRange(-15, 15)*FU/3)
-	
-					local thrustx = P_ReturnThrustX(p.mo, momangle-thrustangle, speed)
-					local thrusty = P_ReturnThrustY(p.mo, momangle-thrustangle, speed)
-	
-					local prediction = predictTicsUntilGrounded(x, y, z, mobjinfo[MT_FBOMB].height, g, P_GetMobjGravity(bomb))
-	
-					x = $+thrustx*prediction
-					y = $+thrusty*prediction
-		
-					P_SetOrigin(bomb, x, y, z)
-				end
-
-				bomb.momz = g
-			end
-		end
 	end
 end
 
@@ -658,34 +430,6 @@ function gamemode:manageExiting()
 	end
 end
 
-function gamemode:doRound2(p)
-	if not FangsHeist.Net.round_2 then return end
-	if p.heist.reached_second then return end
-	if HeistHook.runHook("Round2", p) then return end
-
-	local pos = FangsHeist.Net.round_2_teleport.pos
-
-	P_SetOrigin(p.mo,
-		pos[1],
-		pos[2],
-		pos[3]
-	)
-	
-	p.mo.angle = pos[4]
-	p.drawangle = pos[4]
-	
-	p.heist.reached_second = true
-	
-	S_StartSound(nil, sfx_mixup, p)
-	P_InstaThrust(p.mo, p.mo.angle, FixedHypot(p.rmomx, p.rmomy))
-	
-	local linedef = tonumber(mapheaderinfo[gamemap].fh_round2linedef)
-	
-	if linedef ~= nil then
-		P_LinedefExecute(linedef)
-	end
-end
-
 function gamemode:startEscape(p)
 	if FangsHeist.Net.escape
 	or HeistHook.runHook("EscapeStart", p) == true then
@@ -693,6 +437,7 @@ function gamemode:startEscape(p)
 	end
 
 	FangsHeist.Net.escape = true
+	FangsHeist.Net.time_escape_started = leveltime
 	S_StartSound(nil, sfx_gogogo)
 
 	if FangsHeist.Save.retakes >= 2 then
@@ -729,19 +474,6 @@ function gamemode:isHurryUp()
 end
 
 function gamemode:info()
-	local info = {
-		{"Basics",
-			"In order to win, you must collect enough Profit.",
-			"Profit comes from rings, enemies, and treasures.",
-			"Treasures reveal your location, but are pretty valuable.",
-			"Players can fight you for your treasures."},
-		{"Escape",
-			"Grab the signpost to start the escape sequence.",
-			"The sign also happens to be very, very valuable.",
-			"Unfortunately, it also reveals your location..."
-		}
-	}
-
 	if FangsHeist.Save.retakes then
 		local retake = {"Retake #"..FangsHeist.Save.retakes,
 			"Each time the stage is replayed, it gets more tedious."
@@ -764,5 +496,12 @@ function gamemode:info()
 
 	return info
 end
+
+local PATH = "Modules/Gamemodes/Escape/%s.lua"
+
+loadAndInherit(gamemode, PATH:format("sign"))
+loadAndInherit(gamemode, PATH:format("treasure"))
+loadAndInherit(gamemode, PATH:format("round"))
+loadAndInherit(gamemode, PATH:format("retake"))
 
 return FangsHeist.addGamemode(gamemode)

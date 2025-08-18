@@ -63,7 +63,7 @@ local function DropDashLand(p)
 	FangsHeist.Particles:new("Tails Double Jump", p)
 
 	if p.cmd.buttons & BT_JUMP then
-		local bounce = 3*p.mo.scale
+		local bounce = 15*p.mo.scale
 		local speed = R_PointToDist2(0,0, p.rmomx, p.rmomy)
 
 		P_SetObjectMomZ(p.mo, bounce)
