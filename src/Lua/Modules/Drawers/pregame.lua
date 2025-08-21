@@ -13,7 +13,7 @@ local function DrawBackground(v)
 
 	local sw = v.width() * FU / v.dupx()
 	local sh = v.height() * FU / v.dupy()
-	local char = FangsHeist.Characters[skins[p.skin].name]
+	local char = FangsHeist.Characters[p.heist.locked_skin]
 
 	if char.customPregameBackground then
 		char.customPregameBackground(v,consoleplayer)

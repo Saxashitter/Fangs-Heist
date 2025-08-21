@@ -127,9 +127,19 @@ addHook("PlayerThink", function(p)
 		end
 	end
 
-	if p.skin ~= p.heist.locked_skin then
-		R_SetPlayerSkin(p, p.heist.locked_skin)
+	local skin, super = FangsHeist.getRealSkin(p)
+	print(skin)
+
+	if skins[p.skin].name ~= skin then
+		R_SetPlayerSkin(p, skin)
 	end
+
+	if p.mo and p.mo.valid and super then
+		p.mo.eflags = ($ & ~MFE_FORCENOSUPER)|MFE_FORCESUPER
+	elseif p.mo and p.mo.valid then
+		p.mo.eflags = ($ & ~MFE_FORCESUPER)|MFE_FORCENOSUPER
+	end
+
 	p.score = 0
 end)
 

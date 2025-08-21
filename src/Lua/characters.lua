@@ -1,4 +1,5 @@
 FangsHeist.Characters = {}
+FangsHeist.CharList = {}
 
 local function _NIL() end
 
@@ -8,7 +9,7 @@ local DEFAULT = {
 	panicState = S_FH_PANIC,
 	forceSpeedCap = false,
 	altSkin = false,
-	altSkinName = "N/A",
+	skins = {},
 	attackPriority = _NIL,
 	controls = {
 		{
@@ -49,6 +50,21 @@ setmetatable(FangsHeist.Characters, {
 function FangsHeist.makeCharacter(skin, data)
 	setmetatable(data, {__index = DEFAULT})
 	FangsHeist.Characters[skin] = data
+	FangsHeist.defCharList()
+end
+
+function FangsHeist.defCharList()
+	FangsHeist.CharList = {}
+
+	for i = 0, #skins-1 do
+		local name = skins[i].name
+
+		if FangsHeist.Characters[name].altSkin then
+			continue
+		end
+
+		table.insert(FangsHeist.CharList, skins[i])
+	end
 end
 
 FangsHeist.makeCharacter("knuckles", {pregameBackground = "FH_PREGAME_KNUCKLES"})

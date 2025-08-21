@@ -1,16 +1,6 @@
 return function(p)
 	p.dashmode = 0
 
-	-- skins probably shouldnt be here, but i got no reason to make a new file for it, considering its just a few lines
-	if p.mo
-	and p.mo.valid then
-		if p.heist.alt_skin then
-			p.mo.eflags = ($ & ~MFE_FORCENOSUPER)|MFE_FORCESUPER
-		else
-			p.mo.eflags = ($ & ~MFE_FORCESUPER)|MFE_FORCENOSUPER
-		end
-	end
-
 	local spindash_limit = 45*FU
 	if p.heist:isNerfed() then
 		p.heist.corrected_speed = false

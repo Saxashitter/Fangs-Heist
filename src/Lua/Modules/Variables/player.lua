@@ -43,8 +43,9 @@ return {
 	lastforw = 0,
 	lastside = 0,
 
-	locked_skin = 0, -- sonic probably
-	alt_skin = false,
+	locked_skin = "sonic", -- sonic probably
+	skin_index = 1,
+	alt_skin = 0,
 	pregame_state = "",
 
 	reached_second = false, -- only used in round 2

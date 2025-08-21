@@ -52,6 +52,10 @@ local function EndPregame()
 		p.heist.invitesList = nil
 
 		p.powers[pw_flashing] = 2*TICRATE
+
+		if p.mo and p.mo.valid and p.mo.health then
+			p.mo.state = S_PLAY_STND
+		end
 	end
 
 	local gamemode = FangsHeist.getGamemode()

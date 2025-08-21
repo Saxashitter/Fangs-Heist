@@ -124,6 +124,7 @@ addHook("PreThinkFrame", do
 end)
 
 addHook("GameQuit", FangsHeist.initHUD)
+addHook("AddonLoaded", FangsHeist.defCharList)
 
 add("Team")
 add("Placements")

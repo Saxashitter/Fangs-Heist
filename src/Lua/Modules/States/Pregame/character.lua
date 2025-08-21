@@ -78,8 +78,8 @@ local function DrawOutline(v, x, y, width, height, flags, color)
 end
 
 local function DrawCharacterRibbon(v, y, skin, flags, tics)
-	local skin_data = skins[skin]
-	local portrait = GetSkinPortrait(v, skin)
+	local skin_data = FangsHeist.CharList[skin]
+	local portrait = GetSkinPortrait(v, skin_data.name)
 	local color = v.getColormap(skin, skin_data.prefcolor)
 
 	local sw = v.width() * FU / v.dupx()
@@ -138,9 +138,8 @@ local function GetIconGridWidth(v, selection)
 	local total_width = 0
 	local width = 0
 
-	for i = 1, #skins do
-		local i = i-1
-		local skin = skins[i]
+	for i = 1, #FangsHeist.CharList do
+		local skin = FangsHeist.CharList[i]
 		local icon = GetSkinIcon(v, skin.name)
 		local icon_scale = SKINS_UNSELECTED_SCALE
 
@@ -148,13 +147,13 @@ local function GetIconGridWidth(v, selection)
 			icon_scale = SKINS_SELECTED_SCALE
 		end
 
-		if i % SKINS_ROW == 0 then
+		if (i-1) % SKINS_ROW == 0 then
 			width = 0
 		end
 
 		width = $ + FixedMul(SKINS_WIDTH, icon_scale)
-		if i % SKINS_ROW ~= SKINS_ROW-1
-		and i < #skins-1 then
+		if (i-1) % SKINS_ROW ~= SKINS_ROW-1
+		and i < #FangsHeist.CharList then
 			width = $ + SKINS_PADDING
 		end
 
@@ -168,9 +167,8 @@ local function DrawIconGrid(v, x, y, selection, flags)
 	local width = 0
 	local height = 0
 
-	for i = 1, #skins do
-		local i = i-1
-		local skin = skins[i]
+	for i = 1, #FangsHeist.CharList do
+		local skin = FangsHeist.CharList[i]
 		local icon, null = GetSkinIcon(v, skin.name)
 		local icon_scale = SKINS_UNSELECTED_SCALE
 
@@ -203,7 +201,7 @@ local function DrawIconGrid(v, x, y, selection, flags)
 		width = $ + FixedMul(SKINS_WIDTH, icon_scale)
 
 		if i % SKINS_ROW ~= SKINS_ROW-1
-		and i < #skins-1 then
+		and i < #FangsHeist.CharList then
 			width = $ + SKINS_PADDING
 		end
 
@@ -212,26 +210,26 @@ local function DrawIconGrid(v, x, y, selection, flags)
 end
 
 local function ChangeSelection(self, x, unrelative)
-	local prev = self.heist.locked_skin
+	local prev = self.heist.skin_index
 
-	self.heist.locked_skin = $+x
+	self.heist.skin_index = $+x
 	if unrelative then
-		self.heist.locked_skin = x
+		self.heist.skin_index = x
 	end
 
-	if self.heist.locked_skin > #skins-1 then
-		self.heist.locked_skin = 0
-	elseif self.heist.locked_skin < 0 then
-		self.heist.locked_skin = #skins-1
+	if self.heist.skin_index > #FangsHeist.CharList then
+		self.heist.skin_index = 1
+	elseif self.heist.skin_index < 1 then
+		self.heist.skin_index = #FangsHeist.CharList
 	end
-	
-	self.heist.locked_skin = max(0, min($, #skins-1))
-	if prev == self.heist.locked_skin then
+
+	if prev == self.heist.skin_index then
 		return
 	end
 
+	self.heist.locked_skin = FangsHeist.CharList[self.heist.skin_index].name
 	self.heist.cs_switchtime = 0
-	self.heist.alt_skin = false
+	self.heist.alt_skin = 0
 
 	S_StartSound(nil, sfx_menu1, self)
 end
@@ -272,22 +270,35 @@ function state:tick()
 	local skindef = skins[self.heist.locked_skin]
 	local heistskindef = FangsHeist.Characters[skindef.name]
 
-	if heistskindef.altSkin
+	if #heistskindef.skins > 0
 	and self.heist.buttons & BT_CUSTOM1
 	and not (self.heist.lastbuttons & BT_CUSTOM1) then
-		self.heist.alt_skin = not $
-		print("toggled to "..tostring(self.heist.alt_skin))
+		self.heist.alt_skin = ($+1) % (#heistskindef.skins+1)
+		S_StartSound(nil, sfx_menu1)
 	end
 end
 
 function state:draw(v, c, transparency)
-	local skin_data = skins[self.heist.locked_skin]
-	local width = GetIconGridWidth(v, self.heist.locked_skin)
+	local skin_data = FangsHeist.CharList[self.heist.skin_index]
+	local width = GetIconGridWidth(v, self.heist.skin_index)
 	local tics = self.heist.cs_switchtime
 
-	DrawCharacterRibbon(v, 100*FU, skin_data.name, transparency, tics)
+	local skindef = skins[self.heist.locked_skin]
+	local heistskindef = FangsHeist.Characters[skindef.name]
+
+	DrawCharacterRibbon(v, 100*FU, self.heist.skin_index, transparency, tics)
 	if tics >= TEXT_DELAY + TEXT_TWEEN then
-		DrawIconGrid(v, 160*FU - width/2, 100*FU + RIBBON_END_RADIUS, self.heist.locked_skin, transparency)
+		DrawIconGrid(v, 160*FU - width/2, 100*FU + RIBBON_END_RADIUS, self.heist.skin_index, transparency)
+	end
+
+	if #heistskindef.skins > 0 then
+		local skin = heistskindef.skins[self.heist.alt_skin]
+		local name = "Default"
+
+		if skin then
+			name = skin.name or $
+		end
+		v.drawString(160*FU, 100*FU - 10*FU - RIBBON_END_RADIUS/2, "[CUSTOM 1] - Change Skin ("..name..")", V_ALLOWLOWERCASE, "thin-fixed-center")
 	end
 end
 

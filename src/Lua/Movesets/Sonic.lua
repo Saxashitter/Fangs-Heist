@@ -1,7 +1,17 @@
+FangsHeist.makeCharacter("sonic1", {altSkin=true})
 FangsHeist.makeCharacter("sonic", {
 	pregameBackground = "FH_PREGAME_SONIC",
-	altSkin = true,
-	altSkinName = "Retro"
+	skins = {
+		{
+			name = "Super Sonic"
+		},
+		{
+			name = "SSNSonic"
+		},
+		{
+			name = "Super SSNSonic"
+		}
+	}
 })
 
 -- drop dash
@@ -34,7 +44,7 @@ addHook("PlayerThink", function(p)
 	and p.heist:isAlive()
 	and p.mo
 	and p.mo.valid
-	and p.mo.skin == "sonic") then
+	and p.heist.locked_skin == "sonic") then
 		if p.mo and p.mo.valid then
 			p.mo.sonic = nil
 		end

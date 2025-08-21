@@ -40,9 +40,12 @@ function FangsHeist.initTeam(p)
 end
 
 function FangsHeist.initPlayer(p)
+	local orig = p.heist
 	local heist = copy(orig_plyr)
 
-	heist.locked_skin = p.skin
+	heist.skin_index = orig and orig.skin_index or $
+	heist.locked_skin = orig and orig.locked_skin or $
+	heist.alt_skin = orig and orig.alt_skin or $
 	heist.player = p
 
 	setmetatable(heist, FangsHeist.PlayerMT)

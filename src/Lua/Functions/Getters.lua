@@ -31,6 +31,19 @@ function FangsHeist.getNearbyPlayers(mobj, distscale, blacklist)
 	return nearby
 end
 
+-- Returns skin name that thr player's mobj should use
+function FangsHeist.getRealSkin(p)
+	if p.heist.alt_skin < 2 then
+		return p.heist.locked_skin, p.heist.alt_skin == 1
+	end
+
+	local val = p.heist.alt_skin % 2
+	local index = p.heist.alt_skin / 2
+	local name = p.heist.locked_skin
+
+	return name..index, val == 1
+end
+
 function FangsHeist.playerCount()
 	local count = {
 		total = 0,
