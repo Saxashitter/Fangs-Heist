@@ -7,6 +7,8 @@ local DEFAULT = {
 	customPregameBackground = nil,
 	panicState = S_FH_PANIC,
 	forceSpeedCap = false,
+	altSkin = false,
+	altSkinName = "N/A",
 	attackPriority = _NIL,
 	controls = {
 		{

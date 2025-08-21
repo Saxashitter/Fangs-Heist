@@ -44,6 +44,7 @@ return {
 	lastside = 0,
 
 	locked_skin = 0, -- sonic probably
+	alt_skin = false,
 	pregame_state = "",
 
 	reached_second = false, -- only used in round 2

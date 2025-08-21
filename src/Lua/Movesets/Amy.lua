@@ -193,29 +193,11 @@ addHook("PlayerThink", function(p)
 	end
 end)
 
-addHook("JumpSpinSpecial", function(p)
-	if not FangsHeist.isMode() then return end
-	if not check(p) then
-		return
-	end
-
-	if p.powers[pw_shield] then
-		return
-	end
-
-	if not canAttack(p) then
-		return true
-	end
-end)
 
 addHook("SpinSpecial", function(p)
 	if not FangsHeist.isMode() then return end
 	if not check(p) then
 		return
-	end
-
-	if not canAttack(p) then
-		return true
 	end
 end)
 

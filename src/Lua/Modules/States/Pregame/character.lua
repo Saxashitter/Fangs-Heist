@@ -231,6 +231,7 @@ local function ChangeSelection(self, x, unrelative)
 	end
 
 	self.heist.cs_switchtime = 0
+	self.heist.alt_skin = false
 
 	S_StartSound(nil, sfx_menu1, self)
 end
@@ -266,6 +267,16 @@ function state:tick()
 		and i <= #skins-1 then
 			ChangeSelection(self, self.heist.locked_skin + SKINS_ROW*y, true)
 		end
+	end
+
+	local skindef = skins[self.heist.locked_skin]
+	local heistskindef = FangsHeist.Characters[skindef.name]
+
+	if heistskindef.altSkin
+	and self.heist.buttons & BT_CUSTOM1
+	and not (self.heist.lastbuttons & BT_CUSTOM1) then
+		self.heist.alt_skin = not $
+		print("toggled to "..tostring(self.heist.alt_skin))
 	end
 end
 

@@ -1,5 +1,7 @@
 FangsHeist.makeCharacter("sonic", {
-	pregameBackground = "FH_PREGAME_SONIC"
+	pregameBackground = "FH_PREGAME_SONIC",
+	altSkin = true,
+	altSkinName = "Retro"
 })
 
 -- drop dash

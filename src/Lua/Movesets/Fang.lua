@@ -1,4 +1,4 @@
-local POPGUN_TIME = 2*TICRATE
+local POPGUN_TIME = 4*TICRATE
 local POPGUN_FRICTION = tofixed("0.95")
 
 local SKID_TIME = 3
@@ -98,6 +98,7 @@ local function doPopgun(p)
 
 		local speed = FixedHypot(p.mo.momx,p.mo.momy)
 		P_InstaThrust(cork, p.mo.angle, speed+24*FU)
+		P_InstaThrust(cork, p.mo.angle, speed+24*FU)
 
 		cork.spritexscale = 2*FU
 		cork.spriteyscale = 2*FU
@@ -115,12 +116,6 @@ local function doPopgun(p)
 	and not (p.pflags & PF_THOKKED)
 	and not p.heist:isNerfed() then
 		p.pflags = $ & ~PF_JUMPED|PF_STARTJUMP
-		P_SetObjectMomZ(p.mo, max(p.mo.momz*P_MobjFlip(p.mo)*5/4, FU*6))
-
-		if p.mo.momz*P_MobjFlip(p.mo) > FU*10 then
-			p.pflags = $|PF_JUMPED|PF_STARTJUMP
-		end
-
 		p.pflags = $|PF_THOKKED
 	end
 
@@ -187,6 +182,7 @@ addHook("SpinSpecial", function(p)
 	if p.pflags & PF_JUMPED then return end
 	if p.fang.popgun then return end
 	if p.mo.state == S_FH_GUARD then return end
+	if not P_IsObjectOnGround(p.mo) then return end
 
 	doPopgun(p)
 end)
@@ -213,6 +209,11 @@ local function CheckAndCrumble2(mo, sec)
 		EV_CrumbleChain(fof) -- Crumble
 	end
 end
+
+-- make it easier for other players to view incoming corks
+addHook("MobjThinker", function(mobj)
+	P_SpawnGhostMobj(mobj).fuse = 8
+end, MT_CORK)
 
 addHook("MobjLineCollide", function(mo, line)
 	if not FangsHeist.isMode() then return end
