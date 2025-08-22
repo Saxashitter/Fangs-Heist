@@ -1,4 +1,13 @@
+local function sac(name, caption)
+	local sfx = freeslot(name)
+
+	sfxinfo[sfx].caption = caption
+
+	return sfx
+end
+
 FangsHeist.makeCharacter("sonic1", {altSkin=true})
+FangsHeist.makeCharacter("sonic2", {altSkin=true})
 FangsHeist.makeCharacter("sonic", {
 	pregameBackground = "FH_PREGAME_SONIC",
 	skins = {
@@ -10,6 +19,49 @@ FangsHeist.makeCharacter("sonic", {
 		},
 		{
 			name = "Super SSNSonic"
+		},
+		{
+			name = "Xtreme Sonic"
+		}
+	},
+	voicelines = {
+		attack = {
+			sac("sfx_sncat1", "Grunt"),
+			sac("sfx_sncat2", "Grunt"),
+			sac("sfx_sncat3", "Grunt"),
+			sac("sfx_sncat4", "Grunt"),
+			sac("sfx_sncat5", "Grunt")
+		},
+		death = {sac("sfx_sncdie", "death.wav")},
+		escape = {sac("sfx_sncesc", "Something tells me something's not right here...")},
+		hurt = {
+			sac("sfx_snchr1", "Grunt"),
+			sac("sfx_snchr2", "Grunt"),
+			sac("sfx_snchr3", "Grunt"),
+			sac("sfx_snchr4", "Grunt"),
+			sac("sfx_snchr5", "Grunt"),
+		},
+		parry = {
+			sac("sfx_sncpy1", "Too slow!"),
+			sac("sfx_sncpy2", "Try again!"),
+			sac("sfx_sncpy3", "You thought that was gonna work?"),
+		},
+		parry_attempt = {
+			sac("sfx_sncpa1", "Come at me!"),
+			sac("sfx_sncpa2", "Try this on for size!"),
+			sac("sfx_sncpa3", "You won't!"),
+		},
+		accept = {
+			sac("sfx_sncsel", "Oh yeah!")
+		},
+		signpost = {
+			sac("sfx_sncsg1", "I got it now, suckers!"),
+			sac("sfx_sncsg2", "Heh heh!"),
+			sac("sfx_sncsg3", "Catch me if you can... If you want it back!"),
+		},
+		treasure = {
+			sac("sfx_snctr1", "Woah, what's this little thing?"),
+			sac("sfx_snctr2", "This looks funny, I'm keeping it."),
 		}
 	}
 })

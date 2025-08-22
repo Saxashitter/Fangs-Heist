@@ -96,3 +96,29 @@ function FangsHeist.clashPlayers(p, sp)
 	p.powers[pw_flashing] = 10
 	sp.powers[pw_flashing] = 10
 end
+
+function FangsHeist.stopVoicelines(p)
+	local char = FangsHeist.Characters[p.heist.locked_skin]
+
+	for k, tbl in pairs(char.voicelines) do
+		for _, snd in ipairs(tbl) do
+			S_StopSoundByID(p.mo, snd)
+		end
+	end
+end
+
+function FangsHeist.playVoiceline(p, line, private)
+	local char = FangsHeist.Characters[p.heist.locked_skin]
+
+	if not char.voicelines[line] then
+		print("no lines for" .. line)
+		return
+	end
+
+	FangsHeist.stopVoicelines(p)
+
+	local lines = char.voicelines[line]
+
+	S_StartSound(p.mo, lines[P_RandomRange(1, #lines)], private and p)
+	print("playing")
+end

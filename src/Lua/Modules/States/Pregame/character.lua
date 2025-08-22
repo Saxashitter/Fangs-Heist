@@ -248,6 +248,7 @@ function state:tick()
 	if self.heist.buttons & BT_JUMP
 	and not (self.heist.lastbuttons & BT_JUMP) then
 		S_StartSound(nil, sfx_strpst, self)
+		FangsHeist.playVoiceline(self, "accept", true)
 		return "team"
 	end
 

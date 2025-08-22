@@ -51,11 +51,14 @@ function gamemode:spawnEggman(type)
 	return false
 end
 
-function gamemode:signcapture(stolen)
+function gamemode:signcapture(target, stolen)
 	if FangsHeist.Net.escape then return end
 
 	S_StartSound(nil, sfx_lvpass)
 	self:startEscape()
+
+	FangsHeist.playVoiceline(target, "escape")
+	return true
 end
 
 function gamemode:init(map)

@@ -9,6 +9,7 @@ local DEFAULT = {
 	panicState = S_FH_PANIC,
 	forceSpeedCap = false,
 	altSkin = false,
+	voicelines = {},
 	skins = {},
 	attackPriority = _NIL,
 	controls = {

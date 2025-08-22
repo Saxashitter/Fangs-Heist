@@ -94,11 +94,3 @@ function FangsHeist.startIntermission()
 
 	FangsHeist.Net.game_over = true
 end
-
-local function sac(name, caption)
-	local sfx = freeslot(name)
-
-	sfxinfo[sfx].caption = caption
-
-	return sfx
-end

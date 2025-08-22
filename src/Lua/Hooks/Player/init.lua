@@ -128,7 +128,6 @@ addHook("PlayerThink", function(p)
 	end
 
 	local skin, super = FangsHeist.getRealSkin(p)
-	print(skin)
 
 	if skins[p.skin].name ~= skin then
 		R_SetPlayerSkin(p, skin)
@@ -220,6 +219,7 @@ addHook("MobjDeath", function(t,i,s)
 	local gamemode = FangsHeist.getGamemode()
 
 	gamemode:playerdeath(t.player)
+	FangsHeist.playVoiceline(t.player, "death")
 end, MT_PLAYER)
 
 addHook("AbilitySpecial", function (p)

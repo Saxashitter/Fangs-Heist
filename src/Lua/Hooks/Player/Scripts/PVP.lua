@@ -115,6 +115,8 @@ local function RegisterGuard(atk, vic)
 		P_MovePlayer(vic)
 	end
 
+	FangsHeist.playVoiceline(atk, "parry")
+
 	if atk.heist.perf_parry_time then
 		PerfectParry(atk, vic)
 		return 2
@@ -245,6 +247,7 @@ local function DoAttack(p)
 	p.heist.attack_time = G+1
 
 	S_StartSound(p.mo, sfx_s3k42)
+	FangsHeist.playVoiceline(p, "attack")
 end
 
 local function DoGuard(p)
@@ -277,6 +280,7 @@ local function DoGuard(p)
 
 	S_StartSound(p.mo, sfx_s1a2)
 	S_StartSound(p.mo, sfx_s3k7c)
+	FangsHeist.playVoiceline(p, "parry_attempt")
 end
 
 local function RingSpill(p, dontSpill, p2)
@@ -422,6 +426,8 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if dt & DMG_DEATHMASK then
 		return
 	end
+
+	FangsHeist.playVoiceline(t.player, "hurt")
 
 	if t.player.powers[pw_shield] then return end
 	local rings = RingSpill(t.player, nil, s and s.valid and s.player)

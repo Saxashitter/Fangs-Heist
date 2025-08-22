@@ -56,7 +56,9 @@ local function OnCapture(sign, pmo)
 	end
 
 	if gamemode then
-		gamemode:signcapture(false)
+		if not gamemode:signcapture(pmo.player, false) then
+			FangsHeist.playVoiceline(pmo.player, "signpost")
+		end
 	end
 
 	pmo.player.powers[pw_flashing] = max($, TICRATE)

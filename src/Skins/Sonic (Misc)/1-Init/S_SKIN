@@ -1,0 +1,14 @@
+name = sonic2
+realname = Sonic
+hudname = SONIC
+startcolor = 96
+prefcolor = Blue
+supercolor = Gold
+ability = CA_NONE
+actionspd = 72
+normalspeed = 36
+runspeed = 28
+thrustfactor = 5
+accelstart = 96
+acceleration = 40
+flags = SF_SUPER|SF_NOSPINDASHDUST

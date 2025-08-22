@@ -60,6 +60,7 @@ local function OnCollect(mobj, pmo)
 	pmo.player.heist.treasure_time = 3*TICRATE
 
 	S_StartSound(pmo, sfx_kc30)
+	FangsHeist.playVoiceline(pmo.player, "treasure")
 end
 
 local function CanPickUp(p)
