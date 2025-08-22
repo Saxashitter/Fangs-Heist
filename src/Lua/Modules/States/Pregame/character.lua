@@ -78,7 +78,7 @@ local function DrawOutline(v, x, y, width, height, flags, color)
 end
 
 local function DrawCharacterRibbon(v, y, skin, flags, tics)
-	local skin_data = FangsHeist.CharList[skin]
+	local skin_data = skins[skin]
 	local portrait = GetSkinPortrait(v, skin_data.name)
 	local color = v.getColormap(skin, skin_data.prefcolor)
 
@@ -287,7 +287,7 @@ function state:draw(v, c, transparency)
 	local skindef = skins[self.heist.locked_skin]
 	local heistskindef = FangsHeist.Characters[skindef.name]
 
-	DrawCharacterRibbon(v, 100*FU, self.heist.skin_index, transparency, tics)
+	DrawCharacterRibbon(v, 100*FU, self.heist.locked_skin, transparency, tics)
 	if tics >= TEXT_DELAY + TEXT_TWEEN then
 		DrawIconGrid(v, 160*FU - width/2, 100*FU + RIBBON_END_RADIUS, self.heist.skin_index, transparency)
 	end

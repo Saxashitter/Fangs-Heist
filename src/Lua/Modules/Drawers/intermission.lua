@@ -125,7 +125,7 @@ local function DrawWinnerParallax(v)
 
 	if (team and team[1] and team[1].valid) then
 		local p = team[1]
-		skin = skins[p.skin].name
+		skin = skins[p.heist.locked_skin].name
 	end
 
 	local char = FangsHeist.Characters[skin]
@@ -179,7 +179,7 @@ local function DrawWinners(v, percent, blinkWhite, easing)
 		local ROT = 0
 		local TARG = LOSER_WIDTH
 
-		if not IsSpriteValid(p.skin, SPR2, FRAME) then
+		if not IsSpriteValid(p.heist.locked_skin, SPR2, FRAME) then
 			SPR2 = SPR2_XTRA
 		end
 
@@ -188,7 +188,7 @@ local function DrawWinners(v, percent, blinkWhite, easing)
 		end
 
 		local PATCH, FLIP = v.getSprite2Patch(
-			p.skin,
+			p.heist.locked_skin,
 			SPR2,
 			false,
 			FRAME,
@@ -254,7 +254,7 @@ local function DrawWinners(v, percent, blinkWhite, easing)
 		offsetY = $ + FixedMul(HEIGHT, percent)
 
 		local y = y+offsetY
-		local color = v.getColormap(skins[p.skin].name, p.skincolor)
+		local color = v.getColormap(skins[p.heist.locked_skin].name, p.skincolor)
 
 		if blinkWhite then
 			color = v.getColormap(TC_BLINK, SKINCOLOR_WHITE)
@@ -269,9 +269,9 @@ end
 local function GetPlayerStringWidth(v, p, text)
 	local life
 	local scale = FU/2
-	if skins[p.skin].sprites[SPR2_LIFE].numframes then 
-		scale = skins[p.skin].highresscale/2
-		life = v.getSprite2Patch(p.skin,
+	if skins[p.heist.locked_skin].sprites[SPR2_LIFE].numframes then 
+		scale = skins[p.heist.locked_skin].highresscale/2
+		life = v.getSprite2Patch(p.heist.locked_skin,
 			SPR2_LIFE, false, A, 0)
 	else
 		life = v.cachePatch("CONTINS")
@@ -337,15 +337,15 @@ local function DrawPlayerString(v, x, y, p, text, flags, align)
 
 	local life
 	local scale = FU/2
-	if skins[p.skin].sprites[SPR2_LIFE].numframes then 
-		scale = skins[p.skin].highresscale/2
-		life = v.getSprite2Patch(p.skin,
+	if skins[p.heist.locked_skin].sprites[SPR2_LIFE].numframes then 
+		scale = skins[p.heist.locked_skin].highresscale/2
+		life = v.getSprite2Patch(p.heist.locked_skin,
 			SPR2_LIFE, false, A, 0)
 	else
 		life = v.cachePatch("CONTINS")
 	end
 
-	local color = v.getColormap(skins[p.skin].name, p.skincolor)
+	local color = v.getColormap(skins[p.heist.locked_skin].name, p.skincolor)
 	local chatcolor = skincolors[p.skincolor].chatcolor
 
 	local width = GetPlayerStringWidth(v, p, text)

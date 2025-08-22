@@ -72,6 +72,7 @@ states[freeslot "S_FH_DROPDASH"] = {
 	tics = 2,
 	nextstate = S_FH_DROPDASH
 }
+spr2defaults[SPR2_DRPD] = SPR2_ROLL
 
 states[freeslot "S_FH_STOMP"] = {
 	sprite = SPR_PLAY,

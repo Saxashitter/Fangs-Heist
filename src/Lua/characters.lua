@@ -61,11 +61,15 @@ function FangsHeist.defCharList()
 		local name = skins[i].name
 
 		if FangsHeist.Characters[name].altSkin then
+			print("Alt skin: "..name)
 			continue
 		end
 
+		print("Skin: "..name)
 		table.insert(FangsHeist.CharList, skins[i])
 	end
 end
 
 FangsHeist.makeCharacter("knuckles", {pregameBackground = "FH_PREGAME_KNUCKLES"})
+
+addHook("AddonLoaded", FangsHeist.defCharList)

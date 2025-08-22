@@ -11,6 +11,7 @@ addHook("MapChange", function(map)
 		mapmusname = mapheaderinfo[map].musname or $
 	end
 
+	FangsHeist.defCharList()
 	FangsHeist.initMode(map)
 end)
 
@@ -124,7 +125,6 @@ addHook("PreThinkFrame", do
 end)
 
 addHook("GameQuit", FangsHeist.initHUD)
-addHook("AddonLoaded", FangsHeist.defCharList)
 
 add("Team")
 add("Placements")

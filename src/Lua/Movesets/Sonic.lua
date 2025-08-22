@@ -8,21 +8,17 @@ end
 
 FangsHeist.makeCharacter("sonic1", {altSkin=true})
 FangsHeist.makeCharacter("sonic2", {altSkin=true})
+FangsHeist.makeCharacter("sonic3", {altSkin=true})
 FangsHeist.makeCharacter("sonic", {
 	pregameBackground = "FH_PREGAME_SONIC",
 	skins = {
-		{
-			name = "Super Sonic"
-		},
-		{
-			name = "SSNSonic"
-		},
-		{
-			name = "Super SSNSonic"
-		},
-		{
-			name = "Xtreme Sonic"
-		}
+		{name = "Super Sonic"},
+		{name = "SSNSonic"},
+		{name = "Super SSNSonic"},
+		{name = "F. Sonic"},
+		{name = "Super F. Sonic"},
+		{name = "Sonikku"},
+		{name = "Xtreme Sonic"},
 	},
 	voicelines = {
 		attack = {
