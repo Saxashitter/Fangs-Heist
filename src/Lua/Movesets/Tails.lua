@@ -290,6 +290,7 @@ addHook("FollowMobj", function(p, mo)
 
         mo.state = S_TAILSOVERLAY_MINUS30DEGREES
         mo.angle = p.drawangle
+		mo.frame = ($ & ~FF_FRAMEMASK)|Wrap(leveltime/3, A, G)
         P_MoveOrigin(mo,
             p.mo.x + P_ReturnThrustX(nil, p.drawangle, frontOffset),
             p.mo.y + P_ReturnThrustY(nil, p.drawangle, frontOffset),
@@ -298,14 +299,3 @@ addHook("FollowMobj", function(p, mo)
         return true
     end
 end, MT_TAILSOVERLAY)
-
-FangsHeist.addPlayerScript("postthinkframe", function(p)
-	if not Valid(p) then return end
-	if not p.followmobj then return end
-	if not p.followmobj.valid then return end
-
-	if p.mo.state == S_PLAY_CLING then
-		p.followmobj.state = S_TAILSOVERLAY_MINUS30DEGREES
-		p.followmobj.frame = ($ & ~FF_FRAMEMASK)|Wrap(leveltime/3, A, G)
-	end
-end)

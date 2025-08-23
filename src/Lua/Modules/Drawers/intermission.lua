@@ -1,4 +1,5 @@
 local module = {}
+local extease = FangsHeist.require "Modules/Libraries/exteasing"
 
 local WINNER_SEP = 76*FU
 local WINNER_WIDTH = 128
@@ -125,7 +126,7 @@ local function DrawWinnerParallax(v)
 
 	if (team and team[1] and team[1].valid) then
 		local p = team[1]
-		skin = skins[p.heist.locked_skin].name
+		skin = skins[p.skin].name
 	end
 
 	local char = FangsHeist.Characters[skin]
@@ -179,7 +180,7 @@ local function DrawWinners(v, percent, blinkWhite, easing)
 		local ROT = 0
 		local TARG = LOSER_WIDTH
 
-		if not IsSpriteValid(p.heist.locked_skin, SPR2, FRAME) then
+		if not IsSpriteValid(p.skin, SPR2, FRAME) then
 			SPR2 = SPR2_XTRA
 		end
 
@@ -188,7 +189,7 @@ local function DrawWinners(v, percent, blinkWhite, easing)
 		end
 
 		local PATCH, FLIP = v.getSprite2Patch(
-			p.heist.locked_skin,
+			p.skin,
 			SPR2,
 			false,
 			FRAME,
@@ -254,7 +255,7 @@ local function DrawWinners(v, percent, blinkWhite, easing)
 		offsetY = $ + FixedMul(HEIGHT, percent)
 
 		local y = y+offsetY
-		local color = v.getColormap(skins[p.heist.locked_skin].name, p.skincolor)
+		local color = v.getColormap(skins[p.skin].name, p.skincolor)
 
 		if blinkWhite then
 			color = v.getColormap(TC_BLINK, SKINCOLOR_WHITE)
@@ -269,9 +270,9 @@ end
 local function GetPlayerStringWidth(v, p, text)
 	local life
 	local scale = FU/2
-	if skins[p.heist.locked_skin].sprites[SPR2_LIFE].numframes then 
-		scale = skins[p.heist.locked_skin].highresscale/2
-		life = v.getSprite2Patch(p.heist.locked_skin,
+	if skins[p.skin].sprites[SPR2_LIFE].numframes then 
+		scale = skins[p.skin].highresscale/2
+		life = v.getSprite2Patch(p.skin,
 			SPR2_LIFE, false, A, 0)
 	else
 		life = v.cachePatch("CONTINS")
@@ -337,15 +338,15 @@ local function DrawPlayerString(v, x, y, p, text, flags, align)
 
 	local life
 	local scale = FU/2
-	if skins[p.heist.locked_skin].sprites[SPR2_LIFE].numframes then 
-		scale = skins[p.heist.locked_skin].highresscale/2
-		life = v.getSprite2Patch(p.heist.locked_skin,
+	if skins[p.skin].sprites[SPR2_LIFE].numframes then 
+		scale = skins[p.skin].highresscale/2
+		life = v.getSprite2Patch(p.skin,
 			SPR2_LIFE, false, A, 0)
 	else
 		life = v.cachePatch("CONTINS")
 	end
 
-	local color = v.getColormap(skins[p.heist.locked_skin].name, p.skincolor)
+	local color = v.getColormap(skins[p.skin].name, p.skincolor)
 	local chatcolor = skincolors[p.skincolor].chatcolor
 
 	local width = GetPlayerStringWidth(v, p, text)
@@ -364,18 +365,91 @@ local function DrawPlayerString(v, x, y, p, text, flags, align)
 
 	v.drawScaled(x+life.leftoffset*scale, y+life.topoffset*scale, scale, life, flags, color)
 end
+local function get_place(num) --From Leftscores LUA
+	if num == 1 then
+		return "1st",SKINCOLOR_GOLD
+	end
 
-local function DrawWinnerText(v)
+	if num == 2 then
+		return "2nd",SKINCOLOR_SILVER
+	end
+
+	if num == 3 then
+		return "3rd",SKINCOLOR_BRONZE
+	end
+
+	return tostring(num).."th",SKINCOLOR_WHITE
+end
+local function DrawResults(v,tics)
+	local FH = FangsHeist
+	local plc = FH.Net.placements
+	local scale = FU/2
+	for i = 1,16 do
+		local team = plc[i]
+		local k = i
+		local xst = -50*FU
+		local x = 60*FU
+		if k >= 9
+			xst = 320*FU
+			x = $+120*FU
+			k = i-8
+		end
+		local time = max(0,min(FixedDiv(tics-FangsHeist.BLACKOUT_TICS-105-(3*k),35),FU))
+
+		--local p = team[1]
+		if time != 0
+			local y = 25*FU+(10*FU*k)
+			local xslide = extease.outcirc(time,xst,x)
+			local st,col = get_place(i)
+			local namestr,namecol,profit = "",SKINCOLOR_WHITE,0
+			local life = v.cachePatch("CONTINS")
+			local lifescale = FU/2
+
+			if (plc[i]
+			and plc[i][1]
+			and plc[i][1].valid) then
+				local p = GetTeamLeader(team)
+				namestr,namecol = GetTeamString(team),p.skincolor
+				profit = team.profit
+				if skins[p.skin].sprites[SPR2_LIFE].numframes then 
+					lifescale = skins[p.skin].highresscale/2
+					life = v.getSprite2Patch(p.skin,
+						SPR2_LIFE, false, A, 0)
+				end
+			
+			end
+			if namestr != "" --Draw Final Placements
+				
+				v.drawScaled((xslide+life.leftoffset*lifescale)-(10*FU),y+life.topoffset*lifescale,lifescale,
+				life,nil,v.getColormap(TC_DEFAULT,namecol))
+				FH.DrawString(v,xslide,y,scale,st,"FHFNT",nil,nil,v.getColormap(TC_DEFAULT,col))
+				local width = FH.GetStringWidth(v,st,scale,"FHFNT")+2*FU
+				FH.DrawString(v,xslide+width,y,scale,namestr,"FHFNT",nil,nil,v.getColormap(TC_DEFAULT,namecol))
+				local profiw = width+FH.GetStringWidth(v,namestr,scale,"FHFNT")+2*FU
+				FH.DrawString(v,xslide+profiw,y,scale,"$"..tostring(profit),"FHFNT",nil,nil,v.getColormap(TC_DEFAULT,SKINCOLOR_GREEN))
+			end
+		end
+	end
+end
+local function DrawWinnerText(v,tics)
 	local WINNERS = FangsHeist.Net.placements
 
 	local x = 160
-	local y = 8
+	local y = 85
+	local resultperc = max(0,min(FixedDiv(tics-FangsHeist.BLACKOUT_TICS-105,20),FU))
+	local extrax = ease.inquad(resultperc,0,320*FU)
 
 	if not (WINNERS and WINNERS[1] and WINNERS[1][1] and WINNERS[1][1].valid) then
-		local string = "NO WINNERS"
-		local width = v.levelTitleWidth(string)
-
-		v.drawLevelTitle(x - width/2, y, string, V_SNAPTOTOP)
+		local string = "NO CONTEST"
+		customhud.CustomFontString(v,
+			x*FU+extrax,
+			y*FU,
+			string,
+			"FHFNT",
+			V_SNAPTOTOP,
+			"center",
+			FU,
+			SKINCOLOR_RED)
 		return
 	end
 
@@ -390,31 +464,45 @@ local function DrawWinnerText(v)
 
 	local chatcolor = skincolors[color].chatcolor
 	local width = v.levelTitleWidth(string)
-
 	--v.drawLevelTitle(x - width/2, y, string, V_SNAPTOTOP|chatcolor)
-	customhud.CustomFontString(v,
-		x*FU,
-		y*FU,
-		string,
-		"FHBFT",
-		V_SNAPTOTOP,
-		"center",
-		FU,
-		color)
-	y = $ + 22 + 2
+	if resultperc != FU
+		customhud.CustomFontString(v,
+			x*FU+extrax,
+			y*FU,
+			string,
+			"FHBFT",
+			nil,
+			"center",
+			FU,
+			color)
+		y = $ + 22 + 2
 
-	-- v.drawString(x, y, FangsHeist.Net.game_over_winline:gsub("PlayerName", string), V_SNAPTOTOP|chatcolor|V_ALLOWLOWERCASE, "thin-center")
-	customhud.CustomFontString(v,
-		x*FU,
-		y*FU,
-		FangsHeist.Net.game_over_winline:gsub("PlayerName", string),
-		"FHFNT",
-		V_SNAPTOTOP,
-		"center",
-		FU,
-		color)
-	y = $+13+4
-
+		-- v.drawString(x, y, FangsHeist.Net.game_over_winline:gsub("PlayerName", string), V_SNAPTOTOP|chatcolor|V_ALLOWLOWERCASE, "thin-center")
+		customhud.CustomFontString(v,
+			x*FU-extrax,
+			y*FU,
+			FangsHeist.Net.game_over_winline:gsub("PlayerName", string),
+			"FHFNT",
+			nil,
+			"center",
+			FU,
+			color)
+		y = $+13+4
+	end
+	local trns = ease.linear(resultperc,10,0)
+	if trns != 10
+		customhud.CustomFontString(v,
+			x*FU,
+			8*FU,
+			"RESULTS",
+			"FHBFT",
+			V_SNAPTOTOP|trns*V_10TRANS,
+			"center",
+			FU,
+			SKINCOLOR_SHAMROCK)
+	end
+	DrawResults(v,tics)
+	/*
 	-- RUNNER-UPS
 	if #WINNERS <= 1 then
 		return
@@ -435,6 +523,7 @@ local function DrawWinnerText(v)
 		y = $+10
 		DrawPlayerString(v, x, y, p, GetTeamString(team), V_SNAPTOTOP, "center")
 	end
+	*/
 end
 
 local MAP_GRAP = "MAP%sP"
@@ -442,7 +531,8 @@ local MAP_SCALE = FU/3
 
 local function DrawMapSelection(v, x, y, map, votes, selected, confirmed, flags)
 	flags = $ or 0
-
+	local color = SKINCOLOR_WHITE
+	local FH = FangsHeist
 	-- Map is drawn from center.
 	local mapName = G_BuildMapName(map).."P"
 	if not v.patchExists(mapName) then
@@ -463,22 +553,14 @@ local function DrawMapSelection(v, x, y, map, votes, selected, confirmed, flags)
 
 	if selected
 	and confirmed then
-		flags = $|V_GREENMAP
+		color = SKINCOLOR_GREEN
 	end
-
-	v.drawString(STRING_X, VOTES_Y, tostring(votes), flags, "thin-fixed-center")
+	FH.DrawString(v,STRING_X,VOTES_Y,FU/2,tostring(votes),"FHBFT","center",flags,v.getColormap(TC_DEFAULT,color))
 
 	if not selected then return end
 
 	local NAME_Y = y - 9*FU - 2*FU
-	local RETAKE_Y = NAME_Y - 9*FU
-
-	v.drawString(STRING_X, NAME_Y, G_BuildMapTitle(map), flags|V_ALLOWLOWERCASE, "thin-fixed-center")
-
-	if map == gamemap then
-		flags = ($ & ~V_GREENMAP)|V_REDMAP
-		v.drawString(STRING_X, RETAKE_Y, "RETAKE", flags, "thin-fixed-center")
-	end
+	FH.DrawString(v,STRING_X,NAME_Y,FU/2,G_BuildMapTitle(map),"FHFNT","center",flags,v.getColormap(TC_DEFAULT,color))
 end
 
 local function DrawMapVote(v, percent)
@@ -497,7 +579,7 @@ local function DrawMapVote(v, percent)
 		selected = p.heist.selected
 		confirmed = p.heist.voted
 	end
-
+	
 	for i, map in ipairs(maps) do
 		local selected = selected == i
 		local pos = FixedMul(FU/2, FixedDiv(i, #maps-1))
@@ -536,31 +618,32 @@ end
 
 freeslot("SPR_MCVD") -- SAXA: srb2 limitations
 local function DrawResults(v)
-	local tics = FangsHeist.Net.game_over_ticker - FangsHeist.GAME_TICS
-	local remaining = FangsHeist.SWITCH_TICS - FangsHeist.Net.game_over_ticker
-
-	if tics < FangsHeist.BLACKOUT_TICS then
+	local FH = FangsHeist
+	local tics = FH.Net.game_over_ticker - FH.GAME_TICS
+	local remaining = FH.SWITCH_TICS - FH.Net.game_over_ticker
+	local until_vote = FH.RESULTS_TICS - FH.Net.game_over_ticker
+	if tics < FH.BLACKOUT_TICS then
 		DrawBlackout(v, tics)
 		return
 	end
 
 	DrawWinnerParallax(v)
 
-	local num = remaining/TICRATE
-	local str = tostring(num)
-	local x = 4*FU
-
-	for i = 1,#str do
-		local num = tonumber(string.sub(str, i, i))
-		local patch = v.cachePatch("STTNUM"..num)
-
-		v.drawScaled(x, 4*FU, FU, patch, V_SNAPTOLEFT|V_SNAPTOTOP|f)
-		x = $+patch.width*FU
+	local num = until_vote
+	local str = "Voting Starts in "
+	if FH.isMapVote()
+		num = remaining
+		str = "Switching Map in "
 	end
+	num = $/35
 
-	local transition = 12
 	local FLASH_OFFSET = 7
-
+	local resultperc = max(0,min(FixedDiv(tics-FangsHeist.BLACKOUT_TICS-105,20),FU))
+	local transition = 12
+	local intermissiony = ease.outquart(resultperc,230*FU,182*FU)
+	local ticinter = string.format(str.."%d Seconds",num)
+	FH.DrawString(v,160*FU,intermissiony,FU-12000,ticinter,
+	"FHFNT","center",V_SNAPTOBOTTOM,v.getColormap(TC_DEFAULT,SKINCOLOR_YELLOW))
 	if FangsHeist.isMapVote() then
 		local tics = FangsHeist.Net.game_over_ticker - FangsHeist.RESULTS_TICS
 		local trans_tics = min(tics, transition)
@@ -568,19 +651,19 @@ local function DrawResults(v)
 
 		local flash_tics = min(tics, FLASH_OFFSET)
 		DrawFlash(v, FU-FixedDiv(flash_tics, FLASH_OFFSET))
+	else
+		local percent_tics = max(0, transition - until_vote)
+		DrawWinners(v, resultperc, false, ease.inquart)
+		DrawWinnerText(v,tics)
 
-		return
+		local TICS = min(tics-FangsHeist.BLACKOUT_TICS, FLASH_OFFSET)
+		local perc = FU-fixdiv(TICS, FLASH_OFFSET)
+		if (transition-until_vote) >= 0
+			perc = extease.incirc(FixedDiv(percent_tics, transition),0,FU)
+		end
+		DrawFlash(v, perc)
 	end
 
-	local until_vote = FangsHeist.RESULTS_TICS - FangsHeist.Net.game_over_ticker
-	local percent_tics = max(0, transition - until_vote)
-
-	DrawWinners(v, FixedDiv(percent_tics, transition), false, ease.inquart)
-	DrawWinnerText(v)
-
-	local TICS = min(tics-FangsHeist.BLACKOUT_TICS, FLASH_OFFSET)
-
-	DrawFlash(v, FU-fixdiv(TICS, FLASH_OFFSET))
 end
 
 local function DrawHeistBackground(v)
@@ -588,9 +671,9 @@ local function DrawHeistBackground(v)
 
 	local sw = (v.width() / v.dupx()) * FU
 	local sh = (v.height() / v.dupy()) * FU
-
-	local y = -patch.height*FU + (leveltime*FU/3) % (patch.height*FU)
-	local x = -patch.width*FU + (leveltime*FU/3) % (patch.width*FU)
+	local gametime = leveltime*FU/3
+	local y = -patch.height*FU + (gametime) % (patch.height*FU)
+	local x = -patch.width*FU + (gametime) % (patch.width*FU)
 
 	while y < sh do
 		local x = x

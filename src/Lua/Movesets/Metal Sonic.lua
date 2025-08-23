@@ -1,3 +1,6 @@
+--did you guys not actually add this?
+FangsHeist.makeCharacter("metalsonic", {pregameBackground = "FH_PREGAME_METAL"})
+
 freeslot "spr_msud"
 freeslot "S_X3UPDASH"
 freeslot "sfx_msupds"
@@ -31,7 +34,7 @@ local DMBASESPEED = 36 * FU
 local DMSPEEDUP = FU/8
 local DMMAXSPEED = 46 * FU
 
-local AIRDASHSPEEDZ = -2*FU
+local AIRDASHSPEEDZ = 0
 local AIRDASHSPEEDXY = 30 * FU
 
 local DASHFLAGS = STR_WALL|STR_CEILING|STR_SPIKE|STR_ATTACK
@@ -128,8 +131,6 @@ end
 
 local function StartSlam(p, mobj)
 	p.powers[pw_strong] = $|STR_HEAVY
-	P_SetObjectMomZ(p.mo, 16*p.mo.scale)
-
 	DashModeDisable(p)
 	AirDashDisable(p)
 	DriftDisable(p)
@@ -186,26 +187,13 @@ local function AirDashTick(p)
 		return
 	end
 
-	if p.mo.metalsonic.adp > 24
-	or not (p.cmd.buttons & BT_SPIN) then
-		AirDashDisable(p)
-		p.mo.state = S_PLAY_FALL
-		p.mo.momz = $/3
-		return
-	end
-
-	if P_IsObjectOnGround(p.mo) then
-		AirDashDisable(p)
-		return
-	end
-
 	p.mo.metalsonic.adp = $ + 1
 
 	if p.mo.metalsonic.adp < 7 then
 		p.mo.state = S_PLAY_SPINDASH
 		p.mo.momx = $*2/3
 		p.mo.momy = $*2/3
-		P_SetObjectMomZ(p.mo, p.mo.scale/2)
+		P_SetObjectMomZ(p.mo, FU/2)
 		p.pflags = $&~PF_JUMPED&~PF_SPINNING
 	end
 
@@ -223,6 +211,12 @@ local function AirDashTick(p)
 		P_InstaThrust(p.mo, p.mo.metalsonic.adthrust, AIRDASHSPEEDXY)
 		p.mo.state = S_PLAY_DASH
 		p.drawangle = p.mo.metalsonic.adthrust
+	end
+
+	if p.mo.metalsonic.adp > 24 or not (p.cmd.buttons & BT_SPIN) then
+		AirDashDisable(p)
+		p.mo.state = S_PLAY_FALL
+		p.mo.momz = $/3
 	end
 end
 
@@ -327,7 +321,7 @@ local function SlamTick(slam)
 	local angle = FixedAngle(360*t)
 
 	local xy = FixedMul(p.mo.radius+mobj.radius, cos(angle))
-	local z = FixedMul(p.mo.height/2+mobj.height/2, sin(angle))
+	local z = FixedMul(p.mo.height/2+mobj.height, sin(angle))
 
 	P_MoveOrigin(mobj,
 		p.mo.x + P_ReturnThrustX(nil, p.drawangle, xy),
@@ -348,9 +342,11 @@ local function SlamTick(slam)
 		P_SetOrigin(mobj, p.mo.x, p.mo.y, p.mo.z)
 		p.mo.__forcedamage = true -- hax
 
-		if not (mobj
+		if mobj
 		and mobj.valid
-		and P_DamageMobj(mobj, p.mo, p.mo)) then
+		and P_DamageMobj(mobj, p.mo, p.mo) then
+			P_SetObjectMomZ(p.mo, 6*p.mo.scale)
+		else
 			p.powers[pw_flashing] = max($, TICRATE)
 		end
 
@@ -372,7 +368,7 @@ local function SlamPlayerTick(p)
 	local mo = slam.mobj
 
 	p.pflags = $|PF_JUMPSTASIS
-	p.mo.momz = $ - gravity + FixedMul(gravity, tofixed("4.65"))
+	p.mo.momz = $ - gravity + FixedMul(gravity, tofixed("2.25"))
 	if p.mo.state ~= S_PLAY_ROLL then
 		p.mo.state = S_PLAY_ROLL
 	end

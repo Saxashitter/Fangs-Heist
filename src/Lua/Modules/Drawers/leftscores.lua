@@ -5,40 +5,42 @@ local SCORE_Y = (12+13+16+8)*FU
 function module.init()
 end
 
-local function get_place(num)
+local function get_place(num) --Updated with Place, Color, And Additive Blend (as Boolean)
 	if num == 1 then
-		return "1st"
+		return "1st",SKINCOLOR_GOLD,true
 	end
 
 	if num == 2 then
-		return "2nd"
+		return "2nd",SKINCOLOR_SILVER,false
 	end
 
 	if num == 3 then
-		return "3rd"
+		return "3rd",SKINCOLOR_BRONZE,false
 	end
 
-	return tostring(num).."th"
+	return tostring(num).."th",SKINCOLOR_WHITE,false
 end
 
 local function draw_p(v, team, placement, actualPlacement)
 	actualPlacement = actualPlacement or placement
-
+	local FH = FangsHeist
+	
 	if not (team[1] and team[1].valid) then return end
-
 	local SCORE_X = 12*FU
 	local target_y = (10*FU)*(placement-1)
 
 	local scale = FU/2
 	local profit = team.profit
+	local str,color,additive = get_place(actualPlacement)
+	local flags = V_SNAPTOLEFT|V_SNAPTOTOP
+	if additive == true
+		flags = $|V_ADD
+	end
+	FH.DrawString(v,SCORE_X,SCORE_Y+target_y,FU/2,
+		str,"FHFNT",nil,flags,
+		v.getColormap(TC_DEFAULT,color))
 
-	v.drawString(SCORE_X,
-		SCORE_Y+target_y,
-		get_place(actualPlacement),
-		V_SNAPTOLEFT|V_SNAPTOTOP|V_ALLOWLOWERCASE,
-		"thin-fixed")
-
-	SCORE_X = $+2*FU+v.stringWidth(get_place(actualPlacement), V_ALLOWLOWERCASE, "thin")*FU
+	SCORE_X = $+2*FU+FH.GetStringWidth(v,str,FU/2,"FHFNT")
 
 	for _,p in ipairs(team) do
 		if not (p and p.valid) then continue end
@@ -65,20 +67,16 @@ local function draw_p(v, team, placement, actualPlacement)
 	if #team >= 2 then
 		name = "Team "..$
 	end
+	local namecolor = (displayplayer.heist and displayplayer.heist:isPartOfTeam(team[1])) and SKINCOLOR_YELLOW or SKINCOLOR_WHITE
+	FH.DrawString(v,SCORE_X,SCORE_Y+target_y,FU/2,
+		name,"FHFNT",nil,V_SNAPTOLEFT|V_SNAPTOTOP,
+		v.getColormap(TC_DEFAULT,namecolor))
 
-	v.drawString(SCORE_X,
-		SCORE_Y+target_y,
-		name,
-		V_SNAPTOLEFT|V_SNAPTOTOP|(displayplayer.heist and displayplayer.heist:isPartOfTeam(team[1]) and V_YELLOWMAP or 0),
-		"thin-fixed")
-
-	local str_width = v.stringWidth(name, 0, "thin")
-
-	v.drawString(SCORE_X+2*FU+str_width*FU,
-		SCORE_Y+target_y,
-		profit,
-		V_SNAPTOLEFT|V_SNAPTOTOP|V_GREENMAP,
-		"thin-fixed")
+	local str_width = FH.GetStringWidth(v,name,FU/2,"FHFNT")
+	local profittotal = "$"..tostring(profit)
+	FH.DrawString(v,SCORE_X+2*FU+str_width,SCORE_Y+target_y,FU/2,
+		profittotal,"FHFNT",nil,V_SNAPTOLEFT|V_SNAPTOTOP,
+		v.getColormap(TC_DEFAULT,SKINCOLOR_GREEN))
 
 	local sign = false
 	for _,sp in ipairs(team) do
@@ -94,13 +92,11 @@ local function draw_p(v, team, placement, actualPlacement)
 
 	if not sign then return end
 
-	local str_width2 = v.stringWidth(tostring(profit), 0, "thin")
-
-	v.drawString(SCORE_X+4*FU+str_width*FU+str_width2*FU,
-		SCORE_Y+target_y,
-		"SIGN",
-		V_SNAPTOTOP|V_SNAPTOLEFT,
-		"thin-fixed")
+	local signwidth = 4*FU+str_width+FH.GetStringWidth(v,profittotal,FU/2,"FHFNT")
+	local blink = (leveltime/2%4) >= 2 and SKINCOLOR_RED or SKINCOLOR_GREY
+	FH.DrawString(v,SCORE_X+signwidth,SCORE_Y+target_y,FU/2,
+		"SIGN","FHFNT",nil,V_SNAPTOLEFT|V_SNAPTOTOP,
+		v.getColormap(TC_DEFAULT,blink))
 end
 
 local function tag_team(v)
