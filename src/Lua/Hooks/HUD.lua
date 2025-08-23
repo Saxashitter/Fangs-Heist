@@ -125,8 +125,18 @@ addHud "timer"
 addHud "round"
 addHud "swaptimer"
 addHud "escapetext"
-addHud "discord"
+addHud "bottomlinks"
 addHud "leftscores"
 addHud "rankings"
 addHud "intermission"
 addHud "pregame"
+if SUBVERSION >= 16
+	dofile("Modules/Drawers/escpanel")
+end
+--Add Most of Link Stuff, also Tips :p...
+FangsHeist.AddLink("Join the Saxakun Curse",
+			"https://discord.gg/FysZSrsd9U",
+			SKINCOLOR_SKY)
+FangsHeist.AddLink("Get the Source Code",
+		   "https://github.com/Saxashitter/Fangs-Heist",
+		   SKINCOLOR_MAUVE)
