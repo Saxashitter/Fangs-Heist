@@ -23,7 +23,7 @@ local path = "Modules/Gamemodes/Wario Land/"
 dofile(path.."freeslots.lua")
 
 gamemode.name = "Wario Land 4"
-gamemode.desc = "Get as much treasure as you can, then hit the Frog Switch and prepare to H-H-H-HURRY UP!!!"
+gamemode.desc = "Get as much treasure as you can, then hit the Frog Switch and prepare to H-H-H-HURRY UP!!! (Port of IHTKChar's escape sequence.)"
 gamemode.id = "WL4GBA"
 gamemode.tol = TOL_HEIST
 gamemode.teams = false
@@ -169,6 +169,33 @@ local function WL_SpawnCoins(mo, count, maxdrop)
 	return (count - tospawn) + remaining
 end
 
+local function K_PunchFrogSwitch(prepassedtime, escapetype, activeportal)
+	if FangsHeist.Net.escape
+	or HeistHook.runHook("EscapeStart", p) == true then
+		return
+	end
+
+	S_ChangeMusic("hrryup", true)
+	for player in players.iterate do
+		local sound = P_RandomRange(sfx_hurry0,sfx_hurry4)
+		S_StartSound(nil, sound, player)
+	end
+
+	FangsHeist.Net.escape = true
+	FangsHeist.Net.time_escape_started = leveltime
+
+	local data = mapheaderinfo[gamemap]
+	if data.fh_escapelinedef then
+		P_LinedefExecute(tonumber(data.fh_escapelinedef))
+	end
+
+	if multiplayer then
+		for player in players.iterate do
+			--KombiTeleport(player)
+		end
+	end
+end
+
 function gamemode:init(map)
 	local info = mapheaderinfo[map]
 
@@ -230,6 +257,14 @@ function gamemode:init(map)
 	FangsHeist.Net.escape_on_start = (info.fh_escapeonstart == "true")
 end
 
+function gamemode:spawnSign()
+	-- holy shit takis reference
+    local pos = self.super.getSignSpawn(self)
+
+    FangsHeist.Net.sign = P_SpawnMobj(pos[1], pos[2], pos[3], MT_KOMBIFROGSWITCH)
+	FangsHeist.Net.sign.angle = pos[4]
+end
+
 function gamemode:load()
 	local exit
 	local treasure_spawns = {}
@@ -242,37 +277,28 @@ function gamemode:load()
 	-- Round 2 portal would conflict with the actual escape portal in design, so that means no Final Demo zones for you
 	-- (really I don't want more things to port from Gamemodes/Escape)
 
-		-- holy shit takis reference
-		if whatSigns[thing.type] then
-			local x = thing.x*FRACUNIT
-			local y = thing.y*FRACUNIT
-			local whatSec = R_PointInSubsector(x, y).sector
-			local z = thing.z * FRACUNIT + whatSec.floorheight
-			if not thing.mobj then
-				print("Shit fucked up! No mobj for current sign!! Saxa you're no longer invited to my birthday party >:(")
-			end
-			P_SpawnMobj(x, y, z, MT_KOMBIFROGSWITCH)
-			if (thing.mobj and thing.mobj.valid) P_RemoveMobj(thing.mobj) end
-		end
-
-		if thing.type == 1
+	if thing.type == 1
 		and exit == nil then
 			exit = thing
 		end
 	end
 
 	if exit then
+		local smallportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALSMALL)
+		local mediumportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALMEDIUM)
+		local largeportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALLARGE)
+		smallportal.z = smallportal.subsector.sector.floorheight+(128*FRACUNIT)
+		mediumportal.z = mediumportal.subsector.sector.floorheight+(128*FRACUNIT)
+		largeportal.z = largeportal.subsector.sector.floorheight+(128*FRACUNIT)
+
+		/*
 		local x = exit.x*FU
 		local y = exit.y*FU
 		local z = spawnpos.getThingSpawnHeight(MT_PLAYER, exit, x, y)
 		local a = FixedAngle(exit.angle*FU)
+		*/
 
 		FangsHeist.defineExit(x, y, z, a)
-	end
-
-	printTable(FangsHeist.Carriables.FindCarriables)
-	for k, v in ipairs(FangsHeist.Carriables.FindCarriables("Sign")) do
-		print(v.profit)
 	end
 
 	for i = 1, #treasure_spawns do
@@ -520,6 +546,7 @@ addHook("MobjSpawn", function(switch)
 		local part = P_SpawnMobjFromMobj(switch, 0, 0, 0, MT_FROGSWITCHANIMATOR)
 		part.tracer = switch
 		part.frame = i
+		part.whichframe = i
 		part.dispoffset = 5-i
 	end
 	switch.alpha = 0
@@ -613,6 +640,11 @@ addHook("MobjThinker", function(mobj)
 		mobj.scale = $*2
 		mobj.corrected = true
 	end
+
+	-- hack!!
+	if mobj.whichframe then
+		mobj.frame = mobj.whichframe
+	end
 	local frame = mobj.frame
 	if frame == D return end
 
@@ -655,10 +687,47 @@ addHook("MobjThinker", function(mobj)
 	end
 end, MT_FROGSWITCHANIMATOR)
 
+local function K_PortalThinker(mobj)
+	-- Store the original scale if not set
+	if not mobj.kmbiogscale
+		mobj.kmbiogscale = mobj.scale
+	end
+
+	if FangsHeist.Net.escape then
+		mobj.destscale = 2 * mobj.kmbiogscale
+		mobj.scalespeed = FixedDiv(mobj.kmbiogscale, 24*FRACUNIT)
+	else
+		mobj.destscale = FixedDiv(mobj.kmbiogscale, 4*FRACUNIT)
+		mobj.scalespeed = FixedDiv(mobj.kmbiogscale, 24*FRACUNIT)
+	end
+end
+
+addHook("MobjThinker", function(mobj)
+	mobj.rollangle = $ + FixedDiv(ANGLE_45, 45*FRACUNIT)
+	K_PortalThinker(mobj)
+end, MT_WLPORTALSMALL)
+
+addHook("MobjThinker", function(mobj)
+	mobj.rollangle = $ + FixedDiv(ANGLE_45, 30*FRACUNIT)
+	K_PortalThinker(mobj)
+end, MT_WLPORTALMEDIUM)
+
+addHook("MobjThinker", function(mobj)
+	mobj.rollangle = $ + FixedDiv(ANGLE_45, 25*FRACUNIT)
+	K_PortalThinker(mobj)
+end, MT_WLPORTALLARGE)
+
+addHook("TouchSpecial",function(port,mo)
+	if player.heist.exiting then return true end
+	if FangsHeist.Net.escape then
+		player.heist.exiting = true
+	end
+	return true
+end,MT_WLPORTALLARGE)
+
 local coinLossTreasureWaitTics = 5
 
 -- HUDs in ohio bro what is this
---[[
 	local clocktype = CV_FindVar("timerres") -- Get the ConVar
 	local offset = 8
 	local center = 160 - offset
@@ -740,15 +809,21 @@ local coinLossTreasureWaitTics = 5
 
 	-- Function to handle different timer display modes
 	local function WL4HUD_KeroClock(v, player)
+		if gametype != GT_FANGSHEISTWL4GBA then return end
 		if not player.mo then return end
 		local mapOK = FangsHeist.Net.escape
 		if not mapOK then return end
+		local fhTimeLeft = FangsHeist.Net.time_left
+		local timeLeft = fhTimeLeft - (leveltime - FangsHeist.Net.time_escape_started)
+		local timeSecs = G_TicsToSeconds(timeLeft)
+		local timeMins = G_TicsToMinutes(timeLeft)
+		local timeCent = G_TicsToCentiseconds(timeLeft)
 
 		local centerX, baseY = center - 8, hudinfo[HUD_SCORE].y * FRACUNIT
-		local coinTics = kombi.coinlossticks or 0
+		local coinTics = FangsHeist.Net.wl4_cl_ticks or 0
 		-- If coin-loss animation active, just draw the stopwatch:
 		if coinTics > coinLossTreasureWaitTics - 1 then
-			drawClockAnimation(v, centerX - 8, (baseY / FRACUNIT) + 8, ((player.wl4kombitime) / 3) % 6 or 0)
+			drawClockAnimation(v, centerX - 8, (baseY / FRACUNIT) + 8, ((timeLeft) / 3) % 6 or 0)
 			return
 		end
 
@@ -762,22 +837,22 @@ local coinLossTreasureWaitTics = 5
 		else
 			yoffset = ((100 * FRACUNIT) - baseY) + (-8 * clockScale)
 		end
-		local frame   = ((player.wl4kombitime) / 3) % 6 or 0
+		local frame   = abs(6 - ((fhTimeLeft + timeLeft) / 3)) % 6 or 0
 		local mode    = clocktype.value
-		local clr     = getTimeColor(kombi.disptime)
+		local clr     = getTimeColor(timeLeft)
 
 		-- build the two strings to draw:
 		local bigDigits, smallDigits = "", ""
 		if mode == 3 then
 			-- Tics mode: just render the precomputed display time
-			bigDigits = tostring(kombi.disptime)
+			bigDigits = tostring(timeLeft)
 		else
 			-- Mania/CD or Classic mode
-			local mins = kombi.timeleftmins
-			local secs = kombi.timeleftsecs
-			local cents = kombi.timeleftcents
+			local mins = timeMins
+			local secs = timeSecs
+			local cents = timeCent
 			local overflow = mins > 9
-			local drawDots = kombi.disptime % 35 < 18
+			local drawDots = timeLeft % 35 < 18
 
 			-- big part: MM:SS (or M:SS if no overflow)
 			if overflow then
@@ -848,6 +923,6 @@ local coinLossTreasureWaitTics = 5
 	end
 
 hud.add(WL4HUD_KeroClock)
-hud.add(WL4HUD_Treasure)]]
+-- hud.add(WL4HUD_Treasure)
 
 return FangsHeist.addGamemode(gamemode)
