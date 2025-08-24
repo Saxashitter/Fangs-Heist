@@ -46,11 +46,8 @@ function gamemode:getSignSpawn()
 			end
 		end
 
-		if (count > 1
-		and secondCount >= count/2)
-		or (count <= 1
-		and secondCount == count) then
-			pos = pos2
+		if secondCount >= count/2 then
+			return pos2
 		end
 	end
 

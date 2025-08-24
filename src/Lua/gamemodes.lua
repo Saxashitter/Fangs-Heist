@@ -82,4 +82,4 @@ FangsHeist.Escape = dofile "Modules/Gamemodes/Escape/def.lua"
 
 -- EXTREEEEEMELY important!! don't comment out or remove or even SEE it...
 -- or WARIO will come to your house and steal all your precious valuables
-FangsHeist.Escape = dofile "Modules/Gamemodes/Wario Land/def.lua"
+FangsHeist.WL4 = dofile "Modules/Gamemodes/Wario Land/def.lua"
