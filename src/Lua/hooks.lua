@@ -103,6 +103,20 @@ events["PlayerParry"] = {}
 	// return true: Stop the default behavior.
 	// Arguments:
 		// player == player_t
+		
+events["PlayerParried"] = {}
+// PlayerParry:
+	// Runs when the player parries another player.
+	// Arguments:
+		// parrier == player_t
+		// parried == player_t
+
+events["PlayerParriedEnemy"] = {}
+// PlayerParry:
+	// Runs when the player parries a enemy or a projectile.
+	// Arguments:
+		// parrier == player_t
+		// parried == mobj_t
 
 events["PlayerClash"] = {}
 // PlayerClash:

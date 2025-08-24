@@ -24,7 +24,6 @@ local function DrawText(v, x, y, string, flags, align, color, rich)
 end
 
 function module.draw(v, p)
-	if not FangsHeist.getGamemode().renderprofit then return end
 	if FangsHeist.Net.pregame then return end
 	if FangsHeist.Net.game_over then return end
 	if not p.heist:isAlive() then return end
@@ -46,12 +45,12 @@ function module.draw(v, p)
 
 	local y = 8
 
-	for k,v in ipairs(strings) do
-		if not v.on then
+	for k,data in ipairs(strings) do
+		if not data.on then
 			continue
 		end
 
-		DrawText(v, 320 - 8, y, v.str, V_SNAPTORIGHT|V_SNAPTOTOP, "right", nil, true)
+		DrawText(v, 320 - 8, y, data.str, V_SNAPTORIGHT|V_SNAPTOTOP, "right", nil, true)
 		y = $ + 11
 	end
 end

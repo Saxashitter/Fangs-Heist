@@ -114,6 +114,8 @@ local function RegisterGuard(atk, vic)
 		vic.mo.momy = my
 		vic.mo.momz = mz
 		P_MovePlayer(vic)
+
+		HeistHook.runHook("PlayerParried", atk, vic)
 	end
 
 	FangsHeist.playVoiceline(atk, "parry")
@@ -186,6 +188,7 @@ local function AttemptAttack(p, sp)
 		end
 
 		HeistHook.runHook("PlayerClash", p, sp)
+		HeistHook.runHook("PlayerClash", sp, p)
 		return
 	end
 
@@ -264,7 +267,6 @@ local function DoGuard(p)
 		S_StartSound(p.mo, sfx_s3k7c)
 
 		HeistHook.runHook("PlayerAirDodge", p)
-	
 		return
 	end
 
@@ -353,6 +355,7 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 		end
 
 		t.player.powers[pw_flashing] = 35
+		HeistHook.runHook("PlayerParriedEnemy", t.player, i)
 		return false
 	end
 
@@ -393,6 +396,7 @@ local function reflection(mobj,proj)
 	proj.target = mobj
 
 	RegisterGuard(mobj.player)
+	HeistHook.runHook("PlayerParriedEnemy", mobj.player, proj)
 
 	-- Gain profit based on speed of projectile.
 	local PROFIT = FH_PARRYPROFIT

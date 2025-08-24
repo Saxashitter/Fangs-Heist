@@ -156,16 +156,10 @@ addHook("AbilitySpecial", function(p)
 		p.pflags = $|PF_THOKKED
 		S_StartSound(p.mo, (p.mo.eflags & MFE_UNDERWATER) and sfx_s3k7d or sfx_kc5b) -- idk this sfx's name
 		P_SetObjectMomZ(p.mo, 7*FU)
-		P_InstaThrust(p.mo, p.mo.angle, 23*FU) -- not that fast but balanced enough
 		if p.mo.eflags & MFE_UNDERWATER --op
-			p.mo.momx,p.mo.momy,p.mo.momz = $1/2,$2/2,$3/2
+			p.mo.momz = $/2
 		end
 
-		local thokring = P_SpawnMobjFromMobj(p.mo, 0, 0, 0, MT_THOK)
-		thokring.state = S_FH_THIK
-		thokring.fuse = 10
-		thokring.scale = 3*p.mo.scale/2
-		thokring.destscale = 0
 		p.mo.state = S_FH_AMY_TWIRL
 		p.amy.twirlframes = 0
 		return true
@@ -360,7 +354,31 @@ HeistHook.addHook("PlayerHit", function(p)
 
 	if not P_IsObjectOnGround(p.mo) then
 		p.mo.state = S_PLAY_JUMP
-		p.pflags = ($|PF_JUMPED) & ~(PF_SPINNING|PF_THOKKED)
+		p.pflags = $|PF_JUMPED|PF_THOKKED
 		return
 	end
+end)
+
+HeistHook.addHook("PlayerClash", function(p)
+	if not check(p) then return end
+
+	if not P_IsObjectOnGround(p.mo) then
+		p.mo.state = S_PLAY_FALL
+		p.pflags = $ & ~(PF_JUMPED|PF_THOKKED|PF_SPINNING)
+		return
+	end
+
+	p.mo.state = S_PLAY_WALK
+end)
+
+HeistHook.addHook("PlayerParried", function(_, p)
+	if not check(p) then return end
+
+	if not P_IsObjectOnGround(p.mo) then
+		p.mo.state = S_PLAY_FALL
+		p.pflags = $ & ~(PF_JUMPED|PF_THOKKED|PF_SPINNING)
+		return
+	end
+
+	p.mo.state = S_PLAY_WALK
 end)
