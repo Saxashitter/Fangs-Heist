@@ -718,6 +718,7 @@ addHook("MobjThinker", function(mobj)
 end, MT_WLPORTALLARGE)
 
 addHook("TouchSpecial",function(port,mo)
+	local player = mo.player
 	if player.heist.exiting then return true end
 	if FangsHeist.Net.escape then
 		player.heist.exiting = true
