@@ -569,7 +569,13 @@ end, MT_KOMBIFROGSWITCH)
 --- @return nil
 local function K_PauseMomentum(player) -- stop the player
 	if not player.paused
-		player.oldvel = {x = player.mo.momx, y = player.mo.momy, z = player.mo.momz, angle = player.drawangle}
+		player.oldvel = {
+			x = player.mo.momx,
+			y = player.mo.momy,
+			z = player.mo.momz,
+			dashmode = player.dashmode,
+			angle = player.drawangle
+		}
 		player.mo.momx = 0
 		player.mo.momy = 0
 		player.mo.momz = 0
@@ -589,6 +595,7 @@ local function K_ResumeMomentum(player)
 			player.mo.momx = player.oldvel.x
 			player.mo.momy = player.oldvel.y
 			player.mo.momz = player.oldvel.z
+			player.dashmode = player.oldvel.dashmode
 		end
 		player.paused = false
 	else
@@ -597,9 +604,13 @@ local function K_ResumeMomentum(player)
 end
 
 addHook("ThinkFrame", function()
-	if not FangsHeist.Net.escape then FangsHeist.Net.keroAnimClock = 0 return end
-	FangsHeist.Net.keroAnimClock = $ + 1
+	if gametype != GT_FANGSHEISTWL4GBA then return end
 	local clock = FangsHeist.Net.keroAnimClock
+	if not FangsHeist.Net.escape then FangsHeist.Net.keroAnimClock = 0 return end
+	if clock < letgoby then
+		FangsHeist.Net.time_left = ($ or 0) + 1
+	end
+	FangsHeist.Net.keroAnimClock = $ + 1
 	if clock <= pauseby
 		for player in players.iterate do
 			if clock == pauseby
@@ -726,9 +737,62 @@ addHook("TouchSpecial",function(port,mo)
 	return true
 end,MT_WLPORTALLARGE)
 
+local function PausedThinker(player)
+	if not player.paused return end
+	player.mo.momx = 0 -- Don't move an INCH
+	player.mo.momy = 0
+	player.mo.momz = 0
+	player.cmd.forwardmove = 0 -- stinkeye.png
+	player.cmd.sidemove = 0
+	player.cmd.buttons = 0 -- make 'em RESPECT stasis
+	if player.oldvel then
+		player.dashmode = player.oldvel.dashmode
+	end
+end
+
+addHook("PreThinkFrame", function(player)
+	for player in players.iterate do
+		if not player.mo continue end
+		PausedThinker(player)
+		if player.incollectanim
+			if not kombiSMWItems[player.kombismwpowerupstate].collectfunc(player, player.kombiclock)
+				player.kombiclock = $ + 1
+			else
+				K_ResumeMomentum(player)
+				player.incollectanim = nil
+			end
+		end
+		if player.dashmode > 3*TICRATE-1
+			if player.dashspeedinc < skins[player.realmo.skin].normalspeed
+				player.dashspeedinc = ($ or 0)+FRACUNIT/5
+			end
+		else
+			player.dashspeedinc = 0
+		end
+	end
+end)
+
+addHook("PostThinkFrame", function(player)
+	for player in players.iterate do
+		if not player.mo continue end
+		if player.paused
+			if player.incollectanim and kombiSMWItems[player.kombismwpowerupstate].forcespr2
+				player.mo.sprite2 = kombiSMWItems[player.kombismwpowerupstate].forcespr2
+			else
+				player.mo.sprite2 = player.freezesprite2
+			end
+			if player.incollectanim and not kombiSMWItems[player.kombismwpowerupstate].collectionanimatesplayer
+				player.mo.frame = player.freezeframe
+			end
+			player.drawangle = player.oldvel.angle
+		end
+	end
+end)
+
 local coinLossTreasureWaitTics = 5
 
 -- HUDs in ohio bro what is this
+do
 	local clocktype = CV_FindVar("timerres") -- Get the ConVar
 	local offset = 8
 	local center = 160 - offset
@@ -923,7 +987,8 @@ local coinLossTreasureWaitTics = 5
 		end
 	end
 
-hud.add(WL4HUD_KeroClock)
--- hud.add(WL4HUD_Treasure)
+	hud.add(WL4HUD_KeroClock)
+	-- hud.add(WL4HUD_Treasure)
+end
 
 return FangsHeist.addGamemode(gamemode)
