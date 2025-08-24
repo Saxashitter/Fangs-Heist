@@ -113,6 +113,20 @@ events["PlayerHit"] = {}
 		// attacker == player_t
 		// victim == player_t
 
+events["PlayerAirDodge"] = {}
+// PlayerAirDodge:
+	// Runs before the player air-dodges.
+	// return true: Stop the default behavior.
+	// Arguments:
+		// player == player_t
+
+events["PlayerScanAttack"] = {}
+// PlayerScanAttack:
+	// Runs before the check to scan around the player to attack.
+	// return true/false: Runs the attack scan.
+	// Arguments:
+		// player == player_t
+
 events["Round2"] = {}
 // Round2:
 	// Runs when the player heads to the teleporter for the second part of Final Demo stages.
