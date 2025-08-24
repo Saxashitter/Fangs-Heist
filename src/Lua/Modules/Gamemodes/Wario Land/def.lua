@@ -99,6 +99,7 @@ local SWAP_TIME = 30*TICRATE
 local whatSigns = {
 	[501] = true
 }
+=======
 >>>>>>> b12def5c3de0cab1d07c987c14a33c1369b7768d
 
 -- mobj_t mo
@@ -141,10 +142,13 @@ local function WL_SpawnCoins(mo, count, maxdrop)
 		end
 	end
 	
+<<<<<<< HEAD
 	-- Return what wasn't spawned
 	-- If maxdrop was given, that's (count - maxdrop) + remaining
 	-- Else just the leftover from count
 	return (count - tospawn) + remaining
+=======
+>>>>>>> b12def5c3de0cab1d07c987c14a33c1369b7768d
 end
 
 function gamemode:init(map)
