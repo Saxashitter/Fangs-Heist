@@ -92,7 +92,10 @@ local SWAP_TIME = 30*TICRATE
 
 -- Hack!! probably but atleast it synchs with Escape/def/gamemode.signThings
 -- Saxa your API is like stinky and stuff
-local whatSigns = FangsHeist.GametypeIDs[_G["GT_FANGSHEISTESCAPE"]].signThings
+
+-- SAXA: hey,,, did you know you copied all the values from escape
+-- think of it as a github fork
+local whatSigns = gamemode.signThings
 
 -- mobj_t mo
 -- int32 count
@@ -126,58 +129,6 @@ local function WL_SpawnCoins(mo, count)
 	return count
 end
 
-local function intangiblePlayer(p)
-	local follow
-
-	p.mo.state = S_INVISIBLE
-	p.mo.flags2 = $|MF2_DONTDRAW
-	p.pflags = ($|PF_INVIS|PF_NOCLIP) & ~PF_SPINNING|PF_JUMPED
-	p.powers[pw_flashing] = 3
-	p.powers[pw_underwater] = 6*TICRATE
-	p.powers[pw_spacetime] = 6*TICRATE
-	p.mo.momx = 0
-	p.mo.momy = 0
-	p.mo.momz = 0
-end
-
-local function respawnPlayer(p)
-	p.pflags = $ & ~(PF_INVIS|PF_NOCLIP)
-	p.mo.flags2 = $ & ~MF2_DONTDRAW
-	p.mo.state = S_PLAY_STND
-
-	p.heist.intangible = false
-	p.powers[pw_flashing] = 2*TICRATE
-
-	gamemode:playerspawn(p)
-end
-
-local function endCheck()
-	for i = 1, #FangsHeist.Net.heisters do
-		 local plyr = FangsHeist.Net.heisters[i]
-
-		if plyr
-		and plyr.valid
-		and plyr.heist
-		and not plyr.heist.spectator then
-			respawnPlayer(plyr)
-
-			FangsHeist.Net.swap_runner = SWAP_TIME
-			FangsHeist.Net.headstart = 2*TICRATE
-			FangsHeist.Net.current_runner = plyr
-			FangsHeist.Net.exit_deb = 5
-			
-			if #FangsHeist.Net.heisters <= 2 then
-				FangsHeist.Net.last_team_member = true
-			end
-
-			return false
-		end
-	end
-
-	FangsHeist.startIntermission(p)
-	return true
-end
-
 function gamemode:init(map)
 	local info = mapheaderinfo[map]
 
@@ -208,6 +159,7 @@ function gamemode:init(map)
 	end
 
 	-- don't get paid enough to figure out what these do
+	-- SAXA: vro this is th code to enable rlund 2
 	if info.fh_hellstage
 	and info.fh_hellstage:lower() == "true" then
 		FangsHeist.Net.round_2 = true
@@ -301,7 +253,7 @@ function gamemode:playerspawn(p)
 
 	local pos = FangsHeist.Net.signpos
 
-	p.treasure = 0
+	p.heist.treasure = 0
 end
 
 function gamemode:playerdeath(p)
