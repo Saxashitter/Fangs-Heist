@@ -1,6 +1,7 @@
 local module = {}
 
 FangsHeist.HUD.PlayerInfo = {
+	pos = {x = 312, y = 8},
 	Profit = true,
 	Rings = true,
 	Rank = true
@@ -43,14 +44,14 @@ function module.draw(v, p)
 		strings[2].str = $ .. " [c:yellow]"..multiplier.."x"
 	end
 
-	local y = 8
+	local y = pi.pos.y
 
 	for k,data in ipairs(strings) do
 		if not data.on then
 			continue
 		end
 
-		DrawText(v, 320 - 8, y, data.str, V_SNAPTORIGHT|V_SNAPTOTOP, "right", nil, true)
+		DrawText(v, pi.pos.x, y, data.str, V_SNAPTORIGHT|V_SNAPTOTOP, "right", nil, true)
 		y = $ + 11
 	end
 end
