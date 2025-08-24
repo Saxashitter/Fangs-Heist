@@ -259,11 +259,11 @@ function state:tick()
 	end
 
 	if abs(y) > 0
-	and #skins > SKINS_ROW then
-		local i = self.heist.locked_skin + SKINS_ROW*y
+	and #FangsHeist.CharList > SKINS_ROW then
+		local i = self.heist.skin_index + SKINS_ROW*y
 
-		if i >= 0
-		and i <= #skins-1 then
+		if i >= 1
+		and i <= #FangsHeist.CharList then
 			ChangeSelection(self, self.heist.locked_skin + SKINS_ROW*y, true)
 		end
 	end
@@ -275,7 +275,7 @@ function state:tick()
 	and self.heist.buttons & BT_CUSTOM1
 	and not (self.heist.lastbuttons & BT_CUSTOM1) then
 		self.heist.alt_skin = ($+1) % (#heistskindef.skins+1)
-		S_StartSound(nil, sfx_menu1)
+		S_StartSound(nil, sfx_menu1, self)
 	end
 end
 
@@ -288,9 +288,7 @@ function state:draw(v, c, transparency)
 	local heistskindef = FangsHeist.Characters[skindef.name]
 
 	DrawCharacterRibbon(v, 100*FU, self.heist.locked_skin, transparency, tics)
-	if tics >= TEXT_DELAY + TEXT_TWEEN then
-		DrawIconGrid(v, 160*FU - width/2, 100*FU + RIBBON_END_RADIUS, self.heist.skin_index, transparency)
-	end
+	DrawIconGrid(v, 160*FU - width/2, 100*FU + RIBBON_END_RADIUS, self.heist.skin_index, transparency)
 
 	if #heistskindef.skins > 0 then
 		local skin = heistskindef.skins[self.heist.alt_skin]

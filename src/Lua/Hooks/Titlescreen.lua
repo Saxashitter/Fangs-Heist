@@ -44,17 +44,19 @@ addHook("ThinkFrame", do
 	titlescreen = true
 end)
 addHook("KeyDown",function(key)
-	if titlemapinaction
+	if titlemapinaction then
 		if not FirstLoaded then
-			if key.num == input.gameControlToKeyNum(GC_CONSOLE)
+			if key.num == input.gameControlToKeyNum(GC_CONSOLE) then
 				return
 			end
+
 			if (key.num == input.gameControlToKeyNum(GC_JUMP) or key.name == "enter")
 			and leveltime >= 20
-			and not Intro.pressed
+			and not Intro.pressed then
 				S_FadeMusic(0,FixedMul(1000,tofixed("0.20")))
 				Intro.pressed = true
 			end
+
 			return true --All Keys Are Disabled During Mod Warning or During Bounce
 		end
 	end
@@ -135,10 +137,12 @@ FH.TeamFractureLogo = function(v,alternative)
 	local FontDraw = function(v,x,y,scale,text,flags,align,color)
 		return FH.DrawString(v,x,y,scale,text,"FHFNT",align,flags,v.getColormap(TC_DEFAULT,color))
 	end
+
 	TeamFractureBG(v)
 	FH.Version.HUD(v,1) --Only shows Once for Version HUD too!
+
 	--Sounds
-	if leveltime == 10
+	if leveltime == 10 then
 		P_PlayJingle(nil,JT_1UP)
 	end
 	
@@ -150,37 +154,46 @@ FH.TeamFractureLogo = function(v,alternative)
 	if type(alternative) == "boolean" and alternative == true then
 		logo = $+"ALT" --Center Logo Design
 	end
+
 	local fracture = {timer = max(0,min(FixedDiv(leveltime-10,10),FU)),logo=v.cachePatch(logo)}
 	local trans1 = ease.linear(fracture.timer,10,0)
-	if leveltime >= 105
+
+	if leveltime >= 105 then
 		trans1 = trans
 	end
+
 	FontDraw(v,320*FU,0,FU/2,"Press Jump or Enter To Skip...",V_70TRANS|V_SNAPTOTOP|V_SNAPTORIGHT,"right",SKINCOLOR_WHITE)	
 	--Team Fracture
 
-	if trans1 != 10
+	if trans1 != 10 then
 		local scale = ease.outquart(max(0,min(FixedDiv(leveltime-10,20),FU)),3*FU/2,FU)
 		local x,y = 160*FU,100*FU
+
 		v.drawScaled(x,y,scale,fracture.logo,trans1<<V_ALPHASHIFT,nil)
+
 		local transtime = ease.linear(max(0,min(FixedDiv(leveltime-70,10),FU)),0,10)
 		local sca2 = ease.outquad(max(0,min(FixedDiv(leveltime-70,15),FU)),scale,3*scale/2)
-		if leveltime >= 70 and transtime != 10
+
+		if leveltime >= 70 and transtime != 10 then
 			v.drawScaled(x,y,sca2,fracture.logo,transtime<<V_ALPHASHIFT,v.getColormap(TC_ALLWHITE))
 		end
 	end
+
 	--Presents
-	if trans != 10
+	if trans != 10 then
 		v.drawScaled(160*FU,155*FU,3*FU/2,v.cachePatch("FH_PRESENTS"),trans<<V_ALPHASHIFT)
 	end
+
 	--Fade
 	local fade = ease.linear(min(FixedDiv(leveltime,10),FU),32,0)
-	if leveltime >= 105 or Intro.pressed
-		if Intro.pressed	
+	if leveltime >= 105 or Intro.pressed then
+		if Intro.pressed then
 			fade = ease.linear(FixedDiv(Intro.timer,10),32,0)
 		else
 			fade = ease.linear(tic,32,0)
 		end
 	end
+
 	v.fadeScreen(0xFA00,fade)
 end
 /*
@@ -300,21 +313,25 @@ addHook("HUD", function(v)
 	if not titlescreen then
 		return
 	end
-	if not FirstLoaded
+	if not FirstLoaded then
 		FH.TeamFractureLogo(v)
-		if Intro.pressed
-			if not Intro.timer
+
+		if Intro.pressed then
+			if not Intro.timer then
 				S_ChangeMusic("_TITLE",true)
 				FirstLoaded = true
 			else
 				Intro.timer = $-1
 			end
 		end
-		if leveltime >= 140
+
+		if leveltime >= 140 then
 			S_ChangeMusic("_TITLE",true)
 			FirstLoaded = true
 		end
+
 		return
 	end
+
 	FH.TitleScreenDrawer(v)
 end, "title")

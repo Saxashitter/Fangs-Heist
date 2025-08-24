@@ -71,8 +71,10 @@ return function()
 		return
 	end
 
-	if S_MusicName() ~= "FH_PRG" then
-		S_ChangeMusic("FH_PRG", true)
+	local song = FangsHeist.Save.retakes and "FH_PG2" or "FH_PRG"
+
+	if S_MusicName() ~= song then
+		S_ChangeMusic(song, true)
 	end
 
 	FangsHeist.Net.pregame_transparency = max(0, $-1)

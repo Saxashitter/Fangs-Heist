@@ -33,103 +33,34 @@ local function getScaleDiv()
 	return FU - FixedDiv(time, max_time)
 end
 
-local CROPSETS = {
-	[0] = 5,
-	[1] = 6,
-	[2] = 7,
-	[3] = 8,
-	[4] = 9
-}
-
 local function drawTimer(v, x, y, scale, f)
-	local tmr = v.cachePatch("FH_TMR")
+	local tics = (FangsHeist.Net.time_left/35)/60
+
 	local bg = v.cachePatch("FH_TMR_BG")
-	local fill = v.cachePatch("FH_TMR_FILL")
-	local gem = v.cachePatch("FH_TMR_GEM")
+	local ring = v.cachePatch("FH_TMR_RING")
+	local bar = v.cachePatch("FH_TMR_BAR" .. (tics % 9)+1)
 
-	local div = FU-getScaleDiv()
+	v.drawScaled(x, y, FU, bg, f, v.getColormap(nil, SKINCOLOR_RED))
+	v.drawScaled(x, y, FU, bar, f, v.getColormap(nil, SKINCOLOR_RED))
+	v.drawScaled(x, y + 5*FU, FU, ring, f, v.getColormap(nil, SKINCOLOR_YELLOW))
 
-	local color
+	FangsHeist.DrawString(v,
+		x + bg.width*FU/2,
+		y - 8 * FU,
+		FU,
+		"TIME",
+		"FHTXT",
+		"center",
+		f)
 
-	if displayplayer
-	and displayplayer.valid then
-		color = v.getColormap(nil, displayplayer.skincolor)
-	end
-
-	-- background fill
-	v.drawScaled(x, y, scale, bg, f)
-
-	-- main fill
-	local barx = x + 3*scale
-	local bary = y + 3*scale
-	local barw = tmr.width*scale - 6*scale
-	local barh = tmr.height*scale - 6*scale
-	local width = FixedMul(barw, div)
-
-	FangsHeist.DrawParallax(v,
-		barx+width,
-		bary,
-		barw-width,
-		barh,
-		scale,
-		fill,
-		f
-	)
-
-	-- actual timer sprite
-	v.drawScaled(x, y, scale, tmr, f)
-
-	-- gem
-	local start = x
-	local finish = x + tmr.width*scale - gem.width*scale
-	local twn = ease.linear(div, start, finish)
-	v.drawScaled(twn, y + tmr.height*scale/2 - gem.height*scale/2, scale, gem, f, color)
-
-	-- text
-	local minstr = string.format("%02d",
-		time/(TICRATE*60))
-	local secstr = string.format("%02d",
-		(time/TICRATE) % 60)
-
-	local patches = {}
-	local width = 0
-	local pad = 0
-
-	for i = 1,#minstr do
-		local num = minstr:sub(i,i)
-		local patch = v.cachePatch("FH_TMR"..num)
-
-		table.insert(patches, patch)
-		width = $ + patch.width*scale + pad
-	end
-
-	local colon = v.cachePatch("FH_TMR_COLON")
-
-	table.insert(patches, colon)
-	width = $ + colon.width*scale + pad
-
-	for i = 1,#secstr do
-		local num = secstr:sub(i,i)
-		local patch = v.cachePatch("FH_TMR"..num)
-
-		table.insert(patches, patch)
-		width = $ + patch.width*scale
-
-		if i < #secstr then
-			width = $+pad
-		end
-	end
-
-	x = twn + gem.width*scale/2 - width/2
-	local dx = 0
-
-	for i,patch in ipairs(patches) do
-		v.drawScaled(x+dx, y + tmr.height*scale/2 - patch.height*scale/2, scale, patch, f)
-
-		if i < #patches then
-			dx = $ + patch.width*scale + pad
-		end
-	end
+	FangsHeist.DrawString(v,
+		x + bg.width*FU/2,
+		y + 43 * FU - 4 * FU,
+		FU,
+		("%d:%02d"):format(tics, (FangsHeist.Net.time_left / 35) % 60),
+		"FHTXT",
+		"center",
+		f)
 end
 
 function module.init()
@@ -150,13 +81,13 @@ function module.draw(v)
 		return
 	end
 
-	local tmr = v.cachePatch("FH_TMR")
+	local tmr = v.cachePatch("FH_TMR_BG")
 
-	local x = 320*FU - 12*FU - tmr.width*FU
-	local y = ease.outback(slideT, 200*FU, 200*FU - 12*FU - tmr.height*FU)
-	local f = V_SNAPTOBOTTOM|V_SNAPTORIGHT
+	local x = ease.outquad(slideT, -tmr.width*FU, 8*FU)
+	local y = 8*FU
+	local f = V_SNAPTOTOP|V_SNAPTOLEFT
 
-	drawTimer(v, x, y, FU, f)
+	drawTimer(v, x, y + 8 * FU, FU, f)
 end
 
 return module

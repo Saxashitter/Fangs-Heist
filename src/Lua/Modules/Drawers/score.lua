@@ -1,6 +1,6 @@
 local module = {}
 
-local X = 12 + 3
+--[[local X = 12 + 3
 local Y = 12
 local FLAGS = V_SNAPTOLEFT|V_SNAPTOTOP
 
@@ -34,6 +34,6 @@ function module.draw(v, p)
 		v.draw(TEXT_X+x, Y+TEXT_Y, patch, FLAGS)
 		x = $ + 1 + patch.width
 	end
-end
+end]]
 
 return module

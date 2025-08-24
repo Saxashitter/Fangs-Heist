@@ -126,7 +126,7 @@ local function DrawWinnerParallax(v)
 
 	if (team and team[1] and team[1].valid) then
 		local p = team[1]
-		skin = skins[p.skin].name
+		skin = p.heist.locked_skin
 	end
 
 	local char = FangsHeist.Characters[skin]
@@ -180,7 +180,7 @@ local function DrawWinners(v, percent, blinkWhite, easing)
 		local ROT = 0
 		local TARG = LOSER_WIDTH
 
-		if not IsSpriteValid(p.skin, SPR2, FRAME) then
+		if not IsSpriteValid(p.heist.locked_skin, SPR2, FRAME) then
 			SPR2 = SPR2_XTRA
 		end
 
@@ -189,7 +189,7 @@ local function DrawWinners(v, percent, blinkWhite, easing)
 		end
 
 		local PATCH, FLIP = v.getSprite2Patch(
-			p.skin,
+			p.heist.locked_skin,
 			SPR2,
 			false,
 			FRAME,
@@ -389,15 +389,17 @@ local function DrawResults(v,tics)
 		local k = i
 		local xst = -50*FU
 		local x = 60*FU
-		if k >= 9
+
+		if k >= 9 then
 			xst = 320*FU
 			x = $+120*FU
 			k = i-8
 		end
+
 		local time = max(0,min(FixedDiv(tics-FangsHeist.BLACKOUT_TICS-105-(3*k),35),FU))
 
 		--local p = team[1]
-		if time != 0
+		if time != 0 then
 			local y = 25*FU+(10*FU*k)
 			local xslide = extease.outcirc(time,xst,x)
 			local st,col = get_place(i)
@@ -416,10 +418,9 @@ local function DrawResults(v,tics)
 					life = v.getSprite2Patch(p.skin,
 						SPR2_LIFE, false, A, 0)
 				end
-			
 			end
-			if namestr != "" --Draw Final Placements
-				
+			if namestr != "" then --Draw Final Placements
+				-- DEAR GOD JOSEPH WHAT THE FUCK AM I READING
 				v.drawScaled((xslide+life.leftoffset*lifescale)-(10*FU),y+life.topoffset*lifescale,lifescale,
 				life,nil,v.getColormap(TC_DEFAULT,namecol))
 				FH.DrawString(v,xslide,y,scale,st,"FHFNT",nil,nil,v.getColormap(TC_DEFAULT,col))
@@ -465,7 +466,7 @@ local function DrawWinnerText(v,tics)
 	local chatcolor = skincolors[color].chatcolor
 	local width = v.levelTitleWidth(string)
 	--v.drawLevelTitle(x - width/2, y, string, V_SNAPTOTOP|chatcolor)
-	if resultperc != FU
+	if resultperc != FU then
 		customhud.CustomFontString(v,
 			x*FU+extrax,
 			y*FU,
@@ -490,7 +491,7 @@ local function DrawWinnerText(v,tics)
 		y = $+13+4
 	end
 	local trns = ease.linear(resultperc,10,0)
-	if trns != 10
+	if trns != 10 then
 		customhud.CustomFontString(v,
 			x*FU,
 			8*FU,
@@ -631,7 +632,7 @@ local function DrawResults(v)
 
 	local num = until_vote
 	local str = "Voting Starts in "
-	if FH.isMapVote()
+	if FH.isMapVote() then
 		num = remaining
 		str = "Switching Map in "
 	end
@@ -658,12 +659,11 @@ local function DrawResults(v)
 
 		local TICS = min(tics-FangsHeist.BLACKOUT_TICS, FLASH_OFFSET)
 		local perc = FU-fixdiv(TICS, FLASH_OFFSET)
-		if (transition-until_vote) >= 0
+		if (transition-until_vote) >= 0 then
 			perc = extease.incirc(FixedDiv(percent_tics, transition),0,FU)
 		end
 		DrawFlash(v, perc)
 	end
-
 end
 
 local function DrawHeistBackground(v)

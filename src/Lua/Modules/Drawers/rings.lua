@@ -1,6 +1,6 @@
 local module = {}
 
-local X = 12
+--[[local X = 12
 local Y = 12 + 13 + 4
 
 local TEXT_X = 12 + 16 + 4
@@ -29,6 +29,6 @@ function module.draw(v, p)
 		v.draw(TEXT_X+x, Y+TEXT_Y, patch, FLAGS)
 		x = $ + patch.width + 1
 	end
-end
+end]]
 
 return module

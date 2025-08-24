@@ -36,6 +36,7 @@ local defaultitems = {
 
 customhud.SetupFont("FHFNT")
 customhud.SetupFont("FHBFT")
+customhud.SetupFont("FHTXT")
 
 local function is_hud_modded(name)
 	for k,v in ipairs(defaultitems) do
@@ -116,17 +117,18 @@ addHud "controls"
 addHud "lives"
 addHud "score"
 addHud "rings"
+addHud "playerinfo"
 addHud "time"
 addHud "textspectator"
-addHud "health"
-addHud "multiplier"
+-- addHud "health"
+-- addHud "multiplier"
 addHud "treasure"
 addHud "timer"
 addHud "round"
 addHud "swaptimer"
 addHud "escapetext"
 addHud "bottomlinks"
-addHud "leftscores"
+-- addHud "leftscores"
 addHud "rankings"
 addHud "intermission"
 addHud "pregame"
@@ -134,9 +136,5 @@ if SUBVERSION >= 16
 	dofile("Modules/Drawers/escpanel")
 end
 --Add Most of Link Stuff, also Tips :p...
-FangsHeist.AddLink("Join the Saxakun Curse",
-			"https://discord.gg/FysZSrsd9U",
-			SKINCOLOR_SKY)
-FangsHeist.AddLink("Get the Source Code",
-		   "https://github.com/Saxashitter/Fangs-Heist",
-		   SKINCOLOR_MAUVE)
+FangsHeist.AddLink("Saxashitter's server","https://discord.gg/FysZSrsd9U",SKINCOLOR_SKY)
+FangsHeist.AddLink("GitHub","https://github.com/Saxashitter/Fangs-Heist",SKINCOLOR_MAUVE)
