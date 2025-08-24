@@ -201,9 +201,9 @@ addHook("MobjMoveBlocked", function(mo, _, line)
 	local contang = R_PointToAngle2(0,0, p.cmd.forwardmove*FU, -p.cmd.sidemove*FU)
 	local lineang = GetLineAngle(mo, line)
 
-	if abs(AngleFixed(lineang - (camang + contang))) > 45*FU then
+	--[[if abs(AngleFixed(lineang - (camang + contang))) > 45*FU then
 		return
-	end
+	end]]
 
 	if not tails.walljump_tics then
 		local momz = p.mo.momz*P_MobjFlip(p.mo)

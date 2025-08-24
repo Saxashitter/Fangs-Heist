@@ -78,4 +78,8 @@ function FangsHeist.getGamemode()
 end
 
 FangsHeist.Escape = dofile "Modules/Gamemodes/Escape/def.lua"
+
+-- nice going
+FangsHeist.WL = dofile "Modules/Gamemodes/Wario Land/def.lua"
+
 -- FangsHeist.TagTeam = dofile "Gamemodes/Tag Team/def.lua"
