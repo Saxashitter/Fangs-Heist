@@ -82,6 +82,8 @@ local function Damage(p, p2)
 		return false
 	end
 
+	HeistHook.runHook("PlayerHit", p, p2)
+
 	local xySpeed = R_PointToDist2(0,0,p.mo.momx-p2.mo.momx,p.mo.momy-p2.mo.momy)
 	local speed = R_PointToDist2(0,0,xySpeed,p.mo.momz-p2.mo.momz)
 
@@ -154,11 +156,8 @@ local function AttemptAttack(p, sp)
 		return true
 	end
 
-	if sp.heist.attack_time then
-		if HeistHook.runHook("PlayerClash", p, sp) == true then
-			return
-		end
-
+	if sp.heist.attack_time
+	or HeistHook.runHook("PlayerScanAttack", sp) then
 		local speed = 18*FU
 		local mx, my, mz = L_ReturnThrustXYZ(p.mo, {
 			x = sp.mo.x,
@@ -187,11 +186,11 @@ local function AttemptAttack(p, sp)
 			P_StartQuake(7*FU, 12)
 		end
 
+		HeistHook.runHook("PlayerClash", p, sp)
 		return
 	end
 
-	if Damage(p, sp)
-	and HeistHook.runHook("PlayerHit", p, sp) ~= true then
+	if Damage(p, sp) then
 		local speed = max(
 			4*p.mo.scale,
 			FixedSqrt(
@@ -251,6 +250,10 @@ local function DoAttack(p)
 end
 
 local function DoGuard(p)
+	if HeistHook.runHook("PlayerParry", p) then
+		return
+	end
+
 	if not P_IsObjectOnGround(p.mo) then
 		p.mo.state = S_PLAY_FALL
 		p.pflags = $ & ~FLAGS_RESET
@@ -260,6 +263,8 @@ local function DoGuard(p)
 		P_InstaThrust(p.mo, p.mo.angle, 12*p.mo.scale)
 		P_SetObjectMomZ(p.mo, 0)
 		S_StartSound(p.mo, sfx_s3k7c)
+
+		HeistHook.runHook("PlayerAirDodge", p)
 	
 		return
 	end
@@ -379,6 +384,8 @@ local function reflection(mobj,proj)
 	if not mobj.player.heist.parry_time then return end
 	if not (proj.flags & MF_MISSILE) then return end
 	if proj.target == mobj then return end
+	if proj.z > mobj.z+mobj.height then return end
+	if mobj.z > proj.z+proj.height then return end
 
 	proj.momx = -$
 	proj.momy = -$
@@ -558,12 +565,6 @@ return function(p)
 	if p.heist.attack_time then
 		p.heist.attack_time = max(0, $-1)
 
-		for sp in players.iterate do
-			if AttemptAttack(p, sp) then
-				break
-			end
-		end
-
 		local radius = FixedMul(p.mo.radius, FH_ATK_XYMULT)
 		local height = FixedMul(p.mo.height, FH_ATK_ZMULT)
 		local x = p.mo.x + p.mo.momx
@@ -586,5 +587,14 @@ return function(p)
 
 			P_DamageMobj(found, p.mo, p.mo)
 		end, p.mo, x-radius*2, x+radius*2, y-radius*2, y+radius*2)
+	end
+
+	if HeistHook.runHook("PlayerScanAttack", p)
+	or p.heist.attack_time then
+		for sp in players.iterate do
+			if AttemptAttack(p, sp) then
+				break
+			end
+		end
 	end
 end
