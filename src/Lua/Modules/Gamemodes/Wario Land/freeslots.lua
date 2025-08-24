@@ -16,7 +16,7 @@ SafeFreeSlot(
 -- States
 "S_WARSPORT","S_WARMPORT","S_WARLPORT","S_HURRYUP","S_COINLOSS",
 -- Objects
-"MT_WLPORTALSMALL","MT_WLPORTALMEDIUM","MT_WLPORTALLARGE","MT_KOMBIFROGSWITCH","MT_COINLOSSEFFECT","MT_FROGSWITCHANIMATOR","MT_WLPORTALSPAWNER",
+"MT_WLPORTALSMALL_ALT","MT_WLPORTALMEDIUM_ALT","MT_WLPORTALLARGE_ALT","MT_KOMBIFROGSWITCH_ALT","MT_COINLOSSEFFECT","MT_FROGSWITCHANIMATOR_ALT","MT_WLPORTALSPAWNER",
 -- Longsprites
 "SPR_WLPS","SPR_WLPM","SPR_WLPL","SPR_KOMBIFROGSWITCH","SPR_WLC2","SPR_WL4STOPWATCH",
 -- Wario's Voice (Hurry Up!)
@@ -35,7 +35,7 @@ skincolors[SKINCOLOR_KOMBI_FROGSWITCH] = {
 	accessible = true
 }
 
-mobjinfo[MT_WLPORTALSMALL] = {
+mobjinfo[MT_WLPORTALSMALL_ALT] = {
 spawnstate = S_WARSPORT,
 spawnhealth = 1000,
 deathstate = S_WARSPORT,
@@ -45,7 +45,7 @@ dispoffset = 5,
 flags = MF_SCENERY|MF_NOGRAVITY|MF_NOCLIPHEIGHT,
 }
 
-mobjinfo[MT_WLPORTALMEDIUM] = {
+mobjinfo[MT_WLPORTALMEDIUM_ALT] = {
 spawnstate = S_WARMPORT,
 spawnhealth = 1000,
 deathstate = S_WARMPORT,
@@ -55,7 +55,7 @@ dispoffset = 4,
 flags = MF_SCENERY|MF_NOGRAVITY|MF_NOCLIPHEIGHT,
 }
 
-mobjinfo[MT_WLPORTALLARGE] = {
+mobjinfo[MT_WLPORTALLARGE_ALT] = {
 spawnstate = S_WARLPORT,
 spawnhealth = 1000,
 deathstate = S_WARLPORT,
@@ -65,18 +65,7 @@ dispoffset = 3,
 flags = MF_SCENERY|MF_NOGRAVITY|MF_NOCLIPHEIGHT|MF_SPECIAL,
 }
 
-mobjinfo[MT_WLPORTALSPAWNER] = {
-doomednum = 2049,
-spawnstate = S_WARLPORT,
-spawnhealth = 1000,
-deathstate = S_WARLPORT,
-radius = 24*FRACUNIT,
-height = 48*FRACUNIT,
-dispoffset = 3,
-flags = MF_SCENERY|MF_NOGRAVITY|MF_NOCLIPHEIGHT|MF_SPECIAL,
-}
-
-mobjinfo[MT_KOMBIFROGSWITCH] = {
+mobjinfo[MT_KOMBIFROGSWITCH_ALT] = {
 doomednum = 2048,
 spawnstate = S_HURRYUP,
 spawnhealth = 1000,
@@ -87,7 +76,7 @@ dispoffset = 3,
 flags = MF_SCENERY|MF_NOGRAVITY|MF_NOCLIPHEIGHT|MF_SOLID,
 }
 
-mobjinfo[MT_FROGSWITCHANIMATOR] = {
+mobjinfo[MT_FROGSWITCHANIMATOR_ALT] = {
 spawnstate = S_HURRYUP,
 spawnhealth = 1000,
 deathstate = S_HURRYUP,

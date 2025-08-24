@@ -261,7 +261,7 @@ function gamemode:spawnSign()
 	-- holy shit takis reference
     local pos = self.super.getSignSpawn(self)
 
-    FangsHeist.Net.sign = P_SpawnMobj(pos[1], pos[2], pos[3], MT_KOMBIFROGSWITCH)
+    FangsHeist.Net.sign = P_SpawnMobj(pos[1], pos[2], pos[3], MT_KOMBIFROGSWITCH_ALT)
 	FangsHeist.Net.sign.angle = pos[4]
 end
 
@@ -284,19 +284,17 @@ function gamemode:load()
 	end
 
 	if exit then
-		local smallportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALSMALL)
-		local mediumportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALMEDIUM)
-		local largeportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALLARGE)
+		local smallportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALSMALL_ALT)
+		local mediumportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALMEDIUM_ALT)
+		local largeportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALLARGE_ALT)
 		smallportal.z = smallportal.subsector.sector.floorheight+(128*FRACUNIT)
 		mediumportal.z = mediumportal.subsector.sector.floorheight+(128*FRACUNIT)
 		largeportal.z = largeportal.subsector.sector.floorheight+(128*FRACUNIT)
 
-		/*
 		local x = exit.x*FU
 		local y = exit.y*FU
-		local z = spawnpos.getThingSpawnHeight(MT_PLAYER, exit, x, y)
+		local z = largeportal.subsector.sector.floorheight+(128*FRACUNIT)
 		local a = FixedAngle(exit.angle*FU)
-		*/
 
 		FangsHeist.defineExit(x, y, z, a)
 	end
@@ -383,33 +381,6 @@ function gamemode:playerdamage(p)
 	WL_SpawnCoins(p.mo, p.heist.treasure, gamemode.treasuredrop)
 end
 
-function gamemode:playerexit(p)
-	if FangsHeist.Net.exit_deb then
-		return true
-	end
-	if FangsHeist.Net.heisters.profit < FangsHeist.Net.profit_quota then
-		return true
-	end
-
-	local team = p.heist:getTeam()
-
-	if team == FangsHeist.Net.officers then
-		return true
-	end
-
-	if team == FangsHeist.Net.heisters then
-		for p in players.iterate do
-			local team = p.heist and p.heist:getTeam()
-
-			if team == FangsHeist.Net.officers then
-				p.heist.spectator = true
-			end
-		end
-
-		FangsHeist.startIntermission()
-	end
-end
-
 function gamemode:manageTime()
 	if not FangsHeist.Net.time_left then return end
 
@@ -446,7 +417,55 @@ end
 function gamemode:music()
 	local song, loop, vol = self.super.music(self)
 
+	if FangsHeist.Net.escape then
+		return "HRRYUP", true
+	end
+
 	return song, loop, vol
+end
+
+function gamemode:manageExiting()
+	local exit = FangsHeist.Net.exit
+
+	for p in players.iterate do
+		if not p.heist then continue end
+		if not p.heist:isAlive() then continue end
+
+		if not p.heist:isAtGate()
+		and not p.heist.exiting then
+			continue
+		end
+
+		if not p.heist.exiting
+		and HeistHook.runHook("PlayerExit", p) == true then
+			continue
+		end
+
+		if self.playerexit
+		and self:playerexit(p) then
+			continue
+		end
+
+		P_SetOrigin(p.mo, exit.x, exit.y, exit.z)
+		p.mo.flags2 = $|MF2_DONTDRAW
+		p.mo.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOTHINK
+		p.mo.state = S_PLAY_STND
+		p.camerascale = FU*3
+
+		if p.heist:hasSign()
+		and not p.heist.exiting then
+			local team = p.heist:getTeam()
+
+			team.had_sign = true
+		end
+			local v = p.heist.pickup_list[i]
+
+			FangsHeist.Carriables.RespawnCarriable(v.mobj)
+			table.remove(p.heist.pickup_list, i)
+		end
+
+		p.heist.exiting = true
+	end
 end
 
 local function blacklist(self, p)
@@ -527,8 +546,8 @@ local clockspin = FixedAngle(L_DecimalFixed("13.125"))
 local hurryuptimermoveoffset = 24
 
 -- Hooks for the Frog Switch and its animator objects
--- MT_KOMBIFROGSWITCH is the thinker
--- MT_FROGSWITCHANIMATOR is the animator
+-- MT_KOMBIFROGSWITCH_ALT is the thinker
+-- MT_FROGSWITCHANIMATOR_ALT is the animator
 -- Yes I am still gonna call them that in-code and you aren't gonna stop me...
 -- Think of it as a signature of sorts...
 
@@ -543,14 +562,14 @@ local frogSwitchEyeRemaps = {
 
 addHook("MobjSpawn", function(switch)
 	for i = 1, 3 do
-		local part = P_SpawnMobjFromMobj(switch, 0, 0, 0, MT_FROGSWITCHANIMATOR)
+		local part = P_SpawnMobjFromMobj(switch, 0, 0, 0, MT_FROGSWITCHANIMATOR_ALT)
 		part.tracer = switch
 		part.frame = i
 		part.whichframe = i
 		part.dispoffset = 5-i
 	end
 	switch.alpha = 0
-end, MT_KOMBIFROGSWITCH)
+end, MT_KOMBIFROGSWITCH_ALT)
 
 addHook("MobjCollide", function(switch, mo)
 	if FangsHeist.Net.escape return end
@@ -562,7 +581,7 @@ addHook("MobjCollide", function(switch, mo)
 			K_PunchFrogSwitch(0, switch.escapetype, switch.portal) -- PASSES: (Time Defecit, Escape Type, Portals to Open)
 		end
 	end
-end, MT_KOMBIFROGSWITCH)
+end, MT_KOMBIFROGSWITCH_ALT)
 
 --- Pauses the player.
 --- @param player table The player to pause.
@@ -638,13 +657,13 @@ addHook("MobjThinker", function(mobj)
 	end
 	local clock = FangsHeist.Net.keroAnimClock
 	if clock - pause == pressanimframes
-		local part = P_SpawnMobjFromMobj(mobj, 0, 0, 0, MT_FROGSWITCHANIMATOR)
+		local part = P_SpawnMobjFromMobj(mobj, 0, 0, 0, MT_FROGSWITCHANIMATOR_ALT)
 		part.corrected = true
 		part.tracer = mobj
 		part.frame = E
 		part.dispoffset = 1
 	end
-end, MT_KOMBIFROGSWITCH)
+end, MT_KOMBIFROGSWITCH_ALT)
 
 addHook("MobjThinker", function(mobj)
 	if not mobj.corrected then
@@ -696,7 +715,7 @@ addHook("MobjThinker", function(mobj)
 	elseif frame == B and inPost
 		mobj.color = frogSwitchEyeRemaps[(((animClock-pause-pressanimframes-unpressanimframes) / 4) % 4) + 1]
 	end
-end, MT_FROGSWITCHANIMATOR)
+end, MT_FROGSWITCHANIMATOR_ALT)
 
 local function K_PortalThinker(mobj)
 	-- Store the original scale if not set
@@ -716,17 +735,17 @@ end
 addHook("MobjThinker", function(mobj)
 	mobj.rollangle = $ + FixedDiv(ANGLE_45, 45*FRACUNIT)
 	K_PortalThinker(mobj)
-end, MT_WLPORTALSMALL)
+end, MT_WLPORTALSMALL_ALT)
 
 addHook("MobjThinker", function(mobj)
 	mobj.rollangle = $ + FixedDiv(ANGLE_45, 30*FRACUNIT)
 	K_PortalThinker(mobj)
-end, MT_WLPORTALMEDIUM)
+end, MT_WLPORTALMEDIUM_ALT)
 
 addHook("MobjThinker", function(mobj)
 	mobj.rollangle = $ + FixedDiv(ANGLE_45, 25*FRACUNIT)
 	K_PortalThinker(mobj)
-end, MT_WLPORTALLARGE)
+end, MT_WLPORTALLARGE_ALT)
 
 addHook("TouchSpecial",function(port,mo)
 	local player = mo.player
@@ -735,7 +754,7 @@ addHook("TouchSpecial",function(port,mo)
 		player.heist.exiting = true
 	end
 	return true
-end,MT_WLPORTALLARGE)
+end,MT_WLPORTALLARGE_ALT)
 
 local function PausedThinker(player)
 	if not player.paused return end
