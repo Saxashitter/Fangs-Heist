@@ -1,7 +1,8 @@
 local module = {}
 
-local duration = 94
+local duration = 90
 local elapsed = 0
+local enabled = false
 
 local function DrawFlash(v, percent)
 	local patch = v.cachePatch("FH_PINK_SCROLL")
@@ -34,12 +35,20 @@ local function DrawText(v, x, y, string, flags, align, color, rich)
 		rich)
 end
 
-function module.init()
+function FangsHeist.doGoHUD(newDuration)
+	enabled = true
 	elapsed = 0
+	duration = newDuration or $
+end
+
+function module.init()
+	enabled = false
+	elapsed = 0
+	duration = 90
 end
 
 function module.draw(v)
-	if not FangsHeist.Net.escape then
+	if not enabled then
 		return
 	end
 

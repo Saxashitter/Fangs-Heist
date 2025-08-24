@@ -441,7 +441,6 @@ function gamemode:startEscape(p)
 
 	FangsHeist.Net.escape = true
 	FangsHeist.Net.time_escape_started = leveltime
-	S_StartSound(nil, sfx_gogogo)
 
 	if FangsHeist.Save.retakes >= 2 then
 		if not FangsHeist.Net.eggman
@@ -456,6 +455,9 @@ function gamemode:startEscape(p)
 	if data.fh_escapelinedef then
 		P_LinedefExecute(tonumber(data.fh_escapelinedef))
 	end
+
+	S_StartSound(nil, sfx_gogogo)
+	FangsHeist.doGoHUD()
 end
 
 local HURRY_LENGTH = 2693
