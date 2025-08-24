@@ -476,37 +476,11 @@ addHook("ShouldDamage", function(t)
 	if not FangsHeist.isMode() then return end
 	if FangsHeist.Net.game_over then return end
 	if FangsHeist.Net.pregame then return end
-
-	local gamemode = FangsHeist.getGamemode()
-
-	if gamemode.index ~= FangsHeist.TagTeam then return end
-
-	if t
-	and t.valid
-	and t.player
-	and t.player.valid
-	and t.player.heist
-	and t.player.heist.intangible then
-		return false
-	end
 end, MT_PLAYER)
 addHook("ShouldDamage", function(_,_,t)
 	if not FangsHeist.isMode() then return end
 	if FangsHeist.Net.game_over then return end
 	if FangsHeist.Net.pregame then return end
-
-	local gamemode = FangsHeist.getGamemode()
-
-	if gamemode.index ~= FangsHeist.TagTeam then return end
-
-	if t
-	and t.valid
-	and t.player
-	and t.player.valid
-	and t.player.heist
-	and t.player.heist.intangible then
-		return false
-	end
 end)
 
 -- We probably don't even need this
