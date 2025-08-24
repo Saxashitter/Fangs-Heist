@@ -2,6 +2,23 @@ local copy = FangsHeist.require "Modules/Libraries/copy"
 local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"
 local gamemode = copy(FangsHeist.Gamemodes[FangsHeist.Escape])
 
+local function printTable(data, prefix)
+	prefix = prefix or ""
+	if type(data) == "table"
+		for k, v in pairs(data or {}) do
+			local key = prefix .. k
+			if type(v) == "table" then
+				print("key " .. key .. " = a table:")
+				printTable(v, key .. ".")
+			else
+				print("key " .. key .. " = " .. tostring(v))
+			end
+		end
+	else
+		print(data)
+	end
+end
+
 local path = "Modules/Gamemodes/Wario Land/"
 dofile(path.."freeslots.lua")
 
@@ -222,9 +239,8 @@ function gamemode:load()
 			exit = thing
 		end
 
-		-- Round 2 portal would conflict with the actual escape portal in design, so that means no
-		-- Final Demo zones for you
-		-- (really I don't want more things to port from Gamemodes/Escape)
+	-- Round 2 portal would conflict with the actual escape portal in design, so that means no Final Demo zones for you
+	-- (really I don't want more things to port from Gamemodes/Escape)
 
 		-- holy shit takis reference
 		if whatSigns[thing.type] then
@@ -232,6 +248,9 @@ function gamemode:load()
 			local y = thing.y*FRACUNIT
 			local whatSec = R_PointInSubsector(x, y).sector
 			local z = thing.z * FRACUNIT + whatSec.floorheight
+			if not thing.mobj then
+				print("Shit fucked up! No mobj for current sign!! Saxa you're no longer invited to my birthday party >:(")
+			end
 			P_SpawnMobj(x, y, z, MT_KOMBIFROGSWITCH)
 			if (thing.mobj and thing.mobj.valid) P_RemoveMobj(thing.mobj) end
 		end
@@ -249,6 +268,11 @@ function gamemode:load()
 		local a = FixedAngle(exit.angle*FU)
 
 		FangsHeist.defineExit(x, y, z, a)
+	end
+
+	printTable(FangsHeist.Carriables.FindCarriables)
+	for k, v in ipairs(FangsHeist.Carriables.FindCarriables("Sign")) do
+		print(v.profit)
 	end
 
 	for i = 1, #treasure_spawns do
@@ -513,25 +537,56 @@ addHook("MobjCollide", function(switch, mo)
 	end
 end, MT_KOMBIFROGSWITCH)
 
+--- Pauses the player.
+--- @param player table The player to pause.
+--- @return nil
+local function K_PauseMomentum(player) -- stop the player
+	if not player.paused
+		player.oldvel = {x = player.mo.momx, y = player.mo.momy, z = player.mo.momz, angle = player.drawangle}
+		player.mo.momx = 0
+		player.mo.momy = 0
+		player.mo.momz = 0
+		player.paused = true
+		player.freezeframe = player.mo.frame
+		player.freezesprite2 = player.mo.sprite2
+	end
+end
+
+--- Resumes the player.
+--- This assumes you have ran K_PauseMomentum previously.
+--- @param player table The player to resume.
+--- @return nil
+local function K_ResumeMomentum(player)
+	if player.paused
+		if player.oldvel
+			player.mo.momx = player.oldvel.x
+			player.mo.momy = player.oldvel.y
+			player.mo.momz = player.oldvel.z
+		end
+		player.paused = false
+	else
+		error("Call to K_ResumeMomentum to an unpaused player!", 1)
+	end
+end
+
 addHook("ThinkFrame", function()
 	if not FangsHeist.Net.escape then FangsHeist.Net.keroAnimClock = 0 return end
 	FangsHeist.Net.keroAnimClock = $ + 1
-	--[[local clock = FangsHeist.Net.keroAnimClock
-		if clock <= pauseby
-			for player in players.iterate do
-				if clock == pauseby
-					player.mo.momx = 0
-					player.mo.momx = 0
-				else
-					if player.wl4kombitime then player.wl4kombitime = $ - 1 end
-				end
+	local clock = FangsHeist.Net.keroAnimClock
+	if clock <= pauseby
+		for player in players.iterate do
+			if clock == pauseby
+				K_PauseMomentum(player)
+			else
+				if player.wl4kombitime then player.wl4kombitime = $ - 1 end
 			end
 		end
-		if clock == letgoby then
-			for player in players.iterate do
-				K_ResumeMomentum(player)
-			end
-		end]]
+	end
+	if clock == letgoby then
+		for player in players.iterate do
+			K_ResumeMomentum(player)
+		end
+	end
 end)
 
 addHook("MobjThinker", function(mobj)
