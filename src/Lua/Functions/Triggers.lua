@@ -111,7 +111,6 @@ function FangsHeist.playVoiceline(p, line, private)
 	local char = FangsHeist.Characters[p.heist.locked_skin]
 
 	if not char.voicelines[line] then
-		print("no lines for" .. line)
 		return
 	end
 
@@ -120,5 +119,4 @@ function FangsHeist.playVoiceline(p, line, private)
 	local lines = char.voicelines[line]
 
 	S_StartSound(p.mo, lines[P_RandomRange(1, #lines)], private and p)
-	print("playing")
 end

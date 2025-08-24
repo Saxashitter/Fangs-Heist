@@ -2,12 +2,18 @@ rawset(_G, "FangsHeist", {
 	Net = {},
 	Objects = {},
 	Save = {},
-	PlayerMT = {}
+	PlayerMT = {},
+	Version = {
+	Num = 1,
+	String = "v1.0 Public Beta",
+	}
 })
+/*
+FANG'S HEIST BY TEAM FRACTURE 
+LED BY TEAM DIRECTOR: SAXASHITTER
 
-// FANGS HEIGHT IS BY SAXASHITTER
-// OFFICIAL SEQUEL TO NICK'S PIZZA TIME!
-
+Official Sequel of Nick's Pizza Time!
+*/
 dofile "freeslots"
 dofile "hooks.lua"
 dofile "constants"

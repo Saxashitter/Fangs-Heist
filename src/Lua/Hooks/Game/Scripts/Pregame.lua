@@ -34,13 +34,13 @@ local function ShouldPregameEnd()
 			confirmcount = $+1
 		end
 	end
-
 	return confirmcount == count
 end
 
 local function EndPregame()
 	FangsHeist.Net.pregame = false
-	S_ChangeMusic(mapmusname, true)
+	local trans = FixedMul(1000,tofixed("0.65"))
+	S_ChangeMusic(mapmusname,true,nil,nil,0,trans)
 
 	for p in players.iterate do
 		if not p.heist then
@@ -52,10 +52,6 @@ local function EndPregame()
 		p.heist.invitesList = nil
 
 		p.powers[pw_flashing] = 2*TICRATE
-
-		if p.mo and p.mo.valid and p.mo.health then
-			p.mo.state = S_PLAY_STND
-		end
 	end
 
 	local gamemode = FangsHeist.getGamemode()
@@ -75,8 +71,10 @@ return function()
 		return
 	end
 
-	if S_MusicName() ~= "FH_PRG" then
-		S_ChangeMusic("FH_PRG", true)
+	local song = FangsHeist.Save.retakes and "FH_PG2" or "FH_PRG"
+
+	if S_MusicName() ~= song then
+		S_ChangeMusic(song, true)
 	end
 
 	FangsHeist.Net.pregame_transparency = max(0, $-1)

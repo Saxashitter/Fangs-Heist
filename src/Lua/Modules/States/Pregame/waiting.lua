@@ -52,19 +52,19 @@ end
 
 function state:draw(v, c, transparency)
 	--DrawRoundInfo(v, 4, V_SNAPTOTOP|V_SNAPTOLEFT|transparency)
-	v.drawString(160, 200 - 12, "Waiting for players...", V_ALLOWLOWERCASE|V_SNAPTOBOTTOM|transparency, "thin-center")
-
 	local team = self.heist:getTeam()
-
-	v.drawString(160, 8, "Team:", V_SNAPTOTOP|transparency, "thin-center")
-	local y = 8+10
+	local FH = FangsHeist
+	local y = 10*FU
+	FH.DrawString(v,160*FU, y,FU, "Team:","FHFNT","center", V_SNAPTOTOP|transparency, v.getColormap(TC_DEFAULT,SKINCOLOR_WHITE))
+	y = $+15*FU
 	for i, p in ipairs(team) do
 		if not (p and p.valid) then continue end
 
-		local color = skincolors[max(0,p.skincolor)].chatcolor
-		v.drawString(160, y, p.name, V_SNAPTOTOP|color|transparency, "thin-center")
-		y = $+10
+		FH.DrawString(v,160*FU,y,FU/2, p.name,"FHFNT","center", V_SNAPTOTOP|transparency, v.getColormap(TC_DEFAULT,p.skincolor))
+		
+		y = $+10*FU
 	end
+	FH.DrawString(v,160*FU, 187*FU,FU/2, "Wating for Players...","FHFNT","center", V_SNAPTOBOTTOM|transparency, v.getColormap(TC_DEFAULT,SKINCOLOR_YELLOW))
 end
 
 return state

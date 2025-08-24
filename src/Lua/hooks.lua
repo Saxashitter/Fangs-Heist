@@ -97,21 +97,39 @@ events["PlayerAttack"] = {}
 	// Arguments:
 		// player == player_t
 
+events["PlayerParry"] = {}
+// PlayerParry:
+	// Runs before the player attempts to parry.
+	// return true: Stop the default behavior.
+	// Arguments:
+		// player == player_t
+
 events["PlayerClash"] = {}
 // PlayerClash:
-	// Runs before the player clashes with another.
-	// return true: Stop the default behavior.
+	// Runs when the player clashes with another.
 	// Arguments:
 		// first_clasher == player_t
 		// second_clasher == player_t
 
 events["PlayerHit"] = {}
 // PlayerHit:
-	// Runs before the player hits another using the insta-shield.
-	// return true: Stop the default behavior.
+	// Runs when the player hits another player.
 	// Arguments:
 		// attacker == player_t
 		// victim == player_t
+
+events["PlayerAirDodge"] = {}
+// PlayerAirDodge:
+	// Runs when the player air-dodges.
+	// Arguments:
+		// player == player_t
+
+events["PlayerScanAttack"] = {}
+// PlayerScanAttack:
+	// Runs before the check to scan around the player to attack.
+	// return true/false: Runs the attack scan.
+	// Arguments:
+		// player == player_t
 
 events["Round2"] = {}
 // Round2:

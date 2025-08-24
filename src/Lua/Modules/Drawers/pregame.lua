@@ -98,13 +98,7 @@ function module.draw(v)
 		y = $ + state.time_oy
 	end
 
-	for i = 1,#str do
-		local num = tonumber(string.sub(str, i, i))
-		local patch = v.cachePatch("STTNUM"..num)
-
-		v.drawScaled(x, y, FU, patch, V_SNAPTOLEFT|V_SNAPTOTOP|transparency)
-		x = $+patch.width*FU
-	end
+	FangsHeist.DrawString(v,x,y,FU/2,str,"FHBFT",nil,V_SNAPTOTOP|V_SNAPTOLEFT|transparency,v.getColormap(TC_DEFAULT,SKINCOLOR_MAUVE))
 end
 
 return module, "gameandscores"
@@ -522,13 +516,7 @@ function module.draw(v,p)
 	local str = tostring(num)
 	local x = 4*FU
 
-	for i = 1,#str do
-		local num = tonumber(string.sub(str, i, i))
-		local patch = v.cachePatch("STTNUM"..num)
-
-		v.drawScaled(x, 4*FU, FU, patch, V_SNAPTOLEFT|V_SNAPTOTOP|f)
-		x = $+patch.width*FU
-	end
+	FangsHeist.DrawNumber(v,x,0,FU/2,num,"FHBFT",V_SNAPTOTOP|V_SNAPTOLEFT|f,v.getColormap(TC_DEFAULT,SKINCOLOR_MAUVE))
 
 	chartween = min($+1, CHAR_TWEEN)
 	overlaytween = min($+1, CHAROVERLAY_TWEEN)

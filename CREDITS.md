@@ -45,11 +45,11 @@
 - Bug fixer
 - Tweaker
 
-# JosephLol
+# RedFoxyBoy
 ## Coder
 - Titlescreen polish
-- Icon tweening when selected (Character Select)
-- GAME! Animation
+- Team Fracture Intro
+- did most of the HUD Changes :p
 
 # Lemerks
 ## Mapper
