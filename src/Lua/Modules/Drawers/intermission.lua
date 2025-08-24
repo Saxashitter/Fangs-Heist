@@ -443,11 +443,11 @@ local function DrawWinnerText(v,tics)
 	if not (WINNERS and WINNERS[1] and WINNERS[1][1] and WINNERS[1][1].valid) then
 		local string = "NO CONTEST"
 		customhud.CustomFontString(v,
-			x*FU+extrax,
+			x*FU,
 			y*FU,
 			string,
-			"FHFNT",
-			V_SNAPTOTOP,
+			"FHBFT",
+			nil,
 			"center",
 			FU,
 			SKINCOLOR_RED)
