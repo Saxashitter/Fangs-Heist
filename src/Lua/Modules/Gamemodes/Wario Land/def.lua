@@ -160,6 +160,7 @@ function gamemode:init(map)
 	FangsHeist.Net.round2_theme = "EFPYRA"
 	FangsHeist.Net.escape_hurryup = true
 	FangsHeist.Net.escape_on_start = false
+	FangsHeist.Net.keroAnimClock = 0
 
 	FangsHeist.Net.last_man_standing = false
 
@@ -227,8 +228,12 @@ function gamemode:load()
 
 		-- holy shit takis reference
 		if whatSigns[thing.type] then
-			local trig = P_SpawnMobjFromMobj(thing.mobj,0,0,0,MT_KOMBIFROGSWITCH)
-			if (mthing.mobj and mthing.mobj.valid) P_RemoveMobj(mthing.mobj) end
+			local x = thing.x*FRACUNIT
+			local y = thing.y*FRACUNIT
+			local whatSec = R_PointInSubsector(x, y).sector
+			local z = thing.z * FRACUNIT + whatSec.floorheight
+			P_SpawnMobj(x, y, z, MT_KOMBIFROGSWITCH)
+			if (thing.mobj and thing.mobj.valid) P_RemoveMobj(thing.mobj) end
 		end
 
 		if thing.type == 1
@@ -440,133 +445,6 @@ addHook("ShouldDamage", function(_,_,t)
 	end
 end)
 
--- Hooks for the Frog Switch and its animator objects
--- MT_KOMBIFROGSWITCH is the thinker
--- MT_FROGSWITCHANIMATOR is the animator
--- Yes I am still gonna call them that in-code and you aren't gonna stop me...
--- Think of it as a signature of sorts...
-
--- Frog Switch's eye color remappers
--- Expected to be a table with 4 items because I'm stupid
-local frogSwitchEyeRemaps = {
-	SKINCOLOR_KOMBI_FROGSWITCH,
-	SKINCOLOR_KOMBI_FROGSWITCH,
-	SKINCOLOR_RED,
-	SKINCOLOR_YELLOW,
-}
-
-addHook("MobjSpawn", function(switch)
-	for i = 1, 3 do
-		local part = P_SpawnMobjFromMobj(switch, 0, 0, 0, MT_FROGSWITCHANIMATOR)
-		part.tracer = switch
-		part.frame = i
-		part.dispoffset = 5-i
-	end
-	switch.alpha = 0
-end, MT_KOMBIFROGSWITCH)
-
-addHook("MobjCollide", function(switch, mo)
-	if kombi.hurryup return end
-	if not mo or not mo.valid return end
-	if mo.type ~= MT_PLAYER return end
-	local relzpos = mo.z - switch.z
-	if relzpos == 74*FRACUNIT or relzpos == mo.height + 74*FRACUNIT -- TODO: Make these checks better.
-		if abs(mo.momz) <= 2*FRACUNIT
-			K_PunchFrogSwitch(0, switch.escapetype, switch.portal) -- PASSES: (Time Defecit, Escape Type, Portals to Open)
-		end
-	end
-end, MT_KOMBIFROGSWITCH)
-
-addHook("ThinkFrame", function()
-	if not (kombi.hurryup or kombi.metalTimer) kombi.animationClock = 0 return end
-	kombi.animationClock = $ + 1
-	local clock = kombi.animationClock
-	if kombi.falsealarm return
-	else
-		if clock <= pauseby
-			for player in players.iterate do
-				if clock == pauseby
-					K_PauseMomentum(player)
-				else
-					if player.wl4kombitime then player.wl4kombitime = $ - 1 end
-				end
-			end
-		end
-		if clock == letgoby and not kombi.metalTimer then
-			for player in players.iterate do
-				K_ResumeMomentum(player)
-			end
-		end
-	end
-end)
-
-addHook("MobjThinker", function(mobj)
-	if not mobj.corrected then
-		mobj.scale = $*2
-		mobj.corrected = true
-	end
-	if mobj.spawnpoint and not mobj.escapetype
-		mobj.escapetype = mobj.spawnpoint.args[0] or mobj.spawnpoint.extrainfo
-		mobj.portal = mobj.spawnpoint.tag
-	end
-	local clock = kombi.animationClock
-	if kombi.falsealarm return
-	elseif clock - pause == pressanimframes
-		local part = P_SpawnMobjFromMobj(mobj, 0, 0, 0, MT_FROGSWITCHANIMATOR)
-		part.corrected = true
-		part.tracer = mobj
-		part.frame = E
-		part.dispoffset = 1
-	end
-end, MT_KOMBIFROGSWITCH)
-
-addHook("MobjThinker", function(mobj)
-	if not mobj.corrected then
-		mobj.scale = $*2
-		mobj.corrected = true
-	end
-	local frame = mobj.frame
-	if frame == D return end
-
-	local mainbody = mobj.tracer
-	if not mainbody return end
-
-	local animClock = kombi.animationClock
-	local isPressing = animClock < pressanimframes
-	local isUnpressing = (animClock - pause) >= pressanimframes and (animClock - pause) <= (pressanimframes + unpressanimframes)
-	local inPost = (animClock - pause) > (pressanimframes + unpressanimframes)
-
-	if frame == B and not inPost
-		mobj.color = SKINCOLOR_KOMBI_FROGSWITCH
-	end
-
-	if isPressing
-		if frame ~= B return end
-		local t = FixedDiv(animClock, pressanimframes)
-		if (mobj.eflags & MFE_VERTICALFLIP) ~= 0
-			mobj.z = mainbody.z + ease.outback(t, 0, presstotalmovement)
-		else
-			mobj.z = mainbody.z - ease.outback(t, 0, presstotalmovement)
-		end
-	elseif isUnpressing
-		if frame > C return end
-		local t = FixedDiv(animClock - pressanimframes - pause, unpressanimframes)
-		if (mobj.eflags & MFE_VERTICALFLIP) ~= 0
-			mobj.z = mainbody.z - ease.linear(t, 0, unpresstotalmovement)
-			if frame == B
-				mobj.z = mobj.z + presstotalmovement
-			end
-		else
-			mobj.z = mainbody.z + ease.linear(t, 0, unpresstotalmovement)
-			if frame == B
-				mobj.z = mobj.z - presstotalmovement
-			end
-		end
-	elseif frame == B and inPost and not kombi.falsealarm
-		mobj.color = frogSwitchEyeRemaps[(((animClock-pause-pressanimframes-unpressanimframes) / 4) % 4) + 1]
-	end
-end, MT_FROGSWITCHANIMATOR)
-
 -- We probably don't even need this
 rawset(_G, 'L_DecimalFixed', function(str)
 	if str == nil return nil end
@@ -598,11 +476,128 @@ local unpresstotalmovement = FRACUNIT*16
 local clockspin = FixedAngle(L_DecimalFixed("13.125"))
 local hurryuptimermoveoffset = 24
 
--- takes 6@60FPS for the timer to move up and out of the way
--- Clock moves up at 4px/f
--- takes 14@60FPS for the coin counter to move in
--- Treasure moves left at 4px/f
--- Clock takes 12@60FPS to get up to its "proper" position
+-- Hooks for the Frog Switch and its animator objects
+-- MT_KOMBIFROGSWITCH is the thinker
+-- MT_FROGSWITCHANIMATOR is the animator
+-- Yes I am still gonna call them that in-code and you aren't gonna stop me...
+-- Think of it as a signature of sorts...
+
+-- Frog Switch's eye color remappers
+-- Expected to be a table with 4 items because I'm stupid
+local frogSwitchEyeRemaps = {
+	SKINCOLOR_KOMBI_FROGSWITCH,
+	SKINCOLOR_KOMBI_FROGSWITCH,
+	SKINCOLOR_RED,
+	SKINCOLOR_YELLOW,
+}
+
+addHook("MobjSpawn", function(switch)
+	for i = 1, 3 do
+		local part = P_SpawnMobjFromMobj(switch, 0, 0, 0, MT_FROGSWITCHANIMATOR)
+		part.tracer = switch
+		part.frame = i
+		part.dispoffset = 5-i
+	end
+	switch.alpha = 0
+end, MT_KOMBIFROGSWITCH)
+
+addHook("MobjCollide", function(switch, mo)
+	if FangsHeist.Net.escape return end
+	if not mo or not mo.valid return end
+	if mo.type ~= MT_PLAYER return end
+	local relzpos = mo.z - switch.z
+	if relzpos == 74*FRACUNIT or relzpos == mo.height + 74*FRACUNIT -- TODO: Make these checks better.
+		if abs(mo.momz) <= 2*FRACUNIT
+			K_PunchFrogSwitch(0, switch.escapetype, switch.portal) -- PASSES: (Time Defecit, Escape Type, Portals to Open)
+		end
+	end
+end, MT_KOMBIFROGSWITCH)
+
+addHook("ThinkFrame", function()
+	if not FangsHeist.Net.escape then FangsHeist.Net.keroAnimClock = 0 return end
+	FangsHeist.Net.keroAnimClock = $ + 1
+	local clock = FangsHeist.Net.keroAnimClock
+		if clock <= pauseby
+			for player in players.iterate do
+				if clock == pauseby
+					K_PauseMomentum(player)
+				else
+					if player.wl4kombitime then player.wl4kombitime = $ - 1 end
+				end
+			end
+		end
+		if clock == letgoby then
+			for player in players.iterate do
+				K_ResumeMomentum(player)
+			end
+		end
+end)
+
+addHook("MobjThinker", function(mobj)
+	if not mobj.corrected then
+		mobj.scale = $*2
+		mobj.corrected = true
+	end
+	if mobj.spawnpoint and not mobj.escapetype
+		mobj.escapetype = mobj.spawnpoint.args[0] or mobj.spawnpoint.extrainfo
+		mobj.portal = mobj.spawnpoint.tag
+	end
+	local clock = FangsHeist.Net.keroAnimClock
+	if clock - pause == pressanimframes
+		local part = P_SpawnMobjFromMobj(mobj, 0, 0, 0, MT_FROGSWITCHANIMATOR)
+		part.corrected = true
+		part.tracer = mobj
+		part.frame = E
+		part.dispoffset = 1
+	end
+end, MT_KOMBIFROGSWITCH)
+
+addHook("MobjThinker", function(mobj)
+	if not mobj.corrected then
+		mobj.scale = $*2
+		mobj.corrected = true
+	end
+	local frame = mobj.frame
+	if frame == D return end
+
+	local mainbody = mobj.tracer
+	if not mainbody return end
+
+	local animClock = FangsHeist.Net.keroAnimClock
+	local isPressing = animClock < pressanimframes
+	local isUnpressing = (animClock - pause) >= pressanimframes and (animClock - pause) <= (pressanimframes + unpressanimframes)
+	local inPost = (animClock - pause) > (pressanimframes + unpressanimframes)
+
+	if frame == B and not inPost
+		mobj.color = SKINCOLOR_KOMBI_FROGSWITCH
+	end
+
+	if isPressing
+		if frame ~= B return end
+		local t = FixedDiv(animClock, pressanimframes)
+		if (mobj.eflags & MFE_VERTICALFLIP) ~= 0
+			mobj.z = mainbody.z + ease.outback(t, 0, presstotalmovement)
+		else
+			mobj.z = mainbody.z - ease.outback(t, 0, presstotalmovement)
+		end
+	elseif isUnpressing
+		if frame > C return end
+		local t = FixedDiv(animClock - pressanimframes - pause, unpressanimframes)
+		if (mobj.eflags & MFE_VERTICALFLIP) ~= 0
+			mobj.z = mainbody.z - ease.linear(t, 0, unpresstotalmovement)
+			if frame == B
+				mobj.z = mobj.z + presstotalmovement
+			end
+		else
+			mobj.z = mainbody.z + ease.linear(t, 0, unpresstotalmovement)
+			if frame == B
+				mobj.z = mobj.z - presstotalmovement
+			end
+		end
+	elseif frame == B and inPost
+		mobj.color = frogSwitchEyeRemaps[(((animClock-pause-pressanimframes-unpressanimframes) / 4) % 4) + 1]
+	end
+end, MT_FROGSWITCHANIMATOR)
 
 local coinLossTreasureWaitTics = 5
 
@@ -651,7 +646,7 @@ local coinLossTreasureWaitTics = 5
 		local patch = v.cachePatch("WLTIME" .. digit)
 		if not patch then return 0 end
 
-		local internalScale = forcescale or getClockSize(kombi.animationClock)
+		local internalScale = forcescale or getClockSize(FangsHeist.Net.keroAnimClock)
 
 		local trueScale = FixedMul(scale * FRACUNIT, internalScale)
 
@@ -689,7 +684,7 @@ local coinLossTreasureWaitTics = 5
 	-- Function to handle different timer display modes
 	local function WL4HUD_KeroClock(v, player)
 		if not player.mo then return end
-		local mapOK = kombi.hurryup or kombi.metalTimer
+		local mapOK = FangsHeist.Net.escape
 		if not mapOK then return end
 
 		local centerX, baseY = center - 8, hudinfo[HUD_SCORE].y * FRACUNIT
@@ -700,13 +695,13 @@ local coinLossTreasureWaitTics = 5
 			return
 		end
 
-		local clockScale = getClockSize(kombi.animationClock)
+		local clockScale = getClockSize(FangsHeist.Net.keroAnimClock)
 
 		local yoffset = 0
-		if kombi.outtatimegong then
+		if FangsHeist.Net.wl4_coin_loss then
 			yoffset = coinTics * -7 * FRACUNIT
-		elseif kombi.animationClock >= letgoby - hurryuptimermoveoffset
-			yoffset = ease.linear(min(FixedDiv(kombi.animationClock - (letgoby - hurryuptimermoveoffset), hurryuptimermoveoffset), FRACUNIT), ((100 - 8) * FRACUNIT) - baseY, 0)
+		elseif FangsHeist.Net.keroAnimClock >= letgoby - hurryuptimermoveoffset
+			yoffset = ease.linear(min(FixedDiv(FangsHeist.Net.keroAnimClock - (letgoby - hurryuptimermoveoffset), hurryuptimermoveoffset), FRACUNIT), ((100 - 8) * FRACUNIT) - baseY, 0)
 		else
 			yoffset = ((100 * FRACUNIT) - baseY) + (-8 * clockScale)
 		end
@@ -777,47 +772,9 @@ local coinLossTreasureWaitTics = 5
 		local mapinfo = mapheaderinfo[gamemap]
 		if not mapinfo then return end
 
-		if modeattacking then return end -- We're looking for *time*, not how much we can steal outta badniks.
-
-		-- Uppercase titles for string comparisons
-		local TITLE = string.upper(mapinfo.lvlttl or "")
-		local SUB   = string.upper(mapinfo.subttl or "")
-
-		if K_IsSpecialStage(player) then
-			return
-		end
-
-		if K_IsHub() then
-			local maxDigits = 7
-			local xPreOffset = maxDigits * 8
-			local whatToDraw = string.format("%0"..maxDigits.."d", (player.totalTreasure or 0))
-			local padding = 8
-			local bagPatch = v.cachePatch("WL4TREASUREBAG")
-			v.draw(320 - xPreOffset - padding - bagPatch.width, padding, bagPatch, V_SNAPTOTOP|V_SNAPTORIGHT|V_HUDTRANS)
-			drawTimerDigits(v, 320 - xPreOffset - padding, padding, whatToDraw, SKINCOLOR_WHITE, 1, V_SNAPTOTOP|V_SNAPTORIGHT|V_HUDTRANS, "WL4Treasure", FRACUNIT)
-			return
-		end
-
 		local alpha = 0
-		if not K_GetSetting(player, "treasureOn") then
-			if kombi.outtatimegong then
-				alpha = clamp(10 - abs(kombi.coinlossticks), 0, 10)
-				if alpha == 10 then
-					return
-				end
-				alpha = $ << V_ALPHASHIFT
-			elseif player.exiting < 1 then
-				return
-			elseif player.exiting then
-				alpha = clamp(10 - abs(player.kombi.recordedExiting - player.exiting)/2, 0, 10)
-				if alpha == 10 then
-					return
-				end
-				alpha = $ << V_ALPHASHIFT
-			end
-		end
 
-		local coinlossticks = max((kombi.coinlossticks or 0) - coinLossTreasureWaitTics, 0)
+		local coinlossticks = max((FangsHeist.Net.keroCoinLossTicks or 0) - coinLossTreasureWaitTics, 0)
 		local flags = coinlossticks < 1 and V_SNAPTORIGHT or 0
 		local xoffset = coinlossticks > 7 and -46*FRACUNIT or coinlossticks * -7*FRACUNIT
 		local size = coinlossticks > 7 and FRACUNIT*2 or FRACUNIT
@@ -828,7 +785,7 @@ local coinLossTreasureWaitTics = 5
 		v.drawScaled(xpos, ypos, size, v.cachePatch("WLCOIN$"), alpha | V_SNAPTOTOP | V_PERPLAYER | flags)
 
 		for i = 0, 5 do
-			local frame = (player.wl4score or 0) / (10 ^ i) % 10
+			local frame = (player.heist.treasure or 0) / (10 ^ i) % 10
 			drawCoinDigit(v, (320 * FRACUNIT) + xoffset - ((offset * size) * (2 + i)), ypos, size, frame, alpha | flags, SKINCOLOR_WHITE)
 		end
 	end
