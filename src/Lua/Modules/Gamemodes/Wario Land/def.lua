@@ -2,6 +2,9 @@ local copy = FangsHeist.require "Modules/Libraries/copy"
 local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"
 local gamemode = copy(FangsHeist.Gamemodes[FangsHeist.Escape])
 
+local path = "Modules/Gamemodes/Wario Land/"
+dofile(path.."freeslots.lua")
+
 gamemode.name = "Wario Land 4"
 gamemode.desc = "Get as much treasure as you can, then hit the Frog Switch and prepare to H-H-H-HURRY UP!!!"
 gamemode.id = "WL4GBA"
@@ -56,8 +59,9 @@ gamemode.enemytotreasure = {
 }
 
 -- table keyed via G_BuildMapTitle(gamemap)
--- valuesa can be int32 or table with {time, iswar}
+-- values can be int32 or table with {time, iswar}
 -- time is an int32 where its value is the time to escape in seconds
+-- usually calculated via (timetoescapelevel) + 60
 -- (actual time to escape can vary depending on player treasure, however)
 -- iswar should normally go unused if all maps are heist-only
 -- but if ever activated, forces leveltime to 0
@@ -90,92 +94,55 @@ gamemode.keroTimers = {
 
 local SWAP_TIME = 30*TICRATE
 
--- Hack!! probably but atleast it synchs with Escape/def/gamemode.signThings
--- Saxa your API is like stinky and stuff
-local whatSigns = FangsHeist.GametypeIDs[_G["GT_FANGSHEISTESCAPE"]].signThings
+-- FIXME: **PLEASE** make this automatically steal from Gamemodes/Escape's preexisting sign defintions in the future!
+local whatSigns = {
+	[501] = true
+}
 
 -- mobj_t mo
 -- int32 count
--- returns the remainder (usually 0 in perfect circumstances)
-local function WL_SpawnCoins(mo, count)
-	while count > 0 do
+-- int32? maxdrop (optional, limits total spawned to <= count)
+-- returns the remainder (count - actually spawned)
+local function WL_SpawnCoins(mo, count, maxdrop)
+	if not (mo and count) then return count end
+	
+	-- Restrict total drop if maxdrop is given
+	local tospawn = count
+	if maxdrop and maxdrop < tospawn then
+		tospawn = maxdrop
+	end
+	
+	local remaining = tospawn
+	
+	while remaining > 0 do
 		local coin = nil
-
-		if count >= 500 then
+		
+		if remaining >= 500 then
 			coin = P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_WARIOLAND500COIN)
-			count = $ - 500
-		elseif count >= 100 then
+			remaining = $ - 500
+		elseif remaining >= 100 then
 			coin = P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_WARIOLAND100COIN)
-			count = $ - 100
-		elseif count >= 50 then
+			remaining = $ - 100
+		elseif remaining >= 50 then
 			coin = P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_WARIOLAND50COIN)
-			count = $ - 50
-		elseif count >= 10 then
+			remaining = $ - 50
+		elseif remaining >= 10 then
 			coin = P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_WARIOLAND10COIN)
-			count = $ - 10
+			remaining = $ - 10
 		else
-			-- If less than 10 left, break out to avoid infinite loop
+			-- less than 10 left, break to avoid endless loop
 			break
 		end
-
+		
 		if coin then
 			coin.angle = FixedAngle(P_RandomRange(0, 360)*FRACUNIT)
 		end
 	end
 	
-	return count
-end
-
-local function intangiblePlayer(p)
-	local follow
-
-	p.mo.state = S_INVISIBLE
-	p.mo.flags2 = $|MF2_DONTDRAW
-	p.pflags = ($|PF_INVIS|PF_NOCLIP) & ~PF_SPINNING|PF_JUMPED
-	p.powers[pw_flashing] = 3
-	p.powers[pw_underwater] = 6*TICRATE
-	p.powers[pw_spacetime] = 6*TICRATE
-	p.mo.momx = 0
-	p.mo.momy = 0
-	p.mo.momz = 0
-end
-
-local function respawnPlayer(p)
-	p.pflags = $ & ~(PF_INVIS|PF_NOCLIP)
-	p.mo.flags2 = $ & ~MF2_DONTDRAW
-	p.mo.state = S_PLAY_STND
-
-	p.heist.intangible = false
-	p.powers[pw_flashing] = 2*TICRATE
-
-	gamemode:playerspawn(p)
-end
-
-local function endCheck()
-	for i = 1, #FangsHeist.Net.heisters do
-		 local plyr = FangsHeist.Net.heisters[i]
-
-		if plyr
-		and plyr.valid
-		and plyr.heist
-		and not plyr.heist.spectator then
-			respawnPlayer(plyr)
-
-			FangsHeist.Net.swap_runner = SWAP_TIME
-			FangsHeist.Net.headstart = 2*TICRATE
-			FangsHeist.Net.current_runner = plyr
-			FangsHeist.Net.exit_deb = 5
-			
-			if #FangsHeist.Net.heisters <= 2 then
-				FangsHeist.Net.last_team_member = true
-			end
-
-			return false
-		end
-	end
-
-	FangsHeist.startIntermission(p)
-	return true
+	-- Return what wasn't spawned
+	-- If maxdrop was given, that's (count - maxdrop) + remaining
+	-- Else just the leftover from count
+	return (count - tospawn) + remaining
 end
 
 function gamemode:init(map)
@@ -222,8 +189,11 @@ function gamemode:init(map)
 
 	if info.fh_time then
 		time = tonumber(info.fh_time)*TICRATE
+	elseif gamemode.keroTimers[G_BuildMapTitle(map)] then
+		time = gamemode.keroTimers[G_BuildMapTitle(map)]
 	end
 
+	-- Does Wario Land 4 reaaaallly need this
 	if FangsHeist.CVars.escape_time.value then
 		time = FangsHeist.CVars.escape_time.value*TICRATE
 	end
@@ -239,21 +209,6 @@ function gamemode:load()
 	local treasure_spawns = {}
 
 	for thing in mapthings.iterate do
-		if thing.mobj
-		and thing.mobj.valid then
-			if replace_types[thing.mobj.type] ~= nil then
-				local newtype = replace_types[thing.mobj.type]
-				P_RemoveMobj(thing.mobj)
-				
-				local mo = P_SpawnMobj(thing.x*FU, thing.y*FU, spawnpos.getThingSpawnHeight(newtype, thing, thing.x*FU, thing.y*FU), newtype)
-				if (thing.options & MTF_OBJECTFLIP) then
-					thing.flags2 = $^^MF2_OBJECTFLIP
-				end
-			elseif delete_types[thing.mobj.type] then
-				P_RemoveMobj(thing.mobj)
-			end
-		end
-
 		if thing.type == 3844 then
 			exit = thing
 		end
@@ -262,8 +217,10 @@ function gamemode:load()
 		-- Final Demo zones for you
 		-- (really I don't want more things to port from Gamemodes/Escape)
 
+		-- holy shit takis reference
 		if whatSigns[thing.type] then
-		
+			local trig = P_SpawnMobjFromMobj(thing.mobj,0,0,0,MT_KOMBIFROGSWITCH)
+			if (mthing.mobj and mthing.mobj.valid) P_RemoveMobj(mthing.mobj) end
 		end
 
 		if thing.type == 1
@@ -301,7 +258,7 @@ function gamemode:playerspawn(p)
 
 	local pos = FangsHeist.Net.signpos
 
-	p.treasure = 0
+	p.heist.treasure = 0
 end
 
 function gamemode:playerdeath(p)
@@ -329,130 +286,12 @@ function gamemode:start()
 
 	for p in players.iterate do
 		if p and p.heist then
-			table.insert(rest, p)
+			p.heist.treasure = 0
 		end
 	end
-
-	if #rest > 3 then
-		for i = 1, max(3, #rest/3) do
-			local i = P_RandomRange(1, #rest)
-			local p = rest[i]
-
-			table.remove(rest, i)
-			table.insert(team, p)
-		end
-	else
-		team = rest
-		rest = FangsHeist.initTeamTable()
-	end
-
-	for i = 1, #team do
-		local p = team[i]
-
-		table.insert(hskins, {
-			skin = p.skin,
-			color = p.skincolor,
-			plyr = p
-		})
-	end
-
-	FangsHeist.Net.officers = rest
-	FangsHeist.Net.heisters = team
-	FangsHeist.Net.hskins = hskins
-
-	FangsHeist.Net.teams = {
-		FangsHeist.Net.heisters,
-		FangsHeist.Net.officers
-	}
-
-	for i = 2, #FangsHeist.Net.heisters do
-		local p = FangsHeist.Net.heisters[i]
-
-		if p and p.valid and p.heist then
-			p.heist.intangible = true
-		end
-	end
-
-	FangsHeist.Net.current_runner = FangsHeist.Net.heisters[1]
 end
 
 function gamemode:update()
-	self.super.update(self)
-
-	if FangsHeist.Net.pregame then return end
-	FangsHeist.Net.exit_deb = max(0, $-1)
-	FangsHeist.Net.headstart = max(0, $-1)
-
-	local player = FangsHeist.Net.current_runner
-
-	if not (player and player.valid and player.heist and player.heist:isAlive())
-	and endCheck() then
-		return
-	end
-
-	if FangsHeist.Net.swap_runner
-	and #FangsHeist.Net.heisters >= 2 then
-		FangsHeist.Net.swap_runner = $-1
-
-		if not FangsHeist.Net.swap_runner then
-			local ableToSwapTo = {}
-			local swapFrom = FangsHeist.Net.current_runner
-			local swapTo
-
-			for _,p in ipairs(FangsHeist.Net.heisters) do
-				if not (p
-				and p.valid
-				and p.heist
-				and p.mo
-				and p.mo.valid) then
-					continue
-				end
-
-				if p.heist.intangible then
-					table.insert(ableToSwapTo, p)
-				end
-			end
-
-			if #ableToSwapTo then
-				swapTo = ableToSwapTo[P_RandomRange(1, #ableToSwapTo)]
-			end
-
-			if swapFrom and swapTo then
-				respawnPlayer(swapTo)
-
-				P_SetOrigin(swapTo.mo,
-					swapFrom.mo.x,
-					swapFrom.mo.y,
-					swapFrom.mo.z)
-				swapFrom.mo.momx = swapTo.mo.momx
-				swapFrom.mo.momy = swapTo.mo.momy
-				swapFrom.mo.momz = swapTo.mo.momz
-		
-				swapTo.drawangle = swapFrom.drawangle
-				swapTo.mo.angle = swapFrom.mo.angle
-		
-				if swapFrom.heist:hasSign() then
-					FangsHeist.giveSignTo(swapTo)
-				end
-	
-				for i = #swapFrom.heist.treasures, 1, -1 do
-					local tres = swapFrom.heist.treasures[i]
-		
-					table.remove(swapFrom.heist.treasures, i)
-					table.insert(swapTo.heist.treasures, tres)
-
-					tres.mobj.target = swapTo.mo
-					tres.mobj.index = #swapTo.heist.treasures
-				end
-	
-				FangsHeist.Net.current_runner = swapTo
-				FangsHeist.Net.exit_deb = 5
-				swapFrom.heist.intangible = true
-			end
-	
-			FangsHeist.Net.swap_runner = SWAP_TIME
-		end
-	end
 end
 
 function gamemode:trackplayer(p)
@@ -471,21 +310,6 @@ function gamemode:trackplayer(p)
 	return args
 end
 
-function gamemode:sync(sync)
-	self.super.sync(self, sync)
-
-	FangsHeist.Net.officers = sync($)
-	FangsHeist.Net.heisters = sync($)
-	FangsHeist.Net.hskins = sync($)
-	FangsHeist.Net.last_team_member = sync($)
-	FangsHeist.Net.queues = sync($)
-	FangsHeist.Net.headstart = sync($)
-	FangsHeist.Net.swap_runner = sync($)
-	FangsHeist.Net.current_runner = sync($)
-	FangsHeist.Net.exit_deb = sync($)
-	FangsHeist.Net.profit_quota = sync($)
-end
-
 function gamemode:shouldend() end -- shouldnt end manually
 
 function gamemode:shouldinstakill(p, sp)
@@ -493,7 +317,7 @@ function gamemode:shouldinstakill(p, sp)
 end
 
 function gamemode:playerdamage(p)
-	p.heist.health = max(1, $-1)
+	WL_SpawnCoins(p.mo, p.heist.treasure, gamemode.treasuredrop)
 end
 
 function gamemode:playerexit(p)
@@ -545,26 +369,19 @@ function gamemode:manageTime()
 	end
 
 	if not FangsHeist.Net.time_left then
-		for _, p in ipairs(FangsHeist.Net.heisters) do
-			if p
-			and p.valid
-			and p.heist then
-				p.heist.spectator = true
-			end
+		FangsHeist.Net.wl4_coin_loss = true
+		local linedef = tonumber(mapheaderinfo[gamemap].fh_timeuplinedef)
+
+		if linedef ~= nil then
+			P_LinedefExecute(linedef)
 		end
 
-		FangsHeist.startIntermission()
 		HeistHook.runHook("TimeUp")
 	end
 end
 
 function gamemode:music()
 	local song, loop, vol = self.super.music(self)
-
-	if song ~= "FHTUP"
-	and FangsHeist.Net.last_team_member then
-		return "LARUST", true, vol
-	end
 
 	return song, loop, vol
 end
@@ -614,5 +431,401 @@ addHook("ShouldDamage", function(_,_,t)
 		return false
 	end
 end)
+
+-- Hooks for the Frog Switch and its animator objects
+-- MT_KOMBIFROGSWITCH is the thinker
+-- MT_FROGSWITCHANIMATOR is the animator
+-- Yes I am still gonna call them that in-code and you aren't gonna stop me...
+-- Think of it as a signature of sorts...
+
+-- Frog Switch's eye color remappers
+-- Expected to be a table with 4 items because I'm stupid
+local frogSwitchEyeRemaps = {
+	SKINCOLOR_KOMBI_FROGSWITCH,
+	SKINCOLOR_KOMBI_FROGSWITCH,
+	SKINCOLOR_RED,
+	SKINCOLOR_YELLOW,
+}
+
+addHook("MobjSpawn", function(switch)
+	for i = 1, 3 do
+		local part = P_SpawnMobjFromMobj(switch, 0, 0, 0, MT_FROGSWITCHANIMATOR)
+		part.tracer = switch
+		part.frame = i
+		part.dispoffset = 5-i
+	end
+	switch.alpha = 0
+end, MT_KOMBIFROGSWITCH)
+
+addHook("MobjCollide", function(switch, mo)
+	if kombi.hurryup return end
+	if not mo or not mo.valid return end
+	if mo.type ~= MT_PLAYER return end
+	local relzpos = mo.z - switch.z
+	if relzpos == 74*FRACUNIT or relzpos == mo.height + 74*FRACUNIT -- TODO: Make these checks better.
+		if abs(mo.momz) <= 2*FRACUNIT
+			K_PunchFrogSwitch(0, switch.escapetype, switch.portal) -- PASSES: (Time Defecit, Escape Type, Portals to Open)
+		end
+	end
+end, MT_KOMBIFROGSWITCH)
+
+addHook("ThinkFrame", function()
+	if not (kombi.hurryup or kombi.metalTimer) kombi.animationClock = 0 return end
+	kombi.animationClock = $ + 1
+	local clock = kombi.animationClock
+	if kombi.falsealarm return
+	else
+		if clock <= pauseby
+			for player in players.iterate do
+				if clock == pauseby
+					K_PauseMomentum(player)
+				else
+					if player.wl4kombitime then player.wl4kombitime = $ - 1 end
+				end
+			end
+		end
+		if clock == letgoby and not kombi.metalTimer then
+			for player in players.iterate do
+				K_ResumeMomentum(player)
+			end
+		end
+	end
+end)
+
+addHook("MobjThinker", function(mobj)
+	if not mobj.corrected then
+		mobj.scale = $*2
+		mobj.corrected = true
+	end
+	if mobj.spawnpoint and not mobj.escapetype
+		mobj.escapetype = mobj.spawnpoint.args[0] or mobj.spawnpoint.extrainfo
+		mobj.portal = mobj.spawnpoint.tag
+	end
+	local clock = kombi.animationClock
+	if kombi.falsealarm return
+	elseif clock - pause == pressanimframes
+		local part = P_SpawnMobjFromMobj(mobj, 0, 0, 0, MT_FROGSWITCHANIMATOR)
+		part.corrected = true
+		part.tracer = mobj
+		part.frame = E
+		part.dispoffset = 1
+	end
+end, MT_KOMBIFROGSWITCH)
+
+addHook("MobjThinker", function(mobj)
+	if not mobj.corrected then
+		mobj.scale = $*2
+		mobj.corrected = true
+	end
+	local frame = mobj.frame
+	if frame == D return end
+
+	local mainbody = mobj.tracer
+	if not mainbody return end
+
+	local animClock = kombi.animationClock
+	local isPressing = animClock < pressanimframes
+	local isUnpressing = (animClock - pause) >= pressanimframes and (animClock - pause) <= (pressanimframes + unpressanimframes)
+	local inPost = (animClock - pause) > (pressanimframes + unpressanimframes)
+
+	if frame == B and not inPost
+		mobj.color = SKINCOLOR_KOMBI_FROGSWITCH
+	end
+
+	if isPressing
+		if frame ~= B return end
+		local t = FixedDiv(animClock, pressanimframes)
+		if (mobj.eflags & MFE_VERTICALFLIP) ~= 0
+			mobj.z = mainbody.z + ease.outback(t, 0, presstotalmovement)
+		else
+			mobj.z = mainbody.z - ease.outback(t, 0, presstotalmovement)
+		end
+	elseif isUnpressing
+		if frame > C return end
+		local t = FixedDiv(animClock - pressanimframes - pause, unpressanimframes)
+		if (mobj.eflags & MFE_VERTICALFLIP) ~= 0
+			mobj.z = mainbody.z - ease.linear(t, 0, unpresstotalmovement)
+			if frame == B
+				mobj.z = mobj.z + presstotalmovement
+			end
+		else
+			mobj.z = mainbody.z + ease.linear(t, 0, unpresstotalmovement)
+			if frame == B
+				mobj.z = mobj.z - presstotalmovement
+			end
+		end
+	elseif frame == B and inPost and not kombi.falsealarm
+		mobj.color = frogSwitchEyeRemaps[(((animClock-pause-pressanimframes-unpressanimframes) / 4) % 4) + 1]
+	end
+end, MT_FROGSWITCHANIMATOR)
+
+-- We probably don't even need this
+rawset(_G, 'L_DecimalFixed', function(str)
+	if str == nil return nil end
+	local dec_offset = string.find(str,'%.')
+	if dec_offset == nil
+		return (tonumber(str) or 0)*FRACUNIT
+	end
+	local whole = tonumber(string.sub(str,0,dec_offset-1)) or 0
+	local decstr = string.sub(str,dec_offset+1)
+	local decimal = tonumber(decstr) or 0
+
+	if(decimal==0)
+		decstr = "0"
+	end
+
+	whole = $ * FRACUNIT
+	local dec_len = string.len(decstr)
+	decimal = $ * FRACUNIT / (10^dec_len)
+	return whole + decimal
+end)
+
+local pressanimframes = TICRATE/3
+local pause = TICRATE
+local unpressanimframes = TICRATE
+local pauseby = 8 -- real game pauses after 14@60FPS.
+local letgoby = 125 -- TODO: What kinda fraction am i expected to just. GUESS to make 125.41666666667 with TICRATE = 35?? Use the raw form for now (which WILL break if someone raises TICRATE for whatever reason)
+local presstotalmovement = FRACUNIT*12
+local unpresstotalmovement = FRACUNIT*16
+local clockspin = FixedAngle(L_DecimalFixed("13.125"))
+local hurryuptimermoveoffset = 24
+
+-- takes 6@60FPS for the timer to move up and out of the way
+-- Clock moves up at 4px/f
+-- takes 14@60FPS for the coin counter to move in
+-- Treasure moves left at 4px/f
+-- Clock takes 12@60FPS to get up to its "proper" position
+
+local coinLossTreasureWaitTics = 5
+
+-- HUDs in ohio bro what is this
+	local clocktype = CV_FindVar("timerres") -- Get the ConVar
+	local offset = 8
+	local center = 160 - offset
+	local wltimeclr = SKINCOLOR_WHITE
+
+	-- Function to determine timer color
+	local function getTimeColor(ourtime)
+		if ourtime <= 11 * TICRATE then
+			return SKINCOLOR_RED
+		elseif ourtime <= 31 * TICRATE then
+			return SKINCOLOR_YELLOW
+		else
+			return SKINCOLOR_WHITE
+		end
+	end
+
+	local function getClockSize(time)
+		local internalScale
+		if time < letgoby - hurryuptimermoveoffset then
+			local freq = 10 * FRACUNIT
+			local angle = FixedAngle(time * freq)
+			local scaleOsc = abs(FixedMul(sin(angle), FRACUNIT/2))
+			internalScale = FRACUNIT/2 + scaleOsc
+			internalScale = min(internalScale, FRACUNIT)
+		else
+			internalScale = FRACUNIT
+		end
+		return internalScale
+	end
+
+	-- Draw Treasure Digit
+	local function drawCoinDigit(v, xpos, ypos, scale, digit, flags, color)
+		local patch = v.cachePatch("WLCOIN" .. digit)
+		if patch then
+			v.drawScaled(xpos, ypos, scale, patch, flags | V_SNAPTOTOP | V_PERPLAYER, v.getColormap(nil, color))
+		end
+	end
+
+	-- Function to draw a digit at a given position
+	-- Preferably, you SHOULDN'T use this! Use drawTimerDigits instead.
+	local function drawDigit(v, xpos, ypos, scale, digit, color, flags, translation, forcescale)
+		local patch = v.cachePatch("WLTIME" .. digit)
+		if not patch then return 0 end
+
+		local internalScale = forcescale or getClockSize(kombi.animationClock)
+
+		local trueScale = FixedMul(scale * FRACUNIT, internalScale)
+
+		v.drawScaled(xpos, ypos, trueScale, patch, flags, v.getColormap(nil, color, translation))
+
+		local patchWidth = patch.width or 8 -- fallback if width isn't defined
+		local offset = FixedMul(patchWidth*FRACUNIT, trueScale)
+		return offset, internalScale
+	end
+
+	-- Function to draw the escape clock digits
+	local function drawTimerDigits(v, xpos, ypos, timeValue, color, size, flags, translation, forcescale)
+		local xpos = xpos < FRACUNIT and xpos * FRACUNIT or xpos
+		local ypos = ypos < FRACUNIT and ypos * FRACUNIT or ypos
+		local timeStr = tostring(timeValue)
+		local curFlags = flags or (V_SNAPTOTOP|V_PERPLAYER)
+		local offset
+		local finalSize
+		for i = 1, #timeStr do
+			local char = timeStr:sub(i, i)
+			offset, finalSize = drawDigit(v, xpos, ypos, size, char, color, curFlags, translation, forcescale)
+			xpos = $ + offset
+		end
+		return xpos, finalSize
+	end
+
+	-- Function to draw the clock animation
+	local function drawClockAnimation(v, xpos, ypos, frame)
+		local patch = v.getSpritePatch(SPR_WL4STOPWATCH, frame, 0, 0)
+		if patch then
+			v.draw(xpos, ypos, patch, V_SNAPTOTOP | V_PERPLAYER)
+		end
+	end
+
+	-- Function to handle different timer display modes
+	local function WL4HUD_KeroClock(v, player)
+		if not player.mo then return end
+		local mapOK = kombi.hurryup or kombi.metalTimer
+		if not mapOK then return end
+
+		local centerX, baseY = center - 8, hudinfo[HUD_SCORE].y * FRACUNIT
+		local coinTics = kombi.coinlossticks or 0
+		-- If coin-loss animation active, just draw the stopwatch:
+		if coinTics > coinLossTreasureWaitTics - 1 then
+			drawClockAnimation(v, centerX - 8, (baseY / FRACUNIT) + 8, ((player.wl4kombitime) / 3) % 6 or 0)
+			return
+		end
+
+		local clockScale = getClockSize(kombi.animationClock)
+
+		local yoffset = 0
+		if kombi.outtatimegong then
+			yoffset = coinTics * -7 * FRACUNIT
+		elseif kombi.animationClock >= letgoby - hurryuptimermoveoffset
+			yoffset = ease.linear(min(FixedDiv(kombi.animationClock - (letgoby - hurryuptimermoveoffset), hurryuptimermoveoffset), FRACUNIT), ((100 - 8) * FRACUNIT) - baseY, 0)
+		else
+			yoffset = ((100 * FRACUNIT) - baseY) + (-8 * clockScale)
+		end
+		local frame   = ((player.wl4kombitime) / 3) % 6 or 0
+		local mode    = clocktype.value
+		local clr     = getTimeColor(kombi.disptime)
+
+		-- build the two strings to draw:
+		local bigDigits, smallDigits = "", ""
+		if mode == 3 then
+			-- Tics mode: just render the precomputed display time
+			bigDigits = tostring(kombi.disptime)
+		else
+			-- Mania/CD or Classic mode
+			local mins = kombi.timeleftmins
+			local secs = kombi.timeleftsecs
+			local cents = kombi.timeleftcents
+			local overflow = mins > 9
+			local drawDots = kombi.disptime % 35 < 18
+
+			-- big part: MM:SS (or M:SS if no overflow)
+			if overflow then
+				bigDigits = string.format("%02d", mins)
+			else
+				bigDigits = string.format("%1d", mins % 10)
+			end
+
+			if not overflow then
+				if drawDots then
+					bigDigits = $ .. "C"
+				else
+					bigDigits = $ .. " "
+				end
+			end
+
+			bigDigits = $ .. string.format("%02d", secs)
+
+			-- the small centiseconds only in mania/CD modes:
+			if mode == 1 or mode == 2 then
+				if drawDots then
+					smallDigits = "D"
+				else
+					smallDigits = " "
+				end
+				smallDigits = $ .. string.format("%02d", cents)
+			end
+		end
+
+		-- now draw everything in one go:
+		-- big digits at scale 2
+		local xPos = ((centerX + (#bigDigits * 8)) * FRACUNIT) - #bigDigits * 8 * clockScale
+		local xadd = drawTimerDigits(v, xPos, baseY + yoffset, bigDigits, clr, 2)
+
+		-- small digits at scale 1, offset under the big ones
+		if #smallDigits > 0 then
+			-- push them right so they line up under the seconds
+			local smallX = xadd -- centerX + (#bigDigits) * offset
+			local smallY = baseY + (15 * clockScale) + yoffset
+			drawTimerDigits(v, smallX, smallY, smallDigits, clr, 1)
+		end
+
+		-- finally, draw the clock animation
+		drawClockAnimation(v, centerX - 8, (baseY / FRACUNIT) + 8, frame)
+	end
+
+	-- Function to handle treasure display
+	local function WL4HUD_Treasure(v, player)
+		local mapinfo = mapheaderinfo[gamemap]
+		if not mapinfo then return end
+
+		if modeattacking then return end -- We're looking for *time*, not how much we can steal outta badniks.
+
+		-- Uppercase titles for string comparisons
+		local TITLE = string.upper(mapinfo.lvlttl or "")
+		local SUB   = string.upper(mapinfo.subttl or "")
+
+		if K_IsSpecialStage(player) then
+			return
+		end
+
+		if K_IsHub() then
+			local maxDigits = 7
+			local xPreOffset = maxDigits * 8
+			local whatToDraw = string.format("%0"..maxDigits.."d", (player.totalTreasure or 0))
+			local padding = 8
+			local bagPatch = v.cachePatch("WL4TREASUREBAG")
+			v.draw(320 - xPreOffset - padding - bagPatch.width, padding, bagPatch, V_SNAPTOTOP|V_SNAPTORIGHT|V_HUDTRANS)
+			drawTimerDigits(v, 320 - xPreOffset - padding, padding, whatToDraw, SKINCOLOR_WHITE, 1, V_SNAPTOTOP|V_SNAPTORIGHT|V_HUDTRANS, "WL4Treasure", FRACUNIT)
+			return
+		end
+
+		local alpha = 0
+		if not K_GetSetting(player, "treasureOn") then
+			if kombi.outtatimegong then
+				alpha = clamp(10 - abs(kombi.coinlossticks), 0, 10)
+				if alpha == 10 then
+					return
+				end
+				alpha = $ << V_ALPHASHIFT
+			elseif player.exiting < 1 then
+				return
+			elseif player.exiting then
+				alpha = clamp(10 - abs(player.kombi.recordedExiting - player.exiting)/2, 0, 10)
+				if alpha == 10 then
+					return
+				end
+				alpha = $ << V_ALPHASHIFT
+			end
+		end
+
+		local coinlossticks = max((kombi.coinlossticks or 0) - coinLossTreasureWaitTics, 0)
+		local flags = coinlossticks < 1 and V_SNAPTORIGHT or 0
+		local xoffset = coinlossticks > 7 and -46*FRACUNIT or coinlossticks * -7*FRACUNIT
+		local size = coinlossticks > 7 and FRACUNIT*2 or FRACUNIT
+
+		local xpos = (320 * FRACUNIT) + xoffset - ((offset * size) * 8) - size
+		local ypos = (hudinfo[HUD_SCORE].y + 2) * FRACUNIT
+
+		v.drawScaled(xpos, ypos, size, v.cachePatch("WLCOIN$"), alpha | V_SNAPTOTOP | V_PERPLAYER | flags)
+
+		for i = 0, 5 do
+			local frame = (player.wl4score or 0) / (10 ^ i) % 10
+			drawCoinDigit(v, (320 * FRACUNIT) + xoffset - ((offset * size) * (2 + i)), ypos, size, frame, alpha | flags, SKINCOLOR_WHITE)
+		end
+	end
+
+hud.add(WL4HUD_KeroClock)
+hud.add(WL4HUD_Treasure)
 
 return FangsHeist.addGamemode(gamemode)
