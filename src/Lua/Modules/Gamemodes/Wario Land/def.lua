@@ -458,6 +458,8 @@ function gamemode:manageExiting()
 
 			team.had_sign = true
 		end
+
+		for i = #p.heist.pickup_list, 1, -1 do
 			local v = p.heist.pickup_list[i]
 
 			FangsHeist.Carriables.RespawnCarriable(v.mobj)
