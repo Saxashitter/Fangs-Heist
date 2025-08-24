@@ -297,7 +297,12 @@ function state:draw(v, c, transparency)
 		if skin then
 			name = skin.name or $
 		end
-		v.drawString(160*FU, 100*FU - 10*FU - RIBBON_END_RADIUS/2, "[CUSTOM 1] - Change Skin ("..name..")", V_ALLOWLOWERCASE, "thin-fixed-center")
+		local col,alpha = ColorOpposite(skindef.prefcolor)
+		local twen = Twn(tics-TEXT_DELAY, 20)
+		local scale = ease.outback(twen,0,FU/2,FU/2)
+		local trans = ease.outquad(twen,9,0)<<V_ALPHASHIFT
+		FangsHeist.DrawString(v,160*FU, 100*FU - 10*FU - RIBBON_END_RADIUS/2,scale, 
+		"[CUSTOM 1] - Change Skin ("..name..")","FHFNT","center",trans,v.getColormap(TC_DEFAULT,col))
 	end
 end
 

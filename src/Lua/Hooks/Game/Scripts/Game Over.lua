@@ -21,7 +21,14 @@ local function GetMostVotedMap()
 
 	return map
 end
-
+local function GetTeamLeader(team)
+	for _, p in ipairs(team) do
+		if p
+		and p.valid then
+			return p
+		end
+	end
+end
 return function()
 	local gamemode = FangsHeist.getGamemode()
 
@@ -47,8 +54,27 @@ return function()
 	end
 
 	if t == FangsHeist.GAME_TICS+FangsHeist.BLACKOUT_TICS then
-		S_StartSound(nil, sfx_narcon)
-		S_StartSound(nil, sfx_cwdscr)
+		local skin = nil
+		local plc = FangsHeist.Net.placements
+		if (plc[1]
+		and plc[1][1]
+		and plc[1][1].valid) then
+			local p = GetTeamLeader(plc[1])
+			skin = p.heist.locked_skin
+		end
+		local char = FangsHeist.Characters[skin]
+		local lines = char.voicelines["accept"]
+		if #plc != 0
+			S_StartSound(nil, sfx_cwdscr)
+			if skin != nil and lines != nil
+				S_StartSound(nil, lines[P_RandomRange(1, #lines)])
+			else
+				S_StartSound(nil, sfx_narcon)
+			end
+		else
+			S_StartSound(nil,sfx_cwdaww)
+			S_StartSound(nil,sfx_narnco)
+		end
 	end
 
 	if t >= FangsHeist.RESULTS_TICS then
