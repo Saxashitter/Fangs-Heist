@@ -94,19 +94,17 @@ gamemode.keroTimers = {
 
 local SWAP_TIME = 30*TICRATE
 
-<<<<<<< HEAD
 -- FIXME: **PLEASE** make this automatically steal from Gamemodes/Escape's preexisting sign defintions in the future!
 local whatSigns = {
 	[501] = true
 }
-=======
+
 -- Hack!! probably but atleast it synchs with Escape/def/gamemode.signThings
 -- Saxa your API is like stinky and stuff
 
 -- SAXA: hey,,, did you know you copied all the values from escape
 -- think of it as a github fork
 local whatSigns = gamemode.signThings
->>>>>>> b12def5c3de0cab1d07c987c14a33c1369b7768d
 
 -- mobj_t mo
 -- int32 count
@@ -148,14 +146,10 @@ local function WL_SpawnCoins(mo, count, maxdrop)
 		end
 	end
 	
-<<<<<<< HEAD
 	-- Return what wasn't spawned
 	-- If maxdrop was given, that's (count - maxdrop) + remaining
 	-- Else just the leftover from count
 	return (count - tospawn) + remaining
-=======
-	return count
->>>>>>> b12def5c3de0cab1d07c987c14a33c1369b7768d
 end
 
 function gamemode:init(map)
