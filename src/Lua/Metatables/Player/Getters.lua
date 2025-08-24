@@ -1,7 +1,7 @@
 local mt = (...)
 
 function mt:getTeam()
-	for i,team in ipairs(FangsHeist.Net.teams) do
+	for i,team in ipairs(FangsHeist.Net.placements) do
 		for _,player in ipairs(team) do
 			if player == self.player then
 				return team, i
