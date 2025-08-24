@@ -244,10 +244,7 @@ function gamemode:init(map)
 		time = tonumber(info.fh_time)*TICRATE
 	elseif gamemode.keroTimers[G_BuildMapTitle(map)] then
 		time = gamemode.keroTimers[G_BuildMapTitle(map)]
-	end
-
-	-- Does Wario Land 4 reaaaallly need this
-	if FangsHeist.CVars.escape_time.value then
+	elseif FangsHeist.CVars.escape_time.value then
 		time = FangsHeist.CVars.escape_time.value*TICRATE
 	end
 
@@ -331,12 +328,7 @@ end
 function gamemode:playerthink(p)
 	self.super.playerthink(self, p)
 
-	if p.heist
-	and p.mo
-	and p.mo.valid
-	and p.heist.intangible then
-		intangiblePlayer(p)
-	end
+	if not FangsHeist.Net.wl4_coin_loss then return end
 end
 
 function gamemode:start()
@@ -393,16 +385,13 @@ function gamemode:manageTime()
 		FangsHeist.Net.hurry_up = true
 	end
 
-	if FangsHeist.Net.time_left <= 10*TICRATE
-	and FangsHeist.Net.time_left % TICRATE == 0 then
-		if FangsHeist.Net.time_left == 0 then
-			S_StartSound(nil, sfx_fhuhoh)
-		else
-			S_StartSound(nil, sfx_fhtick)
-		end
+	if FangsHeist.Net.time_left == 11*TICRATE then
+		S_StartSound(nil, sfx_wlohno)
 	end
 
 	if not FangsHeist.Net.time_left then
+		S_StartSound(nil, sfx_wlclos)
+		S_ChangeMusic("wlclos")
 		FangsHeist.Net.wl4_coin_loss = true
 		local linedef = tonumber(mapheaderinfo[gamemap].fh_timeuplinedef)
 
@@ -416,6 +405,10 @@ end
 
 function gamemode:music()
 	local song, loop, vol = self.super.music(self)
+
+	if FangsHeist.Net.wl4_coin_loss then
+		return "WLCLOS", true
+	end
 
 	if FangsHeist.Net.escape then
 		return "HRRYUP", true

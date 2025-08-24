@@ -24,6 +24,7 @@ local function DrawText(v, x, y, string, flags, align, color, rich)
 end
 
 function module.draw(v, p)
+	if not FangsHeist.getGamemode().renderprofit then return end
 	if FangsHeist.Net.pregame then return end
 	if FangsHeist.Net.game_over then return end
 	if not p.heist:isAlive() then return end
