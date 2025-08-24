@@ -20,7 +20,7 @@ FangsHeist.makeCharacter("amy", {
 				and p.mo.state ~= S_FH_GUARD
 			end
 		},
-		FangsHeist.Characters.sonic.controls[1],
+		--FangsHeist.Characters.sonic.controls[1],
 		FangsHeist.Characters.sonic.controls[2]
 	}
 })
@@ -32,8 +32,12 @@ local function init(p)
 	}
 end
 
+local function isAmy(p)
+	return p and p.mo and p.mo.valid and p.heist and p.heist.locked_skin == "amy"
+end
+
 local function check(p)
-	if not (p and p.mo and p.mo.skin == "amy" and p.heist and p.amy) then
+	if not (isAmy(p) and p.amy) then
 		return false
 	end
 
@@ -81,7 +85,7 @@ addHook("PlayerThink", function(p)
 		p.amy = nil
 		return
 	end
-	if not (p and p.mo and p.mo.skin == "amy" and p.heist) then
+	if not isAmy(p) then
 		p.amy = nil
 		return
 	end
@@ -336,3 +340,27 @@ addHook("MobjThinker", function(mo)
 		end
 	end
 end, MT_FH_THROWNHAMMER)
+
+HeistHook.addHook("PlayerScanAttack", function(p)
+	if not check(p) then return end
+
+	if p.powers[pw_strong] & STR_ATTACK then
+		return true
+	end
+end)
+
+HeistHook.addHook("PlayerAttack", function(p)
+	if not check(p) then return end
+
+	return true
+end)
+
+HeistHook.addHook("PlayerHit", function(p)
+	if not check(p) then return end
+
+	if not P_IsObjectOnGround(p.mo) then
+		p.mo.state = S_PLAY_JUMP
+		p.pflags = ($|PF_JUMPED) & ~(PF_SPINNING|PF_THOKKED)
+		return
+	end
+end)

@@ -82,8 +82,6 @@ local function Damage(p, p2)
 		return false
 	end
 
-	HeistHook.runHook("PlayerHit", p, p2)
-
 	local xySpeed = R_PointToDist2(0,0,p.mo.momx-p2.mo.momx,p.mo.momy-p2.mo.momy)
 	local speed = R_PointToDist2(0,0,xySpeed,p.mo.momz-p2.mo.momz)
 
@@ -91,6 +89,7 @@ local function Damage(p, p2)
 	local sound = tier[P_RandomRange(1, #tier)]
 
 	S_StartSound(p2.mo, sound)
+	HeistHook.runHook("PlayerHit", p, p2)
 
 	return true
 end
@@ -250,7 +249,7 @@ local function DoAttack(p)
 end
 
 local function DoGuard(p)
-	if HeistHook.runHook("PlayerParry", p) then
+	if HeistHook.runHook("PlayerParry", p) == true then
 		return
 	end
 

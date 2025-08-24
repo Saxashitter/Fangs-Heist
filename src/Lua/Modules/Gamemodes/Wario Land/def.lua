@@ -94,10 +94,12 @@ gamemode.keroTimers = {
 
 local SWAP_TIME = 30*TICRATE
 
+<<<<<<< HEAD
 -- FIXME: **PLEASE** make this automatically steal from Gamemodes/Escape's preexisting sign defintions in the future!
 local whatSigns = {
 	[501] = true
 }
+>>>>>>> b12def5c3de0cab1d07c987c14a33c1369b7768d
 
 -- mobj_t mo
 -- int32 count
