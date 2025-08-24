@@ -96,3 +96,48 @@ height = 36*FRACUNIT,
 dispoffset = 3,
 flags = MF_SCENERY|MF_NOGRAVITY|MF_NOCLIPHEIGHT,
 }
+
+states[S_WARSPORT] = {
+	sprite = SPR_WLPS,
+	frame = FF_ANIMATE|A,
+	tics = -1,
+	var1 = 32,
+	var2 = 10,
+	nextstate = S_WARSPORT,
+}
+
+states[S_WARMPORT] = {
+	sprite = SPR_WLPM,
+	frame = FF_ANIMATE|A,
+	tics = -1,
+	var1 = 32,
+	var2 = 10,
+	nextstate = S_WARMPORT,
+}
+
+states[S_COINLOSS] = {
+	sprite = SPR_WLC2,
+	frame = FF_ANIMATE|A,
+	tics = 36,
+	var1 = 5,
+	var2 = 2,
+	nextstate = S_NULL,
+}
+
+states[S_WARLPORT] = {
+	sprite = SPR_WLPL,
+	frame = FF_ANIMATE|A,
+	tics = -1,
+	var1 = 32,
+	var2 = 10,
+	nextstate = S_WARLPORT,
+}
+
+states[S_HURRYUP] = {
+	sprite = SPR_KOMBIFROGSWITCH,
+	frame = A,
+	tics = -1,
+	var1 = 0,
+	var2 = 0,
+	nextstate = S_HURRYUP,
+}
