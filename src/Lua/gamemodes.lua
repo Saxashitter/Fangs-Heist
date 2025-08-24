@@ -14,6 +14,7 @@ local DEFAULT = {
 	signnerf = false,
 	spillallrings = false,
 	dontdivprofit = false,
+	renderprofit = true,
 
 	init = _NIL,
 	load = _NIL,
