@@ -22,11 +22,11 @@ function module.draw(v, p)
 	if FangsHeist.Net.game_over then return end
 	if not p.heist:isAlive() then return end
 	
-	local team, rank = p.heist:getTeam()
+	local team = p.heist:getTeam()
 
 	local rings = RINGSFORM:format(p.rings)
 	local profit = PROFITFORM:format(team.profit)
-	local rank = RANKFORM:format(rank)
+	local rank = RANKFORM:format(team.place or 0)
 
 	local multiplier = p.heist:getMultiplier()
 

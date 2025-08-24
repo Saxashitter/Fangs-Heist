@@ -73,7 +73,7 @@ end
 local function IsTeamFull(team)
 	local teamLength = FangsHeist.CVars.team_limit.value
 
-	return #team >= teamLength
+	return team and #team >= teamLength
 end
 
 local function IsPlayerEligibleToRequest(self, p)

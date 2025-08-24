@@ -516,11 +516,12 @@ end, MT_KOMBIFROGSWITCH)
 addHook("ThinkFrame", function()
 	if not FangsHeist.Net.escape then FangsHeist.Net.keroAnimClock = 0 return end
 	FangsHeist.Net.keroAnimClock = $ + 1
-	local clock = FangsHeist.Net.keroAnimClock
+	--[[local clock = FangsHeist.Net.keroAnimClock
 		if clock <= pauseby
 			for player in players.iterate do
 				if clock == pauseby
-					K_PauseMomentum(player)
+					player.mo.momx = 0
+					player.mo.momx = 0
 				else
 					if player.wl4kombitime then player.wl4kombitime = $ - 1 end
 				end
@@ -530,7 +531,7 @@ addHook("ThinkFrame", function()
 			for player in players.iterate do
 				K_ResumeMomentum(player)
 			end
-		end
+		end]]
 end)
 
 addHook("MobjThinker", function(mobj)
@@ -602,6 +603,7 @@ end, MT_FROGSWITCHANIMATOR)
 local coinLossTreasureWaitTics = 5
 
 -- HUDs in ohio bro what is this
+--[[
 	local clocktype = CV_FindVar("timerres") -- Get the ConVar
 	local offset = 8
 	local center = 160 - offset
@@ -791,6 +793,6 @@ local coinLossTreasureWaitTics = 5
 	end
 
 hud.add(WL4HUD_KeroClock)
-hud.add(WL4HUD_Treasure)
+hud.add(WL4HUD_Treasure)]]
 
 return FangsHeist.addGamemode(gamemode)

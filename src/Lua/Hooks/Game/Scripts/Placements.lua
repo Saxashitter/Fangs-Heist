@@ -19,6 +19,7 @@ local function SortTeams(teamlist)
 			end
 		end
 
+		sorted[j].place = j
 		completed[k] = true
 	end
 
