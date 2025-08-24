@@ -259,11 +259,11 @@ function state:tick()
 	end
 
 	if abs(y) > 0
-	and #skins > SKINS_ROW then
-		local i = self.heist.locked_skin + SKINS_ROW*y
+	and #FangsHeist.CharList > SKINS_ROW then
+		local i = self.heist.skin_index + SKINS_ROW*y
 
-		if i >= 0
-		and i <= #skins-1 then
+		if i >= 1
+		and i <= #FangsHeist.CharList then
 			ChangeSelection(self, self.heist.locked_skin + SKINS_ROW*y, true)
 		end
 	end
@@ -275,7 +275,7 @@ function state:tick()
 	and self.heist.buttons & BT_CUSTOM1
 	and not (self.heist.lastbuttons & BT_CUSTOM1) then
 		self.heist.alt_skin = ($+1) % (#heistskindef.skins+1)
-		S_StartSound(nil, sfx_menu1)
+		S_StartSound(nil, sfx_menu1, self)
 	end
 end
 
@@ -288,9 +288,7 @@ function state:draw(v, c, transparency)
 	local heistskindef = FangsHeist.Characters[skindef.name]
 
 	DrawCharacterRibbon(v, 100*FU, self.heist.locked_skin, transparency, tics)
-	if tics >= TEXT_DELAY + TEXT_TWEEN then
-		DrawIconGrid(v, 160*FU - width/2, 100*FU + RIBBON_END_RADIUS, self.heist.skin_index, transparency)
-	end
+	DrawIconGrid(v, 160*FU - width/2, 100*FU + RIBBON_END_RADIUS, self.heist.skin_index, transparency)
 
 	if #heistskindef.skins > 0 then
 		local skin = heistskindef.skins[self.heist.alt_skin]
@@ -299,7 +297,12 @@ function state:draw(v, c, transparency)
 		if skin then
 			name = skin.name or $
 		end
-		v.drawString(160*FU, 100*FU - 10*FU - RIBBON_END_RADIUS/2, "[CUSTOM 1] - Change Skin ("..name..")", V_ALLOWLOWERCASE, "thin-fixed-center")
+		local col,alpha = ColorOpposite(skindef.prefcolor)
+		local twen = Twn(tics-TEXT_DELAY, 20)
+		local scale = ease.outback(twen,0,FU/2,FU/2)
+		local trans = ease.outquad(twen,9,0)<<V_ALPHASHIFT
+		FangsHeist.DrawString(v,160*FU, 100*FU - 10*FU - RIBBON_END_RADIUS/2,scale, 
+		"[CUSTOM 1] - Change Skin ("..name..")","FHFNT","center",trans,v.getColormap(TC_DEFAULT,col))
 	end
 end
 

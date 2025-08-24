@@ -199,11 +199,13 @@ sfxinfo[freeslot "sfx_fhclsh"].caption = "Clink!"
 sfxinfo[freeslot "sfx_gogogo"].caption = "G-G-G-GO! GO! GO!"
 
 sfxinfo[freeslot "sfx_cwdscr"].caption = "WOO!!!!! YAY!!!!!"
+sfxinfo[freeslot "sfx_cwdaww"].caption = "awwww..."
 
 sfxinfo[freeslot "sfx_nargam"].caption = "GAME!"
 sfxinfo[freeslot "sfx_narsud"].caption = "Sudden death..."
 sfxinfo[freeslot "sfx_nartgw"].caption = "This game's winner is..."
 sfxinfo[freeslot "sfx_narcon"].caption = "Congratulations!"
+sfxinfo[freeslot "sfx_narnco"].caption = "No Contest."
 
 sfxinfo[freeslot "sfx_sbounc"].caption = "Bounce"
 

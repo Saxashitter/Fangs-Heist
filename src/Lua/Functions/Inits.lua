@@ -79,6 +79,7 @@ function FangsHeist.initMode(map)
 	local gamemode = FangsHeist.getGamemode()
 
 	if FangsHeist.Save.last_map == map
+	and FangsHeist.CVars.retakes.value
 	and not (info.fh_disableretakes == "true") then
 		FangsHeist.Save.retakes = $+1
 	else
