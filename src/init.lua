@@ -2,10 +2,11 @@ rawset(_G, "FangsHeist", {
 	Net = {},
 	Objects = {},
 	Save = {},
+	HUD = {},
 	PlayerMT = {},
 	Version = {
 	Num = 1,
-	String = "v1.0 Public Beta",
+	String = "Beta",
 	}
 })
 /*

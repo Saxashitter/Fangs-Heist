@@ -1,5 +1,11 @@
 local module = {}
 
+FangsHeist.HUD.PlayerInfo = {
+	Profit = true,
+	Rings = true,
+	Rank = true
+}
+
 local PROFITFORM = string.char(1) .. " %d"
 local RINGSFORM = string.char(2) .. " %d"
 local RANKFORM = "[c:red]R [c:white]%d"
@@ -23,20 +29,30 @@ function module.draw(v, p)
 	if not p.heist:isAlive() then return end
 	
 	local team = p.heist:getTeam()
+	local pi = FangsHeist.HUD.PlayerInfo
 
-	local rings = RINGSFORM:format(p.rings)
-	local profit = PROFITFORM:format(team.profit)
-	local rank = RANKFORM:format(team.place or 0)
+	local strings = {
+		{str = RINGSFORM:format(p.rings), on = pi.Rings},
+		{str = PROFITFORM:format(team.profit), on = pi.Profit},
+		{str = RANKFORM:format(team.place or 0), on = pi.Rank},
+	}
 
 	local multiplier = p.heist:getMultiplier()
 
 	if multiplier > 1 then
-		profit = $ .. " [c:yellow]"..multiplier.."x"
+		strings[2].str = $ .. " [c:yellow]"..multiplier.."x"
 	end
 
-	DrawText(v, 320 - 8, 8, rings, V_SNAPTORIGHT|V_SNAPTOTOP, "right")
-	DrawText(v, 320 - 8, 19, profit, V_SNAPTORIGHT|V_SNAPTOTOP, "right", nil, true)
-	DrawText(v, 320 - 8, 30, rank, V_SNAPTORIGHT|V_SNAPTOTOP, "right", nil, true)
+	local y = 8
+
+	for k,v in ipairs(strings) do
+		if not v.on then
+			continue
+		end
+
+		DrawText(v, 320 - 8, y, v.str, V_SNAPTORIGHT|V_SNAPTOTOP, "right", nil, true)
+		y = $ + 11
+	end
 end
 
 return module
