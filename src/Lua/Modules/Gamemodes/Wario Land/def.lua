@@ -100,6 +100,12 @@ local whatSigns = {
 	[501] = true
 }
 =======
+-- Hack!! probably but atleast it synchs with Escape/def/gamemode.signThings
+-- Saxa your API is like stinky and stuff
+
+-- SAXA: hey,,, did you know you copied all the values from escape
+-- think of it as a github fork
+local whatSigns = gamemode.signThings
 >>>>>>> b12def5c3de0cab1d07c987c14a33c1369b7768d
 
 -- mobj_t mo
@@ -148,6 +154,7 @@ local function WL_SpawnCoins(mo, count, maxdrop)
 	-- Else just the leftover from count
 	return (count - tospawn) + remaining
 =======
+	return count
 >>>>>>> b12def5c3de0cab1d07c987c14a33c1369b7768d
 end
 
@@ -181,6 +188,7 @@ function gamemode:init(map)
 	end
 
 	-- don't get paid enough to figure out what these do
+	-- SAXA: vro this is th code to enable rlund 2
 	if info.fh_hellstage
 	and info.fh_hellstage:lower() == "true" then
 		FangsHeist.Net.round_2 = true
