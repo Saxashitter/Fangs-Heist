@@ -247,10 +247,13 @@ function gamemode:init(map)
 	local time = 3*(TICRATE*60)
 
 	if info.fh_time then
+		print("using mapheader")
 		time = tonumber(info.fh_time)*TICRATE
 	elseif gamemode.keroTimers[G_BuildMapTitle(map)] then
+		print("using kerotimer")
 		time = gamemode.keroTimers[G_BuildMapTitle(map)]
 	elseif FangsHeist.CVars.escape_time.value then
+		print("neither available! using escapetime", G_BuildMapTitle(map))
 		time = FangsHeist.CVars.escape_time.value*TICRATE
 	end
 
@@ -328,7 +331,7 @@ end
 function gamemode:playerdeath(p)
 	if FangsHeist.Net.pregame then return end
 
-	WL_SpawnCoins(p.mo, p.heist.treasure)
+	WL_SpawnCoins(p.mo, p.heist.treasure, 310000)
 end
 
 function gamemode:playerthink(p)
@@ -377,6 +380,41 @@ end
 
 function gamemode:playerdamage(p)
 	WL_SpawnCoins(p.mo, p.heist.treasure, gamemode.treasuredrop)
+end
+
+function gamemode:update()
+	if FangsHeist.Net.escape then
+		self:manageEscape()
+	end
+
+	self:manageRound2Portal()
+end
+
+function gamemode:trackplayer(p)
+	local lp = displayplayer
+	local args = {}
+
+	-- TO-DO: treasure track
+
+	if p.heist:hasSign() then
+		table.insert(args, "SIGN")
+	end
+	if p.heist:hasTreasure() then
+		table.insert(args, "TREASURE")
+	end
+	if p.heist:isPartOfTeam(lp) then
+		table.insert(args, "TEAM")
+	end
+
+	return args
+end
+
+function gamemode:manageEscape()
+	-- exiting
+	self:manageExiting()
+
+	-- time
+	self:manageTime()
 end
 
 function gamemode:manageTime()
@@ -941,8 +979,7 @@ do
 		if not player.mo then return end
 		local mapOK = FangsHeist.Net.escape
 		if not mapOK then return end
-		local fhTimeLeft = FangsHeist.Net.time_left
-		local timeLeft = fhTimeLeft - (leveltime - FangsHeist.Net.time_escape_started)
+		local timeLeft = FangsHeist.Net.time_left
 		local timeSecs = G_TicsToSeconds(timeLeft)
 		local timeMins = G_TicsToMinutes(timeLeft)
 		local timeCent = G_TicsToCentiseconds(timeLeft)
@@ -965,7 +1002,7 @@ do
 		else
 			yoffset = ((100 * FRACUNIT) - baseY) + (-8 * clockScale)
 		end
-		local frame   = abs(6 - ((fhTimeLeft + timeLeft) / 3)) % 6 or 0
+		local frame   = abs(((timeLeft / 3) % 6) - 5) or 0
 		local mode    = clocktype.value
 		local clr     = getTimeColor(timeLeft)
 
@@ -1029,6 +1066,7 @@ do
 
 	-- Function to handle treasure display
 	local function WL4HUD_Treasure(v, player)
+		if gametype != GT_FANGSHEISTWL4GBA then return end
 		local mapinfo = mapheaderinfo[gamemap]
 		if not mapinfo then return end
 
