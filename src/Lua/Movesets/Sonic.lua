@@ -125,8 +125,8 @@ local function DropDashLand(p)
 	if p.cmd.buttons & BT_JUMP then
 		local bounce = 15*p.mo.scale
 		local speed = R_PointToDist2(0,0, p.rmomx, p.rmomy)
-
-		P_SetObjectMomZ(p.mo, bounce)
+		local waterval = (p.mo.eflags & MFE_UNDERWATER) and 2 or 1
+		P_SetObjectMomZ(p.mo, bounce/waterval)
 		p.mo.state = S_PLAY_JUMP
 		p.pflags = ($|PF_JUMPED|PF_STARTJUMP|PF_THOKKED) & ~PF_SPINNING
 		S_StartSound(p.mo, sfx_sbounc)

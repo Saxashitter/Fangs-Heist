@@ -35,8 +35,7 @@ function module.draw(v, p, c)
 		local y = 0
 		local track = sglib.ObjectTracking(v,p,c, t.mo)
 
-		if not track.onScreen
-		or P_CheckSight(p.mo, t.mo) then
+		if not (track.onScreen and P_CheckSight(p.mo, t.mo)) then
 			continue
 		end
 
