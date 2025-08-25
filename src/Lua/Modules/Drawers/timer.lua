@@ -34,6 +34,8 @@ local function getScaleDiv()
 end
 
 local function drawTimer(v, x, y, scale, f)
+	local pi = FangsHeist.getGamemode().preferredhud
+	if not pi.Timer then return end
 	local t = FangsHeist.Net.time_left
 	local rt = FangsHeist.Net.max_time_left - FangsHeist.Net.time_left
 	local tics = (t/35)/60

@@ -18,7 +18,8 @@ local DEFAULT = {
 		pos = {x = 312, y = 8},
 		Profit = true,
 		Rings = true,
-		Rank = true
+		Rank = true,
+		Timer = true,
 	},
 
 	init = _NIL,
