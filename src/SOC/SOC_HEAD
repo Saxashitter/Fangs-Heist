@@ -4,14 +4,14 @@ LoopTitle = true
 HideTitlePics = true
 NumDemos = 0
 GameData = fangsheist.dat
-TailsFlyTics = TICRATE
 
 Clear All
 
 Unlockable 1
-Name = Sound Test
+Name = Sound Test (Fang's Heist OST)
 Type = SoundTest
-Height = 10
+Height = 12
+Var = 2
 ConditionSet = -1
 
 Unlockable 2
