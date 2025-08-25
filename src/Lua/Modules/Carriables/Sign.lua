@@ -119,6 +119,7 @@ return {
 	profit = 600,
 	priority = 2,
 	multiplier = 2,
+	radius = 128*FU,
 	height = 54*FU,
 	giveToDamager = true,
 	state = S_SIGN,

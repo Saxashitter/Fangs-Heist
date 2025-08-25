@@ -70,6 +70,8 @@ local function CanPickUp(p)
 end
 
 return {
+	radius = 8*FU,
+	height = 16*FU,
 	profit = 160,
 	state = S_FH_TREASURE,
 	onPickUp = OnCollect,
