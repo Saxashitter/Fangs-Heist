@@ -244,16 +244,14 @@ function gamemode:init(map)
 		FangsHeist.Net.last_man_standing = true
 	end
 
-	local time = 3*(TICRATE*60)
+	local time = (TICRATE*60)*3/2
+	local maptitle = G_BuildMapTitle(map):lower()
 
 	if info.fh_time then
-		print("using mapheader")
 		time = tonumber(info.fh_time)*TICRATE
-	elseif gamemode.keroTimers[G_BuildMapTitle(map)] then
-		print("using kerotimer")
-		time = gamemode.keroTimers[G_BuildMapTitle(map)]
+	elseif gamemode.keroTimers[maptitle] then
+		time = gamemode.keroTimers[maptitle].time*TICRATE
 	elseif FangsHeist.CVars.escape_time.value then
-		print("neither available! using escapetime", G_BuildMapTitle(map))
 		time = FangsHeist.CVars.escape_time.value*TICRATE
 	end
 
@@ -338,6 +336,25 @@ function gamemode:playerthink(p)
 	self.super.playerthink(self, p)
 
 	if not FangsHeist.Net.wl4_coin_loss then return end
+	local clticks = FangsHeist.Net.keroCoinLossTicks or 0
+
+	-- Spawn coin-loss effect every 6 tics
+	if clticks % 6 == 0 then
+		local coin = P_SpawnMobjFromMobj(player.realmo, 0, 0, mobjinfo[MT_PLAYER].height, MT_COINLOSSEFFECT_ALT)
+		coin.angle = player.drawangle
+		P_InstaThrust(coin, coin.angle, -4 * FRACUNIT)
+		P_SetObjectMomZ(coin, 10 * FRACUNIT, false)
+	end
+
+	-- Deduct score every 4 tics if still alive and playing
+	if not (clticks % 4) and player.heist.treasure > 0 and not (player.pflags & PF_FINISHED) then
+		player.heist.treasure = $ - 10
+	end
+
+	-- Kill player if out of treasure
+	if player.heist.treasure <= 0 and player.realmo.health > 0 then
+		P_KillMobj(player.realmo, nil, nil, DMG_SPACEDROWN)
+	end
 end
 
 function gamemode:start()
@@ -418,6 +435,9 @@ function gamemode:manageEscape()
 end
 
 function gamemode:manageTime()
+	if FangsHeist.Net.wl4_coin_loss then
+		FangsHeist.Net.keroCoinLossTicks = ($ or 0) + 1
+	end
 	if not FangsHeist.Net.time_left then return end
 
 	FangsHeist.Net.time_left = max(0, $-1)
@@ -985,7 +1005,7 @@ do
 		local timeCent = G_TicsToCentiseconds(timeLeft)
 
 		local centerX, baseY = center - 8, hudinfo[HUD_SCORE].y * FRACUNIT
-		local coinTics = FangsHeist.Net.wl4_cl_ticks or 0
+		local coinTics = FangsHeist.Net.keroCoinLossTicks or 0
 		-- If coin-loss animation active, just draw the stopwatch:
 		if coinTics > coinLossTreasureWaitTics - 1 then
 			drawClockAnimation(v, centerX - 8, (baseY / FRACUNIT) + 8, ((timeLeft) / 3) % 6 or 0)
