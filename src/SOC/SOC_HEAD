@@ -4,6 +4,7 @@ LoopTitle = true
 HideTitlePics = true
 NumDemos = 0
 GameData = fangsheist.dat
+TailsFlyTics = 35
 
 Clear All
 
