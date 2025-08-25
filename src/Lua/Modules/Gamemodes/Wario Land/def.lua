@@ -370,9 +370,6 @@ function gamemode:start()
 	end
 end
 
-function gamemode:update()
-end
-
 function gamemode:trackplayer(p)
 	if p.heist.intangible then
 		return {}
