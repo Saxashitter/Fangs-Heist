@@ -68,9 +68,3 @@ FangsHeist.CVars.team_limit = CV_RegisterVar{
 	defaultvalue = 3,
 	flags = CV_NETVAR
 }
-FangsHeist.CVars.retakes = CV_RegisterVar{
-	name = "fh_retakes",
-	defaultvalue = "On",
-	possiblevalue = CV_OnOff,
-	flags = CV_NETVAR
-}
