@@ -14,7 +14,12 @@ local DEFAULT = {
 	signnerf = false,
 	spillallrings = false,
 	dontdivprofit = false,
-	renderprofit = true,
+	preferredhud = {
+		pos = {x = 312, y = 8},
+		Profit = true,
+		Rings = true,
+		Rank = true
+	},
 
 	init = _NIL,
 	load = _NIL,

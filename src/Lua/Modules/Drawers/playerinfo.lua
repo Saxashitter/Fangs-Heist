@@ -1,12 +1,5 @@
 local module = {}
 
-FangsHeist.HUD.PlayerInfo = {
-	pos = {x = 312, y = 8},
-	Profit = true,
-	Rings = true,
-	Rank = true
-}
-
 local PROFITFORM = string.char(1) .. " %d"
 local RINGSFORM = string.char(2) .. " %d"
 local RANKFORM = "[c:red]R [c:white]%d"
@@ -30,7 +23,7 @@ function module.draw(v, p)
 	if not p.heist:isAlive() then return end
 	
 	local team = p.heist:getTeam()
-	local pi = FangsHeist.HUD.PlayerInfo
+	local pi = FangsHeist.getGamemode().preferredhud
 
 	local strings = {
 		{str = RINGSFORM:format(p.rings), on = pi.Rings},
