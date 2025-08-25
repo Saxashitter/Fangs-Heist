@@ -236,7 +236,7 @@ FH.TitleScreenDrawer = function(v)
 	end
 
 	// Logo
-	local scale = tofixed("0.5")
+	local scale = tofixed("1.3")
 
 	logo_shake = max(0, $-1)
 	local s = FixedMul(FixedDiv(logo_shake, 12),12*FU)
@@ -287,7 +287,7 @@ FH.TitleScreenDrawer = function(v)
 			logo_tics = $+1
 		end
 		local time = FixedAngle(ease.linear(min(FixedDiv(logo_tics%200,200),FU),0,360)*FU)
-		local y = 100*FU+FixedMul(10*scale,sin(time))
+		local y = 100*FU+FixedMul(3*FU/2,sin(time))
 		--	Pulsing
 		local tics = max(0,min(FixedDiv(logo_tics%15,15),FU))
 		local colorloop = (logo_tics%30) >= 15 and SKINCOLOR_MAUVE or SKINCOLOR_GREEN
