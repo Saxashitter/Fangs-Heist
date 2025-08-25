@@ -20,6 +20,7 @@ local DEFAULT = {
 		Rank = true,
 		Timer = true,
 	},
+	pregametheme = "FH_PRG",
 
 	init = _NIL,
 	load = _NIL,
