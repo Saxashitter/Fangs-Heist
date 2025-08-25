@@ -71,10 +71,10 @@ return function()
 		return
 	end
 
-	local song = FangsHeist.Save.retakes and "FH_PG2" or "FH_PRG"
+	local gamemode = FangsHeist.getGamemode()
 
-	if S_MusicName() ~= song then
-		S_ChangeMusic(song, true)
+	if S_MusicName() ~= gamemode.pregametheme then
+		S_ChangeMusic(gamemode.pregametheme, true)
 	end
 
 	FangsHeist.Net.pregame_transparency = max(0, $-1)

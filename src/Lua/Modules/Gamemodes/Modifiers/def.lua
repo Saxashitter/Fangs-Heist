@@ -7,6 +7,7 @@ gamemode.name = "Remix"
 gamemode.id = "REMIX"
 gamemode.desc = "dude this is just like the time when i"
 gamemode.modifiers = {}
+gamemode.pregametheme = "FH_PG2"
 gamemode.super = FangsHeist.Gamemodes[FangsHeist.Escape]
 
 local default = {
