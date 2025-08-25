@@ -41,9 +41,9 @@ end
 
 -- FIXME: Altskins should refer to their corresponding main skin's skin number instead of this nastiness
 FangsHeist.skinAlts = {
-	sonic2 = 0,
-	sonic3 = 0,
-	sonic1 = 0,
+	sonic2 = 1,
+	sonic3 = 1,
+	sonic1 = 1,
 }
 
 function FangsHeist.initPlayer(p)
