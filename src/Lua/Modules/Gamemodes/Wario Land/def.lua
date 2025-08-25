@@ -481,13 +481,15 @@ end
 function gamemode:manageExiting()
 	local exit = FangsHeist.Net.exit
 
+	-- I might disprove it focking laayteerr
+	local allExiting = true
+
 	for p in players.iterate do
 		if not p.heist then continue end
 		if not p.heist:isAlive() then continue end
 
-		if not p.heist:isAtGate()
-		and not p.heist.exiting then
-			continue
+		if not p.heist.exiting then
+			allExiting = false
 		end
 
 		if not p.heist.exiting
@@ -522,7 +524,13 @@ function gamemode:manageExiting()
 
 		p.heist.exiting = true
 	end
+
+	if allExiting then
+		FangsHeist.startIntermission()
+	end
 end
+
+-- FangsHeist.startIntermission()
 
 local function blacklist(self, p)
 	local team = p.heist:getTeam()
@@ -901,6 +909,7 @@ addHook("MobjThinker", CoinThinker, MT_WARIOLAND100COIN_ALT)
 addHook("MobjThinker", CoinThinker, MT_WARIOLAND500COIN_ALT)
 
 addHook("MobjDeath", function(mo, inf, src)
+	if gametype != GT_FANGSHEISTWL4GBA then return end
 	if not (mo.flags & (MF_MONITOR|MF_ENEMY|MF_SHOOTABLE)) then return end
 	local howMany = gamemode.enemytotreasure[mo.type or (mo.kombi and mo.kombi.oldmobj and mo.kombi.oldmobj.type)]
 	howMany = $ != nil and $ or 50
