@@ -22,7 +22,13 @@ SafeFreeSlot(
 -- Wario's Voice (Hurry Up!)
 "sfx_hurry0","sfx_hurry1","sfx_hurry2","sfx_hurry3","sfx_hurry4",
 -- Kero SFX
-"sfx_wlohno","sfx_wlclos"
+"sfx_wlohno","sfx_wlclos",
+
+-- WLCoins
+"S_WARIOLAND10COIN","MT_WARIOLAND10COIN_ALT","SPR_WLC1","sfx_wlcoi1",
+"S_WARIOLAND50COIN","MT_WARIOLAND50COIN_ALT","SPR_WLC2","sfx_wlcoi2",
+"S_WARIOLAND100COIN","MT_WARIOLAND100COIN_ALT","SPR_WLC3","sfx_wlcoi3",
+"S_WARIOLAND500COIN","MT_WARIOLAND500COIN_ALT","SPR_WLC4","sfx_wlcoi4"
 )
 
 -- My custom skincolor based off WL4's frog switch :DD
@@ -129,4 +135,76 @@ states[S_HURRYUP] = {
 	var1 = 0,
 	var2 = 0,
 	nextstate = S_HURRYUP,
+}
+
+mobjinfo[MT_WARIOLAND500COIN_ALT] = {
+spawnstate = S_WARIOLAND500COIN,
+spawnhealth = 1000,
+radius = 16*FRACUNIT,
+height = 12*FRACUNIT,
+dispoffset = 4,
+flags = MF_SCENERY|MF_SPECIAL,
+}
+
+states[S_WARIOLAND500COIN] = {
+	sprite = SPR_WLC4,
+	frame = FF_ANIMATE|A,
+	tics = -1,
+	var1 = 6,
+	var2 = 2,
+	nextstate = S_WARIOLAND500COIN,
+}
+
+mobjinfo[MT_WARIOLAND100COIN_ALT] = {
+spawnstate = S_WARIOLAND100COIN,
+spawnhealth = 1000,
+radius = 16*FRACUNIT,
+height = 12*FRACUNIT,
+dispoffset = 4,
+flags = MF_SCENERY|MF_SPECIAL,
+}
+
+states[S_WARIOLAND100COIN] = {
+	sprite = SPR_WLC3,
+	frame = FF_ANIMATE|A,
+	tics = -1,
+	var1 = 5,
+	var2 = 2,
+	nextstate = S_WARIOLAND100COIN,
+}
+
+mobjinfo[MT_WARIOLAND50COIN_ALT] = {
+spawnstate = S_WARIOLAND50COIN,
+spawnhealth = 1000,
+radius = 16*FRACUNIT,
+height = 12*FRACUNIT,
+dispoffset = 4,
+flags = MF_SCENERY|MF_SPECIAL,
+}
+
+states[S_WARIOLAND50COIN] = {
+	sprite = SPR_WLC2,
+	frame = FF_ANIMATE|A,
+	tics = -1,
+	var1 = 5,
+	var2 = 2,
+	nextstate = S_WARIOLAND50COIN,
+}
+
+mobjinfo[MT_WARIOLAND10COIN_ALT] = {
+spawnstate = S_WARIOLAND10COIN,
+spawnhealth = 1000,
+radius = 16*FRACUNIT,
+height = 12*FRACUNIT,
+dispoffset = 4,
+flags = MF_SCENERY|MF_SPECIAL,
+}
+
+states[S_WARIOLAND10COIN] = {
+	sprite = SPR_WLC1,
+	frame = FF_ANIMATE|A,
+	tics = -1,
+	var1 = 3,
+	var2 = 2,
+	nextstate = S_WARIOLAND10COIN,
 }

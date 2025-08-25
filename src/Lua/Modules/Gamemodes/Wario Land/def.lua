@@ -29,6 +29,12 @@ gamemode.tol = TOL_HEIST
 gamemode.teams = false
 gamemode.super = FangsHeist.Gamemodes[FangsHeist.Escape]
 gamemode.dontdivprofit = true
+gamemode.preferredhud = {
+	pos = {x = 312, y = 19},
+	Profit = false,
+	Rings = true,
+	Rank = true
+}
 
 -- customvar that determines how much treasure is lost per hit
 -- make sure this is a multiple of 10!! Or itll be truncated to
@@ -142,16 +148,16 @@ local function WL_SpawnCoins(mo, count, maxdrop)
 		local coin = nil
 		
 		if remaining >= 500 then
-			coin = P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_WARIOLAND500COIN)
+			coin = P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_WARIOLAND500COIN_ALT)
 			remaining = $ - 500
 		elseif remaining >= 100 then
-			coin = P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_WARIOLAND100COIN)
+			coin = P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_WARIOLAND100COIN_ALT)
 			remaining = $ - 100
 		elseif remaining >= 50 then
-			coin = P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_WARIOLAND50COIN)
+			coin = P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_WARIOLAND50COIN_ALT)
 			remaining = $ - 50
 		elseif remaining >= 10 then
-			coin = P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_WARIOLAND10COIN)
+			coin = P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_WARIOLAND10COIN_ALT)
 			remaining = $ - 10
 		else
 			-- less than 10 left, break to avoid endless loop
@@ -777,6 +783,75 @@ addHook("PostThinkFrame", function(player)
 	end
 end)
 
+local function CoinThinker(mobj)
+	if mobj.collectwait
+		mobj.collectwait = $ - 1
+	end
+	mobj.scale = 2*FRACUNIT
+end
+
+local function CoinSpawn(mobj)
+	if not mobj and not mobj.valid return end
+	if not ((mobj.flags2 & MF2_TWOD) or twodlevel)
+		mobj.angle = FixedAngle(P_RandomRange(0, 359)*FRACUNIT)
+	end
+	P_Thrust(mobj, mobj.angle, 6*FRACUNIT)
+	P_SetObjectMomZ(mobj, 12*FRACUNIT)
+	mobj.collectwait = 13
+end
+
+local function WariYahoo(mobj)
+	if kombisfxbank[mobj.skin]
+		S_StartSound(mobj, kombisfxbank[mobj.skin].cheer[P_RandomRange(1,#kombisfxbank[mobj.skin].cheer)])
+	else
+		S_StartSound(mobj, P_RandomRange(sfx_waow0,sfx_waow18))
+	end
+end
+
+addHook("TouchSpecial", function(mobj,toucher) --I swear there's a way to pass custom arguments to these that i just don't know about
+	if mobj.collectwait return true end
+	toucher.player.heist.treasure = ($ or 0) + 10
+	S_StartSound(toucher, sfx_wlcoi1)
+	mobj.state = S_NULL
+end, MT_WARIOLAND10COIN_ALT)
+
+addHook("TouchSpecial", function(mobj,toucher)
+	if mobj.collectwait return true end
+	toucher.player.heist.treasure = ($ or 0) + 50
+	S_StartSound(toucher, sfx_wlcoi2)
+	mobj.state = S_NULL
+end, MT_WARIOLAND50COIN_ALT)
+
+addHook("TouchSpecial", function(mobj,toucher)
+	if mobj.collectwait return true end
+	toucher.player.heist.treasure = ($ or 0) + 100
+	S_StartSound(toucher, sfx_wlcoi3)
+	mobj.state = S_NULL
+end, MT_WARIOLAND100COIN_ALT)
+
+addHook("TouchSpecial", function(mobj,toucher)
+	if mobj.collectwait return true end
+	toucher.player.heist.treasure = ($ or 0) + 500
+	S_StartSound(toucher, sfx_wlcoi4)
+	mobj.state = S_NULL
+end, MT_WARIOLAND500COIN_ALT)
+
+addHook("MobjSpawn", CoinSpawn, MT_WARIOLAND10COIN_ALT)
+addHook("MobjSpawn", CoinSpawn, MT_WARIOLAND50COIN_ALT)
+addHook("MobjSpawn", CoinSpawn, MT_WARIOLAND100COIN_ALT)
+addHook("MobjSpawn", CoinSpawn, MT_WARIOLAND500COIN_ALT)
+addHook("MobjThinker", CoinThinker, MT_WARIOLAND10COIN_ALT)
+addHook("MobjThinker", CoinThinker, MT_WARIOLAND50COIN_ALT)
+addHook("MobjThinker", CoinThinker, MT_WARIOLAND100COIN_ALT)
+addHook("MobjThinker", CoinThinker, MT_WARIOLAND500COIN_ALT)
+
+addHook("MobjDeath", function(mo, inf, src)
+	if not (mo.flags & (MF_MONITOR|MF_ENEMY|MF_SHOOTABLE)) then return end
+	local howMany = gamemode.enemytotreasure[mo.type or (mo.kombi and mo.kombi.oldmobj and mo.kombi.oldmobj.type)]
+	howMany = $ != nil and $ or 50
+	WL_SpawnCoins(mo, howMany)
+end)
+
 local coinLossTreasureWaitTics = 5
 
 -- HUDs in ohio bro what is this
@@ -976,7 +1051,7 @@ do
 	end
 
 	hud.add(WL4HUD_KeroClock)
-	-- hud.add(WL4HUD_Treasure)
+	hud.add(WL4HUD_Treasure)
 end
 
 return FangsHeist.addGamemode(gamemode)
