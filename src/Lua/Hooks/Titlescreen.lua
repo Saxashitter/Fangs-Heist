@@ -64,7 +64,6 @@ end)
 addHook("MusicChange", function(old, new)
 	if new == "_title" then
 		if not FirstLoaded then
-			S_StopMusic()
 			return true
 		end
 	end

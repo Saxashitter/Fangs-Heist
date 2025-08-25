@@ -237,9 +237,6 @@ function gamemode:manageEscape()
 
 	-- hell stage tp
 	self:round2Check()
-
-	-- BOMBS FOR RETAKES.......
-	self:manageBombs()
 end
 
 function gamemode:music()
