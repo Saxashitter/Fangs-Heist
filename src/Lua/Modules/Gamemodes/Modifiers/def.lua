@@ -51,5 +51,6 @@ function gamemode:update()
 end
 
 gamemode.bombs = gamemode:addModifier(dofile(path.."Modifiers/bombs.lua"))
+gamemode.eggman = gamemode:addModifier(dofile(path.."Modifiers/eggman.lua"))
 
 return FangsHeist.addGamemode(gamemode)
