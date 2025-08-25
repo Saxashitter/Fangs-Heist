@@ -386,7 +386,13 @@ function gamemode:trackplayer(p)
 	return args
 end
 
-function gamemode:shouldend() end -- shouldnt end manually
+function gamemode:shouldend()
+	local count = FangsHeist.playerCount()
+
+	return (count.alive == 0
+	or (not count.exiting and count.team == 1 and FangsHeist.Net.last_man_standing))
+	and FangsHeist.Net.escape
+end
 
 function gamemode:shouldinstakill(p, sp)
 	return sp.heist.health <= 1
@@ -481,16 +487,9 @@ end
 function gamemode:manageExiting()
 	local exit = FangsHeist.Net.exit
 
-	-- I might disprove it focking laayteerr
-	local allExiting = true
-
 	for p in players.iterate do
 		if not p.heist then continue end
 		if not p.heist:isAlive() then continue end
-
-		if not p.heist.exiting then
-			allExiting = false
-		end
 
 		if not p.heist.exiting
 		and HeistHook.runHook("PlayerExit", p) == true then
@@ -524,13 +523,7 @@ function gamemode:manageExiting()
 
 		p.heist.exiting = true
 	end
-
-	if allExiting then
-		FangsHeist.startIntermission()
-	end
 end
-
--- FangsHeist.startIntermission()
 
 local function blacklist(self, p)
 	local team = p.heist:getTeam()
