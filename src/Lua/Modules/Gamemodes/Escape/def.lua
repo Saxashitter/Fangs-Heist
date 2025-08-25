@@ -241,10 +241,6 @@ end
 
 function gamemode:music()
 	if not FangsHeist.Net.escape then
-		if FangsHeist.Save.retakes then
-			return "WILFOR", true
-		end
-
 		return
 	end
 
@@ -256,10 +252,6 @@ function gamemode:music()
 
 	local t = max(0, min(FixedDiv((5*TICRATE)-FangsHeist.Net.time_left, 5*TICRATE), FU))
 	local volume = ease.linear(t, 255, 0)
-
-	if FangsHeist.Save.retakes then
-		return FangsHeist.Save.retakes > 1 and "THCUAG" or "THECUR", true, volume
-	end
 
 	if self:isHurryUp() then
 		return "HURRUP", false
@@ -439,15 +431,6 @@ function gamemode:startEscape(p)
 	FangsHeist.Net.escape = true
 	FangsHeist.Net.time_escape_started = leveltime
 
-	if FangsHeist.Save.retakes >= 2 then
-		if not FangsHeist.Net.eggman
-		or not FangsHeist.Net.eggman.valid then
-			self:spawnEggman("pt")
-		else
-			FangsHeist.Net.eggman.state = S_FH_EGGMAN_COOLDOWN
-		end
-	end
-
 	local data = mapheaderinfo[gamemap]
 	if data.fh_escapelinedef then
 		P_LinedefExecute(tonumber(data.fh_escapelinedef))
@@ -476,18 +459,7 @@ function gamemode:isHurryUp()
 end
 
 function gamemode:info()
-	if FangsHeist.Save.retakes then
-		local retake = {"Retake #"..FangsHeist.Save.retakes,
-			"Each time the stage is replayed, it gets more tedious."
-		}
-		table.insert(info, retake)
 
-		if FangsHeist.Save.retakes == 1 then
-			table.insert(retake, "Watch out for bombs dropping from the air!")
-		else
-			table.insert(retake, "Eggman will start to follow players around!")
-		end
-	end
 
 	if FangsHeist.Net.round_2 then
 		table.insert(info, {"Round 2",
@@ -504,6 +476,5 @@ local PATH = "Modules/Gamemodes/Escape/%s.lua"
 loadAndInherit(gamemode, PATH:format("sign"))
 loadAndInherit(gamemode, PATH:format("treasure"))
 loadAndInherit(gamemode, PATH:format("round"))
-loadAndInherit(gamemode, PATH:format("retake"))
 
 return FangsHeist.addGamemode(gamemode)
