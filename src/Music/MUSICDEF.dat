@@ -1,0 +1,40 @@
+Lump _TITLE
+Title = Title/Tutorial
+Alttitle = Bless_You_Boy!
+Authors = Yousuke_Yasui
+Soundtestpage = 2
+Soundtestcond = 0
+Stoppingtime = 0
+BPM = 166
+
+Lump FH_PRG
+Title = Pre-Game
+Alttitle = One_More_Time
+Authors = Tokonemu
+Soundtestpage = 2
+Soundtestcond = 0
+BPM = 108
+
+Lump FH_INT
+Title = Intermission
+Alttitle = Roll_down_the_Results!
+Authors = ZrUltra
+Soundtestpage = 2
+Soundtestcond = 0
+BPM = 143
+
+Lump FH_ESC
+Title = Escape
+Alttitle = No_more_Limits!
+Authors = Tokonemu
+Soundtestpage = 2
+Soundtestcond = 0
+BPM = 172
+
+Lump ROUND2
+Title = Round_2
+Alttitle = Ready_for_Round_2?
+Authors = ZrUltra
+Soundtestpage = 2
+Soundtestcond = 0
+BPM = 178
