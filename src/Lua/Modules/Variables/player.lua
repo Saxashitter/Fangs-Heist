@@ -43,8 +43,8 @@ return {
 	lastforw = 0,
 	lastside = 0,
 
-	locked_skin = "sonic", -- sonic probably
-	skin_index = 1,
+	locked_skin = "tails", -- sonic probably
+	skin_index = 2,
 	alt_skin = 0,
 	pregame_state = "",
 
