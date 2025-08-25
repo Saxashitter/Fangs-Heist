@@ -39,12 +39,23 @@ function FangsHeist.initTeam(p)
 	return team
 end
 
+-- FIXME: Altskins should refer to their corresponding main skin's skin number instead of this nastiness
+FangsHeist.skinAlts = {
+	sonic2 = 0,
+	sonic3 = 0,
+	sonic1 = 0,
+}
+
 function FangsHeist.initPlayer(p)
 	local orig = p.heist
 	local heist = copy(orig_plyr)
 
-	heist.skin_index = orig and orig.skin_index or $
-	heist.locked_skin = orig and orig.locked_skin or $
+	local altSkin = FangsHeist.skinAlts[p.mo.skin]
+	-- use altSkin if it exists, fallback to p.skin
+	local skindex = altSkin or (p.skin + 1)
+
+	heist.skin_index = skindex
+	heist.locked_skin = skins[p.skin].name
 	heist.alt_skin = orig and orig.alt_skin or $
 	heist.player = p
 
