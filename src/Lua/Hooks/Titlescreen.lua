@@ -62,10 +62,10 @@ addHook("KeyDown",function(key)
 	end
 end)
 addHook("MusicChange", function(old, new)
+	if not titlemapinaction then return end
+
 	if new == "_title" then
-		if not FirstLoaded then
-			return true
-		end
+		return true
 	end
 end)
 local function randomizeString(str)
@@ -201,6 +201,28 @@ Title Screen Drawer itself.
 All made by Saxashitter btw!
 
 */
+
+local function DrawHeistBackground(v)
+	local patch = v.cachePatch("HEISTBACK")
+
+	local sw = (v.width() / v.dupx()) * FU
+	local sh = (v.height() / v.dupy()) * FU
+	local gametime = leveltime*FU/3
+	local y = -patch.height*FU + (gametime) % (patch.height*FU)
+	local x = -patch.width*FU + (gametime) % (patch.width*FU)
+
+	while y < sh do
+		local x = x
+
+		while x < sw do
+			v.drawScaled(x, y, FU, patch, V_SNAPTOLEFT|V_SNAPTOTOP)
+			x = $+patch.width*FU
+		end
+	
+		y = $+patch.height*FU
+	end
+end
+
 FH.TitleScreenDrawer = function(v)
 	local logo = v.cachePatch("FH_LOGO")
 	local palletergb = string.format("~%03d",color.rgbToPalette(0,0,0)) 
@@ -208,6 +230,8 @@ FH.TitleScreenDrawer = function(v)
 	
 	local wid = v.width()*FU/v.dupx()
 	local hei = v.height()*FU/v.dupy()
+
+	DrawHeistBackground(v)
 
 	// Black and White Screen
 	if ws_alpha < 10 then
@@ -261,6 +285,7 @@ FH.TitleScreenDrawer = function(v)
 					S_StartSound(nil, sfx_dmga3)
 					logo_shake = 12
 					bs_alpha = 10
+					S_ChangeMusic("FH_MPV",true)
 				else
 					logo_animated = false
 					S_StartSound(nil, sfx_s3k4a)
@@ -317,7 +342,6 @@ addHook("HUD", function(v)
 
 		if Intro.pressed then
 			if not Intro.timer then
-				S_ChangeMusic("_TITLE",true)
 				FirstLoaded = true
 			else
 				Intro.timer = $-1
@@ -325,7 +349,6 @@ addHook("HUD", function(v)
 		end
 
 		if leveltime >= 140 then
-			S_ChangeMusic("_TITLE",true)
 			FirstLoaded = true
 		end
 
