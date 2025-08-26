@@ -50,8 +50,8 @@ function gamemode:update()
 	end
 end
 
-gamemode.bombs = gamemode:addModifier(dofile(path.."Modifiers/bombs.lua"))
-gamemode.explosion = gamemode:addModifier(dofile(path.."Modifiers/explosion.lua"))
+--gamemode.bombs = gamemode:addModifier(dofile(path.."Modifiers/bombs.lua"))
+--gamemode.explosion = gamemode:addModifier(dofile(path.."Modifiers/explosion.lua"))
 gamemode.doubletime = gamemode:addModifier(dofile(path.."Modifiers/doubletime.lua"))
 
 return FangsHeist.addGamemode(gamemode)

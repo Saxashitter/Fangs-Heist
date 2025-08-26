@@ -68,11 +68,7 @@ addHook("MusicChange", function(old, new)
 	if not titlemapinaction then return end
 
 	if new == "_title" then
-		if not FirstLoaded
-			return true
-		else
-			return "FH_MPV",nil,true
-		end
+		return true
 	end
 end)
 local function randomizeString(str)

@@ -96,7 +96,7 @@ local function GetNumberWidth(v, number, scale, font)
 		end
 	end
 
-	return width, patches
+	return width
 end
 
 FangsHeist.GetStringWidth =	GetStringWidth

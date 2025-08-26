@@ -78,7 +78,6 @@ function module.draw(v)
 	local state = DrawState(v)
 
 	local num = FangsHeist.Net.pregame_time/TICRATE
-	local str = tostring(num)
 	local x = 4*FU
 	local y = 4*FU
 
@@ -98,7 +97,7 @@ function module.draw(v)
 		y = $ + state.time_oy
 	end
 
-	FangsHeist.DrawString(v,x,y,FU/2,str,"FHBFT",nil,V_SNAPTOTOP|V_SNAPTOLEFT|transparency,v.getColormap(TC_DEFAULT,SKINCOLOR_MAUVE))
+	FangsHeist.DrawNumber(v,x,y,FU,num,"STTNUM",V_SNAPTOTOP|V_SNAPTOLEFT|transparency)
 end
 
 return module, "gameandscores"
