@@ -326,6 +326,7 @@ end
 function gamemode:playerinit(p)
 	self.super.playerinit(self, p)
 	p.heist.treasure = 0
+	player.heist.wl = {clossticks = 0}
 end
 
 function gamemode:playerspawn(p)
@@ -334,19 +335,30 @@ function gamemode:playerspawn(p)
 	local pos = FangsHeist.Net.signpos
 
 	p.heist.treasure = 0
+	player.heist.wl = {clossticks = 0}
 end
 
 function gamemode:playerdeath(p)
 	if FangsHeist.Net.pregame then return end
 
 	WL_SpawnCoins(p.mo, p.heist.treasure, 310000)
+	p.heist.treasure = 0
 end
 
-function gamemode:playerthink(p)
-	self.super.playerthink(self, p)
+function gamemode:playerthink(player)
+	self.super.playerthink(self, player)
 
+	-- FIXME: Stupid fucking hack but at least it makes the API happy
+	local team = player.heist:getTeam()
+	team.profit = player.heist.treasure
+
+	if player.heist.exiting then return end
 	if not FangsHeist.Net.wl4_coin_loss then return end
 	local clticks = FangsHeist.Net.keroCoinLossTicks or 0
+
+
+	player.heist.wl = $ or {clossticks = 0}
+	player.heist.wl.clossticks = $ + 1
 
 	-- Spawn coin-loss effect every 6 tics
 	if clticks % 6 == 0 then
@@ -399,13 +411,9 @@ end
 function gamemode:shouldend()
 	local count = FangsHeist.playerCount()
 
-	print(count.exiting, count.total - count.dead)
-
-/*
 	return (count.alive == 0
 	or (not count.exiting and count.team == 1 and FangsHeist.Net.last_man_standing))
 	and FangsHeist.Net.escape
-*/
 end
 
 function gamemode:shouldinstakill(p, sp)
@@ -413,7 +421,8 @@ function gamemode:shouldinstakill(p, sp)
 end
 
 function gamemode:playerdamage(p)
-	WL_SpawnCoins(p.mo, p.heist.treasure, gamemode.treasuredrop)
+	local remaining = WL_SpawnCoins(p.mo, p.heist.treasure, gamemode.treasuredrop)
+	p.heist.treasure = remaining
 end
 
 function gamemode:update()
@@ -507,6 +516,10 @@ function gamemode:manageExiting()
 
 		if not p.heist.exiting
 		and HeistHook.runHook("PlayerExit", p) == true then
+			continue
+		end
+
+		if not p.heist.exiting then
 			continue
 		end
 
@@ -1012,16 +1025,17 @@ do
 		if not player.mo then return end
 		local mapOK = FangsHeist.Net.escape
 		if not mapOK then return end
-		local timeLeft = FangsHeist.Net.time_left
-		local timeSecs = G_TicsToSeconds(timeLeft)
-		local timeMins = G_TicsToMinutes(timeLeft)
-		local timeCent = G_TicsToCentiseconds(timeLeft)
+		local timeLeft   = FangsHeist.Net.time_left
+		local timeSecs   = G_TicsToSeconds(timeLeft)
+		local timeMins   = G_TicsToMinutes(timeLeft)
+		local timeCent   = G_TicsToCentiseconds(timeLeft)
+		local clockFrame = abs((((timeLeft + (player.heist.wl and player.heist.wl.clossticks or 0)) / 3) % 6) - 5) or 0
 
 		local centerX, baseY = center - 8, hudinfo[HUD_SCORE].y * FRACUNIT
 		local coinTics = FangsHeist.Net.keroCoinLossTicks or 0
 		-- If coin-loss animation active, just draw the stopwatch:
 		if coinTics > coinLossTreasureWaitTics - 1 then
-			drawClockAnimation(v, centerX - 8, (baseY / FRACUNIT) + 8, ((timeLeft) / 3) % 6 or 0)
+			drawClockAnimation(v, centerX - 8, (baseY / FRACUNIT) + 8, clockFrame)
 			return
 		end
 
@@ -1035,7 +1049,6 @@ do
 		else
 			yoffset = ((100 * FRACUNIT) - baseY) + (-8 * clockScale)
 		end
-		local frame   = abs(((timeLeft / 3) % 6) - 5) or 0
 		local mode    = clocktype.value
 		local clr     = getTimeColor(timeLeft)
 
@@ -1094,7 +1107,7 @@ do
 		end
 
 		-- finally, draw the clock animation
-		drawClockAnimation(v, centerX - 8, (baseY / FRACUNIT) + 8, frame)
+		drawClockAnimation(v, centerX - 8, (baseY / FRACUNIT) + 8, clockFrame)
 	end
 
 	-- Function to handle treasure display
