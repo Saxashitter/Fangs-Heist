@@ -1,7 +1,7 @@
 local copy = FangsHeist.require "Modules/Libraries/copy"
 local gamemode = copy(FangsHeist.Gamemodes[FangsHeist.Escape])
 
-local path = "Modules/Gamemodes/Modifiers/"
+local path = "Modules/Gamemodes/Remix/"
 
 gamemode.name = "Remix"
 gamemode.id = "REMIX"

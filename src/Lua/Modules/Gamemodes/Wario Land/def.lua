@@ -175,6 +175,16 @@ local function WL_SpawnCoins(mo, count, maxdrop)
 	return (count - tospawn) + remaining
 end
 
+local function KombiTeleport(player)
+	local origin = FangsHeist.Net.sign
+	if player and player.mo and player.mo.valid then
+		player.powers[pw_carry] = 0
+		local floorz = P_FloorzAtPos(origin.x, origin.y, origin.z, player.mo.height)
+		P_SetOrigin(player.mo, origin.x,origin.y, floorz)
+		player.mo.angle = origin.angle - ANGLE_90
+	end
+end
+
 local function K_PunchFrogSwitch(prepassedtime, escapetype, activeportal)
 	if FangsHeist.Net.escape
 	or HeistHook.runHook("EscapeStart", p) == true then
@@ -197,7 +207,7 @@ local function K_PunchFrogSwitch(prepassedtime, escapetype, activeportal)
 
 	if multiplayer then
 		for player in players.iterate do
-			--KombiTeleport(player)
+			KombiTeleport(player)
 		end
 	end
 end
@@ -300,7 +310,7 @@ function gamemode:load()
 		local z = largeportal.subsector.sector.floorheight+(128*FRACUNIT)
 		local a = FixedAngle(exit.angle*FU)
 
-		FangsHeist.defineExit(x, y, z, a)
+		--FangsHeist.defineExit(x, y, z, a)
 	end
 
 	for i = 1, #treasure_spawns do
@@ -389,9 +399,13 @@ end
 function gamemode:shouldend()
 	local count = FangsHeist.playerCount()
 
+	print(count.exiting, count.total - count.dead)
+
+/*
 	return (count.alive == 0
 	or (not count.exiting and count.team == 1 and FangsHeist.Net.last_man_standing))
 	and FangsHeist.Net.escape
+*/
 end
 
 function gamemode:shouldinstakill(p, sp)

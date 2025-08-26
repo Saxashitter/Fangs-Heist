@@ -15,6 +15,7 @@ local STRUCTURE = {
 	transparentOnPickup = true, -- if picked up by consoleplayer, turns transparent
 	respawnOnExit = false, -- chooses if item respawns when player exits, only works in escape
 	giveToDamager = false, -- if damaged by a valid player, gives the carriable to them automatically.
+	radius = 128*FU, -- mobjs collision radius
 	height = 24*FU, -- sets the height that the object is carried by or smth
 	state = S_INVISIBLE, -- sets state upon spawn
 
@@ -36,6 +37,7 @@ local COPY_LIST = {
 	"transparentOnPickup",
 	"respawnOnExit",
 	"giveToDamager",
+	"radius",
 	"height",
 	"state"
 }
@@ -188,6 +190,7 @@ local function SetCarriableSettings(mobj, x, y, z, id)
 	settings.tics = 0
 
 	mobj.state = settings.state
+	mobj.radius = settings.radius
 	mobj.height = settings.height
 	mobj.settings = settings
 end
