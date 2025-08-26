@@ -348,6 +348,10 @@ end
 function gamemode:playerthink(player)
 	self.super.playerthink(self, player)
 
+	-- FIXME: Stupid fucking hack but at least it makes the API happy
+	local team = player.heist:getTeam()
+	team.profit = player.heist.treasure
+
 	if player.heist.exiting then return end
 	if not FangsHeist.Net.wl4_coin_loss then return end
 	local clticks = FangsHeist.Net.keroCoinLossTicks or 0
