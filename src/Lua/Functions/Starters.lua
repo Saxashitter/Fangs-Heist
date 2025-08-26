@@ -39,7 +39,8 @@ FangsHeist.WINNER_LINES = {
 	"solved your test chamber!",
 	"got all the ladies!",
 	"crushed you with a Storage Cube!",
-	"saved the princess!"
+	"saved the princess!",
+	"oh my goodness guys my stomach is rolling from eating that onion and rotten garlics oh my goodness okay guys this is episode two and uh right now guys I want to show you my living room uh my hallway I guess oh my goodness my stomach"
 }
 
 function FangsHeist.startIntermission()
