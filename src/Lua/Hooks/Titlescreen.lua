@@ -24,7 +24,8 @@ local logo_animated = true
 local logo_delay = 13
 local logo_shake = 0
 local logo_tics = 0
-
+local bg_speed = 0
+local bg_time = 20
 addHook("ThinkFrame", do
 	if not titlemapinaction then
 		titlescreen = false
@@ -38,6 +39,8 @@ addHook("ThinkFrame", do
 		logo_delay = 13
 		logo_shake = 0
 		logo_tics = 0
+		bg_speed = 0
+		bg_time = 20
 		FirstLoaded = true
 		return
 	end
@@ -65,7 +68,11 @@ addHook("MusicChange", function(old, new)
 	if not titlemapinaction then return end
 
 	if new == "_title" then
-		return true
+		if not FirstLoaded
+			return true
+		else
+			return "FH_MPV",nil,true
+		end
 	end
 end)
 local function randomizeString(str)
@@ -207,7 +214,11 @@ local function DrawHeistBackground(v)
 
 	local sw = (v.width() / v.dupx()) * FU
 	local sh = (v.height() / v.dupy()) * FU
-	local gametime = leveltime*FU/3
+	local speed = ease.linear(max(0,min(FixedDiv(bg_time,20),FU)),FU/3,2*FU)
+	if not logo_bounces
+		bg_speed = $+speed
+	end
+	local gametime = bg_speed
 	local y = -patch.height*FU + (gametime) % (patch.height*FU)
 	local x = -patch.width*FU + (gametime) % (patch.width*FU)
 
@@ -256,6 +267,9 @@ FH.TitleScreenDrawer = function(v)
 
 	if bs_alpha == 10 then
 		ws_alpha = min($+1, 10)
+		if ws_alpha >= 5
+			bg_time = max($-1, 0)
+		end
 	end
 
 	// Logo
