@@ -116,7 +116,7 @@ local function DrawCharacterRibbon(v, y, skin, flags, tics)
 	v.drawScaled(px, py, scale, portrait, V_SNAPTORIGHT|flags)
 
 	-- Name
-	local width = customhud.CustomFontStringWidth(v, skin_data.realname, "FHBFT", FU)
+	local width = FangsHeist.GetStringWidth(v, skin_data.realname, FU, "LTFNT")
 	local tx = ease.outquad(
 		Twn(tics-TEXT_DELAY, TEXT_TWEEN),
 		-width,
@@ -133,7 +133,14 @@ local function DrawCharacterRibbon(v, y, skin, flags, tics)
 		FU,
 		skin_data.prefcolor)]]
 
-	
+	FangsHeist.DrawString(v,
+		tx,
+		ty,
+		FU,
+		skin_data.realname,
+		"LTFNT",
+		"left",
+		V_SNAPTOLEFT|flags)
 end
 
 local function GetIconGridWidth(v, selection)
