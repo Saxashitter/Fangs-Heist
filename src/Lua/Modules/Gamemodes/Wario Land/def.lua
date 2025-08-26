@@ -342,8 +342,8 @@ function gamemode:playerdeath(p)
 	WL_SpawnCoins(p.mo, p.heist.treasure, 310000)
 end
 
-function gamemode:playerthink(p)
-	self.super.playerthink(self, p)
+function gamemode:playerthink(player)
+	self.super.playerthink(self, player)
 
 	if not FangsHeist.Net.wl4_coin_loss then return end
 	local clticks = FangsHeist.Net.keroCoinLossTicks or 0
@@ -399,13 +399,9 @@ end
 function gamemode:shouldend()
 	local count = FangsHeist.playerCount()
 
-	print(count.exiting, count.total - count.dead)
-
-/*
 	return (count.alive == 0
 	or (not count.exiting and count.team == 1 and FangsHeist.Net.last_man_standing))
 	and FangsHeist.Net.escape
-*/
 end
 
 function gamemode:shouldinstakill(p, sp)
@@ -507,6 +503,10 @@ function gamemode:manageExiting()
 
 		if not p.heist.exiting
 		and HeistHook.runHook("PlayerExit", p) == true then
+			continue
+		end
+
+		if not p.heist.exiting then
 			continue
 		end
 
