@@ -121,9 +121,9 @@ local function DrawCharacterRibbon(v, y, skin, flags, tics)
 		Twn(tics-TEXT_DELAY, TEXT_TWEEN),
 		-width,
 		8*FU)
-	local ty = y - 22*FU/2
+	local ty = y - 16*FU/2
 
-	customhud.CustomFontString(v,
+	--[[customhud.CustomFontString(v,
 		tx,
 		ty,
 		skin_data.realname,
@@ -131,7 +131,9 @@ local function DrawCharacterRibbon(v, y, skin, flags, tics)
 		V_SNAPTOLEFT|flags,
 		"left",
 		FU,
-		skin_data.prefcolor)
+		skin_data.prefcolor)]]
+
+	
 end
 
 local function GetIconGridWidth(v, selection)

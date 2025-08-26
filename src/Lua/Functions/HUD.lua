@@ -3,6 +3,9 @@ local DEFAULT = {
 	padding = 0
 }
 
+local fontCache = {}
+local numCache = {}
+
 FangsHeist.FontDefs = {
 	CRFNT = {
 		space = 8,
@@ -13,14 +16,17 @@ FangsHeist.FontDefs = {
 local function GetStringWidth(v, str, scale, font)
 	local width = 0
 	local def = FangsHeist.FontDefs[font] or DEFAULT
-	local patches = {}
+
+	if not fontCache[font] then
+		fontCache[font] = {}
+	end
 
 	for i = 1,#str do
 		local letter = str:sub(i, i)
 		local byte = letter:byte()
 		local name = string.format("%s%03d", font, byte)
 
-		if not patches[byte]
+		if not fontCache[font][byte]
 		and not v.patchExists(name) then
 			width = $ + def.space*scale
 	
@@ -31,30 +37,37 @@ local function GetStringWidth(v, str, scale, font)
 			continue
 		end
 
-		local patch = patches[byte] or v.cachePatch(name)
+		local patch = fontCache[font][byte]
+	
+		if not (patch and patch.valid) then
+			fontCache[font][byte] = v.cachePatch(name)
+			patch = fontCache[font][byte]
+		end
 
 		width = $ + patch.width*scale
 
 		if i < #str then
 			width = $ + def.padding*scale
 		end
-		patches[byte] = $ or patch
 	end
 
-	return width, patches
+	return width
 end
 
 local function GetNumberWidth(v, number, scale, font)
 	local width = 0
 	local def = FangsHeist.FontDefs[font] or DEFAULT
 	local str = tostring(number)
-	local patches = {}
+
+	if not numCache[font] then
+		numCache[font] = {}
+	end
 
 	for i = 1,#str do
 		local letter = str:sub(i, i)
 		local name = string.format("%s%s", font, letter)
 
-		if not patches[i]
+		if not numCache[font][letter]
 		and not v.patchExists(name) then
 			width = $ + def.space*scale
 	
@@ -65,14 +78,18 @@ local function GetNumberWidth(v, number, scale, font)
 			continue
 		end
 
-		local patch = patches[i] or v.cachePatch(name)
+		local patch = numCache[font][letter]
+	
+		if not (patch and patch.valid) then
+			numCache[font][letter] = v.cachePatch(name)
+			patch = numCache[font][letter]
+		end
 
 		width = $ + patch.width*scale
 
 		if i < #str then
 			width = $ + def.padding*scale
 		end
-		patches[i] = $ or patch
 	end
 
 	return width, patches
@@ -117,7 +134,7 @@ function FangsHeist.DrawString(v, x, y, scale, str, font, align, flags, color, r
 			str = richCache[str].str
 		end
 	end
-	local width, patches = GetStringWidth(v, str, scale, font)
+	local width = GetStringWidth(v, str, scale, font)
 
 	if align == "center" then
 		x = $ - width/2
@@ -134,7 +151,7 @@ function FangsHeist.DrawString(v, x, y, scale, str, font, align, flags, color, r
 		local byte = letter:byte()
 		local name = string.format("%s%03d", font, byte)
 
-		if not patches[byte] then
+		if not fontCache[font][byte] then
 			x = $ + def.space*scale
 	
 			if i < #str then
@@ -144,7 +161,7 @@ function FangsHeist.DrawString(v, x, y, scale, str, font, align, flags, color, r
 			continue
 		end
 
-		local patch = patches[byte]
+		local patch = fontCache[font][byte]
 
 		if points[i]
 		and points[i].color ~= nil then
@@ -166,7 +183,7 @@ function FangsHeist.DrawString(v, x, y, scale, str, font, align, flags, color, r
 end
 
 function FangsHeist.DrawNumber(v, x, y, scale, number, font, flags, color)
-	local width, patches = GetNumberWidth(v, number, scale, font)
+	local width = GetNumberWidth(v, number, scale, font)
 
 	if align == "center" then
 		x = $ - width/2
@@ -183,7 +200,7 @@ function FangsHeist.DrawNumber(v, x, y, scale, number, font, flags, color)
 		local letter = str:sub(i, i)
 		local name = string.format("%s%d", font, letter)
 
-		if not patches[i] then
+		if not numCache[font][letter] then
 			x = $ + def.space*scale
 	
 			if i < #str then
@@ -193,7 +210,7 @@ function FangsHeist.DrawNumber(v, x, y, scale, number, font, flags, color)
 			continue
 		end
 
-		local patch = patches[i]
+		local patch = numCache[font][letter]
 
 		v.drawScaled(x, y, scale, patch, flags, color)
 

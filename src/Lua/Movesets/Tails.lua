@@ -43,6 +43,7 @@ local function DisableWallJump(p, forced)
 	p.mo.tails.walljump = nil
 	p.mo.tails.walljump_active = nil
 	p.mo.tails.walljump_tics = nil
+	p.mo.tails.walljump_enabled = nil
 end
 
 local function CanWallJump(p)
@@ -161,7 +162,15 @@ addHook("PlayerThink", function(p)
 	end
 
 	if p.mo.tails.walljump_tics then
-		StickToWall(p)
+		if p.mo.tails.walljump_active then
+			StickToWall(p)
+		else
+			p.mo.tails.walljump_tics = $-1
+
+			if not p.mo.tails.walljump_tics then
+				DisableWallJump(p)
+			end
+		end
 	end
 
 	if p.mo.tails.doublejump_ticker then
@@ -203,6 +212,7 @@ addHook("MobjMoveBlocked", function(mo, _, line)
 		return
 	end
 	tails.walljump = line
+	tails.walljump_tics = 5
 
 	local camang = p.cmd.angleturn << 16
 	local contang = R_PointToAngle2(0,0, p.cmd.forwardmove*FU, -p.cmd.sidemove*FU)
@@ -213,7 +223,7 @@ addHook("MobjMoveBlocked", function(mo, _, line)
 	end]]
 	if not (tails.walljump_active) then return end
 
-	if not tails.walljump_tics then
+	if not tails.walljump_enabled then
 		local momz = p.mo.momz*P_MobjFlip(p.mo)
 	
 		local speed = R_PointToDist2(0,0, p.rmomx, p.rmomy)
@@ -232,6 +242,7 @@ addHook("MobjMoveBlocked", function(mo, _, line)
 		P_SetObjectMomZ(mo, FixedMul(FixedMul(speed, tofixed("0.6")), mult), true)
 		S_StartSound(mo, sfx_s3k4a)
 		FangsHeist.Particles:new("Tails Wall Clip", p, line)
+		tails.walljump_enabled = true
 	end
 	
 	tails.walljump_tics = 7
@@ -243,6 +254,16 @@ addHook("MobjDamage", function(mo)
 	mo.tails = {}
 end, MT_PLAYER)
 
+addHook("SpinSpecial", function(p)
+	if not Valid(p) then return end
+
+	if P_IsObjectOnGround(p.mo)
+	and p.mo.state == S_PLAY_FLY then
+		p.mo.state = S_PLAY_WALK
+		-- hacky
+	end
+end)
+
 addHook("AbilitySpecial", function(p)
 	if not Valid(p)
 	or p.pflags & PF_JUMPDOWN then
@@ -252,7 +273,7 @@ addHook("AbilitySpecial", function(p)
 	if not CanDoubleJump(p) then
 		return
 	end
-	if p.mo.tails.walljump
+	if p.mo.tails.walljump then
 		if p.mo.tails.walljump_tics
 		and p.mo.tails.walljump_active
 		and (p.pflags & PF_JUMPED) then
