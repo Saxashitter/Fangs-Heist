@@ -10,7 +10,11 @@ FangsHeist.FontDefs = {
 	CRFNT = {
 		space = 8,
 		padding = 0
-	}
+	},
+	FHARL = {
+		space = 4,
+		padding = 0
+	},
 }
 
 local function GetStringWidth(v, str, scale, font)
