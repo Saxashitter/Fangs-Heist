@@ -355,16 +355,20 @@ function gamemode:playerthink(player)
 
 	-- FIXME: Stupid fucking hack but at least it makes the API happy
 	local team = player.heist:getTeam()
-	local runningTotal = 0
 
-	-- Stupid but fixes them rounding errors that occur
-	-- Since the most common treasure gains come in 10
-	for k, player in pairs(team) do
-		if not (player and player.heist) then return end
-		runningTotal = player.heist.treasure
+	if team and team.valid then
+		local runningTotal = 0
+
+		-- Stupid but fixes them rounding errors that occur
+		-- Since the most common treasure gains come in 10
+		
+		for k, player in pairs(team) do
+			if not (player and player.heist) then return end
+			runningTotal = player.heist.treasure
+		end
+
+		profit = runningTotal / #team
 	end
-
-	if team and team.valid then profit = runningTotal / #team end
 
 	if player.heist.exiting then return end
 	if not FangsHeist.Net.wl4_coin_loss then return end
