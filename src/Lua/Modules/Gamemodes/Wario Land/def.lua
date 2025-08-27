@@ -23,7 +23,7 @@ local path = "Modules/Gamemodes/Wario Land/"
 dofile(path.."freeslots.lua")
 
 gamemode.name = "Wario Land 4"
-gamemode.desc = "Get as much treasure as you can, then hit the Frog Switch and prepare to H-H-H-HURRY UP!!! (Port of IHTKChar's escape sequence.)"
+gamemode.desc = "Get as much treasure as you can, then hit the Frog Switch and prepare to H-H-H-HURRY UP!!! (Port of IHTKChars' escape sequence.)"
 gamemode.id = "WL4GBA"
 gamemode.tol = TOL_HEIST
 gamemode.teams = false
