@@ -2,24 +2,28 @@ local function GetMostVotedMap()
 	local maps = FangsHeist.Net.map_choices
 
 	local map = 1
+	local gametype = 1
 	local votes
 
 	for i, newMap in ipairs(maps) do
 		if votes == nil or newMap.votes > votes then
 			map = newMap.map
+			gametype = newMap.gametype
 			votes = newMap.votes
 
 			continue
 		end
 
 		if votes == newMap.votes then
-			local tbl = {map, newMap.map}
+			local tbl = {{map = map, gametype = gametype}, newMap}
+			local sel = tbl[P_RandomRange(1, 2)]
 
-			map = tbl[P_RandomRange(1, 2)]
+			map = sel.map
+			gametype = sel.gametype
 		end
 	end
 
-	return map
+	return map, FangsHeist.Gamemodes[gametype].gametype
 end
 local function GetTeamLeader(team)
 	for _, p in ipairs(team) do
@@ -86,9 +90,9 @@ return function()
 		S_ChangeMusic(song, true)
 	end
 
-	if t == FangsHeist.SWITCH_TICS then
-		G_SetCustomExitVars(GetMostVotedMap(), 2)
-		G_ExitLevel()
+	if t == FangsHeist.SWITCH_TICS
+	and (isserver or isdedicatedserver) then
+		COM_BufInsertText(server, ("map %s -gametype %s"):format(GetMostVotedMap()))
 	end
 
 	return true

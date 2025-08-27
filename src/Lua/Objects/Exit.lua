@@ -14,6 +14,7 @@ function FangsHeist.defineExit(x, y, z, a)
 	exit.tics = -1
 	exit.state = S_FH_MARVQUEEN
 	exit.angle = a
+	exit.height = 48*FU
 	exit.flags = (MF_NOTHINK|MF_NOGRAVITY|MF_NOCLIP|MF_NOCLIPHEIGHT)
 
 	FangsHeist.Net.exit = exit

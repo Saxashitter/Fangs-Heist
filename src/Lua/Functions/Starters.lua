@@ -56,11 +56,16 @@ function FangsHeist.startIntermission()
 	local checked = {}
 
 	for i = 1,1024 do
-		if not (mapheaderinfo[i] and mapheaderinfo[i].typeoflevel & TOL_HEIST and i ~= gamemap) then
+		if not (mapheaderinfo[i] and i ~= gamemap) then
 			continue
 		end
 
-		table.insert(maps, i)
+		for _, gm in ipairs(FangsHeist.Gamemodes) do
+			if gm.tol & mapheaderinfo[i].typeoflevel then
+				table.insert(maps, i)
+				break
+			end
+		end
 	end
 
 	for i = 1, 3 do
@@ -71,9 +76,17 @@ function FangsHeist.startIntermission()
 		local key = P_RandomRange(1, #maps)
 		local map = maps[key]
 
+		local modes = {}
+		for i, gm in ipairs(FangsHeist.Gamemodes) do
+			if gm.tol & mapheaderinfo[map].typeoflevel then
+				table.insert(modes, i)
+			end
+		end
+
 		table.insert(FangsHeist.Net.map_choices, {
 			map = map,
-			votes = 0
+			votes = 0,
+			gametype = P_RandomRange(1, modes[P_RandomRange(1, #modes)])
 		})
 
 		table.remove(maps, key)

@@ -192,10 +192,9 @@ local function K_PunchFrogSwitch(prepassedtime, escapetype, activeportal)
 	end
 
 	S_ChangeMusic("hrryup", true)
-	for player in players.iterate do
-		local sound = P_RandomRange(sfx_hurry0,sfx_hurry4)
-		S_StartSound(nil, sound, player)
-	end
+
+	local sound = P_RandomRange(sfx_hurry0,sfx_hurry4)
+	S_StartSound(nil, sound)
 
 	FangsHeist.Net.escape = true
 	FangsHeist.Net.time_escape_started = leveltime
@@ -205,11 +204,13 @@ local function K_PunchFrogSwitch(prepassedtime, escapetype, activeportal)
 		P_LinedefExecute(tonumber(data.fh_escapelinedef))
 	end
 
-	if multiplayer then
+	-- SAXA: we do NOT need this
+	-- better for players to exit and shit by themselvss
+	--[[if multiplayer then
 		for player in players.iterate do
 			KombiTeleport(player)
 		end
-	end
+	end]]
 end
 
 function gamemode:init(map)
@@ -284,20 +285,17 @@ function gamemode:load()
 	local treasure_spawns = {}
 
 	for thing in mapthings.iterate do
-		if thing.type == 3844 then
-			exit = thing
-		end
-
 	-- Round 2 portal would conflict with the actual escape portal in design, so that means no Final Demo zones for you
 	-- (really I don't want more things to port from Gamemodes/Escape)
 
-	if thing.type == 1
-		and exit == nil then
+		if thing.type == 1 then
 			exit = thing
+			break
 		end
 	end
 
 	if exit then
+
 		local smallportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALSMALL_ALT)
 		local mediumportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALMEDIUM_ALT)
 		local largeportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALLARGE_ALT)
@@ -310,7 +308,11 @@ function gamemode:load()
 		local z = largeportal.subsector.sector.floorheight+(128*FRACUNIT)
 		local a = FixedAngle(exit.angle*FU)
 
-		--FangsHeist.defineExit(x, y, z, a)
+		FangsHeist.Net.exit = P_SpawnMobj(exit.x*FU, exit.y*FU, exit.z*FU, MT_THOK)
+		FangsHeist.Net.exit.state = S_INVISIBLE -- nonexistant,,,, totally
+		FangsHeist.Net.exit.height = 64*FU
+		FangsHeist.Net.exit.tics = -1
+		FangsHeist.Net.exit.angle = a
 	end
 
 	for i = 1, #treasure_spawns do
@@ -326,7 +328,7 @@ end
 function gamemode:playerinit(p)
 	self.super.playerinit(self, p)
 	p.heist.treasure = 0
-	player.heist.wl = {clossticks = 0}
+	p.heist.wl = {clossticks = 0}
 end
 
 function gamemode:playerspawn(p)
@@ -335,7 +337,7 @@ function gamemode:playerspawn(p)
 	local pos = FangsHeist.Net.signpos
 
 	p.heist.treasure = 0
-	player.heist.wl = {clossticks = 0}
+	p.heist.wl = {clossticks = 0}
 end
 
 function gamemode:playerdeath(p)
@@ -350,12 +352,14 @@ function gamemode:playerthink(player)
 
 	-- FIXME: Stupid fucking hack but at least it makes the API happy
 	local team = player.heist:getTeam()
-	team.profit = player.heist.treasure
+
+	if team then
+		team.profit = player.heist.treasure
+	end
 
 	if player.heist.exiting then return end
 	if not FangsHeist.Net.wl4_coin_loss then return end
 	local clticks = FangsHeist.Net.keroCoinLossTicks or 0
-
 
 	player.heist.wl = $ or {clossticks = 0}
 	player.heist.wl.clossticks = $ + 1
@@ -515,11 +519,11 @@ function gamemode:manageExiting()
 		if not p.heist:isAlive() then continue end
 
 		if not p.heist.exiting
-		and HeistHook.runHook("PlayerExit", p) == true then
-			continue
+		and not p.heist:isAtGate() then
+			return
 		end
 
-		if not p.heist.exiting then
+		if HeistHook.runHook("PlayerExit", p) == true then
 			continue
 		end
 

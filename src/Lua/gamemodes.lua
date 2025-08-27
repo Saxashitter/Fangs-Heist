@@ -1,10 +1,13 @@
+freeslot("TOL_HEIST")
+freeslot("TOL_HEISTROUND2")
+
 local function _NIL() end
 local DEFAULT = {
 	name = "Default",
 	desc = "Placeholder text.",
 
 	id = "ID",
-	tol = freeslot"TOL_HEIST",
+	tol = TOL_HEIST|TOL_HEISTROUND2,
 
 	pvp = true,
 	teams = true,
@@ -68,6 +71,7 @@ function FangsHeist.addGamemode(gt)
 		description = gt.desc
 	})
 
+	gt.gametype = _G["GT_FANGSHEIST"..gt.id]
 	table.insert(FangsHeist.Gamemodes, gt)
 	FangsHeist.GametypeIDs[_G["GT_FANGSHEIST"..gt.id]] = #FangsHeist.Gamemodes
 

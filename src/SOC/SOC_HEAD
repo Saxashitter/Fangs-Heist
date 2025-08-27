@@ -59,7 +59,7 @@ Act = 1
 Lua.FH_EscapeLinedef = 148
 Keywords = THZ1
 Music = THZ1
-TypeOfLevel = Heist
+TypeOfLevel = HeistRound2
 NextLevel = 5
 SkyNum = 4
 NoVisitNeeded = true
@@ -120,7 +120,7 @@ Level 33
 Levelname = FD Greenflower
 Act = 0
 Music = FDEMO1
-TypeOfLevel = Heist
+TypeOfLevel = HeistRound2
 NextLevel = 1100
 SkyNum = 2
 LevelSelect = 2
@@ -136,7 +136,7 @@ Lua.FH_StageType = Escape
 Level 34
 Levelname = FD Techno Hill
 Music = FDEMO3
-TypeOfLevel = Heist
+TypeOfLevel = HeistRound2
 NextLevel = 1100
 SkyNum = 2
 LevelSelect = 2
@@ -164,7 +164,7 @@ Lua.FH_EscapeTheme = OLNORE
 Level 35
 Levelname = FD Castle Eggman
 Music = FDEMO5
-TypeOfLevel = Heist
+TypeOfLevel = HeistRound2
 NextLevel = 1100
 SkyNum = 65
 LevelSelect = 2
@@ -175,6 +175,7 @@ FlickyList = Demo
 Weather = 1
 Lua.FH_Time = 300
 Lua.FH_EscapeTheme = SPRHRO
+Lua.FH_Round2Theme = SPRHRO
 Lua.FH_StageType = Escape
 Lua.FH_EscapeLinedef = 358
 

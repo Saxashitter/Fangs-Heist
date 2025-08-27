@@ -26,7 +26,7 @@ function mt:isAtGate()
 	local dist = R_PointToDist2(self.player.mo.x, self.player.mo.y, exit.x, exit.y)
 
 	if dist <= self.player.mo.radius+32*FU
-	and self.player.mo.z <= exit.z+48*FU
+	and self.player.mo.z <= exit.z+exit.height
 	and exit.z <= self.player.mo.z+self.player.mo.height then
 		return true
 	end

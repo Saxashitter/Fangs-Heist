@@ -2,7 +2,7 @@ local gamemode = {
 	name = "Escape",
 	desc = "Get some profit, grab that signpost, and GO! GO! GO!",
 	id = "ESCAPE",
-	tol = TOL_HEIST
+	tol = TOL_HEIST|TOL_HEISTROUND2
 }
 local path = "Modules/Gamemodes/Escape/"
 local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"

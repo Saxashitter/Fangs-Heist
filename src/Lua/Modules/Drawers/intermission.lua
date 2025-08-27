@@ -530,7 +530,7 @@ end
 local MAP_GRAP = "MAP%sP"
 local MAP_SCALE = FU/3
 
-local function DrawMapSelection(v, x, y, map, votes, selected, confirmed, flags)
+local function DrawMapSelection(v, x, y, map, votes, gametype, selected, confirmed, flags)
 	flags = $ or 0
 	local color = SKINCOLOR_WHITE
 	local FH = FangsHeist
@@ -548,7 +548,8 @@ local function DrawMapSelection(v, x, y, map, votes, selected, confirmed, flags)
 	v.drawScaled(x, y, MAP_SCALE, patch, flags)
 
 	local STRING_X = x + patch.width*MAP_SCALE/2
-	local VOTES_Y = y + patch.height*MAP_SCALE + 2*FU
+	local MODE_Y = y + patch.height*MAP_SCALE + 2*FU
+	local VOTES_Y = y + patch.height*MAP_SCALE + 10*FU
 
 	flags = $ or 0
 
@@ -556,6 +557,7 @@ local function DrawMapSelection(v, x, y, map, votes, selected, confirmed, flags)
 	and confirmed then
 		color = SKINCOLOR_GREEN
 	end
+	FH.DrawString(v,STRING_X,MODE_Y,FU,FangsHeist.Gamemodes[gametype].name,"FHTXT","center",flags,v.getStringColormap(skincolors[color].chatcolor))
 	FH.DrawString(v,STRING_X,VOTES_Y,FU/2,tostring(votes),"FHBFT","center",flags,v.getColormap(TC_DEFAULT,color))
 
 	if not selected then return end
@@ -586,7 +588,7 @@ local function DrawMapVote(v, percent)
 		local pos = FixedMul(FU/2, FixedDiv(i, #maps-1))
 		local x, y = GetXYCoords(v, pos, y)
 
-		DrawMapSelection(v, x, y, map.map, map.votes, selected, confirmed, V_SNAPTOLEFT|V_SNAPTOTOP)
+		DrawMapSelection(v, x, y, map.map, map.votes, map.gametype, selected, confirmed, V_SNAPTOLEFT|V_SNAPTOTOP)
 	end
 end
 
