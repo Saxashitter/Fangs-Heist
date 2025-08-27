@@ -206,6 +206,10 @@ local function K_PunchFrogSwitch(prepassedtime, escapetype, activeportal)
 
 	-- SAXA: we do NOT need this
 	-- better for players to exit and shit by themselvss
+	
+	-- Saxa you bitch you're uninvited to my birthday party
+	-- Would probably be best if when i reinstate this
+	-- i gave a sec of invuln to not cause utter chaos at the start
 	--[[if multiplayer then
 		for player in players.iterate do
 			KombiTeleport(player)
@@ -938,6 +942,15 @@ addHook("MobjDeath", function(mo, inf, src)
 	howMany = $ != nil and $ or 50
 	WL_SpawnCoins(mo, howMany)
 end)
+
+
+
+addHook("MobjDeath", function(target, inflictor, source, damage, damagetype)
+	if gametype != GT_FANGSHEISTWL4GBA then return end
+	local player = source.player
+	if not player then return end
+	player.heist.treasure = ($ or 0) + 10
+end, MT_RING)
 
 local coinLossTreasureWaitTics = 5
 
