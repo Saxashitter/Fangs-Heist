@@ -30,7 +30,7 @@ gamemode.teams = false
 gamemode.super = FangsHeist.Gamemodes[FangsHeist.Escape]
 gamemode.dontdivprofit = true
 gamemode.preferredhud = {
-	pos = {x = 312, y = 19},
+	pos = {x = 312, y = 23},
 	Profit = false,
 	Rings = true,
 	Rank = true
@@ -295,7 +295,6 @@ function gamemode:load()
 	end
 
 	if exit then
-
 		local smallportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALSMALL_ALT)
 		local mediumportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALMEDIUM_ALT)
 		local largeportal = P_SpawnMobj(exit.x*FRACUNIT,exit.y*FRACUNIT,exit.z*FRACUNIT,MT_WLPORTALLARGE_ALT)
@@ -308,7 +307,7 @@ function gamemode:load()
 		local z = largeportal.subsector.sector.floorheight+(128*FRACUNIT)
 		local a = FixedAngle(exit.angle*FU)
 
-		FangsHeist.Net.exit = P_SpawnMobj(exit.x*FU, exit.y*FU, exit.z*FU, MT_THOK)
+		FangsHeist.Net.exit = P_SpawnMobj(x, y, z, MT_THOK)
 		FangsHeist.Net.exit.state = S_INVISIBLE -- nonexistant,,,, totally
 		FangsHeist.Net.exit.height = 64*FU
 		FangsHeist.Net.exit.tics = -1
