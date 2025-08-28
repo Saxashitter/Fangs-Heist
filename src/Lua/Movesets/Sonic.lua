@@ -141,6 +141,10 @@ local function DropDashLand(p)
 
 	local speed = ease.linear(min(t, FU), DROPDASH_SPEEDSTART*p.mo.scale, DROPDASH_SPEEDEND*p.mo.scale)
 
+	if p.heist:hasSign() then
+		speed = FixedMul($, FU*3/4)
+	end
+
 	p.mo.state = S_PLAY_ROLL
 	p.pflags = ($|PF_SPINNING) & ~PF_STARTDASH
 	P_InstaThrust(p.mo, p.mo.angle, speed)

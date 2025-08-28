@@ -80,27 +80,26 @@ local function DrawTeam(v, x, y, height, team, flags)
 		return
 	end
 
-	for _, p in ipairs(team) do
+	for i, p in ipairs(team) do
 		if not p
 		or not p.valid then
 			continue
 		end
 
-		local skin = skins[p.skin]
+		local skin = skins[p.heist.locked_skin]
 		local icon, null = GetSkinIcon(v, skin.name)
 		local scale = GetPatchScale(icon, height, false)
 
 		v.drawScaled(x*FU, y*FU, scale, icon, flags, v.getColormap(skin.name, p.skincolor))
-		x = $ + height*FU + 4*FU
+		x = $ + height + 4
 	end
 
-	x = $ + 4*FU
+	x = $ + 4
 
 	local ty = y*FU + (height*FU-7*FU)/2
-	FH.DrawString(v,x,ty,FU/2,leader.name,"FHFNT",nil,flags,v.getColormap(TC_DEFAULT,SKINCOLOR_WHITE))
+	FH.DrawString(v,x*FU,ty,FU/2,leader.name,"FHFNT",nil,flags,v.getColormap(TC_DEFAULT,SKINCOLOR_WHITE))
 
-	x = $ + FH.GetStringWidth(v,leader.name,FU/2,"FHFNT")+2*FU
-	FH.DrawString(v,x,ty,FU/2,"$"..team.profit,"FHFNT",nil,flags,v.getColormap(TC_DEFAULT,SKINCOLOR_GREEN))
+	FH.DrawString(v,x*FU + FH.GetStringWidth(v,leader.name,FU/2,"FHFNT")+2*FU,ty,FU/2,"$"..team.profit,"FHFNT",nil,flags,v.getColormap(TC_DEFAULT,SKINCOLOR_GREEN))
 	return true
 end
 

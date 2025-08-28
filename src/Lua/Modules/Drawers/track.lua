@@ -24,6 +24,8 @@ addHook("PreThinkFrame", do
 	tracked = {}
 end)
 
+local drawdist = CV_FindVar("drawdist")
+
 function module.draw(v, p, c)
 	if not (p.mo and p.mo.valid) then return end
 
@@ -34,12 +36,14 @@ function module.draw(v, p, c)
 
 		local y = 0
 		local track = sglib.ObjectTracking(v,p,c, t.mo)
+		local dist = R_PointToDist2(c.x, c.y, p.mo.x, p.mo.y)
 
-		if not (track.onScreen and P_CheckSight(p.mo, t.mo)) then
+		if not track.onScreen then continue end
+		if P_CheckSight(p.mo, t.mo)
+		and dist < (drawdist and drawdist.value or 0)*FU then
 			continue
 		end
 
-		local dist = R_PointToDist2(t.mo.x, t.mo.y, p.mo.x, p.mo.y)
 		local fd = FixedDiv -- oh boy...
 		local trans = 0
 

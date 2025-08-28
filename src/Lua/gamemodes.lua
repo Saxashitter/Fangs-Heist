@@ -12,10 +12,8 @@ local DEFAULT = {
 	pvp = true,
 	teams = true,
 	friendlyfire = false,
-	teamlimit = 3,
-	signnerf = false,
+	teamlimit = 1,
 	spillallrings = false,
-	dontdivprofit = false,
 	preferredhud = {
 		pos = {x = 312, y = 8},
 		Profit = true,
@@ -88,7 +86,9 @@ function FangsHeist.getGamemode()
 	return FangsHeist.Gamemodes[i]
 end
 
-FangsHeist.Escape = dofile "Modules/Gamemodes/Escape/def.lua"
+FangsHeist.Solo = dofile "Modules/Gamemodes/Solo/def.lua"
+FangsHeist.Duo = dofile "Modules/Gamemodes/Duo/def.lua"
+FangsHeist.Trio = dofile "Modules/Gamemodes/Trio/def.lua"
 -- FangsHeist.TagTeam = dofile "Gamemodes/Tag Team/def.lua"
 
 -- EXTREEEEEMELY important!! don't comment out or remove or even SEE it...

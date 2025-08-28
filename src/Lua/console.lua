@@ -56,6 +56,25 @@ COM_AddCommand("fh_receivemapvote", function(_, str)
 	FangsHeist.Net.map_choices = data
 end, COM_ADMIN)
 
+COM_AddCommand("fh_banchar", function(p, name)
+	if not name then
+		CONS_Printf(p, "Name must be provided.")
+		return
+	end
+
+	FangsHeist.BannedChars[name] = not $
+
+	if FangsHeist.BannedChars[name] then
+		print(("Banned %s from Fang's Heist."):format(name))
+		print("Change will take place once a new match starts.")
+
+		return
+	end
+
+	print(("Unbanned %s from Fang's Heist."):format(name))
+	print("Change will take place once a new match starts.")
+end, COM_ADMIN)
+
 FangsHeist.CVars = {}
 
 FangsHeist.CVars.escape_time = CV_RegisterVar{

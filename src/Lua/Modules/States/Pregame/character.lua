@@ -256,9 +256,17 @@ function state:tick()
 
 	if self.heist.buttons & BT_JUMP
 	and not (self.heist.lastbuttons & BT_JUMP) then
+		local gamemode = FangsHeist.getGamemode()
 		S_StartSound(nil, sfx_strpst, self)
 		FangsHeist.playVoiceline(self, "accept", true)
-		return "team"
+
+		local state = "team"
+
+		if gamemode.teamlimit < 2 then
+			state = "waiting"
+		end
+
+		return state
 	end
 
 	self.heist.cs_switchtime = $+1
@@ -273,7 +281,7 @@ function state:tick()
 
 		if i >= 1
 		and i <= #FangsHeist.CharList then
-			ChangeSelection(self, self.heist.locked_skin + SKINS_ROW*y, true)
+			ChangeSelection(self, SKINS_ROW*y)
 		end
 	end
 

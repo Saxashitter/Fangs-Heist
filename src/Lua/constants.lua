@@ -1,4 +1,4 @@
-rawset(_G, "FH_NERFSPEED", 28*FU)
+rawset(_G, "FH_NERFSPEED", 27*FU)
 
 rawset(_G, "FH_PARRYPROFIT", 7)
 rawset(_G, "FH_RINGPROFIT", 8)

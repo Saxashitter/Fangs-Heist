@@ -28,12 +28,19 @@ function FangsHeist.initTeamTable()
 end
 
 function FangsHeist.initTeam(p)
-	if not p.heist:isAbleToTeam() then
-		return
-	end
 
-	local team = FangsHeist.initTeamTable()
-	team[1] = p
+	local team
+
+	if type(p) == "table" then
+		team = p
+	else
+		if not p.heist:isAbleToTeam() then
+			return
+		end
+
+		team = FangsHeist.initTeamTable()
+		team[1] = p
+	end
 
 	table.insert(FangsHeist.Net.teams, team)
 	return team
@@ -43,7 +50,7 @@ function FangsHeist.initPlayer(p)
 	local orig = p.heist
 	local heist = copy(orig_plyr)
 
-	heist.skin_index = orig and orig.skin_index or $
+	heist.skin_index = max(1, min(orig and orig.skin_index or $, #FangsHeist.CharList))
 	heist.locked_skin = orig and orig.locked_skin or $
 	heist.alt_skin = orig and orig.alt_skin or $
 	heist.player = p
