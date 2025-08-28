@@ -55,16 +55,16 @@ function state:draw(v, c, transparency)
 	local team = self.heist:getTeam()
 	local FH = FangsHeist
 	local y = 10*FU
-	FH.DrawString(v,160*FU, y,FU, "Team:","FHFNT","center", V_SNAPTOTOP|transparency, v.getColormap(TC_DEFAULT,SKINCOLOR_WHITE))
-	y = $+15*FU
+	FH.DrawString(v,160*FU, y,FU, "Team:","FHTXT","center", V_SNAPTOTOP|transparency)
+	y = $+10*FU
 	for i, p in ipairs(team) do
 		if not (p and p.valid) then continue end
 
-		FH.DrawString(v,160*FU,y,FU/2, p.name,"FHFNT","center", V_SNAPTOTOP|transparency, v.getColormap(TC_DEFAULT,p.skincolor))
+		FH.DrawString(v,160*FU,y,FU, p.name,"FHTXT","center", V_SNAPTOTOP|transparency, v.getStringColormap(skincolors[p.skincolor].chatcolor))
 		
 		y = $+10*FU
 	end
-	FH.DrawString(v,160*FU, 187*FU,FU/2, "Wating for Players...","FHFNT","center", V_SNAPTOBOTTOM|transparency, v.getColormap(TC_DEFAULT,SKINCOLOR_YELLOW))
+	FH.DrawString(v,160*FU, 187*FU,FU, "Wating for Players...","FHTXT","center", V_SNAPTOBOTTOM|transparency, v.getStringColormap(V_YELLOWMAP))
 end
 
 return state

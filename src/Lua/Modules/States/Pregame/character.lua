@@ -121,7 +121,7 @@ local function DrawCharacterRibbon(v, y, skin, flags, tics)
 		Twn(tics-TEXT_DELAY, TEXT_TWEEN),
 		-width,
 		8*FU)
-	local ty = y - 16*FU/2
+	local ty = y - 20*FU/2
 
 	--[[customhud.CustomFontString(v,
 		tx,
@@ -277,11 +277,11 @@ function state:tick()
 
 	if abs(y) > 0
 	and #FangsHeist.CharList > SKINS_ROW then
-		local i = self.heist.skin_index + SKINS_ROW*y
+		local i = self.heist.skin_index + (SKINS_ROW-1)*y
 
 		if i >= 1
 		and i <= #FangsHeist.CharList then
-			ChangeSelection(self, SKINS_ROW*y)
+			ChangeSelection(self, (SKINS_ROW-1)*y)
 		end
 	end
 
@@ -316,10 +316,10 @@ function state:draw(v, c, transparency)
 		end
 		local col,alpha = ColorOpposite(skindef.prefcolor)
 		local twen = Twn(tics-TEXT_DELAY, 20)
-		local scale = ease.outback(twen,0,FU/2,FU/2)
+		local scale = ease.outback(twen,0,FU,FU)
 		local trans = ease.outquad(twen,9,0)<<V_ALPHASHIFT
 		FangsHeist.DrawString(v,160*FU, 100*FU - 10*FU - RIBBON_END_RADIUS/2,scale, 
-		"[CUSTOM 1] - Change Skin ("..name..")","FHFNT","center",trans,v.getColormap(TC_DEFAULT,col))
+		"[CUSTOM 1] - Change Skin ("..name..")","FHTXT","center",trans,v.getStringColormap(skincolors[col].chatcolor))
 	end
 end
 

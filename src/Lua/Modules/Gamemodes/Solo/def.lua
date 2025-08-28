@@ -373,7 +373,7 @@ function gamemode:manageTime()
 			FangsHeist.Net.eggman.state = S_FH_EGGMAN_DOOMCHASE
 		end
 
-		HeistHook.runHook("TimeUp")
+		FangsHeist.runHook("TimeUp")
 	end
 end
 
@@ -390,7 +390,7 @@ function gamemode:manageExiting()
 		end
 
 		if not p.heist.exiting
-		and HeistHook.runHook("PlayerExit", p) == true then
+		and FangsHeist.runHook("PlayerExit", p) == true then
 			continue
 		end
 
@@ -425,7 +425,7 @@ end
 
 function gamemode:startEscape(p)
 	if FangsHeist.Net.escape
-	or HeistHook.runHook("EscapeStart", p) == true then
+	or FangsHeist.runHook("EscapeStart", p) == true then
 		return
 	end
 

@@ -79,7 +79,7 @@ addHook("ThinkFrame", do
 
 	song, loop, volume = gamemode:music()
 
-	local custom, custom2, custom3 = HeistHook.runHook("Music", song)
+	local custom, custom2, custom3 = FangsHeist.runHook("Music", song)
 	if type(custom) == "string" then
 		song = custom
 	end

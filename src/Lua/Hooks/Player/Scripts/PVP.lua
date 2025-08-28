@@ -89,7 +89,7 @@ local function Damage(p, p2)
 	local sound = tier[P_RandomRange(1, #tier)]
 
 	S_StartSound(p2.mo, sound)
-	HeistHook.runHook("PlayerHit", p, p2)
+	FangsHeist.runHook("PlayerHit", p, p2)
 
 	return true
 end
@@ -115,7 +115,7 @@ local function RegisterGuard(atk, vic)
 		vic.mo.momz = mz
 		P_MovePlayer(vic)
 
-		HeistHook.runHook("PlayerParried", atk, vic)
+		FangsHeist.runHook("PlayerParried", atk, vic)
 	end
 
 	FangsHeist.playVoiceline(atk, "parry")
@@ -158,7 +158,7 @@ local function AttemptAttack(p, sp)
 	end
 
 	if sp.heist.attack_time
-	or HeistHook.runHook("PlayerScanAttack", sp) then
+	or FangsHeist.runHook("PlayerScanAttack", sp) then
 		local speed = 18*FU
 		local mx, my, mz = L_ReturnThrustXYZ(p.mo, {
 			x = sp.mo.x,
@@ -187,8 +187,8 @@ local function AttemptAttack(p, sp)
 			P_StartQuake(7*FU, 12)
 		end
 
-		HeistHook.runHook("PlayerClash", p, sp)
-		HeistHook.runHook("PlayerClash", sp, p)
+		FangsHeist.runHook("PlayerClash", p, sp)
+		FangsHeist.runHook("PlayerClash", sp, p)
 		return
 	end
 
@@ -227,7 +227,7 @@ local function AttemptAttack(p, sp)
 end
 
 local function DoAttack(p)
-	if HeistHook.runHook("PlayerAttack", p) == true then
+	if FangsHeist.runHook("PlayerAttack", p) == true then
 		return
 	end
 
@@ -252,7 +252,7 @@ local function DoAttack(p)
 end
 
 local function DoGuard(p)
-	if HeistHook.runHook("PlayerParry", p) == true then
+	if FangsHeist.runHook("PlayerParry", p) == true then
 		return
 	end
 
@@ -266,7 +266,7 @@ local function DoGuard(p)
 		P_SetObjectMomZ(p.mo, 0)
 		S_StartSound(p.mo, sfx_s3k7c)
 
-		HeistHook.runHook("PlayerAirDodge", p)
+		FangsHeist.runHook("PlayerAirDodge", p)
 		return
 	end
 
@@ -355,7 +355,7 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 		end
 
 		t.player.powers[pw_flashing] = 35
-		HeistHook.runHook("PlayerParriedEnemy", t.player, i)
+		FangsHeist.runHook("PlayerParriedEnemy", t.player, i)
 		return false
 	end
 
@@ -396,7 +396,7 @@ local function reflection(mobj,proj)
 	proj.target = mobj
 
 	RegisterGuard(mobj.player)
-	HeistHook.runHook("PlayerParriedEnemy", mobj.player, proj)
+	FangsHeist.runHook("PlayerParriedEnemy", mobj.player, proj)
 
 	-- Gain profit based on speed of projectile.
 	local PROFIT = FH_PARRYPROFIT
@@ -592,7 +592,7 @@ return function(p)
 		end, p.mo, x-radius*2, x+radius*2, y-radius*2, y+radius*2)
 	end
 
-	if HeistHook.runHook("PlayerScanAttack", p)
+	if FangsHeist.runHook("PlayerScanAttack", p)
 	or p.heist.attack_time then
 		for sp in players.iterate do
 			if AttemptAttack(p, sp) then

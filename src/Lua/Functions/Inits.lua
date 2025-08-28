@@ -71,7 +71,7 @@ function FangsHeist.initPlayer(p)
 
 	gamemode:playerinit(p)
 
-	HeistHook.runHook("PlayerInit", p)
+	FangsHeist.runHook("PlayerInit", p)
 end
 
 function FangsHeist.initMode(map)
@@ -129,7 +129,7 @@ function FangsHeist.initMode(map)
 
 	FangsHeist.initHUD()
 
-	HeistHook.runHook("GameInit")
+	FangsHeist.runHook("GameInit")
 
 	if not multiplayer then
 		FangsHeist.Net._inited = true
@@ -155,5 +155,5 @@ function FangsHeist.loadMap()
 	local gamemode = FangsHeist.getGamemode()
 	gamemode:load()
 
-	HeistHook.runHook("GameLoad")
+	FangsHeist.runHook("GameLoad")
 end

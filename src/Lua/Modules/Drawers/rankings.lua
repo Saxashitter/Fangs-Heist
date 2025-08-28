@@ -97,9 +97,9 @@ local function DrawTeam(v, x, y, height, team, flags)
 	x = $ + 4
 
 	local ty = y*FU + (height*FU-7*FU)/2
-	FH.DrawString(v,x*FU,ty,FU/2,leader.name,"FHFNT",nil,flags,v.getColormap(TC_DEFAULT,SKINCOLOR_WHITE))
+	FH.DrawString(v,x*FU,ty,FU,leader.name,"FHTXT",nil,flags)
 
-	FH.DrawString(v,x*FU + FH.GetStringWidth(v,leader.name,FU/2,"FHFNT")+2*FU,ty,FU/2,"$"..team.profit,"FHFNT",nil,flags,v.getColormap(TC_DEFAULT,SKINCOLOR_GREEN))
+	FH.DrawString(v,x*FU + FH.GetStringWidth(v,leader.name,FU,"FHTXT")+2*FU,ty,FU,"$"..team.profit,"FHTXT",nil,flags,v.getStringColormap(V_GREENMAP))
 	return true
 end
 
@@ -112,9 +112,9 @@ function module.draw(v)
 	local gamemode = FangsHeist.getGamemode()
 
 	DrawRect(v, 0, TOPLINE_Y, sw, 1, V_SNAPTOTOP|V_SNAPTOLEFT, v.getColormap(TC_ALLWHITE,nil))
-	FangsHeist.DrawString(v,MODE_X*FU, MODE_Y*FU,FU/2,  
-	gamemode.name,"FHFNT",nil, V_SNAPTOTOP|V_SNAPTOLEFT, 
-	v.getColormap(TC_DEFAULT,SKINCOLOR_MAUVE))
+	FangsHeist.DrawString(v,MODE_X*FU, MODE_Y*FU,FU,  
+	gamemode.name,"FHTXT",nil, V_SNAPTOTOP|V_SNAPTOLEFT, 
+	v.getStringColormap(V_PURPLEMAP))
 
 	local height = PLAYER_HEIGHT
 	if #FangsHeist.Net.placements > 8 then
