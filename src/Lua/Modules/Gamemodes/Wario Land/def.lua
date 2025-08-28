@@ -23,7 +23,7 @@ local path = "Modules/Gamemodes/Wario Land/"
 dofile(path.."freeslots.lua")
 
 gamemode.name = "Wario Land 4"
-gamemode.desc = "Get as much treasure as you can, then hit the Frog Switch and prepare to H-H-H-HURRY UP!!! (Port of IHTKChar's escape sequence.)"
+gamemode.desc = "Get as much treasure as you can, then hit the Frog Switch and prepare to H-H-H-HURRY UP!!! (Port of IHTKChars' escape sequence.)"
 gamemode.id = "WL4GBA"
 gamemode.tol = TOL_HEIST
 gamemode.teams = false
@@ -206,6 +206,10 @@ local function K_PunchFrogSwitch(prepassedtime, escapetype, activeportal)
 
 	-- SAXA: we do NOT need this
 	-- better for players to exit and shit by themselvss
+	
+	-- Saxa you bitch you're uninvited to my birthday party
+	-- Would probably be best if when i reinstate this
+	-- i gave a sec of invuln to not cause utter chaos at the start
 	--[[if multiplayer then
 		for player in players.iterate do
 			KombiTeleport(player)
@@ -352,8 +356,18 @@ function gamemode:playerthink(player)
 	-- FIXME: Stupid fucking hack but at least it makes the API happy
 	local team = player.heist:getTeam()
 
-	if team then
-		team.profit = player.heist.treasure
+	if team and team.valid then
+		local runningTotal = 0
+
+		-- Stupid but fixes them rounding errors that occur
+		-- Since the most common treasure gains come in 10
+		
+		for k, player in pairs(team) do
+			if not (player and player.heist) then return end
+			runningTotal = player.heist.treasure
+		end
+
+		profit = runningTotal / #team
 	end
 
 	if player.heist.exiting then return end
@@ -938,6 +952,15 @@ addHook("MobjDeath", function(mo, inf, src)
 	howMany = $ != nil and $ or 50
 	WL_SpawnCoins(mo, howMany)
 end)
+
+
+
+addHook("MobjDeath", function(target, inflictor, source, damage, damagetype)
+	if gametype != GT_FANGSHEISTWL4GBA then return end
+	local player = source.player
+	if not player then return end
+	player.heist.treasure = ($ or 0) + 10
+end, MT_RING)
 
 local coinLossTreasureWaitTics = 5
 
