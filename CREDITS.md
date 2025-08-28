@@ -1,91 +1,93 @@
-# Saxashitter
-- Director
-- Scripter
+# The guy behind it all (Scripting, Director)
+## Saxashitter
 - Made basically all of the backend
+- Visual direction
+- Gameplay
+- A lot, honestly.
 
-# Unmatched Bracket
-## Side Coder
-- Coded Signpost Visuals
-- Tutorial (Original edit for PTV2)
-- HookLib creator
-
-# LeoTheHedgehog12
-- Made A1 and A2 rotations for Marvellous Queen
-
-# I.D.K
-- Made Intermission background
-- Finished Marvellous Queen rotations
-
-# dark kirby
-- Originally created the GFZ1 edit for PTV3
-
-# Pyrodiac
-## Mapper
+# Mappers
+## Pyrodiac
 - GFZ1
 - GFZ2
 - F.D. THZ
 - F.D. CEZ
-- Acid Overflow
 - Acidic Overflux
 
-# enes2gamer
-## Mapper
+## enes2gamer
 - GFZ1
 
-# Pacola
-## Mapper
+## Pacola
 - THZ1
 - F.D. GFZ
 
-# romoney5
-## Coder
+## Lemerks
+- Tutorial
+
+## Sludesus
+- Tutorial
+- F.D. GFZ
+
+# Coders
+## romoney5
 - General polish for movesets
 
-# RubytheMii
-## Coder
+## RubytheMii
 - Coded Knuckles moveset
 
-# i._px / Medii
-## Coder
+## i._px / Medii
 - Coded Metal Sonic moveset
 
-# RedFoxyBoy
-## Coder
+## SLS64LGamingBro
+- Coded Amy moveset
+
+## RedFoxyBoy
 - Titlescreen polish
 - Team Fracture Splash screen
 - Tons of HUD polish (i seriously cant thank you enough)
 
-# Lemerks
-## Mapper
-- Tutorial
+## Unmatched Bracket
+- Coded Signpost Visuals
+- Tutorial (Original edit for PTV2)
+- HookLib creator
 
-# Sludesus
-## Mapper
-- Tutorial
-- F.D. GFZ
+## TwoTailedHero
+- Creator of external Wario Land mode
+- UglyKnux skin addition
+- Gordon Freeman
 
-# 5UP34
-## Spriter
+# Spriters
+## 5UP34
 - All Pre-game backgrounds
 
-# Speedcore Tempest
-## Ex-Spriter
+## LeoTheHedgehog12
+- Made A1 and A2 rotations for Marvellous Queen
+
+## I.D.K
+- Made Intermission background
+- Finished Marvellous Queen rotations
+
+## Speedcore Tempest
 - All treasures in-game
 
-# ZrUltra
-## Composer
+## GLide KS
+- Timer sprite
+
+## Keyla L.
+- Ring and Profit sprite
+- Round 2 sprite
+
+# Musicians
+## ZrUltra
 - Ready For Round 2
 - Roll Down the Results!
 - More, more times!?
 
-# Tokonemu
-## Composer
+## Tokonemu
 - One more time
 - No more limits
 - Beautiful World
 
-# Yousuke Yasui
-## Composer
+## Yousuke Yasui
 ### Mamorukun Curse!
 - YO-KAI Disco!
 - Superhero
@@ -98,22 +100,31 @@
 ### Megalomachia2
 - SUPER-REFLEX
 
-# +TEK
-## Composer
+## +TEK
 ### +TEK Touhou Arrangements
 - the Grimoire of Alice
 
-# Jisk
-## Contributor
+# Special Thanks
+## Dirk the Husky
+- Sonic Drop-Dash sprites
+
+## NeoZiggy
+- Pretty much the guy who gave me the idea to make this months back. I have no regrets. Thanks!
+
+## BlueStaggo
+- ZrUltra held me at gunpoint to put you here.
+- Looped More, more times!?
+
+## Jisk
 - HookLib creator
 
-# luigi budd
-## Contributor
+## luigi budd
 - Provided me his slightly-modded HookLib.
 - Helped provide feedback regarding PvP system. He still hates it.
 
-# Dirk the Husky
-- Sonic Drop-Dash sprites
+## dark kirby
+- Originally created the GFZ1 edit for PTV3
 
-# NeoZiggy
-- Pretty much the guy who gave me the idea to make this months back. I have no regrets. Thanks!
+## MotorRoach
+- F. Sonic Sprites
+- "Use whatever you want. Please, do not add me again." 😱
