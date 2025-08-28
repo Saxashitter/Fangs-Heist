@@ -1,17 +1,13 @@
 # Saxashitter
 - Director
-- Main Coder
-- Made alot of the UI
+- Scripter
+- Made basically all of the backend
 
 # Unmatched Bracket
 ## Side Coder
 - Coded Signpost Visuals
-- Coded Fang's Dialogue
 - Tutorial (Original edit for PTV2)
 - HookLib creator
-## Concept Maker
-- "GO! GO! GO!" Scene
-- Original Fang dialogue sprites (Fank. It has a 1/69 chance of appearing ingame)
 
 # LeoTheHedgehog12
 - Made A1 and A2 rotations for Marvellous Queen
@@ -24,14 +20,13 @@
 - Originally created the GFZ1 edit for PTV3
 
 # Pyrodiac
-## Main Mapper
-- Vicious Volcano
+## Mapper
 - GFZ1
 - GFZ2
 - F.D. THZ
 - F.D. CEZ
-- Titlescreen Map
 - Acid Overflow
+- Acidic Overflux
 
 # enes2gamer
 ## Mapper
@@ -41,15 +36,24 @@
 ## Mapper
 - THZ1
 - F.D. GFZ
+
+# romoney5
 ## Coder
-- Bug fixer
-- Tweaker
+- General polish for movesets
+
+# RubytheMii
+## Coder
+- Coded Knuckles moveset
+
+# i._px / Medii
+## Coder
+- Coded Metal Sonic moveset
 
 # RedFoxyBoy
 ## Coder
 - Titlescreen polish
-- Team Fracture Intro
-- did most of the HUD Changes :p
+- Team Fracture Splash screen
+- Tons of HUD polish (i seriously cant thank you enough)
 
 # Lemerks
 ## Mapper
@@ -58,10 +62,10 @@
 # Sludesus
 ## Mapper
 - Tutorial
+- F.D. GFZ
 
 # 5UP34
 ## Spriter
-- Thrown Hammer (Amy)
 - All Pre-game backgrounds
 
 # Speedcore Tempest
@@ -74,24 +78,23 @@
 
 # Tokonemu
 ## Composer
-- Pre-Game
+- One more time
+- No more limits
+- Beautiful World
 
 # Yousuke Yasui
 ## Composer
-### Mamorukun Curse!:
+### Mamorukun Curse!
 - YO-KAI Disco!
 - Superhero
 - Kiwagana Princess
 - Bless you! boy
-- Will Force
-- The Curse
-- The Curse Again
+
 ### ESCHATOS
 - Point of No Return
+
 ### Megalomachia2
 - SUPER-REFLEX
-### Natsuki Chronicles
-- Mighty Magma Red
 
 # +TEK
 ## Composer
@@ -101,7 +104,6 @@
 # Jisk
 ## Contributor
 - HookLib creator
-- Made Amy's hammer collect rings when thrown.
 
 # luigi budd
 ## Contributor
@@ -109,5 +111,6 @@
 
 # Dirk the Husky
 - Sonic Drop-Dash sprites
+
 # NeoZiggy
-- Pretty much the guy who gave me the idea to make this months back. I have no regrets. Thanks
+- Pretty much the guy who gave me the idea to make this months back. I have no regrets. Thanks!
