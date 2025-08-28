@@ -70,6 +70,11 @@ function FangsHeist.defCharList()
 	end
 end
 
-FangsHeist.makeCharacter("knuckles", {pregameBackground = "FH_PREGAME_KNUCKLES"})
+FangsHeist.makeCharacter("knuckles", {
+	pregameBackground = "FH_PREGAME_KNUCKLES",
+	skins = {
+		{name = "UglyKnux"},
+	},
+})
 
 addHook("AddonLoaded", FangsHeist.defCharList)
