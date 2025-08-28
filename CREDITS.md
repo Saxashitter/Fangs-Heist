@@ -75,6 +75,8 @@
 # ZrUltra
 ## Composer
 - Ready For Round 2
+- Roll Down the Results!
+- More, more times!?
 
 # Tokonemu
 ## Composer
@@ -108,6 +110,7 @@
 # luigi budd
 ## Contributor
 - Provided me his slightly-modded HookLib.
+- Helped provide feedback regarding PvP system. He still hates it.
 
 # Dirk the Husky
 - Sonic Drop-Dash sprites
