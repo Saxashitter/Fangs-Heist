@@ -27,6 +27,9 @@
 - Tutorial
 - F.D. GFZ
 
+## Zeko
+- THZ2
+
 # Coders
 ## romoney5
 - General polish for movesets
@@ -128,3 +131,6 @@
 ## MotorRoach
 - F. Sonic Sprites
 - "Use whatever you want. Please, do not add me again." 😱
+
+## SSNTails
+- I don't know for sure, but he PROBABLY made Sonikku.wad

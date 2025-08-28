@@ -149,18 +149,6 @@ Lua.FH_EscapeTheme = KARSPR
 Lua.FH_Round2Theme = KARSPR
 Lua.FH_StageType = Escape
 
-level P2
-LevelName = Acid Overflow
-TypeOfLevel = Heist
-Music = RDLFAC
-SkyNum = 4
-NoVisitNeeded = true
-Recordattack = true
-NextMap = MAP33
-FlickyList = Rat,Bat,Dove
-Selectheading = Supported Maps
-Lua.FH_EscapeTheme = OLNORE
-
 Level 35
 Levelname = FD Castle Eggman
 Music = FDEMO5
