@@ -104,7 +104,7 @@ local function ReleaseCarriable(mobj, launch, rmvFromPickUp, dontRmvProfit)
 	end
 	if pmo
 	and not dontRmvProfit then
-		pmo.player.heist:gainProfit(-mobj.settings.profit, true)
+		pmo.player.heist:gainProfit(-mobj.settings.profit)
 	end
 
 	mobj.settings.target = nil
@@ -141,7 +141,7 @@ local function PickUpCarriable(pmo, mobj)
 	mobj.momz = 0
 
 	table.insert(GetCarryList(mobj), mobj.settings)
-	pmo.player.heist:gainProfit(mobj.settings.profit, true)
+	pmo.player.heist:gainProfit(mobj.settings.profit)
 
 	def.onPickUp(mobj, pmo)
 end

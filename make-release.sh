@@ -1,7 +1,5 @@
 pk3name=FangsHeist
 
-rm -rf .tmp
-
 read -p "Optimize songs?: " musicopti
 read -p "Optimize sounds?: " sound
 read -p "Is this a release build?: " rel
@@ -15,7 +13,9 @@ optimizesounds=$([[ "$sound" =~ ^[yY]$ ]] && echo 0 || echo 1)
 release=$([[ "$rel" =~ ^[yY]$ ]] && echo 0 || echo 1)
 prefix=$([[ "$rel" =~ ^[yY]$ ]] && echo "-release" || echo "-test")
 
-rm -rf "$pk3name$prefix.pk3"
+name="CL_FangsHeist-$prefix.pk3"
+
+rm -rf "$name"
 
 # Optimize songs.
 #!/bin/bash
@@ -116,7 +116,7 @@ if [[ "$optimizesounds" == 0 ]]; then
 fi
 
 cd src
-zip -r9 -q "../$pk3name$prefix.pk3" *
+zip -r9 -q "../$name" *
 cd ..
 if [ -f ".tmp" ]; then
 	rm -r .tmp

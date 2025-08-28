@@ -1,5 +1,11 @@
 FangsHeist.Characters = {}
 FangsHeist.CharList = {}
+FangsHeist.BannedChars = {}
+
+addHook("NetVars", function(sync)
+	FangsHeist.BannedChars = sync($)
+	FangsHeist.CharList = sync($)
+end)
 
 local function _NIL() end
 
@@ -61,11 +67,13 @@ function FangsHeist.defCharList()
 		local name = skins[i].name
 
 		if FangsHeist.Characters[name].altSkin then
-			print("Alt skin: "..name)
 			continue
 		end
 
-		print("Skin: "..name)
+		if FangsHeist.BannedChars[name] then
+			continue
+		end
+
 		table.insert(FangsHeist.CharList, skins[i])
 	end
 end

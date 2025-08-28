@@ -92,13 +92,6 @@ end)
 
 
 addHook("PlayerThink", function(p)
-	-- Force every PlayerThink hook to run before our code here.
-	for _,data in ipairs(FangsHeist._HOOKS.PlayerThink) do
-		data.func(p)
-	end
-
-	if not (p and p.valid) then return end
-
 	if not FangsHeist.isMode() then 
 		p.heist = nil
 		return

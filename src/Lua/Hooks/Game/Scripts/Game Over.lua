@@ -92,7 +92,7 @@ return function()
 
 	if t == FangsHeist.SWITCH_TICS
 	and (isserver or isdedicatedserver) then
-		COM_BufInsertText(server, ("map %s -gametype %s"):format(GetMostVotedMap()))
+		COM_BufInsertText(server, ("map %s -gametype %s -f"):format(GetMostVotedMap()))
 	end
 
 	return true

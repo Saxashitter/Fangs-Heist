@@ -1,1 +1,2 @@
 name = knuckles
+jumpfactor = 1

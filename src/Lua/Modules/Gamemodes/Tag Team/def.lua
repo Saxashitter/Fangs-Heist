@@ -1,5 +1,5 @@
 local copy = FangsHeist.require "Modules/Libraries/copy"
-local gamemode = copy(FangsHeist.Gamemodes[FangsHeist.Escape])
+local gamemode = copy(FangsHeist.Gamemodes[FangsHeist.Solo])
 
 gamemode.name = "Tag Team"
 gamemode.desc = "5 players form a tag team, while the rest of the server has to try and kill them!"
@@ -7,7 +7,7 @@ gamemode.id = "TAG"
 gamemode.tol = TOL_HEIST
 gamemode.spillallrings = true
 gamemode.teams = false
-gamemode.super = FangsHeist.Gamemodes[FangsHeist.Escape]
+gamemode.super = FangsHeist.Gamemodes[FangsHeist.Solo]
 gamemode.dontdivprofit = true
 
 local SWAP_TIME = 30*TICRATE

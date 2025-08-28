@@ -71,7 +71,7 @@ local function HasRequested(joiner, leader)
 end
 
 local function IsTeamFull(team)
-	local teamLength = FangsHeist.CVars.team_limit.value
+	local teamLength = FangsHeist.getGamemode().teamlimit
 
 	return team and #team >= teamLength
 end

@@ -1,6 +1,6 @@
 local copy = FangsHeist.require "Modules/Libraries/copy"
 local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"
-local gamemode = copy(FangsHeist.Gamemodes[FangsHeist.Escape])
+local gamemode = copy(FangsHeist.Gamemodes[FangsHeist.Solo])
 
 local function printTable(data, prefix)
 	prefix = prefix or ""
@@ -27,7 +27,7 @@ gamemode.desc = "Get as much treasure as you can, then hit the Frog Switch and p
 gamemode.id = "WL4GBA"
 gamemode.tol = TOL_HEIST
 gamemode.teams = false
-gamemode.super = FangsHeist.Gamemodes[FangsHeist.Escape]
+gamemode.super = FangsHeist.Gamemodes[FangsHeist.Solo]
 gamemode.dontdivprofit = true
 gamemode.preferredhud = {
 	pos = {x = 312, y = 23},

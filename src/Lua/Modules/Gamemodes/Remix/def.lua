@@ -1,5 +1,5 @@
 local copy = FangsHeist.require "Modules/Libraries/copy"
-local gamemode = copy(FangsHeist.Gamemodes[FangsHeist.Escape])
+local gamemode = copy(FangsHeist.Gamemodes[FangsHeist.Solo])
 
 local path = "Modules/Gamemodes/Remix/"
 
@@ -8,7 +8,7 @@ gamemode.id = "REMIX"
 gamemode.desc = "dude this is just like the time when i"
 gamemode.modifiers = {}
 gamemode.pregametheme = "FH_PG2"
-gamemode.super = FangsHeist.Gamemodes[FangsHeist.Escape]
+gamemode.super = FangsHeist.Gamemodes[FangsHeist.Solo]
 
 local default = {
 	init = function() end,

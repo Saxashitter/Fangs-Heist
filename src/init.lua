@@ -60,9 +60,4 @@ dofile "Movesets/Amy"
 dofile "Movesets/Fang"
 dofile "Movesets/Metal Sonic"
 
-dofile "modsupport"
-
-dofile "Compat/S3 Sonic"
-dofile "Compat/Bean"
-dofile "Compat/Eggman"
-dofile "Compat/DeltaChars"
+dofile "Compat/Speed Cap"

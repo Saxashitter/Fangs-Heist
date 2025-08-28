@@ -1,14 +1,14 @@
 local mt = (...)
 
-function mt:gainProfitMultiplied(gain, dontDiv, specialSound)
+function mt:gainProfitMultiplied(gain, specialSound)
 	local team = self:getTeam()
 	local gamemode = FangsHeist.getGamemode()
 	local multiplier = self:getMultiplier()
 
-	self:gainProfit(gain*multiplier, dontDiv, specialSound)
+	self:gainProfit(gain*multiplier, specialSound)
 end
 
-function mt:gainProfit(gain, dontDiv, specialSound)
+function mt:gainProfit(gain, specialSound)
 	local div = 0
 	local team = self:getTeam()
 	local gamemode = FangsHeist.getGamemode()
@@ -17,12 +17,7 @@ function mt:gainProfit(gain, dontDiv, specialSound)
 		return
 	end
 
-	div = not dontDiv and #team or 1
-	if gamemode.dontdivprofit then
-		div = 1
-	end
-
-	team.profit = max(0, $+(gain/div))
+	team.profit = max(0, $+gain)
 end
 
 function mt:addIntoTeam(sp)
