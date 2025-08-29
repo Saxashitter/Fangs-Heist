@@ -318,6 +318,7 @@ FH.TitleScreenDrawer = function(v)
 	// are we not animated?
 	if not logo_animated then
 		if not logo_shake
+			FH.BottomLinkHUD(v)
 			logo_tics = $+1
 		end
 		local time = FixedAngle(ease.linear(min(FixedDiv(logo_tics%200,200),FU),0,360)*FU)

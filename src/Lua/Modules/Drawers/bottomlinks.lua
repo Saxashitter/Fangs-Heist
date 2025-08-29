@@ -43,12 +43,12 @@ function module.draw(v)
 		FH.DrawString(v,
 			160*FU,
 			y,
-			FU/2,
+			tofixed("1.042"),
 			string.format("%s: %s",d.text,d.linkurl),
-			"FHFNT",
+			"TNYFN",
 			"center",
 			V_SNAPTOBOTTOM|trans*V_10TRANS,
-			v.getColormap(TC_DEFAULT,d.linkcol))
+			v.getStringColormap(d.linkcol))
 	end
 end
 FH.BottomLinkHUD = module.draw

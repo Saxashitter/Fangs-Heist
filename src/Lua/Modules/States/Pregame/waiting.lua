@@ -52,17 +52,19 @@ end
 
 function state:draw(v, c, transparency)
 	--DrawRoundInfo(v, 4, V_SNAPTOTOP|V_SNAPTOLEFT|transparency)
-	local team = self.heist:getTeam()
 	local FH = FangsHeist
 	local y = 10*FU
-	FH.DrawString(v,160*FU, y,FU, "Team:","FHTXT","center", V_SNAPTOTOP|transparency)
-	y = $+10*FU
-	for i, p in ipairs(team) do
-		if not (p and p.valid) then continue end
-
-		FH.DrawString(v,160*FU,y,FU, p.name,"FHTXT","center", V_SNAPTOTOP|transparency, v.getStringColormap(skincolors[p.skincolor].chatcolor))
-		
+	if FH.getGamemode().teamlimit >= 2 -- DUO AND TRIO GAMEMODES ARE SUPPORTED!
+		local team = self.heist:getTeam()
+		FH.DrawString(v,160*FU, y,FU, "Team:","FHTXT","center", V_SNAPTOTOP|transparency)
 		y = $+10*FU
+		for i, p in ipairs(team) do
+			if not (p and p.valid) then continue end
+
+			FH.DrawString(v,160*FU,y,FU, p.name,"FHTXT","center", V_SNAPTOTOP|transparency, v.getStringColormap(skincolors[p.skincolor].chatcolor))
+			
+			y = $+10*FU
+		end
 	end
 	FH.DrawString(v,160*FU, 187*FU,FU, "Wating for Players...","FHTXT","center", V_SNAPTOBOTTOM|transparency, v.getStringColormap(V_YELLOWMAP))
 end

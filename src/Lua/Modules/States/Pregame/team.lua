@@ -14,9 +14,10 @@ local JOIN_L = 8
 local JOIN_F = V_SNAPTOLEFT
 
 local READY = {}
-local READY_X = 160 - 95/2
-local READY_Y = 200 - 35 - 8
+local READY_X = 160
+local READY_Y = 178
 local READY_F = V_SNAPTOBOTTOM
+local READY_TICS = 0
 
 local REQUEST = {}
 local REQUEST_W = 80
@@ -367,21 +368,25 @@ function READY:tick(selected)
 end
 
 function READY:draw(selected, v, c, transparency)
-	local patch = v.cachePatch("FH_READYUNSELECT")
+	local color = nil
 	if selected then
-		patch = v.cachePatch("FH_READYSELECT")
+		READY_TICS = $+1
+		local time = ease.inexpo(max(0,min(FixedDiv(READY_TICS,10),FU)),0,11)
+		color = (time&1) and v.getStringColormap(V_GREENMAP) or nil
+	else
+		READY_TICS = 0
 	end
+	local readyscale = ease.outback(max(0,min(FixedDiv(READY_TICS,10),FU)),tofixed("0.620"),tofixed("0.832"))
+	FH.DrawString(v,READY_X*FU,READY_Y*FU,readyscale,"Ready","LTFNT","center",READY_F|transparency,color)
+end
 
-	v.draw(READY_X, READY_Y, patch, READY_F|transparency)
+
+function REQUEST:onUnselect()
 end
 
 -- request
 function REQUEST:onSelect()
 end
-
-function REQUEST:onUnselect()
-end
-
 function REQUEST:canSwitchTo()
 	return CanPlayerSeeMenus(self)
 end
@@ -460,8 +465,9 @@ function REQUEST:draw(selected, v, c, transparency)
 		selected and self.heist.team.req_sel or 0,
 		self.heist.team.req_off,
 		REQUEST_F|transparency)
+	local duoortriobru = FangsHeist.getGamemode().name
 	FH.DrawString(v,(REQUEST_X+REQUEST_W/2)*FU,(REQUEST_Y - 8)*FU,FU,
-	"Team Requests","FHTXT","center",REQUEST_F|transparency)
+	duoortriobru.." Requests","FHTXT","center",REQUEST_F|transparency)
 end
 
 function state:enter()

@@ -1,4 +1,4 @@
-Lump _TITLE
+Lump FH_MPV
 Title = Title/Mapvote
 Alttitle = Beautiful_World
 Authors = Tokonemu
@@ -17,7 +17,7 @@ BPM = 108
 
 Lump FH_PG2
 Title = Pre-Game_-_REMIX
-Alttitle = More,_more_times?!
+Alttitle = More_more_times?!
 Authors = ZrUltra
 Soundtestpage = 2
 Soundtestcond = 0
