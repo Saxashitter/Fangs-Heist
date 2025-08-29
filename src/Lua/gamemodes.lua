@@ -89,9 +89,7 @@ end
 FangsHeist.Solo = dofile "Modules/Gamemodes/Solo/def.lua"
 FangsHeist.Duo = dofile "Modules/Gamemodes/Duo/def.lua"
 FangsHeist.Trio = dofile "Modules/Gamemodes/Trio/def.lua"
--- FangsHeist.TagTeam = dofile "Gamemodes/Tag Team/def.lua"
 
--- EXTREEEEEMELY important!! don't comment out or remove or even SEE it...
--- or WARIO will come to your house and steal all your precious valuables
-FangsHeist.WL4 = dofile "Modules/Gamemodes/Wario Land/def.lua"
-FangsHeist.Remix = dofile "Modules/Gamemodes/Remix/def.lua"
+-- FangsHeist.Remix = dofile "Modules/Gamemodes/Remix/def.lua"
+-- Hey, file snooper! Expect to see Remix mode in a later patch.
+-- ...Tag Team? Nah, that's scrapped forever.
