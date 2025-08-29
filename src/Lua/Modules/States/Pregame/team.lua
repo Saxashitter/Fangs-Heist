@@ -230,13 +230,13 @@ local function DrawMenu(v, x, y, width, height, length, items, selected, offset,
 		if #str > 16 then
 			str = string.sub($, 1, 16)
 		end
-		FH.DrawString(v,(x+4)*FU,(y+4)*FU,FU/2,
-		str,"FHFNT",nil,flags,v.getColormap(TC_DEFAULT,SKINCOLOR_GREY))
+		FH.DrawString(v,(x+4)*FU,(y+4)*FU,FU,
+		str,"FHTXT",nil,flags)
 	end
 
 	if not #items then
-		FH.DrawString(v,(x+width/2)*FU,(y+(height*length/2)-4)*FU,FU-3000,
-		"NO PLAYERS!","FHFNT","center",flags,v.getColormap(TC_DEFAULT,SKINCOLOR_RED))
+		FH.DrawString(v,(x+width/2)*FU,(y+(height*length/2)-4)*FU,FU,
+		"NO PLAYERS!","FHTXT","center",flags,v.getStringColormap(V_REDMAP))
 	end
 end
 
@@ -347,8 +347,8 @@ function JOIN:draw(selected, v, c, transparency)
 		selected and self.heist.team.join_sel or 0,
 		self.heist.team.join_off,
 		JOIN_F|transparency)
-	FH.DrawString(v,(JOIN_X+JOIN_W/2)*FU,(JOIN_Y - 8)*FU,FU/2,
-	"Join Players","FHFNT","center",JOIN_F|transparency,v.getColormap(TC_DEFAULT,SKINCOLOR_WHITE))
+	FH.DrawString(v,(JOIN_X+JOIN_W/2)*FU,(JOIN_Y - 8)*FU,FU,
+	"Join Players","FHTXT","center",JOIN_F|transparency)
 end
 
 -- ready
@@ -460,8 +460,8 @@ function REQUEST:draw(selected, v, c, transparency)
 		selected and self.heist.team.req_sel or 0,
 		self.heist.team.req_off,
 		REQUEST_F|transparency)
-	FH.DrawString(v,(REQUEST_X+REQUEST_W/2)*FU,(REQUEST_Y - 8)*FU,FU/2,
-	"Team Requests","FHFNT","center",REQUEST_F|transparency,v.getColormap(TC_DEFAULT,SKINCOLOR_WHITE))
+	FH.DrawString(v,(REQUEST_X+REQUEST_W/2)*FU,(REQUEST_Y - 8)*FU,FU,
+	"Team Requests","FHTXT","center",REQUEST_F|transparency)
 end
 
 function state:enter()
@@ -526,12 +526,12 @@ function state:draw(v, c, transparency)
 	local width = 0
 	local _width = 0
 	local y = 10*FU
-	FH.DrawString(v,160*FU, y,FU, "Team:","FHFNT","center", V_SNAPTOTOP|transparency, v.getColormap(TC_DEFAULT,SKINCOLOR_WHITE))
-	y = $+15*FU
+	FH.DrawString(v,160*FU, y,FU, "Team:","FHTXT","center", V_SNAPTOTOP|transparency)
+	y = $+10*FU
 	for i, p in ipairs(team) do
 		if not (p and p.valid) then continue end
 
-		FH.DrawString(v,160*FU,y,FU/2, p.name,"FHFNT","center", V_SNAPTOTOP|transparency, v.getColormap(TC_DEFAULT,p.skincolor))
+		FH.DrawString(v,160*FU,y,FU, p.name,"FHTXT","center", V_SNAPTOTOP|transparency, v.getStringColormap(skincolors[p.skincolor].chatcolor))
 		
 		y = $+10*FU
 	end

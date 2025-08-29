@@ -40,7 +40,7 @@ function mt:isAlive(p)
 end
 
 function mt:isNerfed()
-	--[[local result = HeistHook.runHook("IsPlayerNerfed", p)
+	--[[local result = FangsHeist.runHook("IsPlayerNerfed", p)
 	if result ~= nil then
 		return result
 	end

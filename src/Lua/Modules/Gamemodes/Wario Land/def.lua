@@ -187,7 +187,7 @@ end
 
 local function K_PunchFrogSwitch(prepassedtime, escapetype, activeportal)
 	if FangsHeist.Net.escape
-	or HeistHook.runHook("EscapeStart", p) == true then
+	or FangsHeist.runHook("EscapeStart", p) == true then
 		return
 	end
 
@@ -506,7 +506,7 @@ function gamemode:manageTime()
 			P_LinedefExecute(linedef)
 		end
 
-		HeistHook.runHook("TimeUp")
+		FangsHeist.runHook("TimeUp")
 	end
 end
 
@@ -536,7 +536,7 @@ function gamemode:manageExiting()
 			return
 		end
 
-		if HeistHook.runHook("PlayerExit", p) == true then
+		if FangsHeist.runHook("PlayerExit", p) == true then
 			continue
 		end
 

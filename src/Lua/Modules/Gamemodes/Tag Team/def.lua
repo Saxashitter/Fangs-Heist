@@ -370,7 +370,7 @@ function gamemode:manageTime()
 		end
 
 		FangsHeist.startIntermission()
-		HeistHook.runHook("TimeUp")
+		FangsHeist.runHook("TimeUp")
 	end
 end
 

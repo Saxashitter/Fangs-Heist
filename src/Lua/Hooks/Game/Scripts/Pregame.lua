@@ -62,7 +62,7 @@ local function EndPregame()
 		P_LinedefExecute(linedef)
 	end
 
-	HeistHook.runHook("GameStart")
+	FangsHeist.runHook("GameStart")
 end
 
 return function()

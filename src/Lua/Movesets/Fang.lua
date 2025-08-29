@@ -1,4 +1,4 @@
-local POPGUN_TIME = 4*TICRATE
+local POPGUN_TIME = 2*TICRATE
 local POPGUN_FRICTION = tofixed("0.95")
 
 local SKID_TIME = 3

@@ -1,8 +1,5 @@
 -- code by unmatched bracket and jisk and luigi
 
-rawset(_G, "HeistHook", {})
-HeistHook.events = {}
-
 /*
 	return value: Boolean (override default behavior?)
 	true = override, otherwise hook is ran then the default function after
@@ -40,7 +37,7 @@ local events = {}
 
 // HOOKS
 	// Example:
-	/*HeistHook.addHook("GameInit", function()
+	/*FangsHeist.addHook("GameInit", function()
 		print("I am initalized!")
 	end)*/
 
@@ -159,7 +156,7 @@ events["Music"] = {handler = handler_snapany}
 	// Arguments:
 		// song == string
 
-HeistHook.addHook = function(hooktype, func, typefor)
+FangsHeist.addHook = function(hooktype, func, typefor)
 	if events[hooktype] then
 		table.insert(events[hooktype], {
 			func = func,
@@ -171,7 +168,7 @@ HeistHook.addHook = function(hooktype, func, typefor)
 	end
 end
 
-HeistHook.runHook = function(hooktype, ...)
+FangsHeist.runHook = function(hooktype, ...)
 	if not events[hooktype] then
 		error("\x82WARNING:\x80 Can't run a nonexistant hooktype! (\""..hooktype..'"', 2)
 	end
@@ -199,8 +196,8 @@ end
 
 --check for new events...
 for event_name, event_t in pairs(events)
-	if (HeistHook.events[event_name] == nil)
-		HeistHook.events[event_name] = event_t
+	if (FangsHeist.events[event_name] == nil)
+		FangsHeist.events[event_name] = event_t
 	else
 		print("\x80 Hooklib found an existing hookevent, not adding. (\""..event_name..'")')
 	end

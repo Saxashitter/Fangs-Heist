@@ -287,7 +287,6 @@ addHook("MobjDeath", OnHit, MT_PLAYER)
 addHook("PlayerQuit", function(p)
 	if not FangsHeist.isMode() then return end
 	if not p.heist then return end
-	print "running..."
 
 	for i = #p.heist.pickup_list, 1, -1 do
 		local v = p.heist.pickup_list[i]

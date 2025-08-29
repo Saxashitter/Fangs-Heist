@@ -32,8 +32,7 @@ RecordAttack = true
 SaveGame = true
 SkyboxScale = 64
 FlickyList = Bluebird,Chipmunk
-SelectHeading = Supported Maps
-Lua.FH_StageType = Escape
+SelectHeading = Campaign
 #Flicky selection is final.
 
 Level 2
@@ -49,8 +48,7 @@ RecordAttack = true
 SaveGame = true
 SkyboxScale = 64
 FlickyList = Bluebird,Chipmunk
-SelectHeading = Supported Maps
-Lua.FH_StageType = Escape
+SelectHeading = Campaign
 #see act 1
 
 Level 4
@@ -66,8 +64,7 @@ NoVisitNeeded = true
 RecordAttack = true
 SaveGame = true
 FlickyList = Rabbit,Chicken
-SelectHeading = Supported Maps
-Lua.FH_StageType = Escape
+SelectHeading = Campaign
 #Flicky selection is final.
 
 Level 5
@@ -82,9 +79,10 @@ RecordAttack = true
 LevelSelect = 1
 SaveGame = true
 SkyboxScale = 16
+SelectHeading = Campaign
 FlickyList = Rabbit,Chicken
-Lua.FH_StageType = Escape
 Lua.FH_Time = 220
+
 #see act 1
 
 Level 30
@@ -97,10 +95,9 @@ RecordAttack = true
 TypeOfLevel = Heist
 SkyNum = 30
 NoVisitNeeded = true
-SelectHeading = Supported Maps
+SelectHeading = Bonus
 Weather = 2
 FlickyList = Penguin,Seal
-Lua.FH_StageType = Escape
 Lua.FH_EscapeTheme = LOSWIN
 
 Level Z0
@@ -110,11 +107,10 @@ Act = 0
 Music = _TITLE
 NextLevel = 1
 TypeOfLevel = Heist
-SelectHeading = Supported Maps
+SelectHeading = Bonus
 SkyNum = 99
 Lua.FH_EscapeTheme = YOKADI
 Lua.FH_EscapeHurryUp = false
-Lua.FH_StageType = Escape
 
 Level 33
 Levelname = FD Greenflower
@@ -124,14 +120,13 @@ TypeOfLevel = HeistRound2
 NextLevel = 1100
 SkyNum = 2
 LevelSelect = 2
-SelectHeading = Supported Maps
+SelectHeading = Bonus
 NoVisitNeeded = true
 InterScreen = INTERSCR
 FlickyList = Demo
 Lua.FH_Time = 240
 Lua.FH_EscapeTheme = SPRHRO
 Lua.FH_Round2Theme = SPRHRO
-Lua.FH_StageType = Escape
 
 Level 34
 Levelname = FD Techno Hill
@@ -140,14 +135,13 @@ TypeOfLevel = HeistRound2
 NextLevel = 1100
 SkyNum = 2
 LevelSelect = 2
-SelectHeading = Supported Maps
+SelectHeading = Bonus
 NoVisitNeeded = true
 InterScreen = INTERSCR
 FlickyList = Demo
 Lua.FH_Time = 300
 Lua.FH_EscapeTheme = KARSPR
 Lua.FH_Round2Theme = KARSPR
-Lua.FH_StageType = Escape
 
 Level 35
 Levelname = FD Castle Eggman
@@ -156,7 +150,7 @@ TypeOfLevel = HeistRound2
 NextLevel = 1100
 SkyNum = 65
 LevelSelect = 2
-SelectHeading = Supported Maps
+SelectHeading = Bonus
 NoVisitNeeded = true
 InterScreen = INTERSCR
 FlickyList = Demo
@@ -164,7 +158,6 @@ Weather = 1
 Lua.FH_Time = 300
 Lua.FH_EscapeTheme = SPRHRO
 Lua.FH_Round2Theme = SPRHRO
-Lua.FH_StageType = Escape
 Lua.FH_EscapeLinedef = 358
 
 Level P1
@@ -176,7 +169,7 @@ NoReload = true
 Skynum = 86
 Weather = 5
 Music = BRCRPW
-SelectHeading = Original Maps
+SelectHeading = Bonus
 ForceResetMusic = 0
 MusicInterFadeOut = 3000
 TitleCardZigZag = ACIDZIGZAG

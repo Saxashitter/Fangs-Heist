@@ -335,7 +335,7 @@ addHook("MobjThinker", function(mo)
 	end
 end, MT_FH_THROWNHAMMER)
 
-HeistHook.addHook("PlayerScanAttack", function(p)
+FangsHeist.addHook("PlayerScanAttack", function(p)
 	if not check(p) then return end
 
 	if p.powers[pw_strong] & STR_ATTACK then
@@ -343,13 +343,13 @@ HeistHook.addHook("PlayerScanAttack", function(p)
 	end
 end)
 
-HeistHook.addHook("PlayerAttack", function(p)
+FangsHeist.addHook("PlayerAttack", function(p)
 	if not check(p) then return end
 
 	return true
 end)
 
-HeistHook.addHook("PlayerHit", function(p)
+FangsHeist.addHook("PlayerHit", function(p)
 	if not check(p) then return end
 
 	if not P_IsObjectOnGround(p.mo) then
@@ -359,7 +359,7 @@ HeistHook.addHook("PlayerHit", function(p)
 	end
 end)
 
-HeistHook.addHook("PlayerClash", function(p)
+FangsHeist.addHook("PlayerClash", function(p)
 	if not check(p) then return end
 
 	if not P_IsObjectOnGround(p.mo) then
@@ -371,7 +371,7 @@ HeistHook.addHook("PlayerClash", function(p)
 	p.mo.state = S_PLAY_WALK
 end)
 
-HeistHook.addHook("PlayerParried", function(_, p)
+FangsHeist.addHook("PlayerParried", function(_, p)
 	if not check(p) then return end
 
 	if not P_IsObjectOnGround(p.mo) then

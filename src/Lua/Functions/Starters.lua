@@ -45,7 +45,7 @@ FangsHeist.WINNER_LINES = {
 
 function FangsHeist.startIntermission()
 	if FangsHeist.Net.game_over
-	or HeistHook.runHook("GameOver") == true then
+	or FangsHeist.runHook("GameOver") == true then
 		return
 	end
 

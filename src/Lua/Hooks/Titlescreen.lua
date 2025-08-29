@@ -112,18 +112,18 @@ FH.Version.HUD = function(v,starttime) --Version HUD
 		ver = string.format("Git Commit Version: %s",FH.Version.Git.CommitVersion)
 	end
 	local texts = {
-		{y = 192*FU,text = ver,flags=V_SNAPTOBOTTOM|V_SNAPTOLEFT,color=SKINCOLOR_YELLOW},
+		{y = 192*FU,text = ver,flags=V_SNAPTOBOTTOM|V_SNAPTOLEFT,color=V_YELLOWMAP},
 	}
 	for k,d in ipairs(texts) do
 		local i = k-1
 		local xtics = max(0,min(FixedDiv(leveltime-starttime-i*5,35),FU))
-		local xslide = ease.outback(xtics,-FH.GetStringWidth(v,d.text,FU/2,"FHFNT"),2*FU,FU/2)
+		local xslide = ease.outback(xtics,-FH.GetStringWidth(v,d.text,FU,"FHTXT"),2*FU,FU)
 		local color = d.color
-		if d.color == "HeistColor"
-			color = (leveltime%30) >= 15 and SKINCOLOR_MAUVE or SKINCOLOR_SHAMROCK
+		if d.color == "HeistColor" then
+			color = (leveltime%30) >= 15 and V_PURPLEMAP or V_GREENMAP
 		end
-		if d and type(d) == "table"
-			FH.DrawString(v,xslide,d.y,FU/2,d.text,"FHFNT",nil,d.flags|V_50TRANS,v.getColormap(TC_DEFAULT,color))
+		if d and type(d) == "table" then
+			FH.DrawString(v,xslide,d.y,FU,d.text,"FHTXT",nil,d.flags|V_50TRANS,v.getStringColormap(color))
 		end
 	end
 end
@@ -137,7 +137,7 @@ The Logo & the Presents graphics are made Neonie herself!
 */
 FH.TeamFractureLogo = function(v,alternative)
 	local FontDraw = function(v,x,y,scale,text,flags,align,color)
-		return FH.DrawString(v,x,y,scale,text,"FHFNT",align,flags,v.getColormap(TC_DEFAULT,color))
+		return FH.DrawString(v,x,y,scale,text,"FHTXT",align,flags,v.getStringColormap(color or 0))
 	end
 
 	TeamFractureBG(v)
@@ -164,7 +164,7 @@ FH.TeamFractureLogo = function(v,alternative)
 		trans1 = trans
 	end
 
-	FontDraw(v,320*FU,0,FU/2,"Press Jump or Enter To Skip...",V_70TRANS|V_SNAPTOTOP|V_SNAPTORIGHT,"right",SKINCOLOR_WHITE)	
+	FontDraw(v,320*FU,0,FU,"Press Jump or Enter to skip.",V_70TRANS|V_SNAPTOTOP|V_SNAPTORIGHT,"right")	
 	--Team Fracture
 
 	if trans1 != 10 then

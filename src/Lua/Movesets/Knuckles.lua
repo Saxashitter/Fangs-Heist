@@ -3,6 +3,13 @@
 -- Forgive my peabrain coding
 -- SAXA: dw i got you
 
+FangsHeist.makeCharacter("knuckles", {
+	pregameBackground = "FH_PREGAME_KNUCKLES",
+	skins = {
+		-- {name = "UglyKnux"},
+	},
+})
+
 -- Initiate the Knok (why is it called the Knok? 'cause you can Knok some people out with it)
 addHook("AbilitySpecial", function(player)
 	if not (FangsHeist.isMode()
