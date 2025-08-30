@@ -110,8 +110,6 @@ addHook("HUD", function(v,p,c)
 	WAS_FH = false
 end)
 
--- addHud "signtracker"
--- addHud "treasuretracker"
 addHud "track"
 addHud "controls"
 addHud "lives"
@@ -120,7 +118,6 @@ addHud "rings"
 addHud "playerinfo"
 addHud "time"
 addHud "textspectator"
--- addHud "health"
 -- addHud "multiplier"
 addHud "treasure"
 addHud "timer"
@@ -128,7 +125,7 @@ addHud "round"
 addHud "swaptimer"
 addHud "escapetext"
 addHud "bottomlinks"
--- addHud "leftscores"
+-- addHud "leftscores" (For some Reason, Saxa remove it due to Lots of HUD drawers. -RedFoxyBoy)
 addHud "rankings"
 addHud "intermission"
 addHud "pregame"
@@ -136,5 +133,6 @@ if SUBVERSION >= 16
 	dofile("Modules/Drawers/escpanel")
 end
 --Add Most of Link Stuff, also Tips :p...
-FangsHeist.AddLink("Saxashitter's server","https://discord.gg/FysZSrsd9U",SKINCOLOR_SKY)
-FangsHeist.AddLink("GitHub","https://github.com/Saxashitter/Fangs-Heist",SKINCOLOR_MAUVE)
+FangsHeist.AddLink("Website (WIP)","https://fangsheist.com",V_GREENMAP)
+FangsHeist.AddLink("GitHub","https://github.com/Saxashitter/Fangs-Heist",V_PURPLEMAP)
+FangsHeist.AddLink("Saxashitter's server","https://discord.gg/FysZSrsd9U",V_SKYMAP)
