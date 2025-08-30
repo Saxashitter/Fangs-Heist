@@ -40,12 +40,13 @@ function module.draw(v)
 	local d = FH.Links[linknum]
 
 	if trans != 10 then
+		local stringscale = ease.linear(max(0,min(FixedDiv(d.text:len(),20),FU)),tofixed("1.042"),tofixed("0.832"))
 		FH.DrawString(v,
 			160*FU,
 			y,
-			tofixed("1.042"),
+			stringscale,
 			string.format("%s: %s",d.text,d.linkurl),
-			"TNYFN",
+			"FHTXT",
 			"center",
 			V_SNAPTOBOTTOM|trans*V_10TRANS,
 			v.getStringColormap(d.linkcol))

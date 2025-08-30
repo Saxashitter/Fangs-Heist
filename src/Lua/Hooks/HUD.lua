@@ -125,7 +125,7 @@ addHud "round"
 addHud "swaptimer"
 addHud "escapetext"
 addHud "bottomlinks"
--- addHud "leftscores" (For some Reason, Saxa remove it due to Lots of HUD. -RedFoxyBoy)
+-- addHud "leftscores" (For some Reason, Saxa remove it due to Lots of HUD drawers. -RedFoxyBoy)
 addHud "rankings"
 addHud "intermission"
 addHud "pregame"

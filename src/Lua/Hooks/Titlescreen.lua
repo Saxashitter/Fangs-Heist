@@ -257,7 +257,7 @@ FH.TitleScreenDrawer = function(v)
 			FixedDiv(wid, black.width*FU),
 			FixedDiv(hei, black.height*FU),
 			black,
-			V_SNAPTOLEFT|V_SNAPTOTOP|(bs_alpha*V_10TRANS)
+			V_SNAPTOLEFT|V_SNAPTOTOP
 		)
 	end
 
@@ -281,6 +281,7 @@ FH.TitleScreenDrawer = function(v)
 			logo_delay = $-1
 
 			if not logo_delay then
+				S_FadeMusic(0,FixedMul(tofixed("0.603"),1000))
 				S_StartSound(nil, sfx_s3k51)
 			end
 		else
@@ -317,23 +318,27 @@ FH.TitleScreenDrawer = function(v)
 
 	// are we not animated?
 	if not logo_animated then
+		FH.BottomLinkHUD(v)
 		if not logo_shake
-			FH.BottomLinkHUD(v)
 			logo_tics = $+1
 		end
 		local time = FixedAngle(ease.linear(min(FixedDiv(logo_tics%200,200),FU),0,360)*FU)
 		local y = 100*FU+FixedMul(3*FU/2,sin(time))
-		--	Pulsing
-		local tics = max(0,min(FixedDiv(logo_tics%15,15),FU))
-		local colorloop = (logo_tics%30) >= 15 and SKINCOLOR_MAUVE or SKINCOLOR_GREEN
-		local pulsescale = ease.outquart(tics,scale,scale+2500)
-		local pulsefade = ease.linear(tics,0,10)*V_10TRANS
+		--Title Screen Pulse Beat
+		local bpm = (60*TICRATE)/115
+		local beatperswitch = bpm*2
+		local pulsebeat = FixedAngle(ease.linear(min(FixedDiv(logo_tics%beatperswitch,beatperswitch),FU),0,360)*FU)
+		local s = sin(pulsebeat)
+		local pulsetime = min(FixedDiv(logo_tics%bpm,bpm),FU)
+		local colorloop = (s <= 0) and SKINCOLOR_MAUVE or SKINCOLOR_GREEN
+		local pulsescale = ease.outquart(pulsetime,scale,scale+3000)
+		local trns = ease.linear(abs(s),9,0)<<V_ALPHASHIFT
 		v.drawScaled(
 			160*FU - logo.width*pulsescale/2 + ox,
 			y - logo.height*pulsescale/2 + oy,
 			pulsescale,
 			logo,
-			V_ADD|pulsefade,v.getColormap(TC_BLINK,colorloop)
+			V_ADD|trns,v.getColormap(TC_BLINK,colorloop)
 		)
 		--Actual Logo
 		v.drawScaled(
