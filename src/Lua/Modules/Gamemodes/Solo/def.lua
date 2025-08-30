@@ -464,18 +464,18 @@ function gamemode:info()
 		{"Basics",
 			"In order to win, you must collect the most Profit.",
 			"Profit comes from rings, enemies, and treasures.",
-			"Treasures reveal your location, but pretty valuable.",
+			"Treasures are very valuable, but they reveal your location.",
 			"Players can fight you for your treasures."},
 		{"Escape",
-			"Grab the signpost to start the escape sequence.",
-			"The sign also happens to Double the Multiply.",
-			"It is Very, VERY valuable, so Keep Holding!"
+			"Grab the Sign to start the escape sequence.",
+			"The Sign also doubles the amount of Profit you obtain.",
+			"It is extremely valuable, so Keep Holding!"
 		}
 	}	
 	if FangsHeist.Net.round_2 then
 		table.insert(info, {"Round 2",
-			"This map requires you to run through 2 segments to win.",
-			"Run into the portal at spawn once the escape starts."
+			"This map requires you to run through 2 segments to finish.",
+			"Run into the portal at the start once the escape starts."
 		})
 	end
 
