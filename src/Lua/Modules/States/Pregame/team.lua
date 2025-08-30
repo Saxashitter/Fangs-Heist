@@ -236,8 +236,9 @@ local function DrawMenu(v, x, y, width, height, length, items, selected, offset,
 	end
 
 	if not #items then
+		local selcol = (selected) and v.getStringColormap(V_REDMAP) or nil
 		FH.DrawString(v,(x+width/2)*FU,(y+(height*length/2)-4)*FU,FU,
-		"NO PLAYERS!","FHTXT","center",flags,v.getStringColormap(V_REDMAP))
+		"NO PLAYERS!","FHTXT","center",flags,selcol)
 	end
 end
 
@@ -368,10 +369,11 @@ function READY:tick(selected)
 end
 
 function READY:draw(selected, v, c, transparency)
+	--WAITING FOR THE NEW READY SPRITES!
 	local color = nil
 	if selected then
 		READY_TICS = $+1
-		local time = ease.inexpo(max(0,min(FixedDiv(READY_TICS,10),FU)),0,11)
+		local time = ease.linear	(max(0,min(FixedDiv(READY_TICS,10),FU)),0,11)
 		color = (time&1) and v.getStringColormap(V_GREENMAP) or nil
 	else
 		READY_TICS = 0

@@ -319,7 +319,7 @@ function state:draw(v, c, transparency)
 		local scale = ease.outback(twen,0,FU,FU)
 		local trans = ease.outquad(twen,9,0)<<V_ALPHASHIFT
 		FangsHeist.DrawString(v,160*FU, 100*FU - 10*FU - RIBBON_END_RADIUS/2,scale, 
-		"[CUSTOM 1] - Change Skin ("..name..")","TNYFN","center",trans,v.getStringColormap(skincolors[col].chatcolor))
+		"[CUSTOM 1] - Change Skin ("..name..")","FHTXT","center",trans,v.getStringColormap(skincolors[col].chatcolor))
 	end
 end
 
