@@ -4,6 +4,34 @@ local PROFITFORM = string.char(1) .. " %d"
 local RINGSFORM = string.char(2) .. " %d"
 local RANKFORM = "[c:red]R [c:white]%d"
 
+local function GetSpriteScale(sprite, targRes, scaleBy)
+	local scale = FU
+
+	if scaleBy == true then
+		-- Scale down by the sprite's height.
+		scale = FixedDiv(targRes, sprite.height)
+	else
+		-- Scale down by the sprite's width.
+		scale = FixedDiv(targRes, sprite.width)
+	end
+
+	return scale
+end
+
+local function IsSpriteValid(skin, sprite, frame)
+	local skin = skins[skin]
+	local sprites = skin.sprites[sprite]
+	local numframes = sprites.numframes
+
+	if numframes
+	and numframes > frame then -- B = 2 so, check if it has the B frame
+		return true
+	end
+
+	return false
+end
+
+
 local function DrawText(v, x, y, string, flags, align, color, rich)
 	FangsHeist.DrawString(v,
 		x*FU,
