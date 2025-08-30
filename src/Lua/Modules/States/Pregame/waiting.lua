@@ -1,8 +1,5 @@
 local state = {}
 
-local INFO_X = 4
-local INFO_INDENT = 6
-
 state.ready = true
 
 state.time_x = 0
@@ -10,29 +7,6 @@ state.time_y = FU
 
 state.time_ox = 4*FU
 state.time_oy = (0 - 12 - 4)*FU
-
-local function DrawRoundInfo(v, y, flags)
-	local gamemode = FangsHeist.getGamemode()
-	local info = gamemode:info()
-
-	if not (info and #info) then return end
-
-	for _, tbl in ipairs(info) do
-		for i, info in ipairs(tbl) do
-			local x = INFO_X
-			local f = flags|V_REDMAP
-
-			if i > 1 then
-				x = $ + INFO_INDENT
-				f = ($|V_ALLOWLOWERCASE) & ~V_REDMAP
-				info = "- "..$
-			end
-	
-			v.drawString(x, y, info, f, "thin")
-			y = $+10
-		end
-	end
-end
 
 function state:enter(last)
 	self.heist.lastPregame = last
@@ -50,11 +24,16 @@ function state:tick()
 	end
 end
 
+/*
+Just only This now..
+no more lots of HUD Drawing
+-RedFoxyBoy
+*/
 function state:draw(v, c, transparency)
-	--DrawRoundInfo(v, 4, V_SNAPTOTOP|V_SNAPTOLEFT|transparency)
 	local FH = FangsHeist
 	local y = 10*FU
-	if FH.getGamemode().teamlimit >= 2 -- DUO AND TRIO GAMEMODES ARE SUPPORTED!
+	-- DUO AND TRIO GAMEMODES ARE SUPPORTED!
+	if FH.getGamemode().teamlimit >= 2
 		local team = self.heist:getTeam()
 		FH.DrawString(v,160*FU, y,FU, "Team:","FHTXT","center", V_SNAPTOTOP|transparency)
 		y = $+10*FU
@@ -66,6 +45,7 @@ function state:draw(v, c, transparency)
 			y = $+10*FU
 		end
 	end
+	FH.drawREADY(v,165,FU,v.cachePatch("FH_READYSELECT"),transparency,true)
 	FH.DrawString(v,160*FU, 187*FU,FU, "Wating for Players...","FHTXT","center", V_SNAPTOBOTTOM|transparency, v.getStringColormap(V_YELLOWMAP))
 end
 

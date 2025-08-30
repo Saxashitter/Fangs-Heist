@@ -2,7 +2,7 @@ local DEADZONE = 35
 local STATES = {}
 
 STATES.character = FangsHeist.require "Modules/States/Pregame/character"
-STATES.team = FangsHeist.require "Modules/States/Pregame/team"
+STATES.infoandteam = FangsHeist.require "Modules/States/Pregame/infoandteam"
 STATES.waiting = FangsHeist.require "Modules/States/Pregame/waiting"
 
 -- Functions
