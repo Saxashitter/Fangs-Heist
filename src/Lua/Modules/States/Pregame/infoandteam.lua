@@ -367,19 +367,27 @@ end
 
 function READY:tick(selected)
 end
-
+FH.drawREADY = function(v,y,scale,patch,transparency,isready)
+	v.drawScaled(READY_X*FU,y*FU,scale,patch,READY_F|transparency)
+	if isready
+		v.drawScaled(READY_X*FU+62*FU,y*FU,scale,v.cachePatch("FH_READYCHECK"),READY_F|transparency)
+	end
+end
 function READY:draw(selected, v, c, transparency)
 	--WAITING FOR THE NEW READY SPRITES!
 	local color = nil
+	local sel = "UNSELECT"
 	if selected then
 		READY_TICS = $+1
-		local time = ease.linear	(max(0,min(FixedDiv(READY_TICS,10),FU)),0,11)
-		color = (time&1) and v.getStringColormap(V_GREENMAP) or nil
+		local time = ease.linear(max(0,min(FixedDiv(READY_TICS,10),FU)),0,11)
+		sel = (time&1) and "SELECT" or $
 	else
 		READY_TICS = 0
 	end
-	local readyscale = ease.outback(max(0,min(FixedDiv(READY_TICS,10),FU)),tofixed("0.620"),tofixed("0.832"))
-	FH.DrawString(v,READY_X*FU,READY_Y*FU,readyscale,"Ready","LTFNT","center",READY_F|transparency,color)
+	local patchname = "FH_READY"..sel
+	local readyscale = ease.outback(max(0,min(FixedDiv(READY_TICS,10),FU)),tofixed("0.620"),FU)
+	FH.drawREADY(v,READY_Y,readyscale,v.cachePatch(patchname),transparency)
+	--FH.DrawString(v,READY_X*FU,READY_Y*FU,readyscale,"Ready","LTFNT","center",READY_F|transparency,color)
 end
 
 
@@ -505,13 +513,14 @@ function state:tick()
 		S_StartSound(nil, sfx_alart, self)
 		return "character"
 	end
-
-	if x
-	and STATES[i+x] then
-		SetState(self, i+x)
-		S_StartSound(nil, sfx_menu1, self)
+	local gamemode = FangsHeist.getGamemode()
+	if gamemode.teamlimit >= 2
+		if x
+		and STATES[i+x] then
+			SetState(self, i+x)
+			S_StartSound(nil, sfx_menu1, self)
+		end
 	end
-
 	for i = 1, #STATES do
 		if not STATES[i].tick then
 			continue
@@ -520,28 +529,61 @@ function state:tick()
 		STATES[i].tick(self, i == self.heist.team.state)
 	end
 end
+local function drawGamemodeInfo(v, y, flags)
+	local gamemode = FangsHeist.getGamemode()
+	local info = gamemode:info()
+	local INFO_X = 4
+	local INFO_INDENT = 6
+	if not (info and #info) then return end
 
+	for _, tbl in ipairs(info) do
+		for i, info in ipairs(tbl) do
+			local x,a,s,c,f = INFO_X,nil,FU,v.getStringColormap(V_YELLOWMAP),flags
+			if i > 1 then
+				x = $ + INFO_INDENT
+				c = nil
+				info = "- "..$
+				s = tofixed("0.85")
+			else
+				x,a = 160,"center"
+				info = $:upper()
+				local sw = v.width()/v.dupx()
+				local rr = 10
+				local ry = (y+3) - rr/2
+				DrawRect(v, 0, ry, sw, rr, V_SNAPTOLEFT|f, v.getColormap(TC_BLINK, SKINCOLOR_LAVENDER))
+			end
+			FH.DrawString(v,x*FU,y*FU,s,info,"FHTXT",a,f,c)
+			y = $+10
+		end
+	end
+end
 function state:draw(v, c, transparency)
-	for i = 1, #STATES do
-		if not STATES[i].draw then
-			continue
+	local gamemode = FangsHeist.getGamemode()
+	if gamemode.teamlimit >= 2
+		for i = 1, #STATES do
+			if not STATES[i].draw then
+				continue
+			end
+			STATES[i].draw(self, i == self.heist.team.state, v, c, transparency)
 		end
 
-		STATES[i].draw(self, i == self.heist.team.state, v, c, transparency)
-	end
-
-	local team = self.heist:getTeam()
-	local width = 0
-	local _width = 0
-	local y = 10*FU
-	FH.DrawString(v,160*FU, y,FU, "Team:","FHTXT","center", V_SNAPTOTOP|transparency)
-	y = $+10*FU
-	for i, p in ipairs(team) do
-		if not (p and p.valid) then continue end
-
-		FH.DrawString(v,160*FU,y,FU, p.name,"FHTXT","center", V_SNAPTOTOP|transparency, v.getStringColormap(skincolors[p.skincolor].chatcolor))
-		
+		local team = self.heist:getTeam()
+		local width = 0
+		local _width = 0
+		local y = 10*FU
+		FH.DrawString(v,160*FU, y,FU, "Team:","FHTXT","center", V_SNAPTOTOP|transparency)
 		y = $+10*FU
+		for i, p in ipairs(team) do
+			if not (p and p.valid) then continue end
+
+			FH.DrawString(v,160*FU,y,FU, p.name,"FHTXT","center", V_SNAPTOTOP|transparency, v.getStringColormap(skincolors[p.skincolor].chatcolor))
+			
+			y = $+10*FU
+		end
+	else
+		self.heist.team.state = 2 --Force them READY
+		drawGamemodeInfo(v,5,transparency)
+		STATES[2].draw(self, true, v, c, transparency)
 	end
 end
 

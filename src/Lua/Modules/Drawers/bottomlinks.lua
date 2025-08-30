@@ -40,16 +40,9 @@ function module.draw(v)
 	local d = FH.Links[linknum]
 
 	if trans != 10 then
-		local stringscale = ease.linear(max(0,min(FixedDiv(d.text:len(),20),FU)),tofixed("1.042"),tofixed("0.832"))
-		FH.DrawString(v,
-			160*FU,
-			y,
-			stringscale,
-			string.format("%s: %s",d.text,d.linkurl),
-			"FHTXT",
-			"center",
-			V_SNAPTOBOTTOM|trans*V_10TRANS,
-			v.getStringColormap(d.linkcol))
+		local tex = string.format("%s: %s",d.text,d.linkurl)
+		local stringscale = ease.linear(max(0,min(FixedDiv(tex:len(),50),FU)),tofixed("1.042"),tofixed("0.832"))
+		FH.DrawString(v,160*FU,y,stringscale,tex,"FHTXT","center",V_SNAPTOBOTTOM|trans*V_10TRANS,v.getStringColormap(d.linkcol))
 	end
 end
 FH.BottomLinkHUD = module.draw

@@ -460,8 +460,18 @@ function gamemode:isHurryUp()
 end
 
 function gamemode:info()
-
-
+	local info = {
+		{"Basics",
+			"In order to win, you must collect the most Profit.",
+			"Profit comes from rings, enemies, and treasures.",
+			"Treasures reveal your location, but pretty valuable.",
+			"Players can fight you for your treasures."},
+		{"Escape",
+			"Grab the signpost to start the escape sequence.",
+			"The sign also happens to Double the Multiply.",
+			"It is Very, VERY valuable, so Keep Holding!"
+		}
+	}	
 	if FangsHeist.Net.round_2 then
 		table.insert(info, {"Round 2",
 			"This map requires you to run through 2 segments to win.",

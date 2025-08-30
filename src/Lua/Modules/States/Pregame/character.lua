@@ -259,14 +259,10 @@ function state:tick()
 		local gamemode = FangsHeist.getGamemode()
 		S_StartSound(nil, sfx_strpst, self)
 		FangsHeist.playVoiceline(self, "accept", true)
-
-		local state = "team"
-
-		if gamemode.teamlimit < 2 then
-			state = "waiting"
-		end
-
-		return state
+		--if gamemode.teamlimit < 2 then
+		--	state = "waiting"
+		--end
+		return "infoandteam"
 	end
 
 	self.heist.cs_switchtime = $+1
@@ -316,7 +312,7 @@ function state:draw(v, c, transparency)
 		end
 		local col,alpha = ColorOpposite(skindef.prefcolor)
 		local twen = Twn(tics-TEXT_DELAY, 20)
-		local scale = ease.outback(twen,0,FU,FU)
+		local scale = ease.outback(twen,0,tofixed("0.85"),FU)
 		local trans = ease.outquad(twen,9,0)<<V_ALPHASHIFT
 		FangsHeist.DrawString(v,160*FU, 100*FU - 10*FU - RIBBON_END_RADIUS/2,scale, 
 		"[CUSTOM 1] - Change Skin ("..name..")","FHTXT","center",trans,v.getStringColormap(skincolors[col].chatcolor))
