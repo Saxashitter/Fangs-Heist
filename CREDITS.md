@@ -1,6 +1,6 @@
 # The guy behind it all (Scripting, Director)
 ## Saxashitter
-- Made basically all of the backend
+- Made basically all of the backend.
 - Visual direction
 - Gameplay
 - A lot, honestly.
@@ -32,16 +32,16 @@
 
 # Coders
 ## romoney5
-- General polish for movesets
+- General polish for movesets.
 
 ## RubytheMii
-- Coded Knuckles moveset
+- Coded Knuckles' moveset.
 
 ## i._px / Medii
-- Coded Metal Sonic moveset
+- Coded Metal Sonic's moveset.
 
-## SLS64LGamingBro
-- Coded Amy moveset
+## Sls64LGamingBro
+- Coded Amy's moveset.
 
 ## RedFoxyBoy
 - Titlescreen polish
@@ -54,7 +54,7 @@
 - HookLib creator
 
 ## TwoTailedHero
-- Creator of external Wario Land mode
+- Creator of external Wario Land mode.
 - UglyKnux skin addition
 - Gordon Freeman
 
@@ -63,10 +63,10 @@
 - All Pre-game backgrounds
 
 ## LeoTheHedgehog12
-- Made A1 and A2 rotations for Marvellous Queen
+- Made A1 and A2 rotations for Marvellous Queen.
 
 ## I.D.K
-- Made Intermission background
+- Made Intermission background.
 - Finished Marvellous Queen rotations
 
 ## Speedcore Tempest
@@ -109,7 +109,7 @@
 
 # Special Thanks
 ## Dirk the Husky
-- Sonic Drop-Dash sprites
+- Sonic Drop-Dash sprites.
 
 ## NeoZiggy
 - Pretty much the guy who gave me the idea to make this months back. I have no regrets. Thanks!
