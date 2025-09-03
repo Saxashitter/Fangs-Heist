@@ -58,9 +58,20 @@
 - UglyKnux skin addition
 - Gordon Freeman
 
-# Spriters
+# Spriters/Artists
+## keira
+- All character renders
+- OST art
+- Created artstyle for renders/high quality art
+
 ## 5UP34
 - All Pre-game backgrounds
+
+## A Pontrol Coint
+- Pointer arrow for tracked objects
+
+## Jana Sol
+- Made first rendition of the mod's current logo
 
 ## LeoTheHedgehog12
 - Made A1 and A2 rotations for Marvellous Queen
@@ -74,6 +85,7 @@
 
 ## GLide KS
 - Timer sprite
+- Fully polished Jana Sol's rendition of the logo
 
 ## Keyla L.
 - Ring and Profit sprite
@@ -120,6 +132,7 @@
 
 ## Jisk
 - HookLib creator
+- Ported SGLib to SRB2, from DRRR
 
 ## luigi budd
 - Provided me his slightly-modded HookLib.
@@ -134,3 +147,6 @@
 
 ## SSNTails
 - I don't know for sure, but he PROBABLY made Sonikku.wad
+
+## GenericHeroGuy
+- Probably made SGLib. Not completely sure.

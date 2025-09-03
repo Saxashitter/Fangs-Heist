@@ -690,9 +690,11 @@ local function DrawGame(v)
 	local fade_frac = FixedDiv(fade_tics, fade_dur)
 
 	local game_scale = 3*FU/2
+	local game = v.cachePatch("FH_GAME")
 
 	DrawHeistBackground(v)
-	FangsHeist.DrawString(v,160*FU,100*FU,game_scale,"GAME!","LTFNT","center",nil,v.getStringColormap(V_PURPLEMAP))
+	v.draw(160 - game.width/2, 100 - game.height/2, game)
+
 	DrawFlash(v, flash_frac)
 	DrawFade(v, fade_frac)
 end
