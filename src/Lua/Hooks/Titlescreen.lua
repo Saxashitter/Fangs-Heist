@@ -71,38 +71,7 @@ addHook("MusicChange", function(old, new)
 		return true
 	end
 end)
-local function randomizeString(str)
-	if type(str) ~= "string" then return nil end
 
-	local new_string = ""
-
-	for i = 1, #str do
-		local val = abs(getTimeMicros()) % 96 + 31
-		new_string = $..string.char(min(max(val, 31), 127))
-	end
-
-	return new_string
-end
-local function TeamFractureBG(v)
-	local patch = v.cachePatch("TFRACTURE_BG")
-
-	local sw = (v.width() / v.dupx()) * FU
-	local sh = (v.height() / v.dupy()) * FU
-
-	local y = -patch.height*FU + (leveltime*FU/2) % (patch.height*FU)
-	local x = -patch.width*FU + (leveltime*FU/2) % (patch.width*FU)
-
-	while y < sh do
-		local x = x
-
-		while x < sw do
-			v.drawScaled(x, y, FU, patch, V_SNAPTOLEFT|V_SNAPTOTOP)
-			x = $+patch.width*FU
-		end
-	
-		y = $+patch.height*FU
-	end
-end
 FH.Version.HUD = function(v,starttime) --Version HUD
 	if starttime == nil
 		starttime = 35
@@ -132,15 +101,31 @@ end
 4 Second Team Fracture Intro
 This HUD Only Shows ONCE when the Addon is Loaded.
 
-The Logo & the Presents graphics are made Neonie herself!
+The Logo is Made by Keyla FL THANK YOU SO MUCH!!! (and it's big.)
 
 */
+local drawRGBBG = function(v,r,g,b,flg)
+	if flg == nil then flg = 0 end
+	local p = v.cachePatch(string.format("~%03d",color.rgbToPalette(r,g,b)))
+	local wid = v.width()*FU/v.dupx()
+	local hei = v.height()*FU/v.dupy()
+	v.drawStretched(
+		0, 0,
+		FixedDiv(wid, p.width*FU),
+		FixedDiv(hei, p.height*FU),
+		p,
+		V_SNAPTOLEFT|V_SNAPTOTOP|flg
+	)
+end
 FH.TeamFractureLogo = function(v,alternative)
 	local FontDraw = function(v,x,y,scale,text,flags,align,color)
 		return FH.DrawString(v,x,y,scale,text,"FHTXT",align,flags,v.getStringColormap(color or 0))
 	end
-
-	TeamFractureBG(v)
+	local Leveltitledraw = function(v,x,y,scale,text,flags,align,color)
+		return FH.DrawString(v,x,y,scale,text,"LTFNT",align,flags,v.getStringColormap(color or 0))
+	end
+	--Default BG for now. KOI'S TEAM FRACTURE BG SUCKS!
+	drawRGBBG(v,16,16,16)
 	FH.Version.HUD(v,1) --Only shows Once for Version HUD too!
 
 	--Sounds
@@ -183,9 +168,8 @@ FH.TeamFractureLogo = function(v,alternative)
 
 	--Presents
 	if trans != 10 then
-		v.drawScaled(160*FU,155*FU,3*FU/2,v.cachePatch("FH_PRESENTS"),trans<<V_ALPHASHIFT)
+		Leveltitledraw(v,160*FU,155*FU,tofixed("0.85"),"Presents..",trans<<V_ALPHASHIFT,"center",V_GRAYMAP)
 	end
-
 	--Fade
 	local fade = ease.linear(min(FixedDiv(leveltime,10),FU),32,0)
 	if leveltime >= 105 or Intro.pressed then
@@ -210,7 +194,7 @@ local function DrawHeistBackground(v)
 
 	local sw = (v.width() / v.dupx()) * FU
 	local sh = (v.height() / v.dupy()) * FU
-	local speed = ease.linear(max(0,min(FixedDiv(bg_time,20),FU)),FU/3,2*FU)
+	local speed = ease.linear(max(0,min(FixedDiv(bg_time,20),FU)),FU/3,3*FU/2)
 	if not logo_bounces
 		bg_speed = $+speed
 	end
@@ -232,33 +216,14 @@ end
 
 FH.TitleScreenDrawer = function(v)
 	local logo = v.cachePatch("FH_LOGO")
-	local palletergb = string.format("~%03d",color.rgbToPalette(0,0,0)) 
-	local black = v.cachePatch(palletergb) --please use this instead of FH_BLACK
-	
-	local wid = v.width()*FU/v.dupx()
-	local hei = v.height()*FU/v.dupy()
-
 	DrawHeistBackground(v)
-
+	
 	// Black and White Screen
 	if ws_alpha < 10 then
-		v.drawStretched(
-			0, 0,
-			FixedDiv(wid, black.width*FU),
-			FixedDiv(hei, black.height*FU),
-			black,
-			V_SNAPTOLEFT|V_SNAPTOTOP|(ws_alpha*V_10TRANS),
-			v.getColormap(TC_ALLWHITE, nil)
-		)
+		drawRGBBG(v,255,255,255,(ws_alpha*V_10TRANS))
 	end
 	if bs_alpha < 10 then
-		v.drawStretched(
-			0, 0,
-			FixedDiv(wid, black.width*FU),
-			FixedDiv(hei, black.height*FU),
-			black,
-			V_SNAPTOLEFT|V_SNAPTOTOP
-		)
+		drawRGBBG(v,0,0,0)
 	end
 
 	if bs_alpha == 10 then
@@ -269,9 +234,10 @@ FH.TitleScreenDrawer = function(v)
 	end
 
 	// Logo
-	local scale = tofixed("1.3")
+	local scale = tofixed("1.25")
 
 	logo_shake = max(0, $-1)
+	local hei = v.height()*FU/v.dupy()
 	local s = FixedMul(FixedDiv(logo_shake, 12),12*FU)
 	local ox,oy = ShakeSine(v,s)
 	local target_y = hei/2 + logo.height*scale/2
@@ -281,7 +247,7 @@ FH.TitleScreenDrawer = function(v)
 			logo_delay = $-1
 
 			if not logo_delay then
-				S_FadeMusic(0,FixedMul(tofixed("0.603"),1000))
+				S_FadeMusic(0,FixedMul(tofixed("0.3"),1000))
 				S_StartSound(nil, sfx_s3k51)
 			end
 		else
@@ -323,14 +289,14 @@ FH.TitleScreenDrawer = function(v)
 			logo_tics = $+1
 		end
 		local time = FixedAngle(ease.linear(min(FixedDiv(logo_tics%200,200),FU),0,360)*FU)
-		local y = 100*FU+FixedMul(3*FU/2,sin(time))
+		local y = 100*FU+FixedMul(tofixed("3.30"),sin(time))
 		--Title Screen Pulse Beat
-		local bpm = (60*TICRATE)/115
+		local bpm = (60*TICRATE)/113
 		local beatperswitch = bpm*2
 		local pulsebeat = FixedAngle(ease.linear(min(FixedDiv(logo_tics%beatperswitch,beatperswitch),FU),0,360)*FU)
 		local s = sin(pulsebeat)
 		local pulsetime = min(FixedDiv(logo_tics%bpm,bpm),FU)
-		local colorloop = (s <= 0) and SKINCOLOR_MAUVE or SKINCOLOR_GREEN
+		local colorloop = (s <= 0) and SKINCOLOR_MAUVE or SKINCOLOR_SHAMROCK
 		local pulsescale = ease.outquart(pulsetime,scale,scale+3000)
 		local trns = ease.linear(abs(s),9,0)<<V_ALPHASHIFT
 		v.drawScaled(
