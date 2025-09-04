@@ -582,7 +582,7 @@ function state:draw(v, c, transparency)
 		end
 	else
 		self.heist.team.state = 2 --Force them READY
-		drawGamemodeInfo(v,5,transparency)
+		drawGamemodeInfo(v,50,V_SNAPTOTOP|transparency)
 		STATES[2].draw(self, true, v, c, transparency)
 	end
 end
