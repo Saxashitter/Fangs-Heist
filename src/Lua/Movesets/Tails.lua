@@ -64,10 +64,6 @@ local function CanWallJump(p)
 		return false
 	end
 
-	if tails.doublejump_times then
-		return false
-	end
-
 	return true
 end
 
@@ -80,7 +76,7 @@ local function CanDoubleJump(p)
 		return false
 	end
 
-	if p.mo.tails.doublejump_times == FLIGHT_LIMIT then
+	if p.mo.tails.doublejump_times then
 		return false
 	end
 
@@ -275,9 +271,7 @@ addHook("AbilitySpecial", function(p)
 	p.mo.tails.doublejump_times = ($ or 0) + 1
 	p.mo.tails.doublejump_ticker = 18
 
-	if p.mo.tails.doublejump_times == 3 then
-		p.pflags = $|PF_THOKKED
-	end
+	p.pflags = $|PF_THOKKED
 	return true
 end)
 
