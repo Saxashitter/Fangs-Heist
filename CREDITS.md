@@ -150,3 +150,7 @@
 
 ## GenericHeroGuy
 - Probably made SGLib. Not completely sure.
+
+## MattMayuga
+- Made the font used for alot of the HUD.
+- https://www.spriters-resource.com/custom_edited/sonicthehedgehogcustoms/asset/172072/
