@@ -2,7 +2,7 @@ local module = {}
 
 local PROFITFORM = string.char(1) .. " %d"
 local RINGSFORM = string.char(2) .. " %d"
-local RANKFORM = "[c:red]R [c:white]%d"
+local RANKFORM = "[c:red]P [c:white]%s"
 
 local function GetSpriteScale(sprite, targRes, scaleBy)
 	local scale = FU
@@ -31,6 +31,20 @@ local function IsSpriteValid(skin, sprite, frame)
 	return false
 end
 
+local function returnPlace(i)
+	local format = "%dth"
+
+	if i == 1 then
+		format = "%dst"
+	elseif i == 2 then
+		format = "%dnd"
+	elseif i == 3 then
+		format = "%drd"
+	end
+
+	return format:format(i)
+end
+
 
 local function DrawText(v, x, y, string, flags, align, color, rich)
 	FangsHeist.DrawString(v,
@@ -56,7 +70,7 @@ function module.draw(v, p)
 	local strings = {
 		{str = RINGSFORM:format(p.rings), on = pi.Rings},
 		{str = PROFITFORM:format(team.profit), on = pi.Profit},
-		{str = RANKFORM:format(team.place or 0), on = pi.Rank},
+		{str = RANKFORM:format(returnPlace(team.place or 0)), on = pi.Rank},
 	}
 
 	local multiplier = p.heist:getMultiplier()

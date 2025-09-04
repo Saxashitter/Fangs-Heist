@@ -46,10 +46,12 @@ local function drawTimer(v, x, y, scale, f)
 	end
 
 	local bg = v.cachePatch("FH_TMR_BG")
-	local bar = v.cachePatch("FH_TMR_BAR" .. (tics % 9)+1)
 
 	v.drawScaled(x, y, FU, bg, f, v.getColormap(nil, SKINCOLOR_RED))
-	v.drawScaled(x, y, FU, bar, f, v.getColormap(nil, SKINCOLOR_RED))
+	if tics % 10 > 0 then
+		local bar = v.cachePatch("FH_TMR_BAR" .. (tics % 10))
+		v.drawScaled(x, y, FU, bar, f, v.getColormap(nil, SKINCOLOR_RED))
+	end
 
 	if ringframe then
 		local ring = v.cachePatch("FH_TMR_RING" .. ringframe)

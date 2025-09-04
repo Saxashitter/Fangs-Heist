@@ -426,7 +426,7 @@ local function DrawResults(v,tics)
 				local width = FangsHeist.GetStringWidth(v,st,FU,"FHTXT")+2*FU
 				FangsHeist.DrawString(v,xslide+width,y,FU,namestr,"FHTXT",nil,nil,v.getStringColormap(skincolors[namecol].chatcolor))
 				local profiw = width+FangsHeist.GetStringWidth(v,namestr,FU,"FHTXT")+2*FU
-				FangsHeist.DrawString(v,xslide+profiw,y,FU,"$"..tostring(profit),"FHTXT",nil,nil,v.getStringColormap(V_GREENMAP))
+				FangsHeist.DrawString(v,xslide+profiw,y,FU,string.char(1)..tostring(profit),"FHTXT",nil,nil,v.getStringColormap(V_GREENMAP))
 			end
 		end
 	end

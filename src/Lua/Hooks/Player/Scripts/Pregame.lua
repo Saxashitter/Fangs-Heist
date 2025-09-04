@@ -64,6 +64,10 @@ return function(p)
 		return
 	end
 
+	if p.mo then
+		p.mo.tics = -1
+	end
+
 	local state = GetState(p)
 	local switch = state.tick and state.tick(p)
 
