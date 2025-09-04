@@ -481,6 +481,8 @@ function REQUEST:draw(selected, v, c, transparency)
 end
 
 function state:enter()
+	READY_TICS = 0
+
 	self.heist.team = {}
 
 	self.heist.team.join_sel = 1
@@ -532,20 +534,15 @@ end
 local function drawGamemodeInfo(v, y, flags)
 	local gamemode = FangsHeist.getGamemode()
 	local info = gamemode:info()
-	local INFO_X = 4
-	local INFO_INDENT = 6
+	local INFO_X = 160
 	if not (info and #info) then return end
 
 	for _, tbl in ipairs(info) do
 		for i, info in ipairs(tbl) do
-			local x,a,s,c,f = INFO_X,nil,FU,v.getStringColormap(V_YELLOWMAP),flags
+			local x,a,s,c,f = INFO_X,"center",FU,v.getStringColormap(V_YELLOWMAP),flags
 			if i > 1 then
-				x = $ + INFO_INDENT
 				c = nil
-				info = "- "..$
-				s = tofixed("0.85")
 			else
-				x,a = 160,"center"
 				info = $:upper()
 				local sw = v.width()/v.dupx()
 				local rr = 10
