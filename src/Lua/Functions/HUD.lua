@@ -3,23 +3,35 @@ local DEFAULT = {
 	padding = 0
 }
 
+local fontCache = {}
+local numCache = {}
+
 FangsHeist.FontDefs = {
 	CRFNT = {
 		space = 8,
 		padding = 0
-	}
+	},
+	FHARL = {
+		space = 4,
+		padding = 0
+	},
 }
 
 local function GetStringWidth(v, str, scale, font)
 	local width = 0
 	local def = FangsHeist.FontDefs[font] or DEFAULT
 
+	if not fontCache[font] then
+		fontCache[font] = {}
+	end
+
 	for i = 1,#str do
 		local letter = str:sub(i, i)
 		local byte = letter:byte()
 		local name = string.format("%s%03d", font, byte)
 
-		if not v.patchExists(name) then
+		if not fontCache[font][byte]
+		and not v.patchExists(name) then
 			width = $ + def.space*scale
 	
 			if i < #str then
@@ -29,7 +41,12 @@ local function GetStringWidth(v, str, scale, font)
 			continue
 		end
 
-		local patch = v.cachePatch(name)
+		local patch = fontCache[font][byte]
+	
+		if not (patch and patch.valid) then
+			fontCache[font][byte] = v.cachePatch(name)
+			patch = fontCache[font][byte]
+		end
 
 		width = $ + patch.width*scale
 
@@ -46,11 +63,16 @@ local function GetNumberWidth(v, number, scale, font)
 	local def = FangsHeist.FontDefs[font] or DEFAULT
 	local str = tostring(number)
 
+	if not numCache[font] then
+		numCache[font] = {}
+	end
+
 	for i = 1,#str do
 		local letter = str:sub(i, i)
-		local name = string.format("%s%d", font, letter)
+		local name = string.format("%s%s", font, letter)
 
-		if not v.patchExists(name) then
+		if not numCache[font][letter]
+		and not v.patchExists(name) then
 			width = $ + def.space*scale
 	
 			if i < #str then
@@ -60,7 +82,12 @@ local function GetNumberWidth(v, number, scale, font)
 			continue
 		end
 
-		local patch = v.cachePatch(name)
+		local patch = numCache[font][letter]
+	
+		if not (patch and patch.valid) then
+			numCache[font][letter] = v.cachePatch(name)
+			patch = numCache[font][letter]
+		end
 
 		width = $ + patch.width*scale
 
@@ -75,7 +102,42 @@ end
 FangsHeist.GetStringWidth =	GetStringWidth
 FangsHeist.GetNumberWidth = GetNumberWidth
 
-function FangsHeist.DrawString(v, x, y, scale, str, font, align, flags, color)
+local richCache = {}
+
+function FangsHeist.DrawString(v, x, y, scale, str, font, align, flags, color, rich)
+	local points = {}
+
+	if rich
+	and #str - 4 >= 4 then
+		if not richCache[str] then
+			local iter = 1
+			local raw_str = str
+	
+			while iter < #str - 4 do
+				local cut = str:sub(iter, iter+2)
+	
+				if cut == "[c:" then
+					local _, length = str:sub(iter, #str):find("%b[]")
+					local color = str:sub(iter+3, iter+length-2):upper()
+
+					str = str:sub(1, iter - 1) .. str:sub(iter + length, #str)
+					points[iter] = {
+						color = color == "WHITE" and -1 or _G["V_"..color.."MAP"]
+					}
+				end
+	
+				iter = iter+1
+			end
+
+			richCache[raw_str] = {
+				str = str,
+				points = points
+			}
+		else
+			points = richCache[str].points
+			str = richCache[str].str
+		end
+	end
 	local width = GetStringWidth(v, str, scale, font)
 
 	if align == "center" then
@@ -93,7 +155,7 @@ function FangsHeist.DrawString(v, x, y, scale, str, font, align, flags, color)
 		local byte = letter:byte()
 		local name = string.format("%s%03d", font, byte)
 
-		if not v.patchExists(name) then
+		if not fontCache[font][byte] then
 			x = $ + def.space*scale
 	
 			if i < #str then
@@ -103,7 +165,16 @@ function FangsHeist.DrawString(v, x, y, scale, str, font, align, flags, color)
 			continue
 		end
 
-		local patch = v.cachePatch(name)
+		local patch = fontCache[font][byte]
+
+		if points[i]
+		and points[i].color ~= nil then
+			if points[i].color == -1 then
+				color = nil
+			else
+				color = v.getStringColormap(points[i].color)
+			end
+		end
 
 		v.drawScaled(x, y, scale, patch, flags, color)
 
@@ -133,7 +204,7 @@ function FangsHeist.DrawNumber(v, x, y, scale, number, font, flags, color)
 		local letter = str:sub(i, i)
 		local name = string.format("%s%d", font, letter)
 
-		if not v.patchExists(name) then
+		if not numCache[font][letter] then
 			x = $ + def.space*scale
 	
 			if i < #str then
@@ -143,7 +214,7 @@ function FangsHeist.DrawNumber(v, x, y, scale, number, font, flags, color)
 			continue
 		end
 
-		local patch = v.cachePatch(name)
+		local patch = numCache[font][letter]
 
 		v.drawScaled(x, y, scale, patch, flags, color)
 

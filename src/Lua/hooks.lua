@@ -1,8 +1,5 @@
 -- code by unmatched bracket and jisk and luigi
 
-rawset(_G, "HeistHook", {})
-HeistHook.events = {}
-
 /*
 	return value: Boolean (override default behavior?)
 	true = override, otherwise hook is ran then the default function after
@@ -40,7 +37,7 @@ local events = {}
 
 // HOOKS
 	// Example:
-	/*HeistHook.addHook("GameInit", function()
+	/*FangsHeist.addHook("GameInit", function()
 		print("I am initalized!")
 	end)*/
 
@@ -90,36 +87,60 @@ events["GameOver"] = {}
 	// return true: Stops the game from ending.
 	// No arguments are passed.
 
-events["PlayerDamage"] = {}
-// PlayerDamage:
-	// Runs after a player hits another via FangsHeist.damagePlayers
+events["PlayerAttack"] = {}
+// PlayerAttack:
+	// Runs before the player attacks using Fire.
+	// return true: Stop the default behavior.
 	// Arguments:
-		// hitter == player_t
-		// damaged == player_t
+		// player == player_t
+
+events["PlayerParry"] = {}
+// PlayerParry:
+	// Runs before the player attempts to parry.
+	// return true: Stop the default behavior.
+	// Arguments:
+		// player == player_t
+		
+events["PlayerParried"] = {}
+// PlayerParry:
+	// Runs when the player parries another player.
+	// Arguments:
+		// parrier == player_t
+		// parried == player_t
+
+events["PlayerParriedEnemy"] = {}
+// PlayerParry:
+	// Runs when the player parries a enemy or a projectile.
+	// Arguments:
+		// parrier == player_t
+		// parried == mobj_t
+
+events["PlayerClash"] = {}
+// PlayerClash:
+	// Runs when the player clashes with another.
+	// Arguments:
+		// first_clasher == player_t
+		// second_clasher == player_t
 
 events["PlayerHit"] = {}
 // PlayerHit:
-	// Runs before the hit code in Player/Scripts/PVP.
-	// return true: Stops the code from running.
+	// Runs when the player hits another player.
 	// Arguments:
-		// hitter == player_t
-		// damaged == player_t
-		// speed == bool/fixed_t - speed is false if the player wasn't hurt. Otherwise, it returns a fixed value.
+		// attacker == player_t
+		// victim == player_t
 
-events["IsPlayerNerfed"] = {handler = handler_snapany}
-// IsPlayerNerfed:
-	// Runs before the regular nerfed check, used for determining whether if the player was nerfed or not.
-	// return true/false: Stops the code from running, and returns the variable that was given.
+events["PlayerAirDodge"] = {}
+// PlayerAirDodge:
+	// Runs when the player air-dodges.
 	// Arguments:
 		// player == player_t
 
-events["DepleteBlock"] = {handler = handler_snapany}
-// DepleteBlock:
-	// Runs before the depleting code when something hits the player.
-	// return true/false: Stop the code from running, and determines if the block was broken.
+events["PlayerScanAttack"] = {}
+// PlayerScanAttack:
+	// Runs before the check to scan around the player to attack.
+	// return true/false: Runs the attack scan.
 	// Arguments:
 		// player == player_t
-		// damage == int
 
 events["Round2"] = {}
 // Round2:
@@ -135,7 +156,7 @@ events["Music"] = {handler = handler_snapany}
 	// Arguments:
 		// song == string
 
-HeistHook.addHook = function(hooktype, func, typefor)
+FangsHeist.addHook = function(hooktype, func, typefor)
 	if events[hooktype] then
 		table.insert(events[hooktype], {
 			func = func,
@@ -147,7 +168,7 @@ HeistHook.addHook = function(hooktype, func, typefor)
 	end
 end
 
-HeistHook.runHook = function(hooktype, ...)
+FangsHeist.runHook = function(hooktype, ...)
 	if not events[hooktype] then
 		error("\x82WARNING:\x80 Can't run a nonexistant hooktype! (\""..hooktype..'"', 2)
 	end
@@ -175,8 +196,8 @@ end
 
 --check for new events...
 for event_name, event_t in pairs(events)
-	if (HeistHook.events[event_name] == nil)
-		HeistHook.events[event_name] = event_t
+	if (FangsHeist.events[event_name] == nil)
+		FangsHeist.events[event_name] = event_t
 	else
 		print("\x80 Hooklib found an existing hookevent, not adding. (\""..event_name..'")')
 	end

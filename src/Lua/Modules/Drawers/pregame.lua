@@ -1,6 +1,108 @@
 local module = {}
 
-local text = FangsHeist.require "Modules/Libraries/text"
+function module.init() end
+
+local function DrawBackground(v)
+	local transparency = V_10TRANS * FangsHeist.Net.pregame_transparency
+	local p = consoleplayer
+
+	if not (p and p.valid) then
+		v.drawFill()
+		return
+	end
+
+	local sw = v.width() * FU / v.dupx()
+	local sh = v.height() * FU / v.dupy()
+	local char = FangsHeist.Characters[p.heist.locked_skin]
+
+	if char.customPregameBackground then
+		char.customPregameBackground(v,consoleplayer)
+		return
+	end
+
+	local patch = v.cachePatch(char.pregameBackground)
+	local y = -patch.height*FU + (leveltime*FU/2) % (patch.height*FU)
+	local x = -patch.width*FU + (leveltime*FU/2) % (patch.width*FU)
+
+	while y < sh do
+		local x = x
+
+		while x < sw do
+			v.drawScaled(x, y, FU, patch, V_SNAPTOLEFT|V_SNAPTOTOP|transparency)
+			x = $+patch.width*FU
+		end
+	
+		y = $+patch.height*FU
+	end
+end
+
+local function DrawState(v)
+	local transparency = V_10TRANS * FangsHeist.Net.pregame_transparency
+
+	if not consoleplayer
+	or not consoleplayer.valid
+	or not consoleplayer.heist then
+		return
+	end
+
+	local state = FangsHeist.getPregameState(consoleplayer)
+
+	if state.draw then
+		state.draw(consoleplayer, v, c, transparency)
+	end
+	return state
+end
+
+local function ShouldDraw()
+	if FangsHeist.Net.pregame then return true end
+	if FangsHeist.Net.pregame_transparency < 10 then return true end
+
+	return false
+end
+
+local function GetXYCoords(v, x, y)
+	local sw = v.width() / v.dupx()
+	local sh = v.height() / v.dupy()
+
+	return x * sw, y * sh
+end
+
+function module.draw(v)
+	if not ShouldDraw() then
+		return
+	end
+
+	local transparency = V_10TRANS * FangsHeist.Net.pregame_transparency
+
+	DrawBackground(v)
+	local state = DrawState(v)
+
+	local num = FangsHeist.Net.pregame_time/TICRATE
+	local x = 4*FU
+	local y = 4*FU
+
+	if state
+	and state.time_x ~= nil
+	and state.time_y ~= nil then
+		x, y = GetXYCoords(v, state.time_x, state.time_y)
+	end
+
+	if state
+	and state.time_ox then
+		x = $ + state.time_ox
+	end
+
+	if state
+	and state.time_oy then
+		y = $ + state.time_oy
+	end
+
+	FangsHeist.DrawNumber(v,x,y,FU,num,"STTNUM",V_SNAPTOTOP|V_SNAPTOLEFT|transparency)
+end
+
+return module, "gameandscores"
+
+--[[local text = FangsHeist.require "Modules/Libraries/text"
 
 local START_CHAR_X = 320*FU
 local END_CHAR_X = 320*FU - 98*FU
@@ -22,6 +124,20 @@ local textdelay = 0
 local lastskin = 0
 local alpha = 0
 local lastlockskin = 0
+
+local function IsSpriteValid(skin, sprite, frame)
+	local skin = skins[skin]
+	local sprites = skin.sprites[sprite]
+	local numframes = sprites.numframes
+
+	if numframes
+	and numframes > frame then -- B = 2 so, check if it has the B frame
+		return true
+	end
+
+	return false
+end
+
 function module.init()
 	chartween = 0
 	overlaytween = 0
@@ -42,9 +158,39 @@ local function draw_rect(v, x, y, w, h, flags, color)
 	)
 end
 
+local FONT_FORMAT = "%s%03d"
+local PATCHES = {}
+
+local function CachePatch(v, name)
+	if not (PATCHES[name] and PATCHES[name].valid) then
+		PATCHES[name] = v.cachePatch(name)
+	end
+
+	return PATCHES[name]
+end
+
+local function DrawWrappedString(v, x, y, string, limit, flags, align)
+	local loops = max(1,#string/limit)
+
+	for i = 1,loops+1 do
+		local start = max(0, limit*(i-1))+1
+		if limit*(i-1) > #string then
+			return
+		end
+
+		local string = string:sub(start, min(limit*i, #string))
+		v.drawString(x, y, string, flags, align)
+
+		y = $+9
+	end
+end
+
 local function draw_cs(v,p)
 	v.drawString(160, 4, "CHARACTER SELECT", V_SNAPTOTOP|f, "center")
+	local gamemode = FangsHeist.getGamemode()
+
 	local skin = skins[p.heist.locked_skin]
+	local char = FangsHeist.Characters[skin.name]
 
 	local sw = v.width()*FU/v.dupx()
 	local sh = v.height()*FU/v.dupy()
@@ -54,9 +200,15 @@ local function draw_cs(v,p)
 	local limit = 17+1
 	local oy = 16*FU
 
-	local x = 16*FU
-	local y = 60*FU - oy*#skins/limit
+	local x = 160*FU
+	local y = 4*FU + 11*FU + 2*FU
 	local adds = 0
+
+	local maxscale = FU*3/2
+	local minscale = FU
+	local width = ((16*minscale)*(#skins-1)) + 16*maxscale
+
+	x = $ - width/2
 
 	for i = 0,#skins-1 do
 		if not (p and p.valid) then break end
@@ -68,29 +220,35 @@ local function draw_cs(v,p)
 		end
 
 		local patch
-		local scale = FU
-		if skins[i].sprites[SPR2_LIFE].numframes then 
+		local scale = minscale
+
+		--Icon Tweening :p
+		if i == p.heist.locked_skin then
+			scale = ease.outquint(FixedDiv(chartween, CHAR_TWEEN),minscale,maxscale)
+		end
+		if i == p.heist.lastlockskin then
+			scale = ease.outquint(FixedDiv(chartween, CHAR_TWEEN),maxscale,minscale)
+		end
+
+		if IsSpriteValid(i, SPR2_LIFE, A) then 
 			patch = v.getSprite2Patch(i, SPR2_LIFE, false, A)
-			scale = skins[i].highresscale
+			scale = FixedMul($, skins[i].highresscale)
 		else
 			patch = v.cachePatch("CONTINS")
 		end
-		--Icon Tweening :p
-		if i == p.heist.locked_skin then
-			scale = ease.outquint(FixedDiv(chartween, CHAR_TWEEN),$,3*$/2)
-		end
-		if i == p.heist.lastlockskin then
-			scale = ease.outquint(FixedDiv(chartween, CHAR_TWEEN),3*$/2,$)
-		end
+
 		v.drawScaled(x + patch.leftoffset*scale,
 			y + patch.topoffset*scale,
 			scale,
 			patch,
-			V_SNAPTOLEFT|f,
+			V_SNAPTOTOP|f,
 			v.getColormap(skins[i].name, skins[i].prefcolor))
 
 		x = x + patch.width*scale
 	end
+
+	y = $+4*FU
+	y = $+CHAROVERLAY_END_RADIUS
 
 	-- character underlay
 	local radius = ease.outquad(
@@ -101,20 +259,23 @@ local function draw_cs(v,p)
 	local behindpatch = v.cachePatch("FH_PINK_SCROLL")
 
 	draw_rect(v,
-		0, 100*FU-radius/2,
+		0, y-radius/2,
 		sw,
 		radius,
-		V_SNAPTOLEFT|f,
+		V_SNAPTOLEFT|V_SNAPTOTOP|f,
 		skin.prefcolor
 	)
 
 	-- character
 	local patch
-	if skins[p.heist.locked_skin].sprites[SPR2_XTRA].numframes >= 2 then -- B = 2 so, check if it has the B frame
+	if IsSpriteValid(p.heist.locked_skin, SPR2_FHBN, A) then -- B = 2 so, check if it has the B frame
+		patch = v.getSprite2Patch(p.heist.locked_skin, SPR2_FHBN, false, A)
+	elseif IsSpriteValid(p.heist.locked_skin, SPR2_XTRA, B) then -- B = 2 so, check if it has the B frame
 		patch = v.getSprite2Patch(p.heist.locked_skin, SPR2_XTRA, false, B)
 	else
 		patch = v.cachePatch("MISSING") -- what srb2 defaults to if XTRAB is missing
 	end
+
 	local scale = (FU/4)*3
 
 	local x = ease.outquad(
@@ -122,9 +283,9 @@ local function draw_cs(v,p)
 		START_CHAR_X, END_CHAR_X
 	)
 
-	v.drawScaled(x+5*FU, 105*FU - patch.height*scale/2, scale, patch, V_SNAPTORIGHT|f,
+	v.drawScaled(x+5*FU, y+5*FU - patch.height*scale/2, scale, patch, V_SNAPTORIGHT|V_SNAPTOTOP|f,
 		v.getColormap(TC_BLINK, skin.prefcolor))
-	v.drawScaled(x, 100*FU - patch.height*scale/2, scale, patch, V_SNAPTORIGHT|f)
+	v.drawScaled(x, y - patch.height*scale/2, scale, patch, V_SNAPTORIGHT|V_SNAPTOTOP|f)
 
 	-- text
 
@@ -135,26 +296,37 @@ local function draw_cs(v,p)
 		START_TEXT_X, TEXT_END_X
 	)
 
-	/*customhud.CustomFontString(v,
-		x,
-		100*FU-(radius/2)+(20*scale/2),
-		skin.realname:upper(),
-		"CSFNT",
-		V_SNAPTOLEFT|f,
-		"left",
-		scale,
-		skin.prefcolor
-	)*/
-
 	FangsHeist.DrawString(v,
 		x,
-		100*FU-(16*scale/2),
+		y-(16*scale/2),
 		scale,
 		skin.realname:upper(),
 		"CRFNT",
 		"left",
-		V_SNAPTOLEFT|f,
+		V_SNAPTOLEFT|V_SNAPTOTOP|f,
 		v.getColormap(TC_RAINBOW, skin.prefcolor))
+
+	local info = gamemode:info()
+	if not (info and #info) then return end
+
+	v.drawString(4, 110, "Round Info:", V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_ALLOWLOWERCASE|V_YELLOWMAP, "thin")
+
+	local y = 110+10
+
+	for _, tbl in ipairs(info) do
+		for i, info in ipairs(tbl) do
+			local x = 8
+			local f = V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_ALLOWLOWERCASE
+
+			if i == 1 then
+				x = 4
+				f = ($|V_REDMAP) & ~V_ALLOWLOWERCASE
+			end
+	
+			v.drawString(x, y, info, f, "thin")
+			y = $+10
+		end
+	end
 end
 
 local function draw_menu(v,x,y,width,height,items,selected,dispoffset,flags)
@@ -205,7 +377,7 @@ local function draw_team(v,p)
 	local boxheight = 16
 	local boxwidth = 80
 
-	local teamleng = max(0, FangsHeist.CVars.team_limit.value-1)
+	local teamleng = max(0, FangsHeist.CVars.team_limit.value)
 
 	local names = {}
 	if p.heist.playersList then
@@ -223,8 +395,8 @@ local function draw_team(v,p)
 		hud_sel = 8
 	end
 
-	if FangsHeist.isTeamLeader(p)
-	and FangsHeist.getTeamLength(p) < teamleng then
+	if p.heist:isTeamLeader()
+	and #p.heist:getTeam() < teamleng then
 		v.drawString(6, 24-8, "JOIN PLAYERS", V_SNAPTOLEFT|f, "thin")
 		draw_menu(v, 6, 24, 80, 16, names, cur_sel, hud_sel, V_SNAPTOLEFT|f)
 	end
@@ -247,33 +419,32 @@ local function draw_team(v,p)
 		end
 	end
 
-	if FangsHeist.isTeamLeader(p)
-	and FangsHeist.getTeamLength(p) < teamleng then
+	if p.heist:isTeamLeader()
+	and #p.heist:getTeam() < teamleng then
 		v.drawString(320-86, 24-8, "JOIN REQUESTS", V_SNAPTORIGHT|f, "thin")
 		draw_menu(v, 320-86, 24, 80, 16, requests, cur_sel, hud_sel, V_SNAPTORIGHT|f)
 	end
 
 	// ready button
-	--[[local scale = FU
-	local color = v.getColormap(TC_RAINBOW, SKINCOLOR_GREY)
+	local ready = v.cachePatch("FH_READYUNSELECT")
+	local scale = FU
+	local color
+
 	if p.heist.cur_menu == 0 then
+		ready = v.cachePatch("FH_READYSELECT")
 		scale = tofixed("1.25")
-		color = nil
 	end
+
 	v.drawScaled(
 		160*FU - ready.width*scale/2,
 		200*FU - 4*FU - ready.height*scale,
 		scale,
 		ready,
 		V_SNAPTOBOTTOM|f,
-		color)]]
-
-	local color = p.heist.cur_menu == 0 and V_GREENMAP or 0
-
-	v.drawString(160, 200-12, "READY", V_SNAPTOBOTTOM|color, "center")
+		color)
 
 	local i = 1
-	local team = FangsHeist.getTeam(p)
+	local team = p.heist:getTeam()
 
 	if team then
 		v.drawString(160, 4+10, "Team:", V_SNAPTOTOP|V_ALLOWLOWERCASE|f, "center")
@@ -285,7 +456,7 @@ local function draw_team(v,p)
 			local name = sp.name
 			local f = f|V_SNAPTOTOP
 	
-			if FangsHeist.isTeamLeader(sp) then
+			if sp.heist:isTeamLeader() then
 				f = $|V_YELLOWMAP
 			end
 	
@@ -344,13 +515,7 @@ function module.draw(v,p)
 	local str = tostring(num)
 	local x = 4*FU
 
-	for i = 1,#str do
-		local num = tonumber(string.sub(str, i, i))
-		local patch = v.cachePatch("STTNUM"..num)
-
-		v.drawScaled(x, 4*FU, FU, patch, V_SNAPTOLEFT|V_SNAPTOTOP|f)
-		x = $+patch.width*FU
-	end
+	FangsHeist.DrawNumber(v,x,0,FU/2,num,"FHBFT",V_SNAPTOTOP|V_SNAPTOLEFT|f,v.getColormap(TC_DEFAULT,SKINCOLOR_MAUVE))
 
 	chartween = min($+1, CHAR_TWEEN)
 	overlaytween = min($+1, CHAROVERLAY_TWEEN)
@@ -372,17 +537,18 @@ function module.draw(v,p)
 		textdelay = 0
 	end
 
+	local gamemode = FangsHeist.getGamemode()
+
 	if not p.heist.confirmed_skin then
 		draw_cs(v,p)
 		return
 	end
 
-	if not p.heist.locked_team then
+	if not p.heist.locked_team
+	and gamemode.teams then
 		draw_team(v,p)
 		return
 	end
 
 	v.drawString(160, 100, "Waiting for players...", V_ALLOWLOWERCASE|f, "center")
-end
-
-return module, "gameandscores"
+end]]

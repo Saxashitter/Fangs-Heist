@@ -1,3 +1,83 @@
+local function RotatePoint(x_original, y_original, angle_fixedpoint)
+	local cos_angle = cos(angle_fixedpoint) -- Use fixed-point cos
+	local sin_angle = sin(angle_fixedpoint) -- Use fixed-point sin
+	
+	local x_rotated = FixedMul(x_original, cos_angle) - FixedMul(y_original, sin_angle)
+	local y_rotated = FixedMul(x_original, sin_angle) + FixedMul(y_original, cos_angle)
+	
+	return x_rotated, y_rotated
+end
+
+local function CheckCollision(hitbox, mo)
+	if mo.z > hitbox.z+hitbox.s/2 then
+		return false
+	end
+	if mo.z+mo.height < hitbox.z-hitbox.s/2 then
+		return false
+	end
+	local moX = mo.x - hitbox.x
+	local moY = mo.y - hitbox.y
+
+	moX, moY = RotatePoint($1, $2, InvAngle(hitbox.a))
+
+	local angle = R_PointToAngle2(moX, moY, 0, 0)
+	local offsetX = FixedMul(mo.radius, cos(angle))
+	local offsetY = FixedMul(mo.radius, sin(angle))
+
+	local nearestX = max(0, min(moX, hitbox.w))
+	local nearestY = max(0, min(moY, hitbox.h))
+
+	local dist = R_PointToDist2(moX, moY, nearestX, nearestY)
+	return dist <= mo.radius
+end
+
+-- copied from another project
+FangsHeist.makeHitbox = function(x, y, z, w, h, s, a)
+	return {
+		x = x,
+		y = y,
+		z = z,
+		w = w,
+		h = h,
+		s = s,
+		a = a
+	}
+end
+
+FangsHeist.useHitbox = function(source, hitbox, func)
+	local foundPlayers = {}
+	local minX = INT32_MAX
+	local maxX = -INT32_MAX
+	local minY = INT32_MAX
+	local maxY = -INT32_MAX
+
+	local positions = {
+		{RotatePoint(-hitbox.w, -hitbox.h, hitbox.a)},
+		{RotatePoint(-hitbox.w, hitbox.h, hitbox.a)},
+		{RotatePoint(hitbox.w, hitbox.h, hitbox.a)},
+		{RotatePoint(hitbox.w, -hitbox.h, hitbox.a)},
+	}
+
+	for _, v in ipairs(positions) do
+		minX = min($, v[1])
+		maxX = max($, v[1])
+		minY = min($, v[2])
+		maxY = max($, v[2])
+	end
+
+	searchBlockmap("objects", function(_, found)
+		if found.type ~= MT_PLAYER then return end
+		if not (found.player and found.player.valid) then return end
+		if found.player == source then return end
+		if not CheckCollision(hitbox, found) then return end
+
+		func(source, hitbox, found.player)
+	end, source.mo, hitbox.x+minX*2, hitbox.x+maxX*2, hitbox.y+minY*2, hitbox.y+maxY*2)
+
+	return foundPlayers
+end
+
+
 function FangsHeist.clashPlayers(p, sp)
 	local angle = R_PointToAngle2(p.mo.x, p.mo.y, sp.mo.x, sp.mo.y)
 
@@ -17,137 +97,26 @@ function FangsHeist.clashPlayers(p, sp)
 	sp.powers[pw_flashing] = 10
 end
 
-function FangsHeist.gainProfit(p, gain, dontDiv, specialSound)
-	local div = 0
+function FangsHeist.stopVoicelines(p)
+	local char = FangsHeist.Characters[p.heist.locked_skin]
 
-	if not dontDiv then
-		for i = 0,FangsHeist.getTeamLength(p) do
-			div = $+1
+	for k, tbl in pairs(char.voicelines) do
+		for _, snd in ipairs(tbl) do
+			S_StopSoundByID(p.mo, snd)
 		end
-	else
-		div = 1
 	end
+end
 
-	local team = FangsHeist.getTeam(p)
+function FangsHeist.playVoiceline(p, line, private)
+	local char = FangsHeist.Characters[p.heist.locked_skin]
 
-	if not team then
-		print "not in team bozo"
+	if not char.voicelines[line] then
 		return
 	end
 
-	team.profit = max(0, $+(gain/div))
-end
+	FangsHeist.stopVoicelines(p)
 
-function FangsHeist.damagePlayers(p, friendlyfire, damage)
-	local gamemode = FangsHeist.getGamemode()
+	local lines = char.voicelines[line]
 
-	if friendlyfire == nil then
-		friendlyfire = (gamemode.friendlyfire)
-	end
-	if damage == nil then
-		damage = FH_BLOCKDEPLETION
-	end
-
-	for sp in players.iterate do
-		if not (sp and sp.mo and sp.mo.health and sp.heist) then
-			continue
-		end
-		if sp == p then continue end
-
-		local distXY = FixedHypot(p.mo.x-sp.mo.x, p.mo.y-sp.mo.y)
-	
-		local char1 = FangsHeist.Characters[p.mo.skin]
-		local char2 = FangsHeist.Characters[sp.mo.skin]
-	
-		local radius1 = fixmul(p.mo.radius, char1.attackRange)
-		local radius2 = fixmul(sp.mo.radius, char2.damageRange)
-	
-		if distXY > radius1+radius2 then continue end
-	
-		local height1 = fixmul(p.mo.height, char1.attackZRange)
-		local height2 = fixmul(sp.mo.height, char2.damageZRange)
-	
-		local z = abs((p.mo.z+p.mo.height/2)-(sp.mo.z+sp.mo.height/2))
-	
-		if z > max(height1, height2) then continue end
-
-		if FangsHeist.isPartOfTeam(p, sp)
-		and not friendlyfire then
-			continue
-		end
-
-		if char2:isAttacking(sp) then
-			FangsHeist.clashPlayers(p, sp)
-
-			S_StartSound(p.mo, sfx_s3k7b)
-			S_StartSound(sp.mo, sfx_s3k7b)
-
-			return sp, false
-		end
-
-		local speed = FixedHypot(p.mo.momx, p.mo.momy)-FixedHypot(sp.mo.momx, sp.mo.momy)
-
-		if P_DamageMobj(sp.mo, p.mo, p.mo) then
-			char1:onHit(p, sp)
-
-			sp.mo.momx = p.mo.momx
-			sp.mo.momy = p.mo.momy
-
-			HeistHook.runHook("PlayerDamage", p, sp)
-
-			return sp, speed
-		end
-
-		if char2:isBlocking(sp) then
-			return sp, false
-		end
-	end
-end
-
-function FangsHeist.depleteBlock(p, damage)
-	if damage == nil then
-		damage = FH_BLOCKDEPLETION
-	end
-
-	local result = HeistHook.runHook("DepleteBlock", p, damage)
-
-	if result ~= nil then
-		return result
-	end
-
-	p.heist.block_time = min(FH_BLOCKTIME, $+damage)
-
-	if p.heist.block_time == FH_BLOCKTIME then
-		p.heist.block_cooldown = 5*TICRATE
-		p.heist.blocking = false
-		S_StartSound(p.mo, sfx_fhbbre)
-
-		return true
-	end
-
-	S_StartSound(p.mo, sfx_s3k7b)
-	return false
-end
-
-function FangsHeist.joinTeam(p, sp)
-	local team = FangsHeist.getTeam(p)
-
-	if team
-	and FangsHeist.isPartOfTeam(p, sp) then
-		return
-	end
-
-	local otherteam = FangsHeist.getTeam(sp)
-	if otherteam then
-		for i = #otherteam, 1, -1 do
-			local plyr = otherteam[i]
-
-			if plyr == sp then
-				table.remove(otherteam, i)
-				break
-			end
-		end
-	end
-
-	table.insert(team, sp)
+	S_StartSound(p.mo, lines[P_RandomRange(1, #lines)], private and p)
 end

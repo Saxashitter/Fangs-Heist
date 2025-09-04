@@ -94,17 +94,19 @@ local function manage_unpicked(tres)
 	local data = tres.data
 
 	mobj.frame = $ & ~FF_TRANS80
+	local gamemode = FangsHeist.getGamemode()
 
 	for p in players.iterate do
-		if not FangsHeist.isPlayerAlive(p) then continue end
-		if p.powers[pw_flashing] and not FangsHeist.playerHasSign(p) then continue end
+		if not (p.heist and p.heist:isAlive()) then continue end
+		if p.powers[pw_flashing] and not p.heist:hasSign() then continue end
 		if P_PlayerInPain(p) then continue end
 
 		local dist = R_PointToDist2(mobj.x, mobj.y, p.mo.x, p.mo.y)
 		local heightdist = abs(p.mo.z-mobj.z)
 
 		if dist > 64*FU
-		or heightdist > 64*FU then
+		or heightdist > 64*FU
+		or gamemode:treasureblacklist(p) then
 			continue
 		end
 
@@ -161,7 +163,8 @@ function FangsHeist.manageTreasures()
 		if mobj.target
 		and not (mobj.target.valid
 		and mobj.target.player
-		and FangsHeist.isPlayerAlive(mobj.target.player)) then
+		and mobj.target.player.heist
+		and mobj.target.player.heist:isAlive()) then
 			mobj.target = nil
 		end
 

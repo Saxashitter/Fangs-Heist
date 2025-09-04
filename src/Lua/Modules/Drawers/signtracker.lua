@@ -7,7 +7,6 @@ function module.init()
 end
 
 local function draw_sign(v, sign, mo, x, y)
-
 	local alpha = 0
 	local sign_spr = v.getSpritePatch(SPR_SIGN, G, 0)
 	local arrow = v.cachePatch("FH_ARROW"..(leveltime/2 % 6))
@@ -35,7 +34,8 @@ function module.draw(v,p,c)
 	end
 
 	local track = sglib.ObjectTracking(v,p,c, sign)
-	if track.onScreen then
+	if track.onScreen
+	and not P_CheckSight(mo, sign) then
 		draw_sign(v, sign, mo, track.x, track.y)
 	end
 end

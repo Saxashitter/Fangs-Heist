@@ -1,14 +1,4 @@
-local titlescreen = false
-
-local function approach(from, to, by)
-	by = abs($)
-
-	if from > to then
-		return max(from-by, to)
-	end
-
-	return min(from+by, to)
-end
+local FH = FangsHeist
 local ShakeSine = function(v,scale)
 	local randomkey = (v != nil) and v.RandomKey or P_RandomKey
 	local randomfixed = (v != nil) and v.RandomFixed or P_RandomFixed
@@ -19,18 +9,23 @@ local ShakeSine = function(v,scale)
 	return xx,xy
 end
 
+local titlescreen = false
+--Team Fracture Logo
+local FirstLoaded = false
+local Intro = {pressed = false,timer = 10}
+
+--Title Screen
 local bs_alpha = 0
 local ws_alpha = 0
-
 local logo_bounces = 1
 local logo_dy = 0
 local logo_y = 0
 local logo_animated = true
 local logo_delay = 13
 local logo_shake = 0
-
-freeslot("sfx_fhwrn1","sfx_fhwrn2")
-
+local logo_tics = 0
+local bg_speed = 0
+local bg_time = 20
 addHook("ThinkFrame", do
 	if not titlemapinaction then
 		titlescreen = false
@@ -43,64 +38,206 @@ addHook("ThinkFrame", do
 		logo_animated = true
 		logo_delay = 13
 		logo_shake = 0
-
+		logo_tics = 0
+		bg_speed = 0
+		bg_time = 20
+		FirstLoaded = true
 		return
 	end
-
 	titlescreen = true
 end)
+addHook("KeyDown",function(key)
+	if titlemapinaction then
+		if not FirstLoaded then
+			if key.num == input.gameControlToKeyNum(GC_CONSOLE) then
+				return
+			end
 
-local function draw_alpha_patch(v, x, y, scale, alpha, patch, flags, color)
-	if alpha >= 10 then
-		return
+			if (key.num == input.gameControlToKeyNum(GC_JUMP) or key.name == "enter")
+			and leveltime >= 20
+			and not Intro.pressed then
+				S_FadeMusic(0,FixedMul(1000,tofixed("0.20")))
+				Intro.pressed = true
+			end
+
+			return true --All Keys Are Disabled During Mod Warning or During Bounce
+		end
 	end
+end)
+addHook("MusicChange", function(old, new)
+	if not titlemapinaction then return end
 
-	local f = flags or 0
-	f = $|(alpha*V_10TRANS)
+	if new == "_title" then
+		return true
+	end
+end)
 
-	v.drawScaled(x, y, scale, patch, f, color)
+FH.Version.HUD = function(v,starttime) --Version HUD
+	if starttime == nil
+		starttime = 35
+	end
+	local ver = string.format("Version: %s",FH.Version.String)
+	if FH.Version.Git == true
+		ver = string.format("Git Commit Version: %s",FH.Version.Git.CommitVersion)
+	end
+	local texts = {
+		{y = 192*FU,text = ver,flags=V_SNAPTOBOTTOM|V_SNAPTOLEFT,color=V_YELLOWMAP},
+	}
+	for k,d in ipairs(texts) do
+		local i = k-1
+		local xtics = max(0,min(FixedDiv(leveltime-starttime-i*5,35),FU))
+		local xslide = ease.outback(xtics,-FH.GetStringWidth(v,d.text,FU,"FHTXT"),2*FU,FU)
+		local color = d.color
+		if d.color == "HeistColor" then
+			color = (leveltime%30) >= 15 and V_PURPLEMAP or V_GREENMAP
+		end
+		if d and type(d) == "table" then
+			FH.DrawString(v,xslide,d.y,FU,d.text,"FHTXT",nil,d.flags|V_50TRANS,v.getStringColormap(color))
+		end
+	end
 end
+/*
 
-addHook("HUD", function(v)
-	if not titlescreen then
-		return
-	end
+4 Second Team Fracture Intro
+This HUD Only Shows ONCE when the Addon is Loaded.
 
-	local logo = v.cachePatch("FH_LOGO")
-	local black = v.cachePatch("FH_BLACK")
+The Logo is Made by Keyla FL THANK YOU SO MUCH!!! (and it's big.)
 
+*/
+local drawRGBBG = function(v,r,g,b,flg)
+	if flg == nil then flg = 0 end
+	local p = v.cachePatch(string.format("~%03d",color.rgbToPalette(r,g,b)))
 	local wid = v.width()*FU/v.dupx()
 	local hei = v.height()*FU/v.dupy()
+	v.drawStretched(
+		0, 0,
+		FixedDiv(wid, p.width*FU),
+		FixedDiv(hei, p.height*FU),
+		p,
+		V_SNAPTOLEFT|V_SNAPTOTOP|flg
+	)
+end
+FH.TeamFractureLogo = function(v,alternative)
+	local FontDraw = function(v,x,y,scale,text,flags,align,color)
+		return FH.DrawString(v,x,y,scale,text,"FHTXT",align,flags,v.getStringColormap(color or 0))
+	end
+	local Leveltitledraw = function(v,x,y,scale,text,flags,align,color)
+		return FH.DrawString(v,x,y,scale,text,"LTFNT",align,flags,v.getStringColormap(color or 0))
+	end
+	--Default BG for now. KOI'S TEAM FRACTURE BG SUCKS!
+	drawRGBBG(v,16,16,16)
+	FH.Version.HUD(v,1) --Only shows Once for Version HUD too!
 
+	--Sounds
+	if leveltime == 10 then
+		P_PlayJingle(nil,JT_1UP)
+	end
+	
+	local sine = sin(FixedAngle(ease.linear(max(0,min(FixedDiv(leveltime-69,70),FU)),0,180)*FU))
+	local tic = min(FixedDiv(abs(sine),FU/2),FU)
+	local trans = ease.linear(tic,10,0)
+
+	local logo = "TFRACTURE_LOGO"
+	if type(alternative) == "boolean" and alternative == true then
+		logo = $+"ALT" --Center Logo Design
+	end
+
+	local fracture = {timer = max(0,min(FixedDiv(leveltime-10,10),FU)),logo=v.cachePatch(logo)}
+	local trans1 = ease.linear(fracture.timer,10,0)
+
+	if leveltime >= 105 then
+		trans1 = trans
+	end
+
+	FontDraw(v,320*FU,0,FU,"Press Jump or Enter to skip.",V_70TRANS|V_SNAPTOTOP|V_SNAPTORIGHT,"right")	
+	--Team Fracture
+
+	if trans1 != 10 then
+		local scale = ease.outquart(max(0,min(FixedDiv(leveltime-10,20),FU)),3*FU/2,FU)
+		local x,y = 160*FU,100*FU
+
+		v.drawScaled(x,y,scale,fracture.logo,trans1<<V_ALPHASHIFT,nil)
+
+		local transtime = ease.linear(max(0,min(FixedDiv(leveltime-70,10),FU)),0,10)
+		local sca2 = ease.outquad(max(0,min(FixedDiv(leveltime-70,15),FU)),scale,3*scale/2)
+
+		if leveltime >= 70 and transtime != 10 then
+			v.drawScaled(x,y,sca2,fracture.logo,transtime<<V_ALPHASHIFT,v.getColormap(TC_ALLWHITE))
+		end
+	end
+
+	--Presents
+	if trans != 10 then
+		Leveltitledraw(v,160*FU,155*FU,tofixed("0.85"),"Presents..",trans<<V_ALPHASHIFT,"center",V_GRAYMAP)
+	end
+	--Fade
+	local fade = ease.linear(min(FixedDiv(leveltime,10),FU),32,0)
+	if leveltime >= 105 or Intro.pressed then
+		if Intro.pressed then
+			fade = ease.linear(FixedDiv(Intro.timer,10),32,0)
+		else
+			fade = ease.linear(tic,32,0)
+		end
+	end
+
+	v.fadeScreen(0xFA00,fade)
+end
+/*
+
+Title Screen Drawer itself.
+All made by Saxashitter btw!
+
+*/
+
+local function DrawHeistBackground(v)
+	local patch = v.cachePatch("HEISTBACK")
+
+	local sw = (v.width() / v.dupx()) * FU
+	local sh = (v.height() / v.dupy()) * FU
+	local speed = ease.linear(max(0,min(FixedDiv(bg_time,20),FU)),FU/3,3*FU/2)
+	if not logo_bounces
+		bg_speed = $+speed
+	end
+	local gametime = bg_speed
+	local y = -patch.height*FU + (gametime) % (patch.height*FU)
+	local x = -patch.width*FU + (gametime) % (patch.width*FU)
+
+	while y < sh do
+		local x = x
+
+		while x < sw do
+			v.drawScaled(x, y, FU, patch, V_SNAPTOLEFT|V_SNAPTOTOP)
+			x = $+patch.width*FU
+		end
+	
+		y = $+patch.height*FU
+	end
+end
+
+FH.TitleScreenDrawer = function(v)
+	local logo = v.cachePatch("FH_LOGO")
+	DrawHeistBackground(v)
+	
 	// Black and White Screen
 	if ws_alpha < 10 then
-		v.drawStretched(
-			0, 0,
-			FixedDiv(wid, black.width*FU),
-			FixedDiv(hei, black.height*FU),
-			black,
-			V_SNAPTOLEFT|V_SNAPTOTOP|(ws_alpha*V_10TRANS),
-			v.getColormap(TC_BLINK, SKINCOLOR_WHITE)
-		)
+		drawRGBBG(v,255,255,255,(ws_alpha*V_10TRANS))
 	end
 	if bs_alpha < 10 then
-		v.drawStretched(
-			0, 0,
-			FixedDiv(wid, black.width*FU),
-			FixedDiv(hei, black.height*FU),
-			black,
-			V_SNAPTOLEFT|V_SNAPTOTOP|(bs_alpha*V_10TRANS)
-		)
+		drawRGBBG(v,0,0,0)
 	end
 
 	if bs_alpha == 10 then
 		ws_alpha = min($+1, 10)
+		if ws_alpha >= 5
+			bg_time = max($-1, 0)
+		end
 	end
 
 	// Logo
-	local scale = FU
+	local scale = tofixed("1.25")
 
 	logo_shake = max(0, $-1)
+	local hei = v.height()*FU/v.dupy()
 	local s = FixedMul(FixedDiv(logo_shake, 12),12*FU)
 	local ox,oy = ShakeSine(v,s)
 	local target_y = hei/2 + logo.height*scale/2
@@ -110,13 +247,14 @@ addHook("HUD", function(v)
 			logo_delay = $-1
 
 			if not logo_delay then
+				S_FadeMusic(0,FixedMul(tofixed("0.3"),1000))
 				S_StartSound(nil, sfx_s3k51)
 			end
 		else
 			if not logo_shake then
 				logo_y = $+logo_dy
 				if logo_y < target_y then
-					logo_dy = $ + FU/3
+					logo_dy = $ + tofixed("0.326")
 				elseif logo_bounces then
 					logo_bounces = $-1
 					logo_dy = -$/2
@@ -124,6 +262,7 @@ addHook("HUD", function(v)
 					S_StartSound(nil, sfx_dmga3)
 					logo_shake = 12
 					bs_alpha = 10
+					S_ChangeMusic("FH_MPV",true)
 				else
 					logo_animated = false
 					S_StartSound(nil, sfx_s3k4a)
@@ -145,18 +284,27 @@ addHook("HUD", function(v)
 
 	// are we not animated?
 	if not logo_animated then
-		local y = 100*FU+FixedMul(10*scale,cos(ANG1*leveltime))
-		--	Pulsing
-		local tics = max(0,min(FixedDiv(leveltime%15,15),FU))
-		local colorloop = (leveltime%30) >= 15 and SKINCOLOR_MAUVE or SKINCOLOR_GREEN
-		local pulsescale = ease.outcubic(tics,scale,scale+2500)
-		local pulsefade = ease.linear(tics,0,10)
+		FH.BottomLinkHUD(v)
+		if not logo_shake
+			logo_tics = $+1
+		end
+		local time = FixedAngle(ease.linear(min(FixedDiv(logo_tics%200,200),FU),0,360)*FU)
+		local y = 100*FU+FixedMul(tofixed("3.30"),sin(time))
+		--Title Screen Pulse Beat
+		local bpm = (60*TICRATE)/113
+		local beatperswitch = bpm*2
+		local pulsebeat = FixedAngle(ease.linear(min(FixedDiv(logo_tics%beatperswitch,beatperswitch),FU),0,360)*FU)
+		local s = sin(pulsebeat)
+		local pulsetime = min(FixedDiv(logo_tics%bpm,bpm),FU)
+		local colorloop = (s <= 0) and SKINCOLOR_MAUVE or SKINCOLOR_SHAMROCK
+		local pulsescale = ease.outquart(pulsetime,scale,scale+3000)
+		local trns = ease.linear(abs(s),9,0)<<V_ALPHASHIFT
 		v.drawScaled(
 			160*FU - logo.width*pulsescale/2 + ox,
 			y - logo.height*pulsescale/2 + oy,
 			pulsescale,
 			logo,
-			V_ADD|(pulsefade*V_10TRANS),v.getColormap(TC_BLINK,colorloop)
+			V_ADD|trns,v.getColormap(TC_BLINK,colorloop)
 		)
 		--Actual Logo
 		v.drawScaled(
@@ -165,26 +313,29 @@ addHook("HUD", function(v)
 			scale,
 			logo)
 	end
+end
+--Hud Handler
+addHook("HUD", function(v)
+	if not titlescreen then
+		return
+	end
+	if not FirstLoaded then
+		FH.TeamFractureLogo(v)
 
-	local version = "Demo 1 (The Greenflower Demo)"
-	local texts = {
-		{y = 192,text = "https://github.com/Saxashitter/Fangs-Heist"},
-		{y = 182,text = "Version: "..version}, --For SRB2MB version or GitHub Commit Version
-		{y = 172,text = "By Saxashitter"},
-	}
-	if not menuactive
-		for k,d in ipairs(texts)
-			local i = k-1
-			local starttime = (6*35)+17
-			local tics = max(0,min(FixedDiv(leveltime-starttime-i*5,10),FU))
-			local fadeWIP = ease.linear(tics,10,5)
-			local xtics = max(0,min(FixedDiv(leveltime-starttime-i*5,25),FU))
-			local xslide = ease.outcubic(xtics,-v.stringWidth(d.text,nil,"thin")*FU,2*FU)
-			if d and type(d) == "table"
-				if fadeWIP != 10
-					v.drawString(xslide,d.y*FU,d.text,V_PURPLEMAP|V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_ALLOWLOWERCASE|(fadeWIP*V_10TRANS),"thin-fixed")
-				end
+		if Intro.pressed then
+			if not Intro.timer then
+				FirstLoaded = true
+			else
+				Intro.timer = $-1
 			end
 		end
+
+		if leveltime >= 140 then
+			FirstLoaded = true
+		end
+
+		return
 	end
+
+	FH.TitleScreenDrawer(v)
 end, "title")

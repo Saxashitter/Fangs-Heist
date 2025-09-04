@@ -3,13 +3,6 @@ local GRABBED_FLAGS = MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY
 
 local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"
 
-mobjinfo[freeslot "MT_FH_SIGN"] = {
-	spawnstate = S_SIGN,
-	flags = UNGRABBED_FLAGS,
-	radius = 40*FU,
-	height = mobjinfo[MT_SIGN].height
-}
-
 local function select_player(sign, p)
 	S_StartSound(sign, sfx_lvpass)
 
@@ -107,7 +100,7 @@ end
 local function blacklist(p)
 	return P_PlayerInPain(p)
 	or p.powers[pw_flashing]
-	or not FangsHeist.isEligibleForSign(p)
+	or not p.heist:isEligibleForSign()
 end
 
 local function manage_unpicked(sign)
@@ -117,7 +110,7 @@ local function manage_unpicked(sign)
 	sign.angle = $ + ANG2
 
 	if (sign.eflags & MFE_TOUCHWATER or sign.eflags & MFE_UNDERWATER) then
-		sign.z = max($, sign.watertop)
+		sign.z = min($, max($, sign.watertop), sign.ceilingz - sign.height)
 		sign.momz = max($, 0)
 	end
 
@@ -142,7 +135,10 @@ end, MT_FH_SIGN)
 addHook("MobjThinker", function(sign)
 	if sign.holder
 	and not (sign.holder.valid
-	and FangsHeist.isEligibleForSign(sign.holder.player)) then
+	and sign.holder.player
+	and sign.holder.player.valid
+	and sign.holder.player.heist
+	and sign.holder.player.heist:isEligibleForSign()) then
 		sign.holder = nil
 
 		local launch_angle = FixedAngle(P_RandomRange(0, 360)*FU)

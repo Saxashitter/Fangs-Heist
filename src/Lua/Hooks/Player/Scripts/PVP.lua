@@ -1,108 +1,22 @@
-local instashields = {}
+-- Attack Constants
+rawset(_G, "FH_ATK_FLASH_TICS", 10)
+rawset(_G, "FH_ATK_XYMULT", FU*7)
+rawset(_G, "FH_ATK_ZMULT", FU*5)
 
-addHook("NetVars", function(n)
-	instashields = n($)
-end)
+-- Parry Constants
+rawset(_G, "FH_PRY_DUR", 35)
+rawset(_G, "FH_PRY_TICS", 16)
+rawset(_G, "FH_PRY_PRF", 7)
 
-rawset(_G, "FH_ATTACKCOOLDOWN", TICRATE)
-rawset(_G, "FH_ATTACKTIME", G)
-rawset(_G, "FH_BLOCKCOOLDOWN", 5)
-rawset(_G, "FH_BLOCKTIME", 3*TICRATE)
-rawset(_G, "FH_BLOCKDEPLETION", FH_BLOCKTIME/3)
+-- Hurt Constants
+rawset(_G, "FH_HRT_DUR", 35)
 
-for i = 1,4 do
-	sfxinfo[freeslot("sfx_dmga"..i)].caption = "Attack"
-	sfxinfo[freeslot("sfx_dmgb"..i)].caption = "Attack"
-end
-sfxinfo[freeslot"sfx_fhboff"].caption = "Block disabled"
-sfxinfo[freeslot"sfx_fhbonn"].caption = "Block enabled"
-sfxinfo[freeslot"sfx_fhbbre"].caption = "Block broken"
-
-local attackSounds = {
-	{sfx_dmga1, sfx_dmgb1},
-	{sfx_dmga2, sfx_dmgb2},
-	{sfx_dmga3, sfx_dmgb3},
-	{sfx_dmga4, sfx_dmgb4}
-}
-
-addHook("ThinkFrame", do
-	if #instashields then
-		for i = #instashields,1,-1 do
-			local shield = instashields[i]
-	
-			if not (shield and shield.valid) then
-				table.remove(instashields, i)
-				continue
-			end
-			if not (shield.target and shield.target.valid and shield.target.health) then
-				P_RemoveMobj(shield)
-				table.remove(instashields, i)
-				continue
-			end
-	
-			P_MoveOrigin(shield,
-				shield.target.x,
-				shield.target.y,
-				shield.target.z)
-		end
-	end
-end)
-
-local function manageBlockMobj(p)
-	if not (p.heist.blockMobj and p.heist.blockMobj.valid) then
-		p.heist.blockMobj = nil
-	end
-
-	if not FangsHeist.Net.pregame then
-		if p.heist.spawn_time then
-			p.powers[pw_flashing] = TICRATE
-		end
-		p.heist.spawn_time = max(0, $-1)
-	end
-
-	if not FangsHeist.isPlayerAlive(p) then
-		if p.heist.blockMobj then
-			P_RemoveMobj(p.heist.blockMobj)
-			p.heist.blockMobj = nil
-		end
-
-		return
-	end
-
-	local char = FangsHeist.Characters[p.mo.skin]
-
-	if p.heist.blocking then
-		if not p.heist.blockMobj then
-			local shield = P_SpawnMobjFromMobj(p.mo, 0,0,0, MT_THOK)
-			shield.state = char.blockShieldState
-			shield.dispoffset = 10
-			shield.flags = MF_NOTHINK
-			shield.spriteyoffset = -2*FU
-			shield.colorized = true
-
-			p.heist.blockMobj = shield
-		end
-
-		local t = FixedDiv(p.heist.block_time, FH_BLOCKTIME*2)
-		local scale = FixedDiv(p.mo.height, 48*FU)
-
-		p.heist.blockMobj.scale = ease.linear(t, scale, 0)
-		p.heist.blockMobj.color = p.mo.color
-
-		local z = ease.linear(t, 0, p.mo.height/2)
-		P_MoveOrigin(p.heist.blockMobj,
-			p.mo.x, p.mo.y, p.mo.z+z)
-	else
-		if p.heist.blockMobj then
-			P_RemoveMobj(p.heist.blockMobj)
-			p.heist.blockMobj = nil
-		end
-	end
-end
+local FLAGS_RESET = PF_JUMPED|PF_THOKKED|PF_SPINNING|PF_STARTDASH|PF_BOUNCING|PF_GLIDING
 
 local function L_ReturnThrustXYZ(mo, point, speed)
 	local horz = R_PointToAngle2(mo.x, mo.y, point.x, point.y)
-	local vert = R_PointToAngle2(0, mo.z, FixedHypot(mo.x-point.x, mo.y-point.y), point.z)
+	local dist = R_PointToDist2(mo.x, mo.y, point.x, point.y)
+	local vert = R_PointToAngle2(0, mo.z+mo.height/2, dist, point.z)
 
 	local x = FixedMul(FixedMul(speed, cos(horz)), cos(vert))
 	local y = FixedMul(FixedMul(speed, sin(horz)), cos(vert))
@@ -111,53 +25,291 @@ local function L_ReturnThrustXYZ(mo, point, speed)
 	return x, y, z
 end
 
-local function L_ClaireThrustXYZ(mo,xyangle,zangle,speed,relative)
-	local xythrust = P_ReturnThrustX(nil,zangle,speed)
-	local zthrust = P_ReturnThrustY(nil,zangle,speed)
-	if relative then
-		P_Thrust(mo,xyangle,xythrust)		
-		mo.momz = $+zthrust	
-	else
-		P_InstaThrust(mo,xyangle,xythrust)		
-		mo.momz = zthrust	
+-- Returns true if the player can be hit.
+local function CanBeHit(p1, p2)
+	local team1 = p1.heist:getTeam()
+	local team2 = p2.heist:getTeam()
+
+	if team1 == team2
+	or p2.heist.exiting then
+		return false
 	end
-	return xythrust, zthrust
+
+	return true
 end
 
-local function armaDamage(mo, found)
-	if not (found and found.valid and found.health) then
-		return
-	end
-	if found.type ~= MT_PLAYER then return end
-	if R_PointToDist2(mo.x, mo.y, found.x, found.y) > 1536*FU then
-		return
-	end
-	if not found.player then return end
-	if FangsHeist.isPartOfTeam(mo.player, found.player) then
-		return
-	end
+local function Knockback(target, source)
+	local angle, zangle = ReturnAngles(target, source)
+	local spd = 7*source.scale
+	local xySpd = FixedMul(spd, sin(zangle))
+	local zSpd = -FixedMul(spd, cos(zangle))
 
-	P_DamageMobj(found, mo, mo)
+	P_InstaThrust(target, angle, xySpd)
+	target.momz = zSpd
 end
 
-addHook("ShieldSpecial", function(p)
-	if not FangsHeist.isMode() then
-		return
+local function PerfectParry(p, p2)
+	p.mo.state = S_PLAY_STND
+	p.mo.translation = nil
+	
+	p.heist.parry_time = 0
+	p.heist.parry_cooldown = 0
+
+	S_StartSound(p.mo, sfx_s1a6)
+end
+
+local function OkParry(p, p2)
+	p.powers[pw_flashing] = 25
+
+	p.mo.state = S_PLAY_STND
+	p.mo.translation = nil
+	
+	p.heist.parry_time = 0
+	p.heist.parry_cooldown = 0
+
+	S_StartSound(p.mo, sfx_s1ad)
+end
+
+local TIERS = {
+	{sfx_dmga1, sfx_dmgb1},
+	{sfx_dmga2, sfx_dmgb2},
+	{sfx_dmga3, sfx_dmgb3},
+	{sfx_dmga4, sfx_dmgb4}
+}
+
+local function Damage(p, p2)
+	if not P_DamageMobj(p2.mo, p.mo, p.mo) then
+		return false
 	end
-	if not p.heist then return end
-	if p.powers[pw_shield] ~= SH_ARMAGEDDON then
+
+	local xySpeed = R_PointToDist2(0,0,p.mo.momx-p2.mo.momx,p.mo.momy-p2.mo.momy)
+	local speed = R_PointToDist2(0,0,xySpeed,p.mo.momz-p2.mo.momz)
+
+	local tier = TIERS[max(1, min(FixedDiv(speed, 9*FU)/FU, #TIERS))]
+	local sound = tier[P_RandomRange(1, #tier)]
+
+	S_StartSound(p2.mo, sound)
+	FangsHeist.runHook("PlayerHit", p, p2)
+
+	return true
+end
+
+local function RegisterGuard(atk, vic)
+	if vic then
+		local knockbackSpeed = 20
+
+		if atk.heist.perf_parry_time then
+			knockbackSpeed = 35
+		end
+
+		vic.heist.attack_time = 0
+		local mx, my, mz = L_ReturnThrustXYZ(atk.mo, {
+			x = vic.mo.x,
+			y = vic.mo.y,
+			z = vic.mo.z+vic.mo.height/2
+		}, knockbackSpeed*atk.mo.scale)
+		local angle = R_PointToAngle2(atk.mo.x, atk.mo.y, vic.mo.x, vic.mo.y)
+
+		vic.mo.momx = mx
+		vic.mo.momy = my
+		vic.mo.momz = mz
+		P_MovePlayer(vic)
+
+		FangsHeist.runHook("PlayerParried", atk, vic)
+	end
+
+	FangsHeist.playVoiceline(atk, "parry")
+
+	if atk.heist.perf_parry_time then
+		PerfectParry(atk, vic)
+		return 2
+	end
+
+	OkParry(atk, vic)
+	return 1
+end
+
+local function AttemptAttack(p, sp)
+	if not (sp and sp.valid and sp.heist and sp.heist:isAlive()) then
 		return
 	end
 
-	searchBlockmap("objects",
-		armaDamage,
-		p.mo,
-		p.mo.x-2048*FU,
-		p.mo.x+2048*FU,
-		p.mo.y-2048*FU,
-		p.mo.y+2048*FU
-	)
-end)
+	local radius = FixedMul(p.mo.radius, FH_ATK_XYMULT)
+	local height = FixedMul(p.mo.height, FH_ATK_ZMULT)
+	local x = p.mo.x + p.mo.momx
+	local y = p.mo.y + p.mo.momx
+	local z = p.mo.z + p.mo.momz - height/2
+
+	local distance = R_PointToDist2(x, y, sp.mo.x, sp.mo.y)
+
+	if distance > sp.mo.radius+radius
+	or z > sp.mo.z+sp.mo.height
+	or sp.mo.z > z+height then
+		return
+	end
+
+	if P_PlayerInPain(sp) then return end
+	if p.heist:getTeam() == sp.heist:getTeam() then return end
+
+	if sp.mo.state == S_FH_GUARD
+	and sp.heist.parry_time then
+		RegisterGuard(sp, p)
+		return true
+	end
+
+	if sp.heist.attack_time
+	or FangsHeist.runHook("PlayerScanAttack", sp) then
+		local speed = 18*FU
+		local mx, my, mz = L_ReturnThrustXYZ(p.mo, {
+			x = sp.mo.x,
+			y = sp.mo.y,
+			z = sp.mo.z+sp.mo.height/2
+		}, speed)
+
+		p.mo.momx = -mx
+		p.mo.momy = -my
+		p.mo.momz = -mz
+		sp.mo.momx = mx
+		sp.mo.momy = my
+		sp.mo.momz = mz
+
+		P_MovePlayer(p)
+		P_MovePlayer(sp)
+
+		sp.heist.attack_time = 0
+		p.heist.attack_time = 0
+
+		S_StartSound(p.mo, sfx_fhclsh)
+		S_StartSound(sp.mo, sfx_fhclsh)
+
+		if p == displayplayer
+		or sp == displayplayer then
+			P_StartQuake(7*FU, 12)
+		end
+
+		FangsHeist.runHook("PlayerClash", p, sp)
+		FangsHeist.runHook("PlayerClash", sp, p)
+		return
+	end
+
+	if Damage(p, sp) then
+		local speed = max(
+			4*p.mo.scale,
+			FixedSqrt(
+				FixedMul(p.rmomx, p.rmomx) +
+				FixedMul(p.rmomy, p.rmomy) +
+				FixedMul(p.mo.momz, p.mo.momz)
+			)
+		)
+		local mx, my, mz = L_ReturnThrustXYZ(p.mo, {
+			x = sp.mo.x,
+			y = sp.mo.y,
+			z = sp.mo.z+sp.mo.height/2
+		}, -speed)
+
+		sp.mo.momx = p.mo.momx
+		sp.mo.momy = p.mo.momy
+
+		p.mo.momx = mx
+		p.mo.momy = my
+		p.mo.momz = mz
+		P_MovePlayer(p)
+
+		p.heist.attack_time = 0
+		p.heist.attack_cooldown = 5
+		p.powers[pw_flashing] = max($, FH_ATK_FLASH_TICS)
+
+		if p == displayplayer
+		or sp == displayplayer then
+			P_StartQuake(28*FU, 12)
+		end
+	end
+end
+
+local function DoAttack(p)
+	if FangsHeist.runHook("PlayerAttack", p) == true then
+		return
+	end
+
+	if p.mo.heistwhiff
+	and p.mo.heistwhiff.valid then
+		P_RemoveMobj(p.mo.heistwhiff)
+	end
+
+	local shield = P_SpawnMobjFromMobj(p.mo, 0,0,p.mo.height/2, MT_THOK)
+	shield.state = S_FH_WHIFF
+	shield.frame = $|FF_FULLBRIGHT
+	shield.scale = 2*FU
+	shield.destscale = shield.scale
+
+	p.heist.instashield = shield
+
+	p.heist.attack_cooldown = TICRATE
+	p.heist.attack_time = G+1
+
+	S_StartSound(p.mo, sfx_s3k42)
+	FangsHeist.playVoiceline(p, "attack")
+end
+
+local function DoGuard(p)
+	if FangsHeist.runHook("PlayerParry", p) == true then
+		return
+	end
+
+	if not P_IsObjectOnGround(p.mo) then
+		p.mo.state = S_PLAY_FALL
+		p.pflags = $ & ~FLAGS_RESET
+		p.heist.parry_cooldown = 2*TICRATE
+		p.mo.heist_airdodge = true
+		p.powers[pw_flashing] = 15
+		P_InstaThrust(p.mo, p.mo.angle, 12*p.mo.scale)
+		P_SetObjectMomZ(p.mo, 0)
+		S_StartSound(p.mo, sfx_s3k7c)
+
+		FangsHeist.runHook("PlayerAirDodge", p)
+		return
+	end
+
+	p.mo.state = S_FH_GUARD
+	p.pflags = $ & ~(FLAGS_RESET)
+
+	local tics = FH_PRY_DUR
+	local parry_tics = FH_PRY_TICS
+	local perf_parry_tics = FH_PRY_PRF
+
+	p.mo.tics = tics
+	p.mo.translation = "FH_ParryColor"
+	p.heist.parry_time = parry_tics
+	p.heist.perf_parry_time = perf_parry_tics
+
+	p.heist.parry_cooldown = 2*TICRATE
+
+	S_StartSound(p.mo, sfx_s1a2)
+	S_StartSound(p.mo, sfx_s3k7c)
+	FangsHeist.playVoiceline(p, "parry_attempt")
+end
+
+local function RingSpill(p, dontSpill, p2)
+	if not p.rings then
+		return false
+	end
+
+	local gamemode = FangsHeist.getGamemode()
+	local rings_spill = min(5, p.rings)
+
+	if not dontSpill 
+	and not p2 then
+		P_PlayerRingBurst(p, rings_spill)
+	elseif p2 then
+		FangsHeist.Particles:new("Ring Steal", p.mo, p2.mo, rings_spill)
+	end
+
+	S_StartSound(p.mo, sfx_s3kb9)
+	p.rings = $-rings_spill
+	p.heist:gainProfitMultiplied(-FH_RINGPROFIT*rings_spill)
+
+	return rings_spill
+end
 
 addHook("ShouldDamage", function(t,i,s,dmg,dt)
 	if not FangsHeist.isMode() then return end
@@ -171,8 +323,6 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 		return false
 	end
 
-	local char = FangsHeist.Characters[t.skin]
-	local damage = FH_BLOCKDEPLETION
 	local canDamage = not (t.player.powers[pw_flashing] or t.player.powers[pw_invulnerability])
 	local forced
 
@@ -188,74 +338,225 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 				return false
 			end
 			
-			damage = $/5
 			forced = true
 		end
 	end
 
-	
-	if char:isBlocking(t.player)
-	and canDamage then
-		local blocking = not FangsHeist.depleteBlock(t.player, damage)
+	if t.state == S_FH_GUARD
+	and t.player.heist.parry_time
+	and canDamage
+	and i
+	and i.valid
+	and i.type ~= MT_PLAYER then
+		RegisterGuard(t.player)
 
-		if blocking then
-			if i
-			and i.valid then
-				if i.flags & MF_MISSILE then
-					i.target = t
+		if i.flags & MF_ENEMY|MF_BOSS then
+			P_DamageMobj(i, t, t)
+		end
 
-					--[[P_InstaThrust(i,
-						InvAngle(R_PointToAngle2(0,0, i.momx, i.momy)),
-						R_PointToDist2(0,0, i.momx, i.momy))
-					i.momz = -$]]
+		t.player.powers[pw_flashing] = 35
+		FangsHeist.runHook("PlayerParriedEnemy", t.player, i)
+		return false
+	end
 
-					local speed = R_PointToDist2(
-						0,0,
-						R_PointToDist2(0,0, i.momx, i.momy),
-						i.momz
-					)
-					local horz = R_PointToAngle2(i.x, i.y, t.x, t.y)
-					local vert = R_PointToAngle2(0, i.z+(i.height/2), speed, t.z+(t.height/2))
+	if s and s.valid and s.player and s.player.heist then
+		local team1 = t.player.heist:getTeam()
+		local team2 = s.player.heist:getTeam()
 
-					L_ClaireThrustXYZ(i, InvAngle(horz), InvAngle(vert), speed)
-				end
-			end
-
-			t.player.powers[pw_flashing] = TICRATE
+		if team1 == team2 then
 			return false
 		end
+	end
+
+	if t.state == S_FH_CLASH then
+		return false
 	end
 
 	return forced
 end, MT_PLAYER)
 
-return function(p)
-	manageBlockMobj(p)
-	if not FangsHeist.isPlayerAlive(p) then
-		p.heist.blocking = false
+local function reflection(mobj,proj)
+	if not FangsHeist.isMode() then return end
+	if not (mobj and mobj.player and mobj.player.heist) then
 		return
 	end
 
-	local char = FangsHeist.Characters[p.mo.skin]
+	if not mobj.player.heist:isAlive() then return end
+	if mobj.state ~= S_FH_GUARD then return end
+	if not mobj.player.heist.parry_time then return end
+	if not (proj.flags & MF_MISSILE) then return end
+	if proj.target == mobj then return end
+	if proj.z > mobj.z+mobj.height then return end
+	if mobj.z > proj.z+proj.height then return end
+
+	proj.momx = -$
+	proj.momy = -$
+	proj.momz = -$
+	proj.angle = $ - ANGLE_180
+	proj.target = mobj
+
+	RegisterGuard(mobj.player)
+	FangsHeist.runHook("PlayerParriedEnemy", mobj.player, proj)
+
+	-- Gain profit based on speed of projectile.
+	local PROFIT = FH_PARRYPROFIT
+	local BASE_SPEED = 24*FU
+	local SPEED = R_PointToDist2(mobj.momx, mobj.momy, proj.momx, proj.momy)
+
+	PROFIT = $ * FixedDiv(SPEED, BASE_SPEED)/FU
+	mobj.player.heist:gainProfitMultiplied(PROFIT)
+	
+	return false
+end
+
+addHook("MobjCollide", reflection, MT_PLAYER)
+addHook("MobjMoveCollide", reflection, MT_PLAYER)
+
+addHook("MobjDamage", function(t,i,s,dmg,dt)
+	if not FangsHeist.isMode() then return end
+	if not (t and t.player and t.player.heist) then return end
+
 	local gamemode = FangsHeist.getGamemode()
+	gamemode:playerdamage(t.player)
 
-	local flags = STR_ATTACK|STR_BUST
-	if p.heist.attack_time then
-		p.heist.attack_time = max(0, $-1)
+	if s
+	and s.player
+	and s.player.heist then
+		local team = s.player.heist:getTeam()
 
-		if not p.heist.strong_attack then
-			p.powers[pw_strong] = $|flags
-			p.heist.strong_attack = true
+		if not (t.health) then
+			s.player.heist.deadplayers = $+1
+			s.player.heist:gainProfitMultiplied(FH_DEADPLAYERPROFIT)
+		else
+			s.player.heist.hitplayers = $+1
+			s.player.heist:gainProfitMultiplied(FH_HITPLAYERPROFIT)
 		end
 	end
-	if not p.heist.attack_time
-	and p.heist.strong_attack then
-		p.heist.strong_attack = false
-		p.powers[pw_strong] = $ & ~flags
+
+	if dt & DMG_DEATHMASK then
+		return
 	end
 
+	FangsHeist.playVoiceline(t.player, "hurt")
+
+	if t.player.powers[pw_shield] then return end
+	local rings = RingSpill(t.player, nil, s and s.valid and s.player)
+
+	if not rings then return end
+
+	P_ResetPlayer(t.player)
+	P_DoPlayerPain(t.player, s, i)
+
+	return true
+end, MT_PLAYER)
+
+FangsHeist.addPlayerScript("thinkframe", function(p)
+	if not p.heist:isAlive() then return end
+	if not p.mo.heist_airdodge then return end
+
+	if P_IsObjectOnGround(p.mo)
+	or P_PlayerInPain(p)
+	or not p.mo.health then
+		p.mo.heist_airdodge = nil
+	end
+end)
+
+FangsHeist.addPlayerScript("prethinkframe", function(p)
+	if not p.heist:isAlive() then return end
+	if not p.mo.heist_airdodge then return end
+
+	p.cmd.buttons = 0 -- no actions, just things joystick related
+end)
+
+FangsHeist.addPlayerScript("thinkframe", function(p)
+	if not (p.heist.instashield
+	and p.heist.instashield.valid)
+	or not p.heist:isAlive() then
+		p.heist.instashield = nil
+		return
+	end
+
+	local shield = p.heist.instashield
+	P_MoveOrigin(shield,
+		p.mo.x,
+		p.mo.y,
+		p.mo.z+p.mo.height/2)
+end)
+
+return function(p)
+	if not p.heist:isAlive() then
+		if p.mo
+		and p.mo.valid
+		and p.mo.translation == "FH_ParryColor" then
+			p.mo.translation = nil
+		end
+
+		p.heist.parry_time = 0
+		p.heist.perf_parry_time = 0
+
+		return
+	end
+
+	if p.mo.state == S_FH_STUN then
+		p.pflags = $|PF_FULLSTASIS
+		P_SpawnGhostMobj(p.mo)
+	end
+
+	if p.mo.state == S_FH_GUARD then
+		if P_IsObjectOnGround(p.mo) then
+			p.pflags = $|PF_FULLSTASIS
+		end
+
+		if p.heist.parry_time then
+			p.mo.translation = "FH_ParryColor"
+			p.heist.parry_time = $-1
+		else
+			p.mo.translation = nil
+		end
+
+		p.heist.perf_parry_time = max(0, $-1)
+	else
+		if p.mo.translation == "FH_ParryColor" then
+			p.mo.translation = nil
+		end
+		p.heist.parry_time = 0
+		p.heist.perf_parry_time = 0
+	end
+
+	local press = p.cmd.buttons & ~p.lastbuttons
+
+	if p.mo.state ~= S_FH_GUARD
+	and not P_PlayerInPain(p) then
+		-- Parry
+		if press & BT_FIRENORMAL
+		and p.heist.attack_time == 0
+		and p.heist.attack_cooldown == 0
+		and p.heist.parry_cooldown == 0 then
+			DoGuard(p)
+		end
+
+		-- Attack
+		if press & BT_ATTACK
+		and p.heist.attack_time == 0
+		and p.heist.attack_cooldown == 0
+		and p.mo.state ~= S_FH_GUARD then
+			DoAttack(p)
+		end
+	end
+
+	if p.heist.parry_cooldown then
+		p.heist.parry_cooldown = $-1
+
+		if p.heist.parry_cooldown == 0 then
+			local ghost = P_SpawnGhostMobj(p.mo)
+			ghost.destscale = 4*FU
+			ghost.translation = "FH_ParryColor"
+
+			S_StartSound(p.mo, sfx_ngskid)
+		end
+	end
 	if p.heist.attack_cooldown then
-		p.heist.attack_cooldown = max(0, $-1)
+		p.heist.attack_cooldown = $-1
 
 		if p.heist.attack_cooldown == 0 then
 			local ghost = P_SpawnGhostMobj(p.mo)
@@ -264,80 +565,38 @@ return function(p)
 			S_StartSound(p.mo, sfx_ngskid)
 		end
 	end
-	p.heist.block_cooldown = max(0, $-1)
+	if p.heist.attack_time then
+		p.heist.attack_time = max(0, $-1)
 
-	-- attacking
-	if p.heist.attack_cooldown == 0
-	and p.cmd.buttons & BT_ATTACK
-	and not (p.lastbuttons & BT_ATTACK)
-	and not p.heist.blocking
-	and not P_PlayerInPain(p)
-	and char.useDefaultAttack then
-		p.heist.attack_cooldown = char.attackCooldown
-		p.heist.attack_time = FH_ATTACKTIME
+		local radius = FixedMul(p.mo.radius, FH_ATK_XYMULT)
+		local height = FixedMul(p.mo.height, FH_ATK_ZMULT)
+		local x = p.mo.x + p.mo.momx
+		local y = p.mo.y + p.mo.momx
+		local z = p.mo.z + p.mo.momz - height/2
 
-		local shield = P_SpawnMobjFromMobj(p.mo, 0,0,0, MT_THOK)
-		shield.state = char.attackEffectState
-		shield.target = p.mo
-		table.insert(instashields, shield)
+		-- ok luigi you can stop complaining now
+		searchBlockmap("objects", function(_, found)
+			if not found.valid then return end
+			if not (found.flags & MF_ENEMY)
+			and not (found.flags & MF_MONITOR) then return end
 
-		S_StartSound(p.mo, sfx_s3k42)
-	end
-
-	-- blocking
-	if not p.heist.blocking then
-		p.heist.block_time = max(0, $-2)
-
-		if p.heist.block_cooldown == 0
-		and p.heist.attack_cooldown == 0
-		and p.cmd.buttons & BT_FIRENORMAL
-		and not P_PlayerInPain(p)
-		and char.useDefaultBlock then
-			p.heist.block_cooldown = FH_BLOCKCOOLDOWN
-			S_StartSound(p.mo, sfx_fhbonn)
-			p.heist.blocking = true
-		end
-	else
-		p.heist.block_time = min($+1, FH_BLOCKTIME)
-
-		if p.heist.block_cooldown == 0
-		and not (p.cmd.buttons & BT_FIRENORMAL) then
-			p.heist.block_cooldown = FH_BLOCKCOOLDOWN
-			S_StartSound(p.mo, sfx_fhboff)
-			p.heist.blocking = false
-		end
-	end
-
-	if char:isAttacking(p)
-	and gamemode.pvp then
-		local player, speed = FangsHeist.damagePlayers(p)
-
-		if player
-		and HeistHook.runHook("PlayerHit", p, player, speed) ~= true then
-			-- stop attack
-			p.heist.attack_time = 0
-
-			if speed ~= false then
-				local tier = max(1, min(FixedDiv(speed, 10*FU)/FU, #attackSounds))
-				local sound = attackSounds[tier][P_RandomRange(1, 2)]
-
-				S_StartSound(p.mo, sound)
-
-				p.heist.attack_cooldown = 0
-				p.heist.block_time = max(0, $-20)
+			local distance = R_PointToDist2(x, y, found.x, found.y)
+			if distance > radius+found.radius then
+				return
 			end
 
-			local angle = R_PointToAngle2(p.mo.x, p.mo.y, player.mo.x, player.mo.y)
-	
-			if P_IsObjectOnGround(p.mo) then
-				p.mo.state = S_PLAY_STND
-				P_InstaThrust(p.mo, angle, -10*FU)
-				p.pflags = $ & ~(PF_SPINNING|PF_STARTDASH)
-			else
-				p.pflags = $|PF_SPINNING
-				p.pflags = $ & ~(PF_JUMPED|PF_STARTJUMP|PF_THOKKED|PF_BOUNCING|PF_GLIDING)
-				p.mo.state = S_PLAY_FALL
-				P_InstaThrust(p.mo, angle, -10*FU)
+			if z > found.z+found.height then return end
+			if found.z > z+height then return end
+
+			P_DamageMobj(found, p.mo, p.mo)
+		end, p.mo, x-radius*2, x+radius*2, y-radius*2, y+radius*2)
+	end
+
+	if FangsHeist.runHook("PlayerScanAttack", p)
+	or p.heist.attack_time then
+		for sp in players.iterate do
+			if AttemptAttack(p, sp) then
+				break
 			end
 		end
 	end

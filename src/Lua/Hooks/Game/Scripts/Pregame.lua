@@ -1,88 +1,96 @@
-local function ManageCamera()
-	local pos = FangsHeist.Net.pregame_cam
+local function IsPlayerFinished(p)
+	local gamemode = FangsHeist.getGamemode()
+	local state = FangsHeist.getPregameState(p)
 
-	if not pos.enabled then return end
+	if p.bot then
+		return true
+	end
 
-	local thrustx = FixedMul(pos.dist, cos(pos.angle+ANGLE_180))
-	local thrusty = FixedMul(pos.dist, sin(pos.angle+ANGLE_180))
+	if state
+	and state.ready then
+		return true
+	end
 
-	local x = pos.x + thrustx
-	local y = pos.y + thrusty
+	return false
+end
 
-	camera.angle = pos.angle
-	camera.aiming = 0
+local function ShouldPregameEnd()
+	if FangsHeist.Net.pregame_time <= 0 then
+		return true -- End if time's up.
+	end
 
-	P_TeleportCameraMove(camera, x, y, pos.z)
-	print(x/FU, y/FU, pos.z/FU)
+	local count = 0
+	local confirmcount = 0
+	local gamemode = FangsHeist.getGamemode()
 
-	--[[local steps = ((pos.dist/16)/FU)+1
-	for i = 0, steps do
-		local cx = camera.x
-		local cy = camera.y
-
-		if not P_TryCameraMove(camera, cx+(thrustx/steps), cy+(thrusty/steps)) then
-			break
+	for p in players.iterate do
+		if not p.heist then
+			continue
 		end
-	end]]
 
-	camera.momx = 0
-	camera.momy = 0
-	camera.momz = 0
+		count = $+1
+
+		if IsPlayerFinished(p) then
+			confirmcount = $+1
+		end
+	end
+	return confirmcount == count
+end
+
+local function EndPregame()
+	FangsHeist.Net.pregame = false
+	local trans = FixedMul(1000,tofixed("0.65"))
+	S_ChangeMusic(mapmusname,true,nil,nil,0,trans)
+
+	for p in players.iterate do
+		if not p.heist then
+			continue
+		end
+
+		p.heist.invites = {}
+		p.heist.playersList = nil
+		p.heist.invitesList = nil
+
+		p.powers[pw_flashing] = 2*TICRATE
+
+		if p.mo then
+			p.mo.tics = states[p.mo.state].tics
+		end
+	end
+
+	local gamemode = FangsHeist.getGamemode()
+	gamemode:start()
+
+	local linedef = tonumber(mapheaderinfo[gamemap].fh_gamestartlinedef)
+	if linedef ~= nil then
+		P_LinedefExecute(linedef)
+	end
+
+	FangsHeist.runHook("GameStart")
 end
 
 return function()
-	if not FangsHeist.Net.pregame then return end
-
-	if S_MusicName() ~= "FH_PRG" then
-		S_ChangeMusic("FH_PRG", true)
-	end
-
-	FangsHeist.Net.pregame_time = max(0, $-1)
-	local count = 0
-	local confirmcount = 0
-
-	for p in players.iterate do
-		if p and p.heist then
-			count = $+1
-			if p.heist.locked_team then
-				confirmcount = $+1
-			end
-		end
-	end
-
-	if confirmcount == count then
-		FangsHeist.Net.pregame_time = 0
-	end
-
-	if FangsHeist.Net.pregame_time == 0 then
-		FangsHeist.Net.pregame = false
-		S_ChangeMusic(mapmusname, true)
-
-		for p in players.iterate do
-			if p and p.heist then
-				p.heist.invites = {}
-				p.heist.playersList = nil
-				p.heist.invitesList = nil
-				p.powers[pw_flashing] = TICRATE
-			end
-		end
-
-		local gamemode = FangsHeist.getGamemode()
-		gamemode:start()
-
-		HeistHook.runHook("GameStart")
-
-		local linedef = tonumber(mapheaderinfo[gamemap].gamestartlinedef)
-
-		if linedef ~= nil then
-			P_LinedefExecute(linedef)
-		end
-
+	if not FangsHeist.Net.pregame then
+		FangsHeist.Net.pregame_transparency = min(10, $+1)
 		return
 	end
 
-	FangsHeist.Net.pregame_cam.angle = $ + FixedAngle(tofixed("0.78"))
-	ManageCamera()
+	local gamemode = FangsHeist.getGamemode()
+
+	if S_MusicName() ~= gamemode.pregametheme then
+		S_ChangeMusic(gamemode.pregametheme, true)
+	end
+
+	FangsHeist.Net.pregame_transparency = max(0, $-1)
+	FangsHeist.Net.pregame_time = $-1
+
+	local gamemode = FangsHeist.getGamemode()
+	local finished = ShouldPregameEnd()
+
+	if finished then
+		EndPregame()
+		return
+	end
 
 	return true
 end

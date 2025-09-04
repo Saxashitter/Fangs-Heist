@@ -34,11 +34,9 @@ local defaultitems = {
 	{"intermissionemeralds", "intermission"},
 }
 
-customhud.SetupFont("CSFNT")
 customhud.SetupFont("FHFNT")
-customhud.SetupNumberFont("RNGFNT")
-customhud.SetupNumberFont("RRGFNT")
-customhud.SetupNumberFont("PRTFNT")
+customhud.SetupFont("FHBFT")
+customhud.SetupFont("FHTXT")
 
 local function is_hud_modded(name)
 	for k,v in ipairs(defaultitems) do
@@ -112,20 +110,29 @@ addHook("HUD", function(v,p,c)
 	WAS_FH = false
 end)
 
-addHud "signtracker"
-addHud "treasuretracker"
+addHud "track"
 addHud "controls"
 addHud "lives"
 addHud "score"
 addHud "rings"
+addHud "playerinfo"
 addHud "time"
 addHud "textspectator"
+-- addHud "multiplier"
 addHud "treasure"
 addHud "timer"
 addHud "round"
+addHud "swaptimer"
 addHud "escapetext"
-addHud "discord"
-addHud "leftscores"
+addHud "bottomlinks"
+-- addHud "leftscores" (For some Reason, Saxa remove it due to Lots of HUD drawers. -RedFoxyBoy)
+addHud "rankings"
 addHud "intermission"
-addHud "dialogue"
 addHud "pregame"
+if SUBVERSION >= 16
+	dofile("Modules/Drawers/escpanel")
+end
+--Add Most of Link Stuff, also Tips :p...
+FangsHeist.AddLink("Website","https://fangsheist.com",V_GREENMAP)
+FangsHeist.AddLink("GitHub","https://github.com/Saxashitter/Fangs-Heist",V_PURPLEMAP)
+FangsHeist.AddLink("Discord","https://discord.gg/FysZSrsd9U",V_SKYMAP)

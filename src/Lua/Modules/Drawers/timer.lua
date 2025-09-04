@@ -33,149 +33,48 @@ local function getScaleDiv()
 	return FU - FixedDiv(time, max_time)
 end
 
-local CROPSETS = {
-	[0] = 5,
-	[1] = 6,
-	[2] = 7,
-	[3] = 8,
-	[4] = 9
-}
-
 local function drawTimer(v, x, y, scale, f)
-	local tmr = v.cachePatch("FH_TMR")
-	local backfill = v.cachePatch("FH_TMR_FILL")
-	local fill = v.cachePatch("FH_TMR_ENDFILL")
+	local pi = FangsHeist.getGamemode().preferredhud
+	if not pi.Timer then return end
+	local t = FangsHeist.Net.time_left
+	local rt = FangsHeist.Net.max_time_left - FangsHeist.Net.time_left
+	local tics = (t/35)/60
+	local ringframe = ((((t/35) % 60) / 2)+1)
 
-	local div = getScaleDiv()
-	local rdiv = FU-div
-
-	local barx = x + 5*scale
-	local bary = y + 17*scale
-	local barw = tmr.width*scale - 6*scale - 5*scale
-
-	-- background fill
-	FangsHeist.DrawParallax(v,
-		barx,
-		bary,
-		barw,
-		backfill.height*scale + (scale*2), -- to make sure theres no clipping
-		scale,
-		backfill,
-		f
-	)
-	-- main fill
-	FangsHeist.DrawParallax(v,
-		barx,
-		bary,
-		FixedMul(barw, div),
-		fill.height*scale + (scale*2), -- to make sure theres no clipping
-		scale,
-		fill,
-		f
-	)
-	-- actual timer sprite
-	v.drawScaled(x, y, scale, tmr, f)
-
-	-- text
-	local minstr = string.format("%02d",
-		time/(TICRATE*60))
-	local secstr = string.format("%02d",
-		(time/TICRATE) % 60)
-
-	local patches = {}
-	local width = 0
-	local pad = 0
-
-	for i = 1,#minstr do
-		local num = minstr:sub(i,i)
-		local patch = v.cachePatch("STTNUM"..num)
-
-		table.insert(patches, patch)
-		width = $ + patch.width*scale + pad
+	if not FangsHeist.Net.time_left then
+		ringframe = 0
 	end
 
-	local colon = v.cachePatch("STTCOLON")
+	local bg = v.cachePatch("FH_TMR_BG")
 
-	table.insert(patches, colon)
-	width = $ + colon.width*scale + pad
-
-	for i = 1,#secstr do
-		local num = secstr:sub(i,i)
-		local patch = v.cachePatch("STTNUM"..num)
-
-		table.insert(patches, patch)
-		width = $ + patch.width*scale
-
-		if i < #secstr then
-			width = $+pad
-		end
+	v.drawScaled(x, y, FU, bg, f, v.getColormap(nil, SKINCOLOR_RED))
+	if tics % 10 > 0 then
+		local bar = v.cachePatch("FH_TMR_BAR" .. (tics % 10))
+		v.drawScaled(x, y, FU, bar, f, v.getColormap(nil, SKINCOLOR_RED))
 	end
 
-	x = $ + (tmr.width*scale/2) - width/2
-	local dx = 0
-
-	for i,patch in ipairs(patches) do
-		v.drawScaled(x+dx, y+17*scale, scale, patch, f)
-
-		if i < #patches then
-			dx = $ + patch.width*scale + pad
-		end
-	end
-end
-
-local function drawTmrText(v, x, y, scale, flags)
-	local tbg = v.cachePatch("FH_TMR_TEXTBG")
-
-	v.drawScaled(x, y, scale, tbg, flags)
-
-	local secstr = string.format("%02d",
-		(time/TICRATE) % 60)
-	local minstr = string.format("%02d",
-		time/(TICRATE*60))
-
-	local padding = scale*2
-	local patches = {}
-
-	x = $+14*scale
-	y = $-4*scale
-
-	for i = 1,#minstr do
-		local num = minstr:sub(i,i)
-		table.insert(patches, v.cachePatch("FH_TMR_NUM"..num))
+	if ringframe then
+		local ring = v.cachePatch("FH_TMR_RING" .. ringframe)
+		v.drawScaled(x, y + 5*FU, FU, ring, f, v.getColormap(nil, SKINCOLOR_YELLOW))
 	end
 
-	table.insert(patches, v.cachePatch("FH_TMR_SC"))
+	FangsHeist.DrawString(v,
+		x + bg.width*FU/2,
+		y - 8 * FU,
+		FU,
+		"TIME",
+		"FHTXT",
+		"center",
+		f)
 
-	for i = 1,#secstr do
-		local num = secstr:sub(i,i)
-		table.insert(patches, v.cachePatch("FH_TMR_NUM"..num))
-	end
-
-	x = $+tbg.width*scale/2
-
-	local width = 0
-	local maxHeight = 0
-	for i,patch in ipairs(patches) do
-		width = $+patch.width*scale
-		maxHeight = max($, patch.height*scale)
-		if i < #patches then
-			width = $+padding
-		end
-	end
-
-	local dx = -width/2
-	for i,patch in ipairs(patches) do
-		v.drawScaled(x+dx,
-			y+(maxHeight-patch.height*scale)/2,
-			scale,
-			patch,
-			flags)
-
-		dx = $+patch.width*scale
-		if i < #patches then
-			dx = $+padding
-		end
-	end
+	FangsHeist.DrawString(v,
+		x + bg.width*FU/2,
+		y + 43 * FU - 4 * FU,
+		FU,
+		("%d:%02d"):format(tics, (FangsHeist.Net.time_left / 35) % 60),
+		"FHTXT",
+		"center",
+		f)
 end
 
 function module.init()
@@ -196,13 +95,13 @@ function module.draw(v)
 		return
 	end
 
-	local tmr = v.cachePatch("FH_TMR")
+	local tmr = v.cachePatch("FH_TMR_BG")
 
-	local x = 160*FU - tmr.width*FU/2
-	local y = ease.outback(slideT, 200*FU, 200*FU - 8*FU - tmr.height*FU)
-	local f = V_SNAPTOBOTTOM
+	local x = ease.outquad(slideT, -tmr.width*FU, 8*FU)
+	local y = 8*FU
+	local f = V_SNAPTOTOP|V_SNAPTOLEFT
 
-	drawTimer(v, x, y, FU, f)
+	drawTimer(v, x, y + 8 * FU, FU, f)
 end
 
 return module

@@ -1,1 +1,2 @@
 name = metalsonic
+ability = CA_NONE

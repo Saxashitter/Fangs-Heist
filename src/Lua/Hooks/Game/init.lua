@@ -1,6 +1,5 @@
-local orig_net = FangsHeist.require "Modules/Variables/net"
-local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
 
+local orig_net = FangsHeist.require "Modules/Variables/net"
 local scripts = {}
 local add = function(name)
 	table.insert(scripts, dofile("Hooks/Game/Scripts/"..name))
@@ -12,26 +11,24 @@ addHook("MapChange", function(map)
 		mapmusname = mapheaderinfo[map].musname or $
 	end
 
+	FangsHeist.defCharList()
 	FangsHeist.initMode(map)
 end)
 
 addHook("NetVars", function(n)
-	/*FangsHeist.Net = n($)
-	FangsHeist.Save = n($)*/
+	FangsHeist.Net = n($)
+	FangsHeist.Save = n($)
 
-	local net = {
+	/*local net = {
 		"gamemode",
 		"map_choices",
 		"game_over",
 		"game_over_ticker",
 		"game_over_length",
-		"retaking",
-		"selected_map",
-		"end_anim",
-		"retake_anim",
+		"game_over_winline",
 		"pregame",
 		"pregame_time",
-		"pregame_cam",
+		"pregame_transparency",
 		"placements",
 		"teams",
 		"treasures",
@@ -39,8 +36,7 @@ addHook("NetVars", function(n)
 	}
 	local save = {
 		"last_map",
-		"retakes",
-		"ServerScores"
+		"retakes"
 	}
 
 	for _,v in ipairs(net) do
@@ -48,10 +44,10 @@ addHook("NetVars", function(n)
 	end
 	for _,v in ipairs(save) do
 		FangsHeist.Save[v] = n($)
-	end
+	end*/
 
-	local gamemode = FangsHeist.getGamemode()
-	gamemode:sync(n)
+	--local gamemode = FangsHeist.getGamemode()
+	--gamemode:sync(n)
 end)
 
 addHook("MapLoad", do
@@ -62,47 +58,10 @@ addHook("MapLoad", do
 	FangsHeist.loadMap()
 end)
 
-addHook("PreThinkFrame", do
-	if not FangsHeist.isMode() then
-		return
-	end
-
-	for p in players.iterate do
-		if not p.heist then continue end
-
-		p.heist.lastbuttons = p.heist.buttons
-
-		p.heist.buttons = p.cmd.buttons
-
-		p.heist.lastforw = p.heist.forwardmove
-		p.heist.lastside = p.heist.sidemove
-
-		p.heist.forwardmove = p.cmd.forwardmove
-		p.heist.sidemove = p.cmd.sidemove
-
-		if FangsHeist.isPlayerAlive(p) then
-			if p.heist.exiting then
-				p.cmd.buttons = 0
-				p.cmd.forwardmove = 0
-				p.cmd.sidemove = 0
-			end
-		end
-		if FangsHeist.Net.game_over
-		or FangsHeist.Net.pregame then
-			p.cmd.buttons = 0
-			p.cmd.sidemove = 0
-			p.cmd.forwardmove = 0
-		end
-	end
-end)
-
 addHook("ThinkFrame", do
 	if not FangsHeist.isMode() then
 		return
 	end
-	local stop = false
-
-	dialogue.tick()
 
 	for i,script in ipairs(scripts) do
 		if script() then
@@ -120,7 +79,7 @@ addHook("ThinkFrame", do
 
 	song, loop, volume = gamemode:music()
 
-	local custom, custom2, custom3 = HeistHook.runHook("Music", song)
+	local custom, custom2, custom3 = FangsHeist.runHook("Music", song)
 	if type(custom) == "string" then
 		song = custom
 	end
@@ -145,18 +104,27 @@ addHook("ThinkFrame", do
 end)
 
 addHook("PostThinkFrame", do
-	local p = displayplayer
-
 	if not FangsHeist.isMode() then return end
-	if multiplayer then return end
-	if not (p and p.heist) then return end
-
-	if (p.exiting or p.pflags & PF_FINISHED)
-	and not p.heist.exiting then
-		p.exiting = 0
-		p.pflags = $ & ~(PF_FINISHED|PF_FULLSTASIS)
+	if FangsHeist.Net.pregame
+	or FangsHeist.Net.game_over then
+		return
 	end
+
+	local gamemode = FangsHeist.getGamemode()
+	gamemode:postthink()
 end)
+addHook("PreThinkFrame", do
+	if not FangsHeist.isMode() then return end
+	if FangsHeist.Net.pregame
+	or FangsHeist.Net.game_over then
+		return
+	end
+
+	local gamemode = FangsHeist.getGamemode()
+	gamemode:prethink()
+end)
+
+addHook("GameQuit", FangsHeist.initHUD)
 
 add("Team")
 add("Placements")

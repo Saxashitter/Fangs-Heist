@@ -13,35 +13,65 @@ local copy = FangsHeist.require "Modules/Libraries/copy"
 local orig_net = FangsHeist.require "Modules/Variables/net"
 local orig_save = FangsHeist.require "Modules/Variables/save"
 local orig_plyr = FangsHeist.require "Modules/Variables/player"
-local orig_hud = FangsHeist.require "Modules/Variables/hud"
 
 // Initalize player.
 
-function FangsHeist.initTeam(p)
-	if not FangsHeist.isAbleToTeam(p) then
-		return
-	end
-
-	local team = {p}
+function FangsHeist.initTeamTable()
+	-- for use within gamemodes to force teams
+	local team = {}
 
 	team.profit = 0
 	team.added_sign = false
 	team.treasures = 0
+
+	return team
+end
+
+function FangsHeist.initTeam(p)
+
+	local team
+
+	if type(p) == "table" then
+		team = p
+	else
+		if not p.heist:isAbleToTeam() then
+			return
+		end
+
+		team = FangsHeist.initTeamTable()
+		team[1] = p
+	end
 
 	table.insert(FangsHeist.Net.teams, team)
 	return team
 end
 
 function FangsHeist.initPlayer(p)
-	p.heist = copy(orig_plyr)
-	p.heist.locked_skin = p.skin
+	local orig = p.heist
+	local heist = copy(orig_plyr)
 
-	FangsHeist.initTeam(p)
+	heist.skin_index = max(1, min(orig and orig.skin_index or $, #FangsHeist.CharList))
+	heist.locked_skin = orig and orig.locked_skin or $
+	heist.alt_skin = orig and orig.alt_skin or $
+	heist.player = p
+
+	setmetatable(heist, FangsHeist.PlayerMT)
+	p.heist = heist
+
+	if not p.heist:isPartOfTeam() then
+		FangsHeist.initTeam(p)
+	end
 
 	local gamemode = FangsHeist.getGamemode()
+
+	if FangsHeist.Net.pregame then
+		heist.pregame_state = "character"
+		FangsHeist.pregameStates["character"].enter(p)
+	end
+
 	gamemode:playerinit(p)
 
-	HeistHook.runHook("PlayerInit", p)
+	FangsHeist.runHook("PlayerInit", p)
 end
 
 function FangsHeist.initMode(map)
@@ -50,52 +80,18 @@ function FangsHeist.initMode(map)
 	end
 
 	FangsHeist.Net = copy(orig_net)
-	FangsHeist.HUD = copy(orig_hud)
-
 	FangsHeist.Net.gamemode = 1
 
 	local info = mapheaderinfo[map]
 	local gamemode = FangsHeist.getGamemode()
 
-	if info.fh_stagetype then
-		local stageTypes = {}
-		local isCompatible = false
-
-		for type in info.fh_stagetype:gmatch("[^,]+") do
-			local type = type:gsub("%s+", "")
-	
-			table.insert(stageTypes, type)
-	
-			if type == gamemode.name then
-				isCompatible = true
-			end
-		end
-
-		if #stageTypes
-		and not isCompatible then
-			local foundMode = 0
-			local setMode = stageTypes[1]
-
-			for i,gt in ipairs(FangsHeist.Gamemodes) do
-				if gt.name == setMode then
-					foundMode = i
-					break
-				end
-			end
-	
-			if foundMode then
-				FangsHeist.Net.gamemode = foundMode
-				gamemode = FangsHeist.getGamemode()
-			end
-		end
-	end
-
-	if FangsHeist.Save.last_map == map
+	--[[if FangsHeist.Save.last_map == map
+	and FangsHeist.CVars.retakes.value
 	and not (info.fh_disableretakes == "true") then
 		FangsHeist.Save.retakes = $+1
 	else
 		FangsHeist.Save.retakes = 0
-	end
+	end]]
 
 	FangsHeist.Save.last_map = map
 
@@ -131,18 +127,22 @@ function FangsHeist.initMode(map)
 		FangsHeist.initPlayer(p)
 	end
 
+	FangsHeist.initHUD()
+
+	FangsHeist.runHook("GameInit")
+
+	if not multiplayer then
+		FangsHeist.Net._inited = true
+	end
+end
+
+function FangsHeist.initHUD()
 	for _,obj in ipairs(FangsHeist.Objects) do
 		local object = obj[2]
 
 		if object.init then
 			object.init()
 		end
-	end
-
-	HeistHook.runHook("GameInit")
-
-	if not multiplayer then
-		FangsHeist.Net._inited = true
 	end
 end
 
@@ -155,5 +155,5 @@ function FangsHeist.loadMap()
 	local gamemode = FangsHeist.getGamemode()
 	gamemode:load()
 
-	HeistHook.runHook("GameLoad")
+	FangsHeist.runHook("GameLoad")
 end

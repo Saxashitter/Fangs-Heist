@@ -4,13 +4,15 @@ LoopTitle = true
 HideTitlePics = true
 NumDemos = 0
 GameData = fangsheist.dat
+TailsFlyTics = 35
 
 Clear All
 
 Unlockable 1
-Name = Sound Test
+Name = Sound Test (Fang's Heist OST)
 Type = SoundTest
-Height = 10
+Height = 12
+Var = 2
 ConditionSet = -1
 
 Unlockable 2
@@ -30,8 +32,7 @@ RecordAttack = true
 SaveGame = true
 SkyboxScale = 64
 FlickyList = Bluebird,Chipmunk
-SelectHeading = Supported Maps
-Lua.FH_StageType = Escape
+SelectHeading = Campaign
 #Flicky selection is final.
 
 Level 2
@@ -47,8 +48,7 @@ RecordAttack = true
 SaveGame = true
 SkyboxScale = 64
 FlickyList = Bluebird,Chipmunk
-SelectHeading = Supported Maps
-Lua.FH_StageType = Escape
+SelectHeading = Campaign
 #see act 1
 
 Level 4
@@ -57,16 +57,33 @@ Act = 1
 Lua.FH_EscapeLinedef = 148
 Keywords = THZ1
 Music = THZ1
-TypeOfLevel = Heist
+TypeOfLevel = HeistRound2
 NextLevel = 5
 SkyNum = 4
 NoVisitNeeded = true
 RecordAttack = true
 SaveGame = true
 FlickyList = Rabbit,Chicken
-SelectHeading = Supported Maps
-Lua.FH_StageType = Escape
+SelectHeading = Campaign
 #Flicky selection is final.
+
+Level 5
+Levelname = Techno Hill
+Act = 2
+Keywords = THZ2
+Music = THZ2
+TypeOfLevel = Heist
+NextLevel = 6
+SkyNum = 6
+RecordAttack = true
+LevelSelect = 1
+SaveGame = true
+SkyboxScale = 16
+SelectHeading = Campaign
+FlickyList = Rabbit,Chicken
+Lua.FH_Time = 220
+
+#see act 1
 
 Level 30
 Levelname = Frozen Hillside
@@ -78,10 +95,10 @@ RecordAttack = true
 TypeOfLevel = Heist
 SkyNum = 30
 NoVisitNeeded = true
-SelectHeading = Supported Maps
+SelectHeading = Bonus
 Weather = 2
 FlickyList = Penguin,Seal
-Lua.FH_StageType = Escape
+Lua.FH_EscapeTheme = LOSWIN
 
 Level Z0
 Levelname = Tutorial
@@ -90,80 +107,74 @@ Act = 0
 Music = _TITLE
 NextLevel = 1
 TypeOfLevel = Heist
-SelectHeading = Supported Maps
+SelectHeading = Bonus
 SkyNum = 99
 Lua.FH_EscapeTheme = YOKADI
 Lua.FH_EscapeHurryUp = false
-Lua.FH_StageType = Escape
 
 Level 33
 Levelname = FD Greenflower
 Act = 0
 Music = FDEMO1
-TypeOfLevel = Heist
+TypeOfLevel = HeistRound2
 NextLevel = 1100
 SkyNum = 2
 LevelSelect = 2
-SelectHeading = Supported Maps
+SelectHeading = Bonus
 NoVisitNeeded = true
 InterScreen = INTERSCR
 FlickyList = Demo
 Lua.FH_Time = 240
-Lua.FH_EscapeTheme = FDSPHR
-Lua.FH_StageType = Escape
+Lua.FH_EscapeTheme = SPRHRO
+Lua.FH_Round2Theme = SPRHRO
 
 Level 34
 Levelname = FD Techno Hill
 Music = FDEMO3
-TypeOfLevel = Heist
+TypeOfLevel = HeistRound2
 NextLevel = 1100
 SkyNum = 2
 LevelSelect = 2
-SelectHeading = Supported Maps
+SelectHeading = Bonus
 NoVisitNeeded = true
 InterScreen = INTERSCR
 FlickyList = Demo
 Lua.FH_Time = 300
-Lua.FH_EscapeTheme = FDSPHR
-Lua.FH_StageType = Escape
-
-Level P0
-LevelName = Vicious Volcano
-TypeOfLevel = Heist
-Music = FDEMO7
-SelectHeading = Supported Maps
-Lua.FH_EscapeTheme = SUPREF
-Lua.FH_EscapeLinedef = 47
-Lua.FH_EscapeOnStart = true
-Lua.FH_DisableRetakes = true
-Lua.FH_EscapeHurryUp = false
-Lua.FH_LastManStanding = true
-Lua.FH_StageType = Escape
-
-level P2
-LevelName = Acid Overflow
-TypeOfLevel = Heist
-Music = RDLFAC
-SkyNum = 4
-NoVisitNeeded = true
-Recordattack = true
-NextMap = MAP33
-FlickyList = Rat,Bat,Dove
-Selectheading = Supported Maps
-Lua.FH_EscapeTheme = OLNORE
+Lua.FH_EscapeTheme = KARSPR
+Lua.FH_Round2Theme = KARSPR
 
 Level 35
 Levelname = FD Castle Eggman
 Music = FDEMO5
-TypeOfLevel = Heist
+TypeOfLevel = HeistRound2
 NextLevel = 1100
 SkyNum = 65
 LevelSelect = 2
-SelectHeading = Supported Maps
+SelectHeading = Bonus
 NoVisitNeeded = true
 InterScreen = INTERSCR
 FlickyList = Demo
 Weather = 1
 Lua.FH_Time = 300
-Lua.FH_EscapeTheme = FDSPHR
-Lua.FH_StageType = Escape
+Lua.FH_EscapeTheme = SPRHRO
+Lua.FH_Round2Theme = SPRHRO
+Lua.FH_EscapeLinedef = 358
+
+Level P1
+Levelname = Acidic Overflux
+TypeOfLevel = Heist
+LevelFlags = 518
+FlickyList = BlueBird,Rabbit,Chipmunk,Penguin,Puffin,Rat,Cat,Spider,Bat
+NoReload = true
+Skynum = 86
+Weather = 5
+Music = BRCRPW
+SelectHeading = Bonus
+ForceResetMusic = 0
+MusicInterFadeOut = 3000
+TitleCardZigZag = ACIDZIGZAG
+TitleCardZigZagText = ACIDTEXT
+Lua.FH_EscapeHurryUp = false
+Lua.FH_EscapeTheme = OLNORE
+Lua.FH_Time = 177
+lua.FH_EscapeLinedef = 9000

@@ -1,9 +1,14 @@
 local scripts = {
 	playerthink = {},
-	thinkframe = {}
+	thinkframe = {},
+	prethinkframe = {},
+	postthinkframe = {}
 }
 
+FangsHeist.PlayerScripts = scripts
+
 local type = "playerthink"
+
 local function add(file)
 	local result = dofile("Hooks/Player/Scripts/"..file)
 
@@ -12,14 +17,85 @@ local function add(file)
 	end
 end
 
-addHook("PlayerThink", function(p)
-	-- Force every PlayerThink hook to run before our code here.
-	for _,data in ipairs(FangsHeist._HOOKS.PlayerThink) do
-		data.func(p)
+function FangsHeist.addPlayerScript(type, func)
+	table.insert(scripts[type], func)
+end
+
+addHook("PlayerSpawn", function(p)
+	if not FangsHeist.isMode() then return end
+	if not (p and p.heist) then
+		FangsHeist.initPlayer(p)
 	end
 
-	if not FangsHeist.isMode() then return end
-	if not (p and p.valid) then return end
+	local gamemode = FangsHeist.getGamemode()
+	gamemode:playerspawn(p)
+end)
+
+local function _draw(self, v, p, c, result, trans)
+	local mo = self.mo
+	local plyr = mo.player
+
+	local plyr_spr, plyr_scale
+	if skins[plyr.mo.skin].sprites[SPR2_SIGN].numframes then
+		plyr_spr = v.getSprite2Patch(plyr.mo.skin, SPR2_SIGN, false, A, 0)
+		plyr_scale = skins[plyr.mo.skin].highresscale
+	else
+		plyr_spr = v.getSpritePatch(SPR_SIGN, S, 0)
+		plyr_scale = FU
+	end
+	plyr_scale = $/4
+
+	local x = result.x + plyr_spr.leftoffset*plyr_scale
+	local y = result.y + plyr_spr.topoffset*plyr_scale
+
+	v.drawScaled(x - plyr_spr.width*plyr_scale/2,
+		y,
+		plyr_scale,
+		plyr_spr,
+		trans,
+		v.getColormap(mo.skin, plyr.skincolor))
+end
+
+addHook("PreThinkFrame", do
+	if not FangsHeist.isMode() then
+		return
+	end
+	local gamemode = FangsHeist.getGamemode()
+
+	for p in players.iterate do
+		if not p.heist then continue end
+
+		p.heist.lastbuttons = p.heist.buttons
+		p.heist.buttons = p.cmd.buttons
+
+		p.heist.lastforw = p.heist.forwardmove
+		p.heist.lastside = p.heist.sidemove
+
+		p.heist.forwardmove = p.cmd.forwardmove
+		p.heist.sidemove = p.cmd.sidemove
+
+		if (p.heist:isAlive()
+		and p.heist.exiting)
+		or FangsHeist.Net.game_over
+		or FangsHeist.Net.pregame then
+			p.cmd.buttons = 0
+			p.cmd.forwardmove = 0
+			p.cmd.sidemove = 0
+		end
+
+		for _,script in ipairs(scripts.prethinkframe) do
+			script(p)
+		end
+		gamemode:preplayerthink(p)
+	end
+end)
+
+
+addHook("PlayerThink", function(p)
+	if not FangsHeist.isMode() then 
+		p.heist = nil
+		return
+	end
 
 	local gamemode = FangsHeist.getGamemode()
 
@@ -30,16 +106,38 @@ addHook("PlayerThink", function(p)
 	for _,script in ipairs(scripts.playerthink) do
 		script(p)
 	end
+
 	gamemode:playerthink(p)
 
-	if p.skin ~= p.heist.locked_skin then
-		R_SetPlayerSkin(p, p.heist.locked_skin)
+	if p ~= displayplayer
+	and p.heist:isAlive()
+	and not p.heist.exiting then
+		local variables = gamemode:trackplayer(p)
+
+		if variables and #variables > 0 then
+			variables.color = p.skincolor
+			FangsHeist.trackObject(p.mo, variables, _draw)
+		end
 	end
+
+	local skin, super = FangsHeist.getRealSkin(p)
+
+	if skins[p.skin].name ~= skin then
+		R_SetPlayerSkin(p, skin)
+	end
+
+	if p.mo and p.mo.valid and super then
+		p.mo.eflags = ($ & ~MFE_FORCENOSUPER)|MFE_FORCESUPER
+	elseif p.mo and p.mo.valid then
+		p.mo.eflags = ($ & ~MFE_FORCESUPER)|MFE_FORCENOSUPER
+	end
+
 	p.score = 0
 end)
 
 addHook("ThinkFrame", function(p)
 	if not FangsHeist.isMode() then return end
+	local gamemode = FangsHeist.getGamemode()
 
 	for p in players.iterate do
 		if not (p and p.valid and p.heist) then continue end
@@ -47,31 +145,45 @@ addHook("ThinkFrame", function(p)
 		for _,script in ipairs(scripts.thinkframe) do
 			script(p)
 		end
+		gamemode:postplayerthink(p)
+	end
+end)
+
+addHook("PostThinkFrame", function(p)
+	if not FangsHeist.isMode() then return end
+
+	for p in players.iterate do
+		if not (p and p.valid and p.heist) then continue end
+
+		for _,script in ipairs(scripts.postthinkframe) do
+			script(p)
+		end
 	end
 end)
 
 /*addHook("TouchSpecial", function(special, pmo)
 	if not FangsHeist.isMode() then return end
-	if not FangsHeist.isPlayerAlive(pmo.player) then return end
+	if not (pmo.player.heist and pmo.player.heist:isAlive()) then return end
 
-	FangsHeist.gainProfit(pmo.player, 8)
+	pmo.player.heist:gainProfit(8)
 end, MT_RING)*/
 
 addHook("MobjDeath", function(ring, _, pmo)
 	if not FangsHeist.isMode() then return end
 	if not (ring and ring.valid) then return end
 	if not (pmo and pmo.valid and pmo.type == MT_PLAYER) then return end
-	if not FangsHeist.isPlayerAlive(pmo.player) then return end
+	if not (pmo.player.heist and pmo.player.heist:isAlive()) then return end
 	
-	FangsHeist.gainProfit(pmo.player, 8)
+	pmo.player.heist:gainProfitMultiplied(FH_RINGPROFIT)
 end, MT_RING)
 
 -- this check is goofy lol
 function A_RingBox(actor, var1,var2)
     local player = actor.target.player
     if FangsHeist.isMode()
-    and FangsHeist.isPlayerAlive(player) then
-        FangsHeist.gainProfit(player, 8*actor.info.reactiontime)
+    and player.heist
+    and player.heist:isAlive() then
+        player.heist:gainProfitMultiplied(FH_RINGPROFIT*actor.info.reactiontime)
     end
     
     --run original action
@@ -85,11 +197,11 @@ addHook("MobjDeath", function(t,i,s)
 
 	if t.flags & MF_ENEMY then
 		s.player.heist.enemies = $+1
-		FangsHeist.gainProfit(s.player, 35)
+		s.player.heist:gainProfitMultiplied(FH_ENEMYPROFIT)
 	end
 	if t.flags & MF_MONITOR then
 		s.player.heist.monitors = $+1
-		FangsHeist.gainProfit(s.player, 12)
+		s.player.heist:gainProfitMultiplied(FH_MONITORPROFIT)
 	end
 end)
 
@@ -100,117 +212,14 @@ addHook("MobjDeath", function(t,i,s)
 	local gamemode = FangsHeist.getGamemode()
 
 	gamemode:playerdeath(t.player)
-end, MT_PLAYER)
-
-local function RingSpill(p, dontSpill)
-	if not p.rings then
-		return false
-	end
-
-	local rings_spill = min(5+(8*FangsHeist.Save.retakes), p.rings)
-	if not dontSpill then
-		P_PlayerRingBurst(p, rings_spill)
-	end
-	S_StartSound(p.mo, sfx_s3kb9)
-	p.rings = $-rings_spill
-	FangsHeist.gainProfit(p, -8*rings_spill)
-
-
-	return rings_spill
-end
-
-local function RemoveCarry(p)
-	if p.powers[pw_carry] == CR_ROLLOUT then
-		local rollout = p.mo.tracer
-
-		if rollout and rollout.valid then
-			rollout.tracer = nil
-			rollout.flags = $|MF_PUSHABLE
-		end
-
-		p.mo.tracer = nil
-	else
-		local mo = p.mo.tracer
-
-		if mo and mo.valid then
-			mo.tracer = nil
-		end
-
-		p.mo.tracer = nil
-	end
-
-	p.powers[pw_carry] = CR_NONE
-end
-
-addHook("MobjDamage", function(t,i,s,dmg,dt)
-	if not FangsHeist.isMode() then return end
-	if not (t and t.player and t.player.heist) then return end
-
-	for _,tres in ipairs(t.player.heist.treasures) do
-		if not (tres.mobj.valid) then continue end
-
-		local angle = FixedAngle(P_RandomRange(1, 360)*FU)
-
-		P_InstaThrust(tres.mobj, angle, 12*FU)
-		P_SetObjectMomZ(tres.mobj, 4*FU)
-
-		tres.mobj.target = nil
-	end
-	t.player.heist.treasures = {}
-
-	local givenSign = false
-
-	if s
-	and s.player
-	and s.player.heist then
-		local team = FangsHeist.getTeam(s.player)
-
-		if FangsHeist.playerHasSign(t.player)
-		and FangsHeist.isEligibleForSign(s.player) then
-			FangsHeist.giveSignTo(s.player)
-			givenSign = true
-		end
-
-		if not (t.health) then
-			s.player.heist.deadplayers = $+1
-			FangsHeist.gainProfit(s.player, 50)
-		else
-			s.player.heist.hitplayers = $+1
-			FangsHeist.gainProfit(s.player, 28)
-		end
-	end
-
-	if not givenSign
-	and FangsHeist.playerHasSign(t.player) then
-		local sign = FangsHeist.Net.sign
-		sign.holder = nil
-
-		local launch_angle = FixedAngle(P_RandomRange(0, 360)*FU)
-
-		P_InstaThrust(sign, launch_angle, 8*FU)
-		P_SetObjectMomZ(sign, 4*FU)
-	end
-
-	if dt & DMG_DEATHMASK then
-		print "INSTA DEATH"
-		return
-	end
-
-	if t.player.powers[pw_shield] then return end
-	local rings = RingSpill(t.player)
-
-	if not rings then return end
-
-	RemoveCarry(t.player)
-	P_DoPlayerPain(t.player, s, i)
-	return true
+	FangsHeist.playVoiceline(t.player, "death")
 end, MT_PLAYER)
 
 addHook("AbilitySpecial", function (p)
 	if not FangsHeist.isMode() then return end
 
 	if p.charability ~= CA_TWINSPIN then
-		return FangsHeist.isPlayerNerfed(p)
+		return p.heist:isNerfed()
 	end
 end)
 
@@ -225,7 +234,7 @@ addHook("MobjCollide", function(pmo, mo)
 	or not (mo.target.player and mo.target.player.valid) then return end
 	
 	local p = pmo.player
-	if FangsHeist.isPartOfTeam(p, mo.target.player) then
+	if p.heist:isPartOfTeam(mo.target.player) then
 		return false
 	end
 	if p == mo.target.player then
@@ -237,9 +246,10 @@ add("Pregame")
 add("Nerfs")
 add("Treasures")
 add("Panic")
+add("PVP")
 add("Sign Toss")
+add("Map Vote")
 
 type = "thinkframe"
 
 add("Spectator")
-add("PVP")

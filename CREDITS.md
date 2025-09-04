@@ -1,113 +1,152 @@
-# Saxashitter
-- Director
-- Main Coder
-- Made alot of the UI
+# The guy behind it all (Scripting, Director)
+## Saxashitter
+- Made basically all of the backend
+- Visual direction
+- Gameplay
+- A lot, honestly.
 
-# Unmatched Bracket
-## Side Coder
-- Coded Signpost Visuals
-- Coded Fang's Dialogue
-- Tutorial (Original edit for PTV2)
-- HookLib creator
-## Concept Maker
-- "GO! GO! GO!" Scene
-- Original Fang dialogue sprites (Fank. It has a 1/69 chance of appearing ingame)
-
-# LeoTheHedgehog12
-- Made A1 and A2 rotations for Marvellous Queen
-
-# I.D.K
-- Made Intermission background
-- Finished Marvellous Queen rotations
-
-# dark kirby
-- Originally created the GFZ1 edit for PTV3
-
-# Pyrodiac
-## Main Mapper
-- Vicious Volcano
+# Mappers
+## Pyrodiac
 - GFZ1
 - GFZ2
 - F.D. THZ
 - F.D. CEZ
-- Titlescreen Map
-- Acid Overflow
+- Acidic Overflux
 
-# enes2gamer
-## Mapper
+## enes2gamer
 - GFZ1
 
-# Pacola
-## Mapper
+## Pacola
 - THZ1
 - F.D. GFZ
-## Coder
-- Bug fixer
-- Tweaker
 
-# JosephLol
-## Coder
+## Lemerks
+- Tutorial
+
+## Sludesus
+- Tutorial
+- F.D. GFZ
+
+## Zeko
+- THZ2
+
+# Coders
+## romoney5
+- General polish for movesets
+
+## RubytheMii
+- Coded Knuckles moveset
+
+## i._px / Medii
+- Coded Metal Sonic moveset
+
+## SLS64LGamingBro
+- Coded Amy moveset
+
+## RedFoxyBoy
 - Titlescreen polish
-- Icon tweening when selected (Character Select)
-- GAME! Animation
+- Team Fracture Splash screen
+- Tons of HUD polish (i seriously cant thank you enough)
 
-# Lemerks
-## Mapper
-- Tutorial
+## Unmatched Bracket
+- Coded Signpost Visuals
+- Tutorial (Original edit for PTV2)
+- HookLib creator
 
-# Sludesus
-## Mapper
-- Tutorial
+## TwoTailedHero
+- Creator of external Wario Land mode
+- UglyKnux skin addition
+- Gordon Freeman
 
-# 5UP34
-## Spriter
-- Thrown Hammer (Amy)
+# Spriters/Artists
+## keira
+- All character renders
+- OST art
+- Created artstyle for renders/high quality art
+
+## 5UP34
 - All Pre-game backgrounds
 
-# Speedcore Tempest
-## Ex-Spriter
+## A Pontrol Coint
+- Pointer arrow for tracked objects
+
+## Jana Sol
+- Made first rendition of the mod's current logo
+
+## LeoTheHedgehog12
+- Made A1 and A2 rotations for Marvellous Queen
+
+## I.D.K
+- Made Intermission background
+- Finished Marvellous Queen rotations
+
+## Speedcore Tempest
 - All treasures in-game
 
-# ZrUltra
-## Composer
+## GLide KS
+- Timer sprite
+- Fully polished Jana Sol's rendition of the logo
+
+## Keyla L.
+- Ring and Profit sprite
+- Round 2 sprite
+
+# Musicians
+## ZrUltra
 - Ready For Round 2
+- Roll Down the Results!
+- More, more times!?
 
-# Tokonemu
-## Composer
-- Pre-Game
+## Tokonemu
+- One more time
+- No more limits
+- Beautiful World
 
-# Yousuke Yasui
-## Composer
-### Mamorukun Curse!:
+## Yousuke Yasui
+### Mamorukun Curse!
 - YO-KAI Disco!
 - Superhero
 - Kiwagana Princess
 - Bless you! boy
-- Will Force
-- The Curse
-- The Curse Again
+
 ### ESCHATOS
 - Point of No Return
+
 ### Megalomachia2
 - SUPER-REFLEX
-### Natsuki Chronicles
-- Mighty Magma Red
 
-# +TEK
-## Composer
+## +TEK
 ### +TEK Touhou Arrangements
 - the Grimoire of Alice
 
-# Jisk
-## Contributor
-- HookLib creator
-- Made Amy's hammer collect rings when thrown.
-
-# luigi budd
-## Contributor
-- Provided me his slightly-modded HookLib.
-
-# Dirk the Husky
+# Special Thanks
+## Dirk the Husky
 - Sonic Drop-Dash sprites
-# NeoZiggy
-- Pretty much the guy who gave me the idea to make this months back. I have no regrets. Thanks
+
+## NeoZiggy
+- Pretty much the guy who gave me the idea to make this months back. I have no regrets. Thanks!
+
+## BlueStaggo
+- ZrUltra held me at gunpoint to put you here.
+- Looped More, more times!?
+
+## Jisk
+- HookLib creator
+- Ported SGLib to SRB2, from DRRR
+
+## luigi budd
+- Provided me his slightly-modded HookLib.
+- Helped provide feedback regarding PvP system. He still hates it.
+
+## dark kirby
+- Originally created the GFZ1 edit for PTV3
+
+## MotorRoach
+- F. Sonic Sprites
+- "Use whatever you want. Please, do not add me again." 😱
+
+## SSNTails
+- I don't know for sure, but he PROBABLY made Sonikku.wad
+
+## GenericHeroGuy
+- Probably made SGLib. Not completely sure.

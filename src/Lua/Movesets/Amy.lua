@@ -1,53 +1,12 @@
 local function canAttack(p)
-	return not (p.heist.blocking or p.heist.attack_cooldown or (p.amy and p.amy.thrown and p.amy.thrown.valid))
+	return not (p.mo.state == S_FH_STUN
+	or p.mo.state == S_FH_GUARD
+	or p.mo.state == S_FH_CLASH
+	or (p.amy and p.amy.thrown and p.amy.thrown.valid))
 end
-
-states[freeslot "S_FH_AMY_TWIRL"] = {
-	sprite = SPR_PLAY,
-	frame = freeslot "SPR2_TWRL",
-	tics = 1,
-	nextstate = S_FH_AMY_TWIRL
-}
-
--- Amy Hammer
-states[freeslot "S_FH_THROWNHAMMER"] = {
-	sprite = freeslot "SPR_AHMR",
-	frame = FF_ANIMATE,
-	tics = -1,
-	var1 = H,
-	var2 = 1
-}
-mobjinfo[freeslot "MT_FH_THROWNHAMMER"] = {
-	spawnstate = S_FH_THROWNHAMMER,
-	radius = 30*FU,
-	height = 26*FU,
-	flags = MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY
-}
 
 FangsHeist.makeCharacter("amy", {
 	pregameBackground = "FH_PREGAME_AMY",
-	attackRange = tofixed("1.3"),
-	attackZRange = tofixed("1.5"),
-	isAttacking = function(self, p)
-		return (p.powers[pw_strong] & STR_ATTACK)
-	end,
-	onHit = function(self, p, projectile, sound)
-		if projectile then return end
-
-		S_StartSound(p.mo, sound)
-		p.mo.momx = $*-1
-		p.mo.momy = $*-1
-
-		if not P_IsObjectOnGround(p.mo) then
-			p.mo.state = S_PLAY_FALL
-			return true
-		end
-
-		p.mo.state = S_PLAY_STND
-		return true
-	end,
-	useDefaultAttack = false,
-
 	controls = {
 		{
 			key = "SPIN/JUMP",
@@ -56,19 +15,12 @@ FangsHeist.makeCharacter("amy", {
 				return not canAttack(p)
 			end,
 			visible = function(self, p)
-				return not p.heist.blocking
+				return p.mo.state ~= S_FH_CLASH
+				and p.mo.state ~= S_FH_STUN
+				and p.mo.state ~= S_FH_GUARD
 			end
 		},
-		{
-			key = "FIRE",
-			name = "Attack (Throw)",
-			cooldown = function(self, p)
-				return not canAttack(p)
-			end,
-			visible = function(self, p)
-				return not p.heist.blocking
-			end
-		},
+		--FangsHeist.Characters.sonic.controls[1],
 		FangsHeist.Characters.sonic.controls[2]
 	}
 })
@@ -80,8 +32,12 @@ local function init(p)
 	}
 end
 
+local function isAmy(p)
+	return p and p.mo and p.mo.valid and p.heist and p.heist.locked_skin == "amy"
+end
+
 local function check(p)
-	if not (p and p.mo and p.mo.skin == "amy" and p.heist and p.amy) then
+	if not (isAmy(p) and p.amy) then
 		return false
 	end
 
@@ -117,14 +73,7 @@ local function throwHammer(p)
 	hammer.angle = p.mo.angle
 	hammer.throwtime = THROW_TIME
 	hammer.throwspeed = FixedHypot(p.mo.momx, p.mo.momy)+25*FU
-	if p.mo.state == S_PLAY_TWINSPIN then
-		p.mo.state = S_PLAY_FALL
-		P_SetObjectMomZ(hammer,
-			(p.mo.momz*P_MobjFlip(hammer)) - 34*FU)
-	else
-		P_InstaThrust(hammer, hammer.angle,
-			fixhypot(p.mo.momx, p.mo.momy) + 34*FU)
-	end
+	P_InstaThrust(hammer, hammer.angle, fixhypot(p.mo.momx, p.mo.momy) + 34*FU)
 
 	S_StartSound(p.mo, sfx_s3k51)
 
@@ -136,7 +85,7 @@ addHook("PlayerThink", function(p)
 		p.amy = nil
 		return
 	end
-	if not (p and p.mo and p.mo.skin == "amy" and p.heist) then
+	if not isAmy(p) then
 		p.amy = nil
 		return
 	end
@@ -147,39 +96,31 @@ addHook("PlayerThink", function(p)
 
 	local attack = canAttack(p)
 
-	if p.amy.thrown and p.amy.thrown.valid then
-		p.heist.attack_cooldown = 62
-	else
+	if not (p.amy.thrown and p.amy.thrown.valid) then
 		p.amy.thrown = nil
-		if not attack
-		and p.mo.state == S_PLAY_TWINSPIN then
-			attack = true
-		end
 	end
 
 	local attackFlags = STR_ATTACK|STR_WALL|STR_CEILING|STR_SPIKE
 
 	if p.mo.state == S_FH_AMY_TWIRL then
-		local gravity = 3
-
-		if FangsHeist.isPlayerNerfed(p) then
-			gravity = 9
-		end
+		local ghost = P_SpawnGhostMobj(p.mo)
+		ghost.fuse = 3
+		ghost.colorized = true
 
 		p.pflags = $|PF_JUMPSTASIS
-		p.mo.momz = max(-gravity*p.mo.scale, $)
 
 		p.amy.twirl = true
 		p.powers[pw_strong] = $|attackFlags
 
-		if p.amy.twirlframes -- stupid abilityspecial runnig before playerthink
-		and p.cmd.buttons & BT_JUMP
-		and not (p.lastbuttons & BT_JUMP) then
-			p.mo.state = S_PLAY_FALL
-		end
-
 		p.amy.twirlframes = $+1
-	elseif attack
+		if not (p.amy.twirlframes % 3) then
+			local thokring = P_SpawnMobjFromMobj(p.mo, 0, 0, 0, MT_THOK)
+			thokring.state = S_FH_THIK
+			thokring.fuse = 10
+			thokring.scale = 3*p.mo.scale/2
+			thokring.destscale = 0
+		end
+	--[[elseif attack
 	and p.cmd.buttons & BT_ATTACK
 	and not (p.lastbuttons & BT_ATTACK)
 	and not P_PlayerInPain(p)
@@ -187,7 +128,7 @@ addHook("PlayerThink", function(p)
 		-- Hammer Throw
 		local hammer = throwHammer(p)
 
-		p.amy.thrown = hammer
+		p.amy.thrown = hammer]]
 	end
 
 	if p.mo.state ~= S_FH_AMY_TWIRL
@@ -205,68 +146,57 @@ addHook("AbilitySpecial", function(p)
 	if not check(p) then
 		return
 	end
-
+	
 	if not canAttack(p)
 	or not p.amy then
 		return true
 	end
 
-	if p.pflags & PF_JUMPED
-	and not (p.pflags & PF_THOKKED) then
-		p.heist.attack_cooldown = 85
-		S_StartSound(p.mo, sfx_s1ab) -- jet jaw sfx
-		P_SetObjectMomZ(p.mo, 7*FU)
-		p.mo.state = S_FH_AMY_TWIRL
+	if not (p.pflags & PF_THOKKED) then
 		p.pflags = $|PF_THOKKED
+		S_StartSound(p.mo, (p.mo.eflags & MFE_UNDERWATER) and sfx_s3k7d or sfx_kc5b) -- idk this sfx's name
+		P_SetObjectMomZ(p.mo, 7*FU)
+		if p.mo.eflags & MFE_UNDERWATER --op
+			p.mo.momz = $/2
+		end
+
+		p.mo.state = S_FH_AMY_TWIRL
 		p.amy.twirlframes = 0
 		return true
 	end
 end)
-addHook("JumpSpinSpecial", function(p)
+
+addHook("PlayerThink", function(p)
 	if not FangsHeist.isMode() then return end
 	if not check(p) then
 		return
 	end
 
-	if p.powers[pw_shield] then
-		return
-	end
-
-	if not canAttack(p) then
+	if not canAttack(p)
+	or not p.amy then
 		return true
 	end
-
-	if p.pflags & PF_JUMPED
-	and not (p.pflags & PF_THOKKED) then
-		p.heist.attack_cooldown = 50
+	
+	if (p.mo.state == S_PLAY_MELEE_LANDING)
+	and (p.speed >= 36*FRACUNIT)
+	and (p.playerstate == PST_LIVE)
+	and not (p.pflags & PF_STASIS)
+	and not (p.pflags & PF_FULLSTASIS)
+	and (p.cmd.buttons & BT_JUMP)
+	and (P_IsObjectOnGround(p.mo) == true)
+		P_SetObjectMomZ(p.mo, 15*p.mo.scale)
+		p.pflags = $|PF_JUMPED|PF_STARTJUMP|PF_THOKKED
+		p.mo.state = S_PLAY_ROLL
+		return true
 	end
 end)
+
 
 addHook("SpinSpecial", function(p)
 	if not FangsHeist.isMode() then return end
 	if not check(p) then
 		return
 	end
-
-	local canstand = (not p.mo.standingslope
-		or p.mo.standingslope.flags & SL_NOPHYSICS
-		or abs(p.mo.standingslope.zdelta) < FU/2)
-
-	if not (p.panim ~= PA_ABILITY2
-	and p.cmd.buttons & BT_SPIN
-	and not (p.mo.momz)
-	and P_IsObjectOnGround(p.mo)
-	and not (p.pflags & PF_SPINDOWN)
-	and canstand) then
-		return
-	end
-
-	if p.heist.attack_cooldown
-	or p.heist.blocking then
-		return true
-	end
-
-	p.heist.attack_cooldown = 50
 end)
 
 local function L_ReturnThrustXYZ(mo, point, speed)
@@ -291,7 +221,7 @@ local function isDamagable(mo, p)
 	and p.heist
 	and mo.player
 	and mo.player.heist
-	and not FangsHeist.isPartOfTeam(p, mo.player) then
+	and not p.heist:isPartOfTeam(mo.player) then
 		return true
 	end
 	
@@ -343,8 +273,7 @@ local function onObjectFound(mo, found)
 
 	if found.type == MT_PLAYER
 	and found.player
-	and found.player.heist
-	and found.player.heist.blocking then
+	and found.player.heist then
 		mo.momx = $*-1
 		mo.momy = $*-1
 		mo.momz = $*-1
@@ -405,3 +334,51 @@ addHook("MobjThinker", function(mo)
 		end
 	end
 end, MT_FH_THROWNHAMMER)
+
+FangsHeist.addHook("PlayerScanAttack", function(p)
+	if not check(p) then return end
+
+	if p.powers[pw_strong] & STR_ATTACK then
+		return true
+	end
+end)
+
+FangsHeist.addHook("PlayerAttack", function(p)
+	if not check(p) then return end
+
+	return true
+end)
+
+FangsHeist.addHook("PlayerHit", function(p)
+	if not check(p) then return end
+
+	if not P_IsObjectOnGround(p.mo) then
+		p.mo.state = S_PLAY_JUMP
+		p.pflags = $|PF_JUMPED|PF_THOKKED
+		return
+	end
+end)
+
+FangsHeist.addHook("PlayerClash", function(p)
+	if not check(p) then return end
+
+	if not P_IsObjectOnGround(p.mo) then
+		p.mo.state = S_PLAY_FALL
+		p.pflags = $ & ~(PF_JUMPED|PF_THOKKED|PF_SPINNING)
+		return
+	end
+
+	p.mo.state = S_PLAY_WALK
+end)
+
+FangsHeist.addHook("PlayerParried", function(_, p)
+	if not check(p) then return end
+
+	if not P_IsObjectOnGround(p.mo) then
+		p.mo.state = S_PLAY_FALL
+		p.pflags = $ & ~(PF_JUMPED|PF_THOKKED|PF_SPINNING)
+		return
+	end
+
+	p.mo.state = S_PLAY_WALK
+end)

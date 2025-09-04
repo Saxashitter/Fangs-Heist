@@ -1,0 +1,90 @@
+src/Music/O_HURRUP.ogg::7b0bbcb4b3e833fdb0ac66f84cf599a2
+src/Music/O_FHTUP.ogg::82211c4580062c80a9cf2383734a0718
+src/Music/O_RDLFAC.ogg::4f9c785e4208cd6cea764d79ccf76194
+src/Music/O_SPRHRO.ogg::366d11e8d20e8ffb8ebd0168dee1bcdc
+src/Music/O_LOSWIN.ogg::b2fd78531feb6b9c4990e8d1ceee3836
+src/Music/O_WLCLOS.ogg::c5f425504c05059e475c88ed4e85e7d0
+src/Music/O_BRCRPW.ogg::19ddd02e0461c86fd23b126ea4224a2c
+src/Music/O_THCUAG.ogg::069c25d43e41091c98ad5ff21b1d9450
+src/Music/O_HRRYUP.ogg::fd2160bfc40d367e8f71069ea8c6a3ca
+src/Music/O_THECUR.ogg::ee47809874a3dfd1e17bbc7fe3575b45
+src/Music/Official Soundtracks/O_FH_ESC.ogg::b2902e5823bf6482a943d1ab0fba4ad0
+src/Music/Official Soundtracks/O_FH_INT.ogg::d35cdd86cf01a7c23d19eedfb7c7efe7
+src/Music/O__TITLE.ogg::b4670ef209753ce8cc18c216d68e404c
+src/Music/O_KARSPR.ogg::3c4582475d11039f17cac2b31b2cbde1
+src/Music/O_WILFOR.ogg::6217887c3a53e15b56ebd84a70fe7f0e
+src/Music/Official Soundtracks/O_FH_PG2.ogg::27abba8e2ac1f246e1cde9ab5c535a2a
+src/Music/O_YOKADI.ogg::64973ceafbd190b50ba5071aa14c7625
+src/Music/Official Soundtracks/O_FH_PRG.ogg::835bafadb3adb20ae8baf73ba471432e
+src/Music/Official Soundtracks/O_FH_MPV.ogg::5011c8dcf752d5a53fd82cadd458c370
+src/Music/O_OLNORE.ogg::54a2e9a0aa62f463c7afcf9d3a15b3a1
+src/Music/Official Soundtracks/O_ROUND2.ogg::c853963db7298450d8253f99bc7fa64c
+src/Sounds/Announcer/DSNARGAM.ogg::b29c8db8633e86fdab5a7e774a1d0e02
+src/Sounds/Announcer/DSNARCON.ogg::3c3e7fec8517b936c2805543c03a0db7
+src/Sounds/Announcer/DSNARSUD.ogg::04577ba52649bfdf8e6e8f9b3eefd20b
+src/Sounds/Announcer/DSNARTGW.ogg::e343a3a0b867800d978ed3f2f7972641
+src/Sounds/Crowd/DSCWDAWW.ogg::b5d013c2c7290429c62b12ace47d1d7d
+src/Sounds/Crowd/DSCWDSCR.ogg::d0ddf537a3668c8dfad545d8f0490cf6
+src/Sounds/Announcer/DSNARNCO.ogg::78734100bed365b16c9fde8a08a9e325
+src/Sounds/DSFHJUMP.ogg::4c01e3bf4838cf1fe435bdddaa61851c
+src/Sounds/DSFHTLKF.ogg::218e6ba4d71e5cdc31a47c1b4b881f1f
+src/Sounds/DSFHTICK.ogg::d295fca6190fd64c5e2f517917be5ed9
+src/Sounds/DSFHWLK3.ogg::bb9073796b9ad7fa17946eb13f296676
+src/Sounds/DSFHWLK2.ogg::b4389b4da02cae098732db775cedbc2b
+src/Sounds/DSFHWLK1.ogg::a0813056038defbc72abf87437a95f67
+src/Sounds/DSFHWLK4.ogg::ff633d53e0e3f6d30a3edba3f95983c3
+src/Sounds/DSGOGOGO.ogg::bbab864bbb125046e7b01fd3f35df4e4
+src/Sounds/DSFHUHOH.ogg::d11e74172a6ee0f5176cb9f3b7d81d0c
+src/Sounds/DSWOOWOO.ogg::e6d6a3082176834afdffbd7d18234e59
+src/Sounds/PVP/DSDMGA1.ogg::df5446f641e248e069afdd562afd9abf
+src/Sounds/PVP/DSDMGA2.ogg::65f42dd58eb936b6e70f19ba3539357c
+src/Sounds/MetalSonic/MSDRFT.ogg::e50ceefd097a48b94e3da9a2a00ee434
+src/Sounds/PVP/DSDMGA3.ogg::a9113a45b934da296732eea1020e53c5
+src/Sounds/PVP/DSDMGA4.ogg::df182ac5f568b436e2ecb2e5646e4120
+src/Sounds/HeistTitle/DSFHWRN1.ogg::8750ba7bd655a366e68a70e0629a6b96
+src/Sounds/PVP/DSDMGB1.ogg::e04d3d60ac7f49d3a134f5b0ee428bf7
+src/Sounds/PVP/DSFHCLSH.ogg::e2a0e1437921666990947fa021333cf9
+src/Sounds/PVP/DSDMGB3.ogg::8690608dcb94933749dd151d57fe8317
+src/Sounds/PVP/DSDMGB2.ogg::6753a993d79ee17625aeb64b9e3311ed
+src/Sounds/PVP/DSPARRY2.ogg::28f3bf1af501f55bc252b83174be90a9
+src/Sounds/PVP/DSDMGB4.ogg::f91b09d61e136f5f586ee3046b4015b1
+src/Sounds/PVP/DSPARRY1.ogg::97b12da5795b0c15de5793e53177fb76
+src/Sounds/Sonic/DSSBOUNC.ogg::08e4e4c1dc4144e94154447e8d4ff611
+src/Sounds/Sonic/VL/Attack/DSSNCAT1.ogg::c39ab58535a13d9b337b1d1e8c762637
+src/Sounds/Sonic/VL/Attack/DSSNCAT2.ogg::2ebf8305f9eda2077f6deec2e1a9b12d
+src/Sounds/Sonic/VL/Attack/DSSNCAT3.ogg::e8e85bb4b38de4fca6ce5c7884d182b7
+src/Sounds/Sonic/VL/Attack/DSSNCAT4.ogg::de0d9b3894deeb59999b4ceaa6c0c1f6
+src/Sounds/Sonic/VL/Death/DSSNCDIE.ogg::bd03c5bce7d044dfbdd4cecf9da7a7d0
+src/Sounds/Sonic/VL/Attack/DSSNCAT5.ogg::d61963cd39b6adcb189670b4f51ba056
+src/Sounds/Sonic/VL/Escape Start/DSSNCESC.ogg::6bc6d19a5b00f59299ac4d721ecc9450
+src/Sounds/Sonic/VL/Hurt/DSSNCHR1.ogg::8ddc311e54ed463254cbbb9f6c6af7d6
+src/Sounds/Sonic/VL/Hurt/DSSNCHR2.ogg::873035c9784ab7ae55fcd47ae4fc7c2d
+src/Sounds/Sonic/VL/Hurt/DSSNCHR3.ogg::dc61a2edd064de91e42a1c60518075cc
+src/Sounds/Sonic/VL/Hurt/DSSNCHR4.ogg::8bcc4d8ca2336b17b40b3eaba6bbddfa
+src/Sounds/Sonic/VL/Hurt/DSSNCHR5.ogg::e4020185fd588602fccb4f29561c6ed2
+src/Sounds/Sonic/VL/Parry Attempt/DSSNCPA1.ogg::e42e50bf9e6069aea421155a9b6c4e26
+src/Sounds/Sonic/VL/Parry Attempt/DSSNCPA2.ogg::f6f2ba54f2426cd07c96fb99a8aa0c6e
+src/Sounds/Sonic/VL/Parry Attempt/DSSNCPA3.ogg::34d18284e1823dd404530cc19acb06b8
+src/Sounds/Sonic/VL/Parry/DSSNCPY1.ogg::6d07d565e5e66cdd12c5440d9b030032
+src/Sounds/Sonic/VL/Parry/DSSNCPY2.ogg::4ecb6c14b039f6b68da59a5f594519cc
+src/Sounds/Sonic/VL/Selected/DSSNCSEL.ogg::926d0fe6caba540c837c6ca76d963d66
+src/Sounds/Sonic/VL/Parry/DSSNCPY3.ogg::b658b34f58fd0b9386b255c8e8c770b8
+src/Sounds/Sonic/VL/Signpost Grab/DSSNCSG1.ogg::9cd3ba4e4d6fc3dcfb1810769b8034f4
+src/Sounds/Sonic/VL/Signpost Grab/DSSNCSG2.ogg::d5008e9c91d35d23e83b4e9055155cda
+src/Sounds/Sonic/VL/Signpost Grab/DSSNCSG3.ogg::a9301a612d4646200a225fd858a1ff06
+src/Sounds/Tails/DSTLFLY1.ogg::fbb81da77e45b93c0c7fd475b8e4d4c9
+src/Sounds/Sonic/VL/Treasure Grab/DSSNCTR1.ogg::04ac021a472b01e865da111530dbc8f6
+src/Sounds/Sonic/VL/Treasure Grab/DSSNCTR2.ogg::d2b7aca8ec3dd090787e75e881084e5e
+src/Sounds/Tails/DSTLFLY3.ogg::d120ddc0fb9f12b6b962711cafe078d9
+src/Sounds/Wario Land/Coins/DSWLCOI1.ogg::48d882eb9493d6ec64b6a18f997ef5c4
+src/Sounds/Tails/DSTLFLY2.ogg::d4b2861fe8ae6c472c60b35e504829ec
+src/Sounds/Wario Land/Coins/DSWLCOI2.ogg::12d8fe19c745347d04858217a83fc958
+src/Sounds/Wario Land/Coins/DSWLCOI3.ogg::d3c0bad3670bba8716ed5ea4f1986537
+src/Sounds/Wario Land/Coins/DSWLCOI4.ogg::00948ab0dbac3475ef4b9877a57fc56c
+src/Sounds/Wario Land/Wario's Voice/DSHURRY0.ogg::7906025edb0a1ea06a386e050fa72ff5
+src/Sounds/Wario Land/Wario's Voice/DSHURRY2.ogg::492e76d778b0203c197a56ba37d8d530
+src/Sounds/Wario Land/Wario's Voice/DSHURRY3.ogg::40fa6fb7070a62db4b865cc82e6fcc64
+src/Sounds/Wario Land/Wario's Voice/DSHURRY1.ogg::142062990e1e13ab097ec3af9f4bb6b7
+src/Sounds/Wario Land/DSWLCLOS.ogg::cee36896ef2c72e5276522a238ff6593
+src/Sounds/Wario Land/Wario's Voice/DSHURRY4.ogg::48ee48fb7670fc155b31973ed011b74b
+src/Sounds/Wario Land/DSWLOHNO.ogg::220c20ed0e08a4688fcc6874edcbf76d

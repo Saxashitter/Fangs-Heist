@@ -1,24 +1,51 @@
-local dialogue = FangsHeist.require "Modules/Handlers/dialogue"
-local orig = FangsHeist.require"Modules/Variables/player"
-
-sfxinfo[freeslot "sfx_gogogo"].caption = "G-G-G-G-GO! GO! GO!"
-sfxinfo[freeslot "sfx_nargam"].caption = "GAME!"
-
-FangsHeist.escapeThemes = {
-	{"SPRHRO", true},
-	--{"THECUR", true},
-	--{"WILFOR", true},
-	--{"LUNCLO", true}
-	// if the second argument is false, the hurry up music wont play
+FangsHeist.GAME_TICS = 2*TICRATE
+FangsHeist.RESULTS_TICS = 15*TICRATE
+FangsHeist.BLACKOUT_TICS = 60
+FangsHeist.SWITCH_TICS = FangsHeist.GAME_TICS + FangsHeist.RESULTS_TICS + 15*TICRATE
+FangsHeist.WINNER_LINES = {
+	"is the winner!",
+	"was the greediest!",
+	"took your money!",
+	"ate you for dinner!",
+	"ate you for breakfast!",
+	"took more than a spoonful!",
+	"is the next Lebron!",
+	"saved The Netherworld!",
+	"has saved the day!",
+	"saved Fang's Heist! HIT IT, TAILS!!",
+	"got silly!",
+	"is sigma!",
+	"was the murderer!",
+	"has DOMINATED all of you NOOBS!!",
+	"got lucky, I swear!",
+	"rigged the match while we weren't looking.",
+	"didn't deserve the win.",
+	"still doesn't know what MAPXX means...",
+	"is the top heister!",
+	"is fresher than a bowl of lettuce!",
+	"was the MVP!",
+	"is Ripping and Tearing!",
+	"tada.wav",
+	"pwned you roblox style",
+	"used a calcium gun on you and your teammates!",
+	"has cantaloupe'd everyone!",
+	"scored a Hole in One!",
+	"posted Glungus in #general!",
+	"did your mom!",
+	"passed their night shift at a pizzeria!",
+	"made everyone WOKE!!",
+	"deleted Twitter's worst features!",
+	"cancelled you!",
+	"solved your test chamber!",
+	"got all the ladies!",
+	"crushed you with a Storage Cube!",
+	"saved the princess!",
+	"oh my goodness guys my stomach is rolling from eating that onion and rotten garlics oh my goodness okay guys this is episode two and uh right now guys I want to show you my living room uh my hallway I guess oh my goodness my stomach"
 }
-
-local function profsort(a, b)
-	return a[4] > b[4]
-end
 
 function FangsHeist.startIntermission()
 	if FangsHeist.Net.game_over
-	or HeistHook.runHook("GameOver") == true then
+	or FangsHeist.runHook("GameOver") == true then
 		return
 	end
 
@@ -29,11 +56,16 @@ function FangsHeist.startIntermission()
 	local checked = {}
 
 	for i = 1,1024 do
-		if not (mapheaderinfo[i] and mapheaderinfo[i].typeoflevel & TOL_HEIST) then
+		if not (mapheaderinfo[i] and i ~= gamemap) then
 			continue
 		end
 
-		table.insert(maps, i)
+		for _, gm in ipairs(FangsHeist.Gamemodes) do
+			if gm.tol & mapheaderinfo[i].typeoflevel then
+				table.insert(maps, i)
+				break
+			end
+		end
 	end
 
 	for i = 1, 3 do
@@ -44,64 +76,27 @@ function FangsHeist.startIntermission()
 		local key = P_RandomRange(1, #maps)
 		local map = maps[key]
 
+		local modes = {}
+		for i, gm in ipairs(FangsHeist.Gamemodes) do
+			if gm.tol & mapheaderinfo[map].typeoflevel then
+				table.insert(modes, i)
+			end
+		end
+
 		table.insert(FangsHeist.Net.map_choices, {
 			map = map,
-			votes = 0
+			votes = 0,
+			gametype = P_RandomRange(1, modes[P_RandomRange(1, #modes)])
 		})
 
 		table.remove(maps, key)
 	end
 
-		/*local str = ""
-	
-		for i,data in ipairs(FangsHeist.Net.map_choices) do
-			str = $..tostring(data.map)..","..tostring(data.votes)
-			if i ~= #FangsHeist.Net.map_choices then
-				str = $.."^"
-			end
-		end
-
-		COM_BufInsertText(server, "fh_receivemapvote "..str)*/
+	local i = P_RandomRange(1, #FangsHeist.WINNER_LINES)
+	FangsHeist.Net.game_over_winline = FangsHeist.WINNER_LINES[i]
 
 	local gamemode = FangsHeist.getGamemode()
 	gamemode:finish()
-
-	if not FangsHeist.Save.ServerScores[gamemap] then
-		FangsHeist.Save.ServerScores[gamemap] = {}
-	end
-
-	for p in players.iterate do
-		if not (FangsHeist.isPlayerAlive(p)
-		and FangsHeist.getTeamLength(p) < 1) then
-			continue
-		end
-
-		local team = FangsHeist.getTeam(p)
-
-		table.insert(FangsHeist.Save.ServerScores[gamemap], {
-			p.mo.skin,
-			skincolors[max(1, p.mo.color)].name,
-			p.name,
-			team.profit
-		})
-	end
-
-	table.sort(FangsHeist.Save.ServerScores[gamemap], profsort)
-
-	if #FangsHeist.Save.ServerScores[gamemap] > 12 then
-		for i = 12,#FangsHeist.Save.ServerScores[gamemap] do
-			FangsHeist.Save.ServerScores[gamemap][i] = nil
-		end
-	end
-
-	if FangsHeist.isServer() then
-		local f = io.openlocal("client/FangsHeist/serverScores.txt", "w+")
-		if f then
-			f:write(FangsHeist.ServerScoresToString())
-			f:flush()
-			f:close()
-		end
-	end
 
 	S_FadeMusic(0, FixedMul(MUSICRATE, tofixed("0.75")))
 
@@ -112,12 +107,4 @@ function FangsHeist.startIntermission()
 	end
 
 	FangsHeist.Net.game_over = true
-end
-
-local function sac(name, caption)
-	local sfx = freeslot(name)
-
-	sfxinfo[sfx].caption = caption
-
-	return sfx
 end

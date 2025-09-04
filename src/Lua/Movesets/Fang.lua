@@ -1,4 +1,4 @@
-local POPGUN_TIME = 45
+local POPGUN_TIME = 2*TICRATE
 local POPGUN_FRICTION = tofixed("0.95")
 
 local SKID_TIME = 3
@@ -7,16 +7,17 @@ local SKID_TIME = 3
 FangsHeist.makeCharacter("fang", {
 	difficulty = FHD_MEDIUM,
 	pregameBackground = "FH_PREGAME_FANG",
-	attackCooldown = 68,
 	controls = {
 		{
 			key = "SPIN",
 			name = "Pop-gun",
 			cooldown = function(self, p)
-				return (p.heist.attack_cooldown)
+				return p.fang and p.fang.popgun > 0
 			end,
 			visible = function(self, p)
-				return not p.heist.blocking
+				return p.mo.state ~= S_FH_STUN
+				and p.mo.state ~= S_FH_GUARD
+				and p.mo.state ~= S_FH_CLASH
 			end
 		},
 		FangsHeist.Characters.sonic.controls[1],
@@ -24,39 +25,7 @@ FangsHeist.makeCharacter("fang", {
 	}
 })
 
-function A_ForceFrame(mo, var1, var2)
-	mo.frame = var1
-end
-
 -- slot states
-states[freeslot "S_FH_FANG_GUN_GRND2"] = {
-	sprite = SPR_PLAY,
-	frame = SPR2_FIRE,
-	action = A_ForceFrame,
-	var1 = D,
-	tics = -1
-}
-states[freeslot "S_FH_FANG_GUN_GRND1"] = {
-	sprite = SPR_PLAY,
-	frame = SPR2_FIRE|FF_SPR2ENDSTATE,
-	tics = 3,
-	nextstate = S_FH_FANG_GUN_GRND1,
-	var1 = S_FH_FANG_GUN_GRND2
-}
-states[freeslot "S_FH_FANG_GUN_AIR2"] = {
-	sprite = SPR_PLAY,
-	frame = SPR2_MLEE,
-	tics = -1,
-	action = A_ForceFrame,
-	var1 = skins["fang"].sprites[SPR2_MLEE].numframes-1
-}
-states[freeslot "S_FH_FANG_GUN_AIR1"] = {
-	sprite = SPR_PLAY,
-	frame = SPR2_MLEE|FF_SPR2ENDSTATE,
-	tics = 3,
-	nextstate = S_FH_FANG_GUN_AIR1,
-	var1 = S_FH_FANG_GUN_AIR2
-}
 
 local popgunStates = {
 	[S_FH_FANG_GUN_GRND1] = true,
@@ -64,6 +33,10 @@ local popgunStates = {
 	[S_FH_FANG_GUN_AIR1] = true,
 	[S_FH_FANG_GUN_AIR2] = true
 }
+
+local function valid(p)
+	return FangsHeist.isMode() and p.mo and p.mo.skin == "fang" and p.heist
+end
 
 local function initialize(p)
 	p.fang = {
@@ -125,8 +98,12 @@ local function doPopgun(p)
 
 		local speed = FixedHypot(p.mo.momx,p.mo.momy)
 		P_InstaThrust(cork, p.mo.angle, speed+24*FU)
+		P_InstaThrust(cork, p.mo.angle, speed+24*FU)
 
-		cork.scale = $*3/2
+		cork.spritexscale = 2*FU
+		cork.spriteyscale = 2*FU
+		cork.radius = $*2
+		cork.height = $*2
 		cork.momz = 2*FU*P_MobjFlip(p.mo)
 		cork.flags = $ & ~MF_NOGRAVITY
 		cork.angle = p.mo.angle
@@ -137,29 +114,53 @@ local function doPopgun(p)
 	if not P_IsObjectOnGround(p.mo)
 	and p.pflags & PF_JUMPED
 	and not (p.pflags & PF_THOKKED)
-	and not FangsHeist.isPlayerNerfed(p) then
+	and not p.heist:isNerfed() then
 		p.pflags = $ & ~PF_JUMPED|PF_STARTJUMP
-		P_SetObjectMomZ(p.mo, max(p.mo.momz*P_MobjFlip(p.mo)*5/4, FU*6))
-
-		if p.mo.momz*P_MobjFlip(p.mo) > FU*10 then
-			p.pflags = $|PF_JUMPED|PF_STARTJUMP
-		end
-
 		p.pflags = $|PF_THOKKED
 	end
 
-	p.heist.attack_cooldown = POPGUN_TIME
 	p.fang.popgun = POPGUN_TIME
 
 	S_StartSound(p.mo, sfx_corkp)
 end
 
-addHook("PlayerThink", function(p)
-	if not FangsHeist.isMode() then
-		p.fang = nil
+local function popgunTmr(p)
+	p.fang.popgun = max(0, $-1)
+
+	if p.fang.popgun == 0
+	and popgunStates[p.mo.state] then
+		p.mo.state = getState(p)
+		p.fang.skidtime = 0
 		return
 	end
-	if not (p.mo and p.mo.skin == "fang" and p.heist) then
+
+	if popgunStates[p.mo.state]
+	and P_IsObjectOnGround(p.mo)
+	and FixedHypot(p.rmomx, p.rmomy) then
+		p.rmomx = FixedMul($, POPGUN_FRICTION)
+		p.rmomy = FixedMul($, POPGUN_FRICTION)
+		p.mo.momx = p.cmomx+p.rmomx
+		p.mo.momy = p.cmomy+p.rmomy
+
+		p.fang.skidtime = max(0, $-1)
+		if not (p.fang.skidtime) then
+			p.fang.skidtime = SKID_TIME
+			S_StartSound(p.mo,sfx_s3k7e)
+
+			local r = p.mo.radius/FRACUNIT
+
+			P_SpawnMobj(
+				P_RandomRange(-r,r)*FU+p.mo.x,
+				P_RandomRange(-r,r)*FU+p.mo.y,
+				p.mo.z,
+				MT_DUST
+			)
+		end
+	end
+end
+
+addHook("PlayerThink", function(p)
+	if not valid(p) then
 		p.fang = nil
 		return
 	end
@@ -169,49 +170,56 @@ addHook("PlayerThink", function(p)
 	end
 
 	if p.fang.popgun then
-		p.fang.popgun = max(0, $-1)
-
-		if popgunStates[p.mo.state]
-		and P_IsObjectOnGround(p.mo)
-		and FixedHypot(p.rmomx, p.rmomy) then
-			p.rmomx = FixedMul($, POPGUN_FRICTION)
-			p.rmomy = FixedMul($, POPGUN_FRICTION)
-			p.mo.momx = p.cmomx+p.rmomx
-			p.mo.momy = p.cmomy+p.rmomy
-
-			p.fang.skidtime = max(0, $-1)
-			if not (p.fang.skidtime) then
-				p.fang.skidtime = SKID_TIME
-				S_StartSound(p.mo,sfx_s3k7e)
-
-				local r = p.mo.radius/FRACUNIT
-
-				P_SpawnMobj(
-					P_RandomRange(-r,r)*FU+p.mo.x,
-					P_RandomRange(-r,r)*FU+p.mo.y,
-					p.mo.z,
-					MT_DUST
-				)
-			end
-		end
-
-		if p.fang.popgun == 0
-		and popgunStates[p.mo.state] then
-			p.mo.state = getState(p)
-			p.fang.skidtime = 0
-		end
+		popgunTmr(p)
 	end
 
 	if not hasControl(p) then return end
-
-	if p.cmd.buttons & BT_SPIN
-	and not (p.lastbuttons & BT_SPIN)
-	and not (p.fang.popgun)
-	and not (p.heist.attack_cooldown)
-	and not (p.pflags & PF_BOUNCING)
-	and not p.heist.blocking then
-		if not (not P_IsObjectOnGround(p.mo) and p.powers[pw_shield]) then
-			doPopgun(p)
-		end
-	end
 end)
+
+addHook("SpinSpecial", function(p)
+	if not valid(p) then return end
+	if p.pflags & PF_SPINDOWN then return end
+	if p.pflags & PF_JUMPED then return end
+	if p.fang.popgun then return end
+	if p.mo.state == S_FH_GUARD then return end
+	if not P_IsObjectOnGround(p.mo) then return end
+
+	doPopgun(p)
+end)
+addHook("JumpSpinSpecial", function(p)
+	if not valid(p) then return end
+	if p.pflags & PF_SPINDOWN then return end
+	if p.fang.popgun then return end
+	if p.mo.state == S_FH_GUARD then return end
+
+	doPopgun(p)
+end)
+
+-- modify fangs stupid fucking cork
+-- romoney gave me thisbcode from elifin
+local function CheckAndCrumble2(mo, sec)
+	for fof in sec.ffloors(sec) do
+		if not (fof.flags & FF_EXISTS) then continue end -- Does it exist?
+		if not (fof.flags & FF_BUSTUP) then continue end -- Is it bustable?
+		
+		if mo.z + mo.momz + mo.height < fof.bottomheight then continue end -- Are we too low?
+		if mo.z + mo.momz > fof.topheight then continue end -- Are we too high?
+		
+		-- Check for whatever else you may want to    
+		EV_CrumbleChain(fof) -- Crumble
+	end
+end
+
+-- make it easier for other players to view incoming corks
+addHook("MobjThinker", function(mobj)
+	P_SpawnGhostMobj(mobj).fuse = 8
+end, MT_CORK)
+
+addHook("MobjLineCollide", function(mo, line)
+	if not FangsHeist.isMode() then return end
+	if not mo and mo.health return end
+
+	for _, sec in ipairs({line.frontsector, line.backsector})
+		CheckAndCrumble2(mo, sec)
+	end
+end, MT_CORK)

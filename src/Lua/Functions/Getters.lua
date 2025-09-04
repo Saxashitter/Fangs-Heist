@@ -1,5 +1,3 @@
-local orig = FangsHeist.require "Modules/Variables/net"
-
 // Get players nearby, mainly used for pickup-ables.
 function FangsHeist.getNearbyPlayers(mobj, distscale, blacklist)
 	if not (distscale) then distscale = FU*3/2 end
@@ -7,7 +5,7 @@ function FangsHeist.getNearbyPlayers(mobj, distscale, blacklist)
 	local nearby = {}
 
 	for p in players.iterate do
-		if not FangsHeist.isPlayerAlive(p) then
+		if not (p.heist and p.heist:isAlive()) then
 			continue
 		end
 
@@ -33,35 +31,17 @@ function FangsHeist.getNearbyPlayers(mobj, distscale, blacklist)
 	return nearby
 end
 
-function FangsHeist.playerHasSign(p)
-	return (FangsHeist.Net.sign
-		and FangsHeist.Net.sign.valid
-		and FangsHeist.Net.sign.holder == p.mo)
-end
-
-function FangsHeist.getTeam(p)
-	for _,team in ipairs(FangsHeist.Net.teams) do
-		for _,player in ipairs(team) do
-			if player == p then
-				return team
-			end
-		end
+-- Returns skin name that thr player's mobj should use
+function FangsHeist.getRealSkin(p)
+	if p.heist.alt_skin < 2 then
+		return p.heist.locked_skin, p.heist.alt_skin == 1
 	end
 
-	--[[if not team
-	and FangsHeist.isAbleToTeam(p) then
-		team = FangsHeist.initTeam(p)
-	end]]
+	local val = p.heist.alt_skin % 2
+	local index = p.heist.alt_skin / 2
+	local name = p.heist.locked_skin
 
-	return false
-end
-
-function FangsHeist.getTeamLength(p)
-	if not (p and p.heist) then return 0 end
-
-	local team = FangsHeist.getTeam(p)
-
-	return #team-1
+	return name..index, val == 1
 end
 
 function FangsHeist.playerCount()
@@ -76,9 +56,8 @@ function FangsHeist.playerCount()
 	for p in players.iterate do
 		count.total = $+1
 
-		if not (FangsHeist.isPlayerAlive(p)
-		and p.heist
-		and not p.heist.spectator) then
+		if not (p.heist
+		and p.heist:isAlive()) then
 			count.dead = $+1
 			continue
 		end
@@ -88,7 +67,7 @@ function FangsHeist.playerCount()
 			continue
 		end
 
-		if FangsHeist.isTeamLeader(p) then
+		if p.heist:isTeamLeader() then
 			count.team = $+1
 		end
 
@@ -96,19 +75,6 @@ function FangsHeist.playerCount()
 	end
 
 	return count
-end
-
-// Returns -1 if the player isn't placed anywhere.
-function FangsHeist.getPlayerPlacement(p)
-	for i,team in ipairs(FangsHeist.Net.placements) do
-		for _,sp in ipairs(team) do
-			if sp == p then
-				return i
-			end
-		end
-	end
-
-	return -1
 end
 
 // Used for loading colors from files.

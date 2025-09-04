@@ -11,13 +11,13 @@ return function()
 			for k = #team, 1, -1 do
 				local p = team[k]
 	
-				if not FangsHeist.isAbleToTeam(p) then
+				if not (p and p.valid and p.heist and p.heist:isAbleToTeam()) then
 					table.remove(team, k)
 					continue
 				end
 
-				if FangsHeist.isPlayerAlive(p) then
-					signGot = $ or FangsHeist.playerHasSign(p)
+				if p.heist:isAlive() then
+					signGot = $ or p.heist:hasSign()
 					treasures = $+#p.heist.treasures
 				end
 			end
@@ -28,24 +28,7 @@ return function()
 			continue
 		end
 
-		if signGot
-		and not team.added_sign then
-			team.profit = max(0, $+1200)
-		end
-
-		if not signGot
-		and team.added_sign then
-			team.profit = max(0, $-1200)
-		end
-
 		team.added_sign = signGot
-
-		if treasures ~= team.treasures then
-			local gain = treasures - team.treasures
-	
-			team.profit = max(0, $+(120*gain))
-		end
-
 		team.treasures = treasures
 	end
 end

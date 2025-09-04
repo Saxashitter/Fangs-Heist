@@ -1,16 +1,96 @@
-local showhud = CV_FindVar("showhud")
+local DEADZONE = 35
+local STATES = {}
+
+STATES.character = FangsHeist.require "Modules/States/Pregame/character"
+STATES.infoandteam = FangsHeist.require "Modules/States/Pregame/infoandteam"
+STATES.waiting = FangsHeist.require "Modules/States/Pregame/waiting"
+
+-- Functions
+local function GetPressDirection(p)
+	local sidemove = p.heist.sidemove
+	local forwardmove = p.heist.forwardmove
+
+	local last_sidemove = p.heist.lastside
+	local last_forwardmove = p.heist.lastforw
+
+	local x = 0
+	local y = 0
+
+	if sidemove >= DEADZONE
+	and last_sidemove < DEADZONE then
+		x = 1
+	end
+
+	if sidemove <= -DEADZONE
+	and last_sidemove > -DEADZONE then
+		x = -1
+	end
+
+	if forwardmove >= DEADZONE
+	and last_forwardmove < DEADZONE then
+		y = -1
+	end
+
+	if forwardmove <= -DEADZONE
+	and last_forwardmove > -DEADZONE then
+		y = 1
+	end
+
+	return x, y
+end
+
+local function GetState(p)
+	return STATES[p.heist.pregame_state]
+end
+
+local function SetState(p, name)
+	local oldStateName = p.heist.pregame_state
+	local oldState = STATES[p.heist.pregame_state]
+	local state = STATES[name]
+
+	p.heist.pregame_state = name
+
+	oldState.exit(p, name)
+	state.enter(p, oldStateName)
+end
+
+FangsHeist.getPressDirection = GetPressDirection
+FangsHeist.getPregameState = GetState
+FangsHeist.setPregameState = SetState
+FangsHeist.pregameStates = STATES
+
+return function(p)
+	if not FangsHeist.Net.pregame then
+		return
+	end
+
+	if p.mo then
+		p.mo.tics = -1
+	end
+
+	local state = GetState(p)
+	local switch = state.tick and state.tick(p)
+
+	if switch then
+		SetState(p, switch)
+	end
+end
+
+--[[local showhud = CV_FindVar("showhud")
 
 local function valid(p, sp)
-	local teamleng = max(0, FangsHeist.CVars.team_limit.value-1)
+	local teamleng = max(0, FangsHeist.CVars.team_limit.value)
+	local team = sp and sp.valid and sp.heist and sp.heist:getTeam()
 
 	return sp
 	and sp.valid
 	and sp.heist
 	and sp ~= p
 	and not sp.heist.invites[p]
-	and not FangsHeist.isPartOfTeam(p, sp)
-	and FangsHeist.isTeamLeader(sp)
-	and FangsHeist.getTeamLength(sp) < teamleng
+	and not p.heist:isPartOfTeam(sp)
+	and sp.heist:isTeamLeader()
+	and team
+	and #team < teamleng
 end
 
 // yes i know this code is weird
@@ -42,6 +122,8 @@ return function(p)
 	end
 	p.heist.lastlockskin = $ or 0
 	manage_players(p)
+
+	local gamemode = FangsHeist.getGamemode()
 
 	local deadzone = 25
 	local horz = abs(p.heist.sidemove) >= deadzone
@@ -83,13 +165,14 @@ return function(p)
 			S_StartSound(nil, sfx_strpst, p)
 		end
 	// Team Select
-	elseif not p.heist.locked_team then
+	elseif not p.heist.locked_team
+	and gamemode.teams then
 		// -1 == Players
 		// 0 == Ready button
 		// 1 == Requests
 
-		local teamleng = max(0, FangsHeist.CVars.team_limit.value-1)
-		local canSwitch = FangsHeist.getTeamLength(p) < teamleng and FangsHeist.isTeamLeader(p)
+		local teamleng = max(0, FangsHeist.CVars.team_limit.value)
+		local canSwitch = #p.heist:getTeam() < teamleng and p.heist:isTeamLeader()
 
 		if horz
 		and canSwitch then
@@ -131,9 +214,9 @@ return function(p)
 				if sp
 				and sp.valid
 				and sp.heist
-				and FangsHeist.isTeamLeader(sp) then
+				and sp.heist:isTeamLeader() then
 					if sp.bot then
-						FangsHeist.joinTeam(p, sp)
+						p.heist:addIntoTeam(sp)
 					else
 						sp.heist.invites[p] = true
 					end
@@ -152,7 +235,7 @@ return function(p)
 					for tp,_ in pairs(sp.heist.invites) do
 						sp.heist.invites[tp] = nil
 					end
-					FangsHeist.joinTeam(p, sp)
+					p.heist:addIntoTeam(sp)
 					S_StartSound(nil, sfx_strpst, p)
 				end
 			end
@@ -169,7 +252,12 @@ return function(p)
 		end
 	elseif (p.heist.buttons & BT_SPIN)
 	and not (p.heist.lastbuttons & BT_SPIN) then
-		p.heist.locked_team = false
+		if gamemode.teams then
+			p.heist.locked_team = false
+		else
+			p.heist.confirmed_skin = false
+		end
+
 		S_StartSound(nil, sfx_alart, p)
 	end
 
@@ -177,4 +265,4 @@ return function(p)
 	and showhud.value == 0 then -- if the hud isn't being shown
 		CV_StealthSet(showhud, 1) -- then force it to show :P
 	end
-end
+end]]
