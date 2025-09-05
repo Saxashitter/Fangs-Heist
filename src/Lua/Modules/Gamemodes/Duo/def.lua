@@ -26,7 +26,7 @@ function gamemode:start()
 
 		local team = p.heist:getTeam()
 
-		if team and #team >= self.teamlimit then continue end
+		if team and #team > 1 then continue end
 
 		table.insert(unteamedPlayers, p)
 	end

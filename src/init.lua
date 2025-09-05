@@ -6,7 +6,7 @@ rawset(_G, "FangsHeist", {
 	PlayerMT = {},
 	Version = {
 	Num = 1,
-	String = "Beta",
+	String = "1.0.1",
 	}
 })
 /*

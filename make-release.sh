@@ -11,7 +11,7 @@ optimizesounds=$([[ "$sound" =~ ^[yY]$ ]] && echo 0 || echo 1)
 
 # Set 'release' and 'prefix' based on the 'rel' input
 release=$([[ "$rel" =~ ^[yY]$ ]] && echo 0 || echo 1)
-prefix=$([[ "$rel" =~ ^[yY]$ ]] && echo "v1.0.0" || echo "test")
+prefix=$([[ "$rel" =~ ^[yY]$ ]] && echo "release" || echo "test")
 
 name="SL_FangsHeist-$prefix.pk3"
 

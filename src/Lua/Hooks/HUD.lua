@@ -135,4 +135,4 @@ end
 --Add Most of Link Stuff, also Tips :p...
 FangsHeist.AddLink("Website","https://fangsheist.com",V_GREENMAP)
 FangsHeist.AddLink("GitHub","https://github.com/Saxashitter/Fangs-Heist",V_PURPLEMAP)
-FangsHeist.AddLink("Discord","https://discord.gg/FysZSrsd9U",V_SKYMAP)
+FangsHeist.AddLink("Discord","https://discord.gg/7b2AHgd3G2",V_SKYMAP)
