@@ -542,6 +542,11 @@ local function drawGamemodeInfo(v, y, flags)
 			local x,a,s,c,f = INFO_X,"center",FU,v.getStringColormap(V_YELLOWMAP),flags
 			if i > 1 then
 				c = nil
+				/*
+				Blame Saxa for this.
+				https://github.com/Saxashitter/Fangs-Heist/commit/bb228829aee963ac7cf9c5b33489a7682427c542
+				*/
+				s = ease.linear(FixedDiv((info:len())-25,30),FU,tofixed("0.785"))
 			else
 				info = $:upper()
 				local sw = v.width()/v.dupx()
