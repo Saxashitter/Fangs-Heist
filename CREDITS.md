@@ -67,6 +67,9 @@
 ## 5UP34
 - All Pre-game backgrounds
 
+## SONIcsez1234
+- Tails wall-jump sprite
+
 ## A Pontrol Coint
 - Pointer arrow for tracked objects
 
