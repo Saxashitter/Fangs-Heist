@@ -22,6 +22,11 @@ addHook("MobjDamage", function(trg, inf, src)
 	end
 end)
 
+addHook("PlayerSpawn", function(player)
+player.fhhitsstat = 0
+player.fhbadnikstat = 0
+end)
+
 //Personal stat display
 
 local function heiststats(v)
@@ -34,4 +39,5 @@ local function heiststats(v)
 		end
 	end
 end
+
 hud.add(heiststats, "scores")
