@@ -30,7 +30,6 @@ local STRUCTURE = {
 	canPickUp = function() return true end
 }
 local COPY_LIST = {
-	"profit",
 	"priority",
 	"multiplier",
 	"duration",
@@ -92,6 +91,12 @@ local function ReleaseCarriable(mobj, launch, rmvFromPickUp, dontRmvProfit)
 		pmo = nil
 	end
 
+	local profit = def.profit
+
+	if type(def.profit) == "function" then
+		profit = def.profit(pmo) or 0
+	end
+
 	if pmo and rmvFromPickUp then
 		local list = GetCarryList(mobj)
 
@@ -104,7 +109,7 @@ local function ReleaseCarriable(mobj, launch, rmvFromPickUp, dontRmvProfit)
 	end
 	if pmo
 	and not dontRmvProfit then
-		pmo.player.heist:gainProfit(-mobj.settings.profit)
+		pmo.player.heist:gainProfit(-profit)
 	end
 
 	mobj.settings.target = nil
@@ -127,6 +132,12 @@ local function PickUpCarriable(pmo, mobj)
 
 	local def = Carriables.defs[mobj.settings.id]
 
+	local profit = def.profit
+
+	if type(def.profit) == "function" then
+		profit = def.profit(pmo) or 0
+	end
+
 	mobj.settings.pickup_position = {
 		x = mobj.x,
 		y = mobj.y,
@@ -141,7 +152,7 @@ local function PickUpCarriable(pmo, mobj)
 	mobj.momz = 0
 
 	table.insert(GetCarryList(mobj), mobj.settings)
-	pmo.player.heist:gainProfit(mobj.settings.profit)
+	pmo.player.heist:gainProfit(profit)
 
 	def.onPickUp(mobj, pmo)
 end
@@ -197,8 +208,7 @@ end
 
 function Carriables:define(name, tbl)
 	for k,v in pairs(STRUCTURE) do
-		if tbl[k] == nil
-		or type(tbl[k]) ~= type(v) then
+		if tbl[k] == nil then
 			tbl[k] = v
 		end
 	end

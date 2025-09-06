@@ -135,6 +135,8 @@ local function StartSlam(p, mobj)
 	AirDashDisable(p)
 	DriftDisable(p)
 
+	P_SetObjectMomZ(p.mo, 10*p.mo.scale)
+
 	table.insert(MetalSlams, {
 		player = p,
 		mobj = mobj,

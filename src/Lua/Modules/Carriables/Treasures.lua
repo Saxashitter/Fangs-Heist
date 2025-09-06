@@ -72,7 +72,11 @@ end
 return {
 	radius = 8*FU,
 	height = 16*FU,
-	profit = 160,
+	profit = function()
+		local treasures = FangsHeist.Carriables.FindCarriables("Treasure")
+
+		return FH_SIGNPROFIT / (#treasures or 1)
+	end,
 	state = S_FH_TREASURE,
 	onPickUp = OnCollect,
 	canPickUp = caCanPickUp

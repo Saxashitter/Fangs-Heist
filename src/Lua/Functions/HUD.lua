@@ -5,6 +5,8 @@ local DEFAULT = {
 
 local fontCache = {}
 local numCache = {}
+local preCalculatedFont = {}
+local preCalculatedNum = {}
 
 FangsHeist.FontDefs = {
 	CRFNT = {
@@ -25,6 +27,13 @@ local function GetStringWidth(v, str, scale, font)
 		fontCache[font] = {}
 	end
 
+	if not preCalculatedFont[font] then
+		preCalculatedFont[font] = {}
+	end
+	if preCalculatedFont[font][str] then
+		return preCalculatedFont[font][str] * scale
+	end
+
 	for i = 1,#str do
 		local letter = str:sub(i, i)
 		local byte = letter:byte()
@@ -32,10 +41,10 @@ local function GetStringWidth(v, str, scale, font)
 
 		if not fontCache[font][byte]
 		and not v.patchExists(name) then
-			width = $ + def.space*scale
+			width = $ + def.space
 	
 			if i < #str then
-				width = $ + def.padding*scale
+				width = $ + def.padding
 			end
 
 			continue
@@ -48,14 +57,16 @@ local function GetStringWidth(v, str, scale, font)
 			patch = fontCache[font][byte]
 		end
 
-		width = $ + patch.width*scale
+		width = $ + patch.width
 
 		if i < #str then
-			width = $ + def.padding*scale
+			width = $ + def.padding
 		end
+	
 	end
 
-	return width
+	preCalculatedFont[font][str] = width
+	return width * scale
 end
 
 local function GetNumberWidth(v, number, scale, font)

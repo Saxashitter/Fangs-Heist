@@ -116,9 +116,9 @@ local function Track(sign)
 end
 
 return {
-	profit = 600,
+	profit = function() return FH_SIGNPROFIT end,
 	priority = 2,
-	multiplier = 2,
+	multiplier = 1,
 	radius = 128*FU,
 	height = 54*FU,
 	giveToDamager = true,

@@ -42,7 +42,7 @@ function module.draw(v,p)
 
 	if p.heist:hasSign() then
 		table.insert(strData, {
-			str = "[TOSS FLAG] Toss Sign"
+			str = "[TOSS FLAG] Toss Top Item"
 		})
 	end
 

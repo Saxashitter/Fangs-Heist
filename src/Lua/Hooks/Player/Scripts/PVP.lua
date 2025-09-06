@@ -2,6 +2,8 @@
 rawset(_G, "FH_ATK_FLASH_TICS", 10)
 rawset(_G, "FH_ATK_XYMULT", FU*7)
 rawset(_G, "FH_ATK_ZMULT", FU*5)
+rawset(_G, "FH_ATK_HEALTH", FU*8)
+rawset(_G, "FH_ATK_HEALTHDEATH", FU*100)
 
 -- Parry Constants
 rawset(_G, "FH_PRY_DUR", 35)
@@ -82,6 +84,7 @@ local function Damage(p, p2)
 		return false
 	end
 
+	local speedAdd = 18 * p2.heist.health
 	local xySpeed = R_PointToDist2(0,0,p.mo.momx-p2.mo.momx,p.mo.momy-p2.mo.momy)
 	local speed = R_PointToDist2(0,0,xySpeed,p.mo.momz-p2.mo.momz)
 
@@ -89,6 +92,8 @@ local function Damage(p, p2)
 	local sound = tier[P_RandomRange(1, #tier)]
 
 	S_StartSound(p2.mo, sound)
+	p2.heist.health = $ + FH_ATK_HEALTH
+
 	FangsHeist.runHook("PlayerHit", p, p2)
 
 	return true
@@ -218,6 +223,7 @@ local function AttemptAttack(p, sp)
 		p.heist.attack_time = 0
 		p.heist.attack_cooldown = 5
 		p.powers[pw_flashing] = max($, FH_ATK_FLASH_TICS)
+		P_Thrust(sp.mo, R_PointToAngle2(0,0, sp.mo.momx, sp.mo.momy), 40*FixedDiv(sp.heist.health, 100*FU))
 
 		if p == displayplayer
 		or sp == displayplayer then

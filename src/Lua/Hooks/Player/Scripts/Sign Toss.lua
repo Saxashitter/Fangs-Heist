@@ -1,28 +1,21 @@
 return function(p)
 	if not (p.heist and p.heist:isAlive()) then return end
-	if not p.heist:hasSign() then return end
+	if #p.heist.pickup_list == 0 then return end
 
 	if p.cmd.buttons & BT_TOSSFLAG
 	and not (p.lastbuttons & BT_TOSSFLAG) then
-		local sign
+		local item = p.heist.pickup_list[#p.heist.pickup_list]
+		if not item then return end
+		item = $.mobj
 
-		for k,v in ipairs(p.heist.pickup_list) do
-			if v.id == "Sign" then
-				sign = v.mobj
-				break
-			end
-		end
+		FangsHeist.Carriables.ReleaseCarriable(item, false, true)
 
-		if not sign then return end
+		P_InstaThrust(item, p.mo.angle, 12*p.mo.scale)
+		P_SetObjectMomZ(item, 6*p.mo.scale)
 
-		FangsHeist.Carriables.ReleaseCarriable(sign, false, true)
-
-		P_InstaThrust(sign, p.mo.angle, 12*p.mo.scale)
-		P_SetObjectMomZ(sign, 6*p.mo.scale)
-
-		sign.momx = $+p.mo.momx
-		sign.momy = $+p.mo.momy
-		sign.momz = $+p.mo.momz
+		item.momx = $+p.mo.momx
+		item.momy = $+p.mo.momy
+		item.momz = $+p.mo.momz
 
 		S_StartSound(p.mo, sfx_s3k51)
 

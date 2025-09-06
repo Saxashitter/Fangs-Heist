@@ -4,6 +4,8 @@ return {
 	got_sign = false,
 	spawn_time = 2*TICRATE,
 
+	health = 0,
+
 	invites = {},
 
 	attack_cooldown = 0,
