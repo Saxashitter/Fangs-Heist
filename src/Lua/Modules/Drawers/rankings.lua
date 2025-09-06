@@ -100,6 +100,13 @@ local function DrawTeam(v, x, y, height, team, flags)
 	FH.DrawString(v,x*FU,ty,FU,leader.name,"FHTXT",nil,flags)
 
 	FH.DrawString(v,x*FU + FH.GetStringWidth(v,leader.name,FU,"FHTXT")+2*FU,ty,FU,"$"..team.profit,"FHTXT",nil,flags,v.getStringColormap(V_GREENMAP))
+	v.drawScaled(70*FU + FH.GetStringWidth(v,"$"..team.profit,FU,"FHTXT")+2*FU,ty,FU,v.cachePatch("FHSTAT3"),V_SNAPTOTOP|V_SNAPTORIGHT)	
+	FH.DrawString(v,90*FU + FH.GetStringWidth(v,"$"..team.profit,FU,"FHTXT")+2*FU,ty,FU,"$"..team.treasurestat,"FHTXT",nil,V_SNAPTOTOP|V_SNAPTORIGHT,v.getStringColormap(V_YELLOWMAP))
+	for p in players.iterate
+		if p.heist:hasSign()
+			v.drawScaled(128*FU + FH.GetStringWidth(v,"$"..team.profit,FU,"FHTXT")+2*FU,ty,FU,v.cachePatch("FHSTAT4"),V_SNAPTOTOP|V_SNAPTORIGHT)	
+		end
+	end
 	return true
 end
 
