@@ -20,6 +20,7 @@ dofile "hooks.lua"
 dofile "constants"
 dofile "characters"
 dofile "console"
+dofile "Modules/Drawers/stats"
 
 dofile "Metatables/Player/init"
 

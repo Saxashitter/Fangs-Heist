@@ -244,6 +244,7 @@ addHook("AbilitySpecial", function(p)
 
 		p.drawangle = angle
 		p.pflags = $ & ~(PF_JUMPED|PF_STARTJUMP|PF_STARTDASH|PF_SPINNING|PF_THOKKED)
+        p.pflags = $|PF_NOJUMPDAMAGE
 		P_DoJump(p, true)
 		P_Thrust(p.mo, p.drawangle, 19*p.mo.scale)
 		p.mo.state = S_PLAY_SPRING
