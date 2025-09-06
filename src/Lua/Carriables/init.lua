@@ -87,6 +87,7 @@ local function ReleaseCarriable(mobj, launch, rmvFromPickUp, dontRmvProfit)
 
 	local def = Carriables.defs[mobj.settings.id]
 	local pmo = mobj.settings.target
+    local team = pmo.player.heist:getTeam()
 
 	if not (pmo and pmo.valid) then
 		pmo = nil
@@ -239,6 +240,8 @@ local function CarriableSpecial(car, pmo)
 	if not (pmo and pmo.valid and pmo.health) then return end
 	if not (car and car.valid and car.health) then return end
 	if pmo.type ~= MT_PLAYER then return end
+
+	local team = pmo.player.heist:getTeam()
 
 	if IsCarried(car) then return end
 
