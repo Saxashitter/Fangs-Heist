@@ -224,6 +224,7 @@ local function AttemptAttack(p, sp)
 		p.heist.attack_cooldown = 5
 		p.powers[pw_flashing] = max($, FH_ATK_FLASH_TICS)
 		P_Thrust(sp.mo, R_PointToAngle2(0,0, sp.mo.momx, sp.mo.momy), 40*FixedDiv(sp.heist.health, 100*FU))
+		sp.heist.hitlast = p.mo
 
 		if p == displayplayer
 		or sp == displayplayer then
@@ -462,6 +463,7 @@ FangsHeist.addPlayerScript("thinkframe", function(p)
 
 	if P_IsObjectOnGround(p.mo)
 	or P_PlayerInPain(p)
+	or p.powers[pw_flashing] == 0
 	or not p.mo.health then
 		p.mo.heist_airdodge = nil
 	end
@@ -489,6 +491,23 @@ FangsHeist.addPlayerScript("thinkframe", function(p)
 		p.mo.z+p.mo.height/2)
 end)
 
+addHook("MobjMoveBlocked", function(mo)
+	if not FangsHeist.isMode() then return end
+	if not mo.health then return end
+	if not mo.player.heist then return end
+	if not P_PlayerInPain(mo.player) then return end
+	if mo.player.heist.health < FH_ATK_HEALTHDEATH then return end
+	if not mo.player.heist.hitlast then return end
+
+	local source = mo.player.heist.hitlast
+
+	if not (source and source.valid) then
+		source = nil
+	end
+
+	P_DamageMobj(mo, source, source, 999, DMG_INSTAKILL)
+end, MT_PLAYER)
+
 return function(p)
 	if not p.heist:isAlive() then
 		if p.mo
@@ -501,6 +520,10 @@ return function(p)
 		p.heist.perf_parry_time = 0
 
 		return
+	end
+
+	if not P_PlayerInPain(p) then
+		p.heist.hitlast = nil
 	end
 
 	if p.mo.state == S_FH_STUN then
