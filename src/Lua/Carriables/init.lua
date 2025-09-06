@@ -118,6 +118,13 @@ local function ReleaseCarriable(mobj, launch, rmvFromPickUp, dontRmvProfit)
 	end
 
 	def.onDrop(mobj, launch, pmo)
+    for i, p in ipairs(team) do
+		if not p
+		or not p.valid then
+			continue
+		end
+	team.treasurestat = $-1
+	end
 end
 
 local function PickUpCarriable(pmo, mobj)
@@ -242,6 +249,13 @@ local function CarriableSpecial(car, pmo)
 	if not def.canPickUp(pmo.player) then return end
 
 	PickUpCarriable(pmo, car)
+	for i, p in ipairs(team) do
+		if not p
+		or not p.valid then
+			continue
+		end
+	    team.treasurestat = $+1
+	end
 end
 
 addHook("TouchSpecial", function(special, pmo)
