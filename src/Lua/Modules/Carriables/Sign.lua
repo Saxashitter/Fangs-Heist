@@ -87,7 +87,7 @@ local function PostThink(sign)
 	if result == false
 	and FADED_OUT_MUSIC then
 		FADED_OUT_MUSIC = result
-		S_FadeMusic(255, MUSICRATE)
+		S_FadeMusic(100, MUSICRATE)
 	end
 		
 

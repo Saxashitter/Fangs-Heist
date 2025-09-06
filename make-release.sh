@@ -13,7 +13,7 @@ optimizesounds=$([[ "$sound" =~ ^[yY]$ ]] && echo 0 || echo 1)
 release=$([[ "$rel" =~ ^[yY]$ ]] && echo 0 || echo 1)
 prefix=$([[ "$rel" =~ ^[yY]$ ]] && echo "release" || echo "test")
 
-name="CL_FangsHeist-$prefix.pk3"
+name="SL_FangsHeist-$prefix.pk3"
 
 rm -rf "$name"
 

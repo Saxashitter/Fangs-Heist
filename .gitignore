@@ -1,6 +1,4 @@
-build.pk3
-CL_FangsHeist-test.pk3
-CL_FangsHeist-release.pk3
+*.pk3
 src/src.pk3
 PaK3
 PaK3/

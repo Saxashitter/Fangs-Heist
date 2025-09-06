@@ -193,12 +193,3 @@ FangsHeist.runHook = function(hooktype, ...)
 
     return override
 end
-
---check for new events...
-for event_name, event_t in pairs(events)
-	if (FangsHeist.events[event_name] == nil)
-		FangsHeist.events[event_name] = event_t
-	else
-		print("\x80 Hooklib found an existing hookevent, not adding. (\""..event_name..'")')
-	end
-end
