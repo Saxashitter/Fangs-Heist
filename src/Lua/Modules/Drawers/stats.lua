@@ -8,7 +8,7 @@ end;end)
 
 addHook("MobjDamage", function(trg, inf, src)
 	if src and src.valid and src.player
-	and trg and trg.valid and trg.flags & MF_ENEMY
+	and trg and trg.valid and trg.flags & MF_ENEMY and trg.health == 1
 
 		src.player.fhbadnikstat = $+1
 	end
@@ -41,3 +41,4 @@ local function heiststats(v)
 end
 
 hud.add(heiststats, "scores")
+
