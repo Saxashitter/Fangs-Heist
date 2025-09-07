@@ -132,10 +132,12 @@ end
 function module.init()
 end
 
-function module.draw(v, p)
+function module.draw(v)
 	local sw = v.width() / v.dupx()
 	local sh = v.height() / v.dupy()
 	local gamemode = FangsHeist.getGamemode()
+
+	local p = consoleplayer
 
 	DrawRect(v, 0, TOPLINE_Y, sw, 1, V_SNAPTOTOP|V_SNAPTOLEFT, v.getColormap(TC_ALLWHITE,nil))
 	FangsHeist.DrawString(v,MODE_X*FU, MODE_Y*FU,FU,  
@@ -144,8 +146,8 @@ function module.draw(v, p)
 
 	local stat1 = v.cachePatch("FHSTAT1")
 	local stat2 = v.cachePatch("FHSTAT2")
-	local badniks = 0
-	local hits = 0
+	local badniks = p.heist.enemies
+	local hits = p.heist.hitplayers + p.heist.deadplayers
 	local width = stat1.width*FU
 		+ 2*FU
 		+ FangsHeist.GetStringWidth(v, tostring(badniks), FU, "FHTXT")
