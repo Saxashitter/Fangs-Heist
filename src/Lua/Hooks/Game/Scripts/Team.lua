@@ -18,7 +18,9 @@ return function()
 
 				if p.heist:isAlive() then
 					signGot = $ or p.heist:hasSign()
-					treasures = $+#p.heist.treasures
+					treasures = $+#p.heist.pickup_list
+
+					if signGot then treasures = max(0, $-1) end
 				end
 			end
 		end

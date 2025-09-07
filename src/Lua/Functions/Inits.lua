@@ -23,7 +23,6 @@ function FangsHeist.initTeamTable()
 	team.profit = 0
 	team.added_sign = false
 	team.treasures = 0
-	team.treasurestat = 0
 
 	return team
 end

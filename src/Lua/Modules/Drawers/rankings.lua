@@ -80,40 +80,59 @@ local function DrawTeam(v, x, y, height, team, flags)
 		return
 	end
 
+	local treasures = team.treasures
+	local sign = false
+
 	for i, p in ipairs(team) do
 		if not p
 		or not p.valid then
 			continue
 		end
 
+		if p.heist and p.heist:hasSign() then
+			sign = true
+		end
+
 		local skin = skins[p.heist.locked_skin]
 		local icon, null = GetSkinIcon(v, skin.name)
 		local scale = GetPatchScale(icon, height, false)
 
-		v.drawScaled(x*FU, y*FU, scale, icon, flags, v.getColormap(skin.name, p.skincolor))
-		x = $ + height + 4
+		v.drawScaled(x, y, scale, icon, flags, v.getColormap(skin.name, p.skincolor))
+		x = $ + height*FU + 4*FU
 	end
 
-	x = $ + 4
+	x = $ + 4*FU
 
-	local ty = y*FU + (height*FU-7*FU)/2
-	FH.DrawString(v,x*FU,ty,FU,leader.name,"FHTXT",nil,flags)
+	local ty = y + (height*FU-7*FU)/2
 
-	FH.DrawString(v,x*FU + FH.GetStringWidth(v,leader.name,FU,"FHTXT")+2*FU,ty,FU,"$"..team.profit,"FHTXT",nil,flags,v.getStringColormap(V_GREENMAP))
-	v.drawScaled(70*FU + FH.GetStringWidth(v,"$"..team.profit,FU,"FHTXT")+2*FU,ty,FU,v.cachePatch("FHSTAT3"),V_SNAPTOTOP|V_SNAPTORIGHT)	
-	FH.DrawString(v,90*FU + FH.GetStringWidth(v,"$"..team.profit,FU,"FHTXT")+2*FU,ty,FU,"$"..team.treasurestat,"FHTXT",nil,V_SNAPTOTOP|V_SNAPTORIGHT,v.getStringColormap(V_YELLOWMAP))
-	for p in players.iterate
+	FH.DrawString(v,x,ty,FU,string.char(1)..team.profit,"FHTXT",nil,flags,v.getStringColormap(V_GREENMAP))
+	x = $ + FH.GetStringWidth(v,string.char(1)..team.profit,FU,"FHTXT") + 4*FU
+
+	FH.DrawString(v,x,ty,FU,leader.name,"FHTXT",nil,flags)
+	x = $ + FH.GetStringWidth(v,leader.name,FU,"FHTXT")+4*FU
+
+	v.drawScaled(x,ty,FU,v.cachePatch("FHSTAT3"),flags)
+	x = $ + v.cachePatch("FHSTAT3").width*FU + 2*FU
+
+	FH.DrawString(v,x,ty,FU,tostring(treasures),"FHTXT",nil,flags,v.getStringColormap(V_YELLOWMAP))
+	x = $ + FH.GetStringWidth(v,tostring(treasures),FU,"FHTXT") + 4*FU
+
+	if team.added_sign then
+		v.drawScaled(x, ty, FU, v.cachePatch("FHSTAT4"), flags)
+	end
+
+	--[[for p in players.iterate
 		if p.heist:hasSign()
 			v.drawScaled(128*FU + FH.GetStringWidth(v,"$"..team.profit,FU,"FHTXT")+2*FU,ty,FU,v.cachePatch("FHSTAT4"),V_SNAPTOTOP|V_SNAPTORIGHT)	
 		end
-	end
+	end]]
 	return true
 end
 
 function module.init()
 end
 
-function module.draw(v)
+function module.draw(v, p)
 	local sw = v.width() / v.dupx()
 	local sh = v.height() / v.dupy()
 	local gamemode = FangsHeist.getGamemode()
@@ -122,6 +141,29 @@ function module.draw(v)
 	FangsHeist.DrawString(v,MODE_X*FU, MODE_Y*FU,FU,  
 	gamemode.name,"FHTXT",nil, V_SNAPTOTOP|V_SNAPTOLEFT, 
 	v.getStringColormap(V_PURPLEMAP))
+
+	local stat1 = v.cachePatch("FHSTAT1")
+	local stat2 = v.cachePatch("FHSTAT2")
+	local badniks = 0
+	local hits = 0
+	local width = stat1.width*FU
+		+ 2*FU
+		+ FangsHeist.GetStringWidth(v, tostring(badniks), FU, "FHTXT")
+		+ 6*FU
+		+ stat2.width*FU
+		+ 2*FU
+		+ FangsHeist.GetStringWidth(v, tostring(hits), FU, "FHTXT")
+	local sx = (320 - 8)*FU - width
+	v.drawScaled(sx,5*FU,FU,stat1,V_SNAPTOTOP|V_SNAPTORIGHT)
+	sx = $ + stat1.width*FU + 2*FU
+
+	FangsHeist.DrawString(v,sx,6*FU,FU,tostring(badniks),"FHTXT",nil,V_SNAPTOTOP|V_SNAPTORIGHT)
+	sx = $ + FangsHeist.GetStringWidth(v, tostring(badniks), FU, "FHTXT") + 6*FU
+
+	v.drawScaled(sx,5*FU,FU, stat2,V_SNAPTOTOP|V_SNAPTORIGHT)
+	sx = $ + stat2.width*FU + 2*FU
+
+	FangsHeist.DrawString(v,sx,6*FU,FU,tostring(hits),"FHTXT",nil,V_SNAPTOTOP|V_SNAPTORIGHT)
 
 	local height = PLAYER_HEIGHT
 	if #FangsHeist.Net.placements > 8 then
@@ -137,7 +179,7 @@ function module.draw(v)
 			y = PLAYER_Y + height*((i-1)-16)
 		end
 
-		DrawTeam(v, x, y, height, team, V_SNAPTOTOP)
+		DrawTeam(v, x*FU, y*FU, height, team, V_SNAPTOTOP)
 	end
 end
 
