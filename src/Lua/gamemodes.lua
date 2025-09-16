@@ -16,10 +16,10 @@ local DEFAULT = {
 	spillallrings = false,
 	preferredhud = {
 		pos = {x = 312, y = 8},
-		Profit = true,
-		Rings = true,
-		Rank = true,
-		Timer = true,
+		profit = {enabled = true},
+		rings = {enabled = true},
+		rank = {enabled = true},
+		timer = {enabled = true},
 	},
 	pregametheme = "FH_PRG",
 
@@ -89,6 +89,7 @@ end
 FangsHeist.Solo = dofile "Modules/Gamemodes/Solo/def.lua"
 FangsHeist.Duo = dofile "Modules/Gamemodes/Duo/def.lua"
 FangsHeist.Trio = dofile "Modules/Gamemodes/Trio/def.lua"
+FangsHeist.Coop = dofile "Modules/Gamemodes/Co-op/def.lua"
 
 -- FangsHeist.Remix = dofile "Modules/Gamemodes/Remix/def.lua"
 -- Hey, file snooper! Expect to see Remix mode in a later patch.

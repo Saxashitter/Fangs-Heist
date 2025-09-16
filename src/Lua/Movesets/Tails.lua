@@ -257,23 +257,6 @@ addHook("AbilitySpecial", function(p)
 		p.mo.tails.walljump_times = $+1
 		return true
 	end
-
-	if not CanDoubleJump(p) then
-		return
-	end
-
-	p.pflags = $ & ~(PF_JUMPED|PF_STARTJUMP|PF_STARTDASH|PF_SPINNING)
-	P_DoJump(p, false)
-	P_SetObjectMomZ(p.mo, 9*p.jumpfactor)
-	p.mo.state = S_PLAY_FLY
-	FangsHeist.Particles:new("Tails Double Jump", p)
-
-	S_StartSound(p.mo, sfx_tlfly1+(p.mo.tails.doublejump_times or 0))
-	p.mo.tails.doublejump_times = ($ or 0) + 1
-	p.mo.tails.doublejump_ticker = 18
-
-	p.pflags = $|PF_THOKKED
-	return true
 end)
 
 addHook("FollowMobj", function(p, mo)

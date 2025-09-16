@@ -67,10 +67,24 @@ function module.draw(v, p)
 	local team = p.heist:getTeam()
 	local pi = FangsHeist.getGamemode().preferredhud
 
+	local rings = RINGSFORM:format(p.rings)
+	local profit = PROFITFORM:format(team.profit)
+	local rank = RANKFORM:format(returnPlace(team.place or 0))
+
+	if pi.rings.string then
+		rings = pi.rings.string(p.rings)
+	end
+	if pi.profit.string then
+		profit = pi.profit.string(team.profit)
+	end
+	if pi.rank.string then
+		rank = pi.rank.string(returnPlace(team.place or 0))
+	end
+
 	local strings = {
-		{str = RINGSFORM:format(p.rings), on = pi.Rings},
-		{str = PROFITFORM:format(team.profit), on = pi.Profit},
-		{str = RANKFORM:format(returnPlace(team.place or 0)), on = pi.Rank},
+		{str = rings, on = pi.rings.enabled},
+		{str = profit, on = pi.profit.enabled},
+		{str = rank, on = pi.rank.enabled},
 	}
 
 	local multiplier = p.heist:getMultiplier()

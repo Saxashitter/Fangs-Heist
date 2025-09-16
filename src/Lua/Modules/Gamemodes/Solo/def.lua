@@ -3,7 +3,8 @@ local gamemode = {
 	desc = "Get some profit, grab that signpost, and GO! GO! GO!",
 	id = "SOLO",
 	teamlimit = 1,
-	tol = TOL_HEIST|TOL_HEISTROUND2
+	tol = TOL_HEIST|TOL_HEISTROUND2,
+	twoteamsleft = true,
 }
 local path = "Modules/Gamemodes/Solo/"
 local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"
@@ -56,7 +57,7 @@ function gamemode:signcapture(target, stolen)
 	if FangsHeist.Net.escape then return end
 
 	S_StartSound(nil, sfx_lvpass)
-	self:startEscape()
+	self:startEscape(target)
 
 	FangsHeist.playVoiceline(target, "escape")
 	return true
@@ -72,6 +73,7 @@ function gamemode:init(map)
 	FangsHeist.Net.escape_on_start = false
 
 	FangsHeist.Net.last_man_standing = false
+	FangsHeist.Net.two_teams_left = false
 
 	FangsHeist.Net.round_2 = false
 	FangsHeist.Net.round_2_teleport = {}
@@ -205,7 +207,16 @@ end
 function gamemode:update()
 	if FangsHeist.Net.escape then
 		self:manageEscape()
+
+		if self.twoteamsleft then
+			if #FangsHeist.Net.teams <= 2
+			and not FangsHeist.Net.two_teams_left then
+				FangsHeist.Net.two_teams_left = true
+				FangsHeist.doTTLHUD()
+			end
+		end
 	end
+
 
 	self:manageRound2Portal()
 end
@@ -256,6 +267,10 @@ function gamemode:music()
 
 	if self:isHurryUp() then
 		return "HURRUP", false
+	end
+
+	if FangsHeist.Net.two_teams_left then
+		return "EXTERM", true, volume
 	end
 
 	if (p and p.valid and p.heist and p.heist.reached_second) then

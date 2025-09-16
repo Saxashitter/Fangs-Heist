@@ -214,6 +214,10 @@ addHook("MobjDeath", function(t,i,s)
 	gamemode:playerdeath(t.player)
 	FangsHeist.playVoiceline(t.player, "death")
 	t.player.heist.health = 0
+
+	if t.player == consoleplayer then
+		FangsHeist.stopHealthShiver()
+	end
 end, MT_PLAYER)
 
 addHook("AbilitySpecial", function (p)

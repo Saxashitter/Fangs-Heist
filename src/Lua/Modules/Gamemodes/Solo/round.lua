@@ -61,6 +61,10 @@ function gamemode:doRound2(p)
 	if linedef ~= nil then
 		P_LinedefExecute(linedef)
 	end
+
+	if p == displayplayer then
+		FangsHeist.doRound2HUD()
+	end
 end
 
 function gamemode:manageRound2Portal()

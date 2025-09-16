@@ -1,2 +1,1 @@
 name = tails
-ability = CA_NONE

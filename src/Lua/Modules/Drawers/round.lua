@@ -5,8 +5,16 @@ local visible
 local secondRound
 local staticTicker
 local flash
+local enabled
+
+function FangsHeist.doRound2HUD()
+	secondRound = p.heist.reached_second
+	visible = 3*TICRATE
+	flash = FU
+end
 
 function module.init()
+	enabled = false
 	y = -FU
 	visible = 0
 	secondRound = false
@@ -27,20 +35,10 @@ local function draw_rect(v, x, y, w, h, flags, color)
 end
 
 function module.draw(v)
-	local p = consoleplayer
-
-	if not (p and p.valid and p.heist) then
-		return
-	end
+	if not enabled then return end
 
 	local round = v.cachePatch("FH_ROUND2")
 	local scale = FU
-
-	if secondRound ~= p.heist.reached_second then
-		secondRound = p.heist.reached_second
-		visible = 3*TICRATE
-		flash = FU
-	end
 
 	if flash then
 		local f = V_10TRANS*ease.linear(flash, 10, 0)
@@ -60,9 +58,15 @@ function module.draw(v)
 		y = ease.linear(FU/7, $, 12*FU + round.height*scale)
 	else
 		y = ease.linear(FU/7, $, -FU)
+		if y <= 0 then
+			enabled = false
+			return
+		end
 	end
 
-	if y <= 0 then return end
+	if y <= 0 then
+		return
+	end
 
 	local x = 160*FU - round.width*scale/2
 	local y = y-round.height*scale

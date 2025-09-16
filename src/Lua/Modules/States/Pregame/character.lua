@@ -303,6 +303,12 @@ function state:draw(v, c, transparency)
 	DrawCharacterRibbon(v, 100*FU, self.heist.locked_skin, transparency, tics)
 	DrawIconGrid(v, 160*FU - width/2, 100*FU + RIBBON_END_RADIUS, self.heist.skin_index, transparency)
 
+	local col = ColorOpposite(skindef.prefcolor)
+	local twen = Twn(tics-TEXT_DELAY, 20)
+	local scale = ease.outback(twen,0,tofixed("0.85"),FU)
+	local trans = ease.outquad(twen,9,0)<<V_ALPHASHIFT
+	local strings = {}
+
 	if #heistskindef.skins > 0 then
 		local skin = heistskindef.skins[self.heist.alt_skin]
 		local name = "Default"
@@ -310,13 +316,34 @@ function state:draw(v, c, transparency)
 		if skin then
 			name = skin.name or $
 		end
-		local col,alpha = ColorOpposite(skindef.prefcolor)
-		local twen = Twn(tics-TEXT_DELAY, 20)
-		local scale = ease.outback(twen,0,tofixed("0.85"),FU)
-		local trans = ease.outquad(twen,9,0)<<V_ALPHASHIFT
-		FangsHeist.DrawString(v,160*FU, 100*FU - 10*FU - RIBBON_END_RADIUS/2,scale, 
-		"[CUSTOM 1] - Change Skin ("..name..")","FHTXT","center",trans,v.getStringColormap(skincolors[col].chatcolor))
+
+		table.insert(strings, "[CUSTOM 1] - Change Skin ("..name..")")
 	end
+
+	table.insert(strings, "test")
+
+	if #strings == 0 then return end
+
+	local y = 100*FU - (10*FU)*#strings - RIBBON_END_RADIUS/2
+
+	for k, str in ipairs(strings) do
+		FangsHeist.DrawString(v,
+			160*FU,
+			y,
+			scale, 
+			str,
+			"FHTXT",
+			"center",
+			trans,
+			v.getStringColormap(skincolors[col].chatcolor)
+		)
+		y = $+10*scale
+	end
+
+	--[[if #heistskindef.skins > 0 then
+		FangsHeist.DrawString(v,160*FU, 100*FU - 10*FU - RIBBON_END_RADIUS/2,scale, 
+		,"FHTXT","center",trans,v.getStringColormap(skincolors[col].chatcolor))
+	end]]
 end
 
 return state

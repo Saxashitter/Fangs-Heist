@@ -34,8 +34,6 @@ local function getScaleDiv()
 end
 
 local function drawTimer(v, x, y, scale, f)
-	local pi = FangsHeist.getGamemode().preferredhud
-	if not pi.Timer then return end
 	local t = FangsHeist.Net.time_left
 	local rt = FangsHeist.Net.max_time_left - FangsHeist.Net.time_left
 	local tics = (t/35)/60
@@ -85,6 +83,8 @@ function module.init()
 end
 
 function module.draw(v)
+	local pi = FangsHeist.getGamemode().preferredhud
+
 	if enabled then
 		slideT = min($ + FU/35, FU)
 	else
@@ -94,6 +94,8 @@ function module.draw(v)
 	if slideT <= 0 then
 		return
 	end
+
+	if not pi.timer.enabled then return end
 
 	local tmr = v.cachePatch("FH_TMR_BG")
 

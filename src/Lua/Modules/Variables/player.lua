@@ -48,6 +48,7 @@ return {
 	locked_skin = "sonic", -- sonic probably
 	skin_index = 1,
 	alt_skin = 0,
+	voicelines = true,
 	pregame_state = "",
 
 	reached_second = false, -- only used in round 2

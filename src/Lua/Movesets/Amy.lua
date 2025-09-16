@@ -120,21 +120,18 @@ addHook("PlayerThink", function(p)
 			thokring.scale = 3*p.mo.scale/2
 			thokring.destscale = 0
 		end
-	--[[elseif attack
-	and p.cmd.buttons & BT_ATTACK
-	and not (p.lastbuttons & BT_ATTACK)
-	and not P_PlayerInPain(p)
-	and p.mo.health then
-		-- Hammer Throw
-		local hammer = throwHammer(p)
-
-		p.amy.thrown = hammer]]
+		if p.amy.twirlframes >= 3*5 then
+			p.mo.state = S_PLAY_FALL
+		end
 	end
 
 	if p.mo.state ~= S_FH_AMY_TWIRL
 	and p.amy.twirl then
 		p.amy.twirl = false
 		p.amy.twirlframes = 0
+		if p.amy.twirlframes >= 12 then
+			p.mo.state = S_PLAY_FALL
+		end
 		p.powers[pw_strong] = $ & ~attackFlags
 	end
 
@@ -343,6 +340,28 @@ FangsHeist.addHook("PlayerScanAttack", function(p)
 	end
 end)
 
+local AMY_SCALE = tofixed("1.25")
+
+FangsHeist.addHook("PlayerAttackRadius", function(p)
+	if not check(p) then return end
+
+	return FixedMul(p.mo.radius, AMY_SCALE)
+end)
+FangsHeist.addHook("PlayerAttackHeight", function(p)
+	if not check(p) then return end
+
+	return FixedMul(p.mo.height, AMY_SCALE)
+end)
+FangsHeist.addHook("PlayerAttackDamage", function(p)
+	if not check(p) then return end
+
+	if p.mo.state == S_FH_AMY_TWIRL then
+		return 30*FU
+	end
+
+	return 8*FU
+end)
+
 FangsHeist.addHook("PlayerAttack", function(p)
 	if not check(p) then return end
 
@@ -351,6 +370,9 @@ end)
 
 FangsHeist.addHook("PlayerHit", function(p)
 	if not check(p) then return end
+
+	p.heist.attack_time = 0
+	p.heist.attack_cooldown = 0
 
 	if not P_IsObjectOnGround(p.mo) then
 		p.mo.state = S_PLAY_JUMP

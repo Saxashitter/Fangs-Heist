@@ -142,6 +142,29 @@ events["PlayerScanAttack"] = {}
 	// Arguments:
 		// player == player_t
 
+events["PlayerCanClash"] = {handler = handler_snapany}
+// PlayerCanClash:
+	// Determines if the player can clash. If nothing is returned, this defaults to true.
+	// return true/false: Returns if the player can clash or not.
+	// Arguments:
+		// attacker == player_t
+		// victim == player_t
+
+events["PlayerAttackRadius"] = {handler = handler_snapany}
+// TODO: document
+
+events["PlayerAttackHeight"] = {handler = handler_snapany}
+// TODO: document
+
+events["PlayerAttackDamage"] = {handler = handler_snapany}
+// TODO: document
+
+events["CreateHitlagMobjStruct"] = {handler = handler_snapany}
+// TODO: document
+
+events["ApplyHitlagMobjStruct"] = {handler = handler_snapany}
+// TODO: document
+
 events["Round2"] = {}
 // Round2:
 	// Runs when the player heads to the teleporter for the second part of Final Demo stages.

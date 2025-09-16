@@ -33,22 +33,7 @@ function gamemode:getSignSpawn()
 	if FangsHeist.Net.round_2
 	and FangsHeist.Net.escape then
 		local pos2 = FangsHeist.Net.round_2_teleport.pos
-
-		local count = 0
-		local secondCount = 0
-
-		for p in players.iterate do
-			if not (p.heist and p.heist:isAlive() and not p.heist.exiting) then continue end
-
-			count = $+1
-			if p.heist.reached_second then
-				secondCount = $+1
-			end
-		end
-
-		if secondCount >= count/2 then
-			return pos2
-		end
+		return pos2
 	end
 
 	return pos

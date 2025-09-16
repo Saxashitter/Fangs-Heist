@@ -2,7 +2,7 @@
 rawset(_G, "FH_ATK_FLASH_TICS", 10)
 rawset(_G, "FH_ATK_XYMULT", FU*7)
 rawset(_G, "FH_ATK_ZMULT", FU*5)
-rawset(_G, "FH_ATK_HEALTH", FU*8)
+rawset(_G, "FH_ATK_HEALTH", FU*20)
 rawset(_G, "FH_ATK_HEALTHDEATH", FU*100)
 
 -- Parry Constants
@@ -79,23 +79,38 @@ local TIERS = {
 	{sfx_dmga4, sfx_dmgb4}
 }
 
-local function Damage(p, p2)
-	if not P_DamageMobj(p2.mo, p.mo, p.mo) then
+local function Damage(p, sp)
+	if not P_DamageMobj(sp.mo, p.mo, p.mo) then
 		return false
 	end
 
-	local speedAdd = 18 * p2.heist.health
-	local xySpeed = R_PointToDist2(0,0,p.mo.momx-p2.mo.momx,p.mo.momy-p2.mo.momy)
-	local speed = R_PointToDist2(0,0,xySpeed,p.mo.momz-p2.mo.momz)
+	local speed = FixedSqrt(
+		FixedMul(p.mo.momx, p.mo.momx) +
+		FixedMul(p.mo.momy, p.mo.momy) +
+		FixedMul(p.mo.momz, p.mo.momz)
+	)
+	speed = max(4*p.mo.scale, $)
 
-	local tier = TIERS[max(1, min(FixedDiv(speed, 9*FU)/FU, #TIERS))]
-	local sound = tier[P_RandomRange(1, #tier)]
+	local mx, my, mz = L_ReturnThrustXYZ(p.mo, {
+		x = sp.mo.x,
+		y = sp.mo.y,
+		z = sp.mo.z+sp.mo.height/2
+	}, -speed/2)
 
-	S_StartSound(p2.mo, sound)
-	p2.heist.health = $ + FH_ATK_HEALTH
+	p.mo.momx = mx
+	p.mo.momy = my
+	p.mo.momz = mz
+	P_MovePlayer(p)
+
+	p.heist.attack_time = 0
+	p.heist.attack_cooldown = 9
+	p.powers[pw_flashing] = max($, FH_ATK_FLASH_TICS)
+
+	if p == displayplayer then
+		P_StartQuake(28*FU, 12)
+	end
 
 	FangsHeist.runHook("PlayerHit", p, p2)
-
 	return true
 end
 
@@ -134,22 +149,54 @@ local function RegisterGuard(atk, vic)
 	return 1
 end
 
+local function CanClash(p, sp)
+	local clash = FangsHeist.runHook("PlayerCanClash", p)
+	local clash2 = FangsHeist.runHook("PlayerCanClash", sp)
+
+	if clash == nil then clash = true end
+	if clash2 == nil then clash2 = true end
+
+	if not (sp.heist.attack_time or atk) then
+		return false
+	end
+
+	if clash and not clash2 then
+		return false
+	end
+
+	if not clash and not clash2 then
+		return true
+	end
+
+	if clash and clash2 then
+		return true
+	end
+
+	if not clash and clash2 then
+		return 1 -- strange ik
+	end
+
+	return false
+end
+
 local function AttemptAttack(p, sp)
-	if not (sp and sp.valid and sp.heist and sp.heist:isAlive()) then
+	if not (sp and sp.valid and sp.heist and sp.heist:isAlive() and not sp.heist.exiting) then
 		return
 	end
 
-	local radius = FixedMul(p.mo.radius, FH_ATK_XYMULT)
-	local height = FixedMul(p.mo.height, FH_ATK_ZMULT)
+	local clash = FangsHeist.runHook("PlayerCanClash", sp)
+	if clash == nil then clash = true end
+
+	local radius = FangsHeist.runHook("PlayerAttackRadius", p) or FixedMul(p.mo.radius, FH_ATK_XYMULT)
+	local height = FangsHeist.runHook("PlayerAttackHeight", p) or FixedMul(p.mo.height, FH_ATK_ZMULT)
 	local x = p.mo.x + p.mo.momx
 	local y = p.mo.y + p.mo.momx
-	local z = p.mo.z + p.mo.momz - height/2
+	local z = p.mo.z + p.mo.momz
 
 	local distance = R_PointToDist2(x, y, sp.mo.x, sp.mo.y)
 
-	if distance > sp.mo.radius+radius
-	or z > sp.mo.z+sp.mo.height
-	or sp.mo.z > z+height then
+	if distance > sp.mo.radius+radius then return end
+	if abs((z + p.mo.height/2) - (sp.mo.z + sp.mo.height/2)) > max(height, sp.mo.height)/2 then
 		return
 	end
 
@@ -162,8 +209,9 @@ local function AttemptAttack(p, sp)
 		return true
 	end
 
-	if sp.heist.attack_time
-	or FangsHeist.runHook("PlayerScanAttack", sp) then
+	if CanClash(p, sp) then
+		if CanClash(p, sp) == 1 then return end
+
 		local speed = 18*FU
 		local mx, my, mz = L_ReturnThrustXYZ(p.mo, {
 			x = sp.mo.x,
@@ -197,40 +245,7 @@ local function AttemptAttack(p, sp)
 		return
 	end
 
-	if Damage(p, sp) then
-		local speed = max(
-			4*p.mo.scale,
-			FixedSqrt(
-				FixedMul(p.rmomx, p.rmomx) +
-				FixedMul(p.rmomy, p.rmomy) +
-				FixedMul(p.mo.momz, p.mo.momz)
-			)
-		)
-		local mx, my, mz = L_ReturnThrustXYZ(p.mo, {
-			x = sp.mo.x,
-			y = sp.mo.y,
-			z = sp.mo.z+sp.mo.height/2
-		}, -speed)
-
-		sp.mo.momx = p.mo.momx
-		sp.mo.momy = p.mo.momy
-
-		p.mo.momx = mx
-		p.mo.momy = my
-		p.mo.momz = mz
-		P_MovePlayer(p)
-
-		p.heist.attack_time = 0
-		p.heist.attack_cooldown = 5
-		p.powers[pw_flashing] = max($, FH_ATK_FLASH_TICS)
-		P_Thrust(sp.mo, R_PointToAngle2(0,0, sp.mo.momx, sp.mo.momy), 40*FixedDiv(sp.heist.health, 100*FU))
-		sp.heist.hitlast = p.mo
-
-		if p == displayplayer
-		or sp == displayplayer then
-			P_StartQuake(28*FU, 12)
-		end
-	end
+	Damage(p, sp)
 end
 
 local function DoAttack(p)
@@ -423,8 +438,41 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if not FangsHeist.isMode() then return end
 	if not (t and t.player and t.player.heist) then return end
 
+	local returnval
 	local gamemode = FangsHeist.getGamemode()
-	gamemode:playerdamage(t.player)
+
+	FangsHeist.playVoiceline(t.player, "hurt")
+
+	if not (t.player.powers[pw_shield]) then
+		local rings = RingSpill(t.player, nil, s and s.valid and s.player)
+	
+		if rings then
+			P_ResetPlayer(t.player)
+			P_DoPlayerPain(t.player, s, i)
+			returnval = true
+		end
+	else
+		returnval = true
+	end
+
+	if i
+	and i.valid then
+		local speedAdd = 40*FixedDiv(t.player.heist.health, 100*FU)
+		local speed = FixedSqrt(
+			FixedMul(i.momx, i.momx) +
+			FixedMul(i.momy, i.momy) +
+			FixedMul(i.momz, i.momz)
+		)
+		speed = max(4*i.scale, $)
+
+		local tier = TIERS[max(1, min(FixedDiv(speed, 9*FU)/FU, #TIERS))]
+		local sound = tier[P_RandomRange(1, #tier)]
+
+		S_StartSound(t, sound)
+
+		P_InstaThrust(t, R_PointToAngle2(0,0, i.momx, i.momy), speed + speedAdd)
+		t.player.heist.hitlast = s
+	end
 
 	if s
 	and s.player
@@ -440,21 +488,27 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 		end
 	end
 
-	if dt & DMG_DEATHMASK then
-		return
+	if t.health then
+		local health = FH_ATK_HEALTH
+
+		if s
+		and s.player
+		and s.player.heist then
+			health = FangsHeist.runHook("PlayerAttackDamage", s.player, t.player, i) or $ 
+		end
+
+		t.player.heist.health = $ + FH_ATK_HEALTH
+		if t.player == consoleplayer then
+			FangsHeist.doHealthShake(20)
+			P_StartQuake(28*FU, 12)
+
+			if consoleplayer.heist.health >= FH_ATK_HEALTHDEATH then
+				FangsHeist.doHealthShiver()
+			end
+		end
 	end
 
-	FangsHeist.playVoiceline(t.player, "hurt")
-
-	if t.player.powers[pw_shield] then return end
-	local rings = RingSpill(t.player, nil, s and s.valid and s.player)
-
-	if not rings then return end
-
-	P_ResetPlayer(t.player)
-	P_DoPlayerPain(t.player, s, i)
-
-	return true
+	return returnval
 end, MT_PLAYER)
 
 FangsHeist.addPlayerScript("thinkframe", function(p)
@@ -555,7 +609,8 @@ return function(p)
 	local press = p.cmd.buttons & ~p.lastbuttons
 
 	if p.mo.state ~= S_FH_GUARD
-	and not P_PlayerInPain(p) then
+	and not P_PlayerInPain(p)
+	and not p.heist.exiting then
 		-- Parry
 		if press & BT_FIRENORMAL
 		and p.heist.attack_time == 0
@@ -573,60 +628,66 @@ return function(p)
 		end
 	end
 
-	if p.heist.parry_cooldown then
-		p.heist.parry_cooldown = $-1
-
-		if p.heist.parry_cooldown == 0 then
-			local ghost = P_SpawnGhostMobj(p.mo)
-			ghost.destscale = 4*FU
-			ghost.translation = "FH_ParryColor"
-
-			S_StartSound(p.mo, sfx_ngskid)
-		end
-	end
-	if p.heist.attack_cooldown then
-		p.heist.attack_cooldown = $-1
-
-		if p.heist.attack_cooldown == 0 then
-			local ghost = P_SpawnGhostMobj(p.mo)
-			ghost.destscale = 4*FU
-
-			S_StartSound(p.mo, sfx_ngskid)
-		end
-	end
-	if p.heist.attack_time then
-		p.heist.attack_time = max(0, $-1)
-
-		local radius = FixedMul(p.mo.radius, FH_ATK_XYMULT)
-		local height = FixedMul(p.mo.height, FH_ATK_ZMULT)
-		local x = p.mo.x + p.mo.momx
-		local y = p.mo.y + p.mo.momx
-		local z = p.mo.z + p.mo.momz - height/2
-
-		-- ok luigi you can stop complaining now
-		searchBlockmap("objects", function(_, found)
-			if not found.valid then return end
-			if not (found.flags & MF_ENEMY)
-			and not (found.flags & MF_MONITOR) then return end
-
-			local distance = R_PointToDist2(x, y, found.x, found.y)
-			if distance > radius+found.radius then
-				return
-			end
-
-			if z > found.z+found.height then return end
-			if found.z > z+height then return end
-
-			P_DamageMobj(found, p.mo, p.mo)
-		end, p.mo, x-radius*2, x+radius*2, y-radius*2, y+radius*2)
-	end
-
-	if FangsHeist.runHook("PlayerScanAttack", p)
-	or p.heist.attack_time then
-		for sp in players.iterate do
-			if AttemptAttack(p, sp) then
-				break
+	if not p.heist.exiting then
+		if p.heist.parry_cooldown then
+			p.heist.parry_cooldown = $-1
+	
+			if p.heist.parry_cooldown == 0 then
+				local ghost = P_SpawnGhostMobj(p.mo)
+				ghost.destscale = 4*FU
+				ghost.translation = "FH_ParryColor"
+	
+				S_StartSound(p.mo, sfx_ngskid)
 			end
 		end
+		if p.heist.attack_cooldown then
+			p.heist.attack_cooldown = $-1
+	
+			if p.heist.attack_cooldown == 0 then
+				local ghost = P_SpawnGhostMobj(p.mo)
+				ghost.destscale = 4*FU
+	
+				S_StartSound(p.mo, sfx_ngskid)
+			end
+		end
+		if p.heist.attack_time then
+			p.heist.attack_time = max(0, $-1)
+	
+			local radius = FixedMul(p.mo.radius, FH_ATK_XYMULT)
+			local height = FixedMul(p.mo.height, FH_ATK_ZMULT)
+			local x = p.mo.x + p.mo.momx
+			local y = p.mo.y + p.mo.momx
+			local z = p.mo.z + p.mo.momz - height/2
+	
+			-- ok luigi you can stop complaining now
+			searchBlockmap("objects", function(_, found)
+				if not found.valid then return end
+				if not (found.flags & MF_ENEMY)
+				and not (found.flags & MF_MONITOR) then return end
+	
+				local distance = R_PointToDist2(x, y, found.x, found.y)
+				if distance > radius+found.radius then
+					return
+				end
+	
+				if z > found.z+found.height then return end
+				if found.z > z+height then return end
+	
+				P_DamageMobj(found, p.mo, p.mo)
+			end, p.mo, x-radius*2, x+radius*2, y-radius*2, y+radius*2)
+		end
+	
+		if FangsHeist.runHook("PlayerScanAttack", p)
+		or p.heist.attack_time then
+			for sp in players.iterate do
+				if AttemptAttack(p, sp) then
+					break
+				end
+			end
+		end
+	else
+		p.heist.parry_cooldown = 0
+		p.heist.attack_cooldown = 0
+		p.heist.attack_time = 0
 	end
 end

@@ -28,7 +28,6 @@ function FangsHeist.initTeamTable()
 end
 
 function FangsHeist.initTeam(p)
-
 	local team
 
 	if type(p) == "table" then
