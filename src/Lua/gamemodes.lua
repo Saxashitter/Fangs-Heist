@@ -15,7 +15,7 @@ local DEFAULT = {
 	teamlimit = 1,
 	spillallrings = false,
 	preferredhud = {
-		pos = {x = 312, y = 8},
+		pos = {x = 8, y = 8, flags = V_SNAPTOLEFT|V_SNAPTOTOP},
 		profit = {enabled = true},
 		rings = {enabled = true},
 		rank = {enabled = true},

@@ -1,9 +1,21 @@
 sfxinfo[freeslot "sfx_fhtick"].caption = "Tick..."
 sfxinfo[freeslot "sfx_fhuhoh"].caption = "Uh oh!"
 
-states[freeslot "S_FH_ROUNDPORTAL"] = {
-	sprite = freeslot "SPR_HPRT",
+states[freeslot "S_FH_GOALPORTAL"] = {
+	sprite = freeslot "SPR_GORI",
+	frame = FF_ANIMATE,
 	tics = -1,
+	var1 = F,
+	var2 = 3,
+	nextstate = S_FH_GOALPORTAL
+}
+
+states[freeslot "S_FH_ROUNDPORTAL"] = {
+	sprite = freeslot "SPR_R2RI",
+	frame = FF_ANIMATE,
+	tics = -1,
+	var1 = F,
+	var2 = 3,
 	nextstate = S_FH_ROUNDPORTAL
 }
 

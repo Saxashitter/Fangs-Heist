@@ -178,3 +178,34 @@ Lua.FH_EscapeHurryUp = false
 Lua.FH_EscapeTheme = OLNORE
 Lua.FH_Time = 177
 lua.FH_EscapeLinedef = 9000
+
+Level 41
+Levelname = Aerial Garden
+Keywords = AGZ
+Music = AGZ
+TypeOfLevel = Heist
+NoVisitNeeded = true
+NextLevel = 42
+SkyNum = 40
+RecordAttack = true
+LevelSelect = 1
+SelectHeading = Bonus
+SaveGame = true
+FlickyList = Puffin,Dove
+
+Level 25
+Levelname = Black Core
+Act = 1
+Keywords = BCZ1
+Music = BCZ1
+NextLevel = 26
+TypeOfLevel = Heist
+SkyNum = 22
+RecordAttack = true
+LevelSelect = 1
+SaveGame = true
+FlickyList = All
+SaveGame = true
+ForceResetMusic = On
+WarningTitle = true
+SelectHeading = Bonus

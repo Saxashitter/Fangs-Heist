@@ -172,6 +172,9 @@ events["Round2"] = {}
 	// Arguments:
 		// player == player_t
 
+events["2TeamsLeft"] = {handler = handler_snapany}
+// TODO: document
+
 events["Music"] = {handler = handler_snapany}
 // Music:
 	// Returns the appropriate music that should be playing.

@@ -57,6 +57,13 @@ states[freeslot "S_FH_CLASH"] = {
 	nextstate = S_PLAY_STND
 }
 
+states[freeslot "S_FH_BLOCK"] = {
+	sprite = freeslot "SPR_FHSH"
+	frame = A|FF_FULLBRIGHT,
+	tics = -1
+	nextstate = S_FH_BLOCK
+}
+
 states[freeslot "S_FH_GUARD"] = {
 	sprite = SPR_PLAY,
 	frame = SPR2_TRNS,
@@ -156,13 +163,6 @@ states[freeslot "S_FH_THROWNHAMMER"] = {
 	var1 = H,
 	var2 = 1
 }
-
-states[freeslot "S_FH_MARVQUEEN"] = {
-	sprite = freeslot "SPR_MAQU",
-	frame = A,
-	tics = -1
-}
-
 -- Mobjs
 mobjinfo[freeslot "MT_FH_THIK"] = {
 	spawnstate = S_FH_THIK,

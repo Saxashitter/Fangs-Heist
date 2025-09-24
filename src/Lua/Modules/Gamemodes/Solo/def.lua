@@ -5,11 +5,13 @@ local gamemode = {
 	teamlimit = 1,
 	tol = TOL_HEIST|TOL_HEISTROUND2,
 	twoteamsleft = true,
+	exitalwaysopen = false,
 }
 local path = "Modules/Gamemodes/Solo/"
 local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"
 
 dofile(path.."freeslots.lua")
+dofile(path.."commands.lua")
 
 local treasure_things = {
 	[312] = true
@@ -69,11 +71,15 @@ function gamemode:init(map)
 	FangsHeist.Net.escape = false
 	FangsHeist.Net.escape_theme = "FH_ESC"
 	FangsHeist.Net.round2_theme = "ROUND2"
+	FangsHeist.Net.gogogo_theme = "NEOBRE"
+	FangsHeist.Net.twoteamsleft_theme = "EXTERM"
 	FangsHeist.Net.escape_hurryup = true
+	FangsHeist.Net.escape_opengoal = 80*TICRATE
 	FangsHeist.Net.escape_on_start = false
 
 	FangsHeist.Net.last_man_standing = false
 	FangsHeist.Net.two_teams_left = false
+	FangsHeist.Net.go_go_go = false
 
 	FangsHeist.Net.round_2 = false
 	FangsHeist.Net.round_2_teleport = {}
@@ -160,7 +166,7 @@ function gamemode:load()
 			local pos = {
 				x = thing.x*FU,
 				y = thing.y*FU,
-				z = spawnpos.getThingSpawnHeight(MT_PLAYER, thing, thing.x*FU, thing.y*FU),
+				z = spawnpos.getThingSpawnHeight(MT_PLAYER, thing, thing.x*FU, thing.y*FU) + 50*FU,
 				a = thing.angle*ANG1
 			}
 			self:spawnRound2Portal(pos)
@@ -188,10 +194,19 @@ function gamemode:load()
 	if exit then
 		local x = exit.x*FU
 		local y = exit.y*FU
-		local z = spawnpos.getThingSpawnHeight(MT_PLAYER, exit, x, y)
+		local z = spawnpos.getThingSpawnHeight(MT_PLAYER, exit, x, y) + 50*FU
 		local a = FixedAngle(exit.angle*FU)
 
-		FangsHeist.defineExit(x, y, z, a)
+		local exit = P_SpawnMobj(x, y, z, MT_THOK)
+		exit.fuse = -1
+		exit.tics = -1
+		exit.state = S_FH_GOALPORTAL
+		exit.angle = a
+		exit.height = 48*FU
+		exit.flags = (MF_NOGRAVITY|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOBLOCKMAP)
+		self:manageRing(exit, not self:canExit(), true)
+	
+		FangsHeist.Net.exit = exit
 	end
 
 	for i = 1, #treasure_spawns do
@@ -208,24 +223,69 @@ function gamemode:update()
 	if FangsHeist.Net.escape then
 		self:manageEscape()
 
-		if self.twoteamsleft then
-			if #FangsHeist.Net.teams <= 2
-			and not FangsHeist.Net.two_teams_left then
+		-- TODO: clean this up
+		if self.twoteamsleft
+		and not FangsHeist.Net.two_teams_left
+		and not self:isHurryUp()
+		and FangsHeist.Net.time_left then
+			local counted_teams = 0
+			local first_team
+			local second_team
+
+			for k, team in ipairs(FangsHeist.Net.teams) do
+				local exiting = 0
+				local count = 0
+
+				for _, p in ipairs(team) do
+					if not (p and p.valid and p.heist) then continue end
+
+					count = $+1
+
+					if p.heist.spectator then exiting = $+1; continue end
+					if p.heist.exiting then exiting = $+1; continue end
+				end
+				if exiting == count then continue end
+
+				if not first_team then
+					first_team = team
+				elseif not second_team then
+					second_team = team
+				end
+
+				counted_teams = $+1
+			end
+
+			if counted_teams <= 2 then
+				local orig_song = FangsHeist.Net.twoteamsleft_theme
+				local song = FangsHeist.runHook("2TeamsLeft", first_team, second_team)
+					or orig_song
+
+				FangsHeist.Net.twoteamsleft_theme = song
+
 				FangsHeist.Net.two_teams_left = true
+				FangsHeist.Net.time_left = 180*TICRATE
+				FangsHeist.Net.max_time_left = 180*TICRATE
+				FangsHeist.Net.escape_hurryup = false
+
+				FangsHeist.Net.go_go_go = false
 				FangsHeist.doTTLHUD()
 			end
 		end
 	end
 
+	self:manageRing(FangsHeist.Net.exit, not self:canExit())
 
-	self:manageRound2Portal()
+	if FangsHeist.Net.round_2 then
+		self:manageRing(FangsHeist.Net.round_2_mobj, not FangsHeist.Net.escape)
+	end
+
+	-- exiting
+	self:manageExiting()
 end
 
 function gamemode:trackplayer(p)
 	local lp = displayplayer
 	local args = {}
-
-	-- TO-DO: treasure track
 
 	if p.heist:hasSign() then
 		table.insert(args, "SIGN")
@@ -241,14 +301,44 @@ function gamemode:trackplayer(p)
 end
 
 function gamemode:manageEscape()
-	-- exiting
-	self:manageExiting()
-
 	-- time
 	self:manageTime()
 
 	-- hell stage tp
 	self:round2Check()
+end
+
+function gamemode:manageRing(portal, unavailable, instant)
+	if not portal then return end
+	if not portal.valid then return end
+
+	local min_scale = FU/2
+	local min_alpha = FU/5
+	local max_scale = 2*FU
+	local max_alpha = FU
+
+	-- TODO: probably make use of actual tweens
+
+	if unavailable then
+		if instant then
+			portal.scale = min_scale
+			portal.alpha = min_alpha
+			return
+		end
+
+		portal.scale = ease.linear(FU/12, $, min_scale)
+		portal.alpha = ease.linear(FU/12, $, min_alpha)
+
+		return
+	end
+
+	if instant then
+		portal.scale = max_scale
+		portal.alpha = max_alpha
+	end
+
+	portal.scale = ease.linear(FU/12, $, max_scale)
+	portal.alpha = ease.linear(FU/12, $, max_alpha)
 end
 
 function gamemode:music()
@@ -270,7 +360,11 @@ function gamemode:music()
 	end
 
 	if FangsHeist.Net.two_teams_left then
-		return "EXTERM", true, volume
+		return FangsHeist.Net.twoteamsleft_theme, true, volume
+	end
+
+	if FangsHeist.Net.go_go_go then
+		return FangsHeist.Net.gogogo_theme, true, volume
 	end
 
 	if (p and p.valid and p.heist and p.heist.reached_second) then
@@ -352,6 +446,8 @@ function gamemode:playerdeath(p, i, s)
 	if not FangsHeist.Net.escape then return end
 
 	p.heist.spectator = true
+
+	local counted_teams = 0
 end
 
 function gamemode:manageTime()
@@ -360,10 +456,42 @@ function gamemode:manageTime()
 	FangsHeist.Net.time_left = $-1
 	FangsHeist.setTimerTime(FangsHeist.Net.time_left, FangsHeist.Net.max_time_left)
 
+	local counted_teams = 0
+
+	for k, team in ipairs(FangsHeist.Net.teams) do
+		local exiting = 0
+		local count = 0
+
+		for _, p in ipairs(team) do
+			if not (p and p.valid and p.heist) then continue end
+
+			count = $+1
+			if p.heist.spectator then exiting = $+1; continue end
+			if p.heist.exiting then exiting = $+1; continue end
+		end
+		if exiting == count then continue end
+
+		counted_teams = $+1
+	end
+
+	if FangsHeist.Net.two_teams_left
+	and counted_teams <= 1
+	and FangsHeist.Net.escape_opengoal
+	and FangsHeist.Net.time_left > FangsHeist.Net.escape_opengoal then
+		FangsHeist.Net.time_left = FangsHeist.Net.escape_opengoal
+	end
+
 	if FangsHeist.Net.time_left <= 30*TICRATE
 	and not FangsHeist.Net.hurry_up then
 		// dialogue.startFangPreset("hurryup")
 		FangsHeist.Net.hurry_up = true
+	end
+
+	if FangsHeist.Net.escape_opengoal
+	and FangsHeist.Net.time_left == FangsHeist.Net.escape_opengoal then
+		S_StartSound(nil, sfx_gogogo)
+		FangsHeist.doGoHUD()
+		FangsHeist.Net.go_go_go = true
 	end
 
 	if FangsHeist.Net.time_left <= 10*TICRATE
@@ -399,19 +527,36 @@ function gamemode:manageExiting()
 		if not p.heist then continue end
 		if not p.heist:isAlive() then continue end
 
-		if not p.heist:isAtGate()
-		and not p.heist.exiting then
-			continue
-		end
+		if not p.heist.exiting then
+			if not self:canExit() then
+				continue
+			end
+	
+			if not p.heist:isAtGate() then
+				continue
+			end
+	
+			if FangsHeist.runHook("PlayerExit", p) == true then
+				continue
+			end
 
-		if not p.heist.exiting
-		and FangsHeist.runHook("PlayerExit", p) == true then
-			continue
-		end
+			if self.playerexit
+			and self:playerexit(p) then
+				continue
+			end
 
-		if self.playerexit
-		and self:playerexit(p) then
-			continue
+			if p.heist:hasSign() then
+				local team = p.heist:getTeam()
+	
+				team.had_sign = true
+			end
+	
+			for i = #p.heist.pickup_list, 1, -1 do
+				local v = p.heist.pickup_list[i]
+	
+				FangsHeist.Carriables.RespawnCarriable(v.mobj)
+				table.remove(p.heist.pickup_list, i)
+			end
 		end
 
 		P_SetOrigin(p.mo, exit.x, exit.y, exit.z)
@@ -420,22 +565,39 @@ function gamemode:manageExiting()
 		p.mo.state = S_PLAY_STND
 		p.camerascale = FU*3
 
-		if p.heist:hasSign()
-		and not p.heist.exiting then
-			local team = p.heist:getTeam()
-
-			team.had_sign = true
-		end
-
-		for i = #p.heist.pickup_list, 1, -1 do
-			local v = p.heist.pickup_list[i]
-
-			FangsHeist.Carriables.RespawnCarriable(v.mobj)
-			table.remove(p.heist.pickup_list, i)
-		end
-
 		p.heist.exiting = true
 	end
+end
+
+function gamemode:canExit()
+	if not FangsHeist.Net.escape then return false end
+
+	local counted_teams = 0
+
+	for k, team in ipairs(FangsHeist.Net.teams) do
+		local exiting = 0
+		local count = 0
+
+		for _, p in ipairs(team) do
+			if not (p and p.valid and p.heist) then continue end
+
+			count = $+1
+			if p.heist.spectator then exiting = $+1; continue end
+			if p.heist.exiting then exiting = $+1; continue end
+		end
+		if exiting == count then continue end
+
+		counted_teams = $+1
+	end
+
+	if counted_teams >= 2
+	and FangsHeist.Net.escape_opengoal
+	and FangsHeist.Net.time_left > FangsHeist.Net.escape_opengoal then
+		return false
+	end
+
+
+	return true
 end
 
 function gamemode:startEscape(p)
@@ -452,8 +614,10 @@ function gamemode:startEscape(p)
 		P_LinedefExecute(tonumber(data.fh_escapelinedef))
 	end
 
-	S_StartSound(nil, sfx_gogogo)
-	FangsHeist.doGoHUD()
+	if not FangsHeist.Net.escape_opengoal then
+		S_StartSound(nil, sfx_gogogo)
+		FangsHeist.doGoHUD()
+	end
 end
 
 local HURRY_LENGTH = 2693

@@ -35,6 +35,11 @@ gamemode.preferredhud = {
 	timer = super.preferredhud.timer
 }
 
+function gamemode:init(map)
+	super.init(self, map)
+	FangsHeist.Net.escape_opengoal = 0
+end
+
 function gamemode:start()
 	super.start(self)
 
@@ -49,6 +54,16 @@ function gamemode:start()
 
 	FangsHeist.Net.coop_team = singular_team
 	FangsHeist.initTeam(singular_team)
+end
+
+function gamemode:canExit()
+	if not FangsHeist.Net.escape then return false end
+
+	if (FangsHeist.Net.coop_team.profit or 0) < FangsHeist.Net.profit_quota then
+		return false
+	end
+
+	return true
 end
 
 function gamemode:playerthink(p)
@@ -116,14 +131,6 @@ function gamemode:startEscape(p)
 		* leniency / FU
 
 	FangsHeist.Net.profit_quota = profit
-end
-
-function gamemode:playerexit(p)
-	local team = p.heist:getTeam()
-
-	if team.profit < FangsHeist.Net.profit_quota then
-		return true
-	end
 end
 
 return FangsHeist.addGamemode(gamemode)

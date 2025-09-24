@@ -59,7 +59,7 @@ function module.draw(v)
 		local y = 100*FU - height/2
 		local c = v.getStringColormap(V_REDMAP)
 
-		DrawText(v, 160*FU, y, "ESCAPE START", 0, "center", c)
+		DrawText(v, 160*FU, y, "THE RING IS OPEN!", 0, "center", c)
 		DrawText(v, 160*FU, y+9*FU, "GO! GO! GO!", 0, "center", c)
 	end
 

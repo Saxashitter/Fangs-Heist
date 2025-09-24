@@ -1,7 +1,6 @@
 local module = {}
 
 local scale = FU
-local overlap = 7*FU
 
 local enabled = false
 local slideT = 0
@@ -99,9 +98,9 @@ function module.draw(v)
 
 	local tmr = v.cachePatch("FH_TMR_BG")
 
-	local x = ease.outquad(slideT, -tmr.width*FU, 8*FU)
+	local x = ease.outquad(slideT, 320*FU, 320*FU - 8*FU - tmr.width*FU)
 	local y = 8*FU
-	local f = V_SNAPTOTOP|V_SNAPTOLEFT
+	local f = V_SNAPTOTOP|V_SNAPTORIGHT
 
 	drawTimer(v, x, y + 8 * FU, FU, f)
 end

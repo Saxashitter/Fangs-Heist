@@ -3,11 +3,13 @@ local gamemode = {}
 function gamemode:spawnRound2Portal(pos)
 	local mobj = P_SpawnMobj(pos.x, pos.y, pos.z, MT_THOK)
 	mobj.angle = pos.a
+	mobj.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_NOBLOCKMAP
 	mobj.state = S_FH_ROUNDPORTAL
-	mobj.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOTHINK|MF_NOGRAVITY
-	mobj.scale = tofixed("1.3")
+	mobj.destscale = 2*FU
+	mobj.scale = 2*FU
 
 	FangsHeist.Net.round_2_mobj = mobj
+	self:manageRing(mobj, not FangsHeist.Net.escape, true)
 end
 
 function gamemode:round2Check()
@@ -24,7 +26,7 @@ function gamemode:round2Check()
 		if R_PointToDist2(p.mo.x,p.mo.y,mobj.x,mobj.y) > 24*FU+p.mo.radius then
 			continue
 		end
-		if p.mo.z > mobj.z+48*FU then
+		if p.mo.z > mobj.z+50*mobj.scale then
 			continue
 		end
 		if mobj.z > p.mo.z+p.mo.height then
@@ -55,7 +57,7 @@ function gamemode:doRound2(p)
 	
 	S_StartSound(nil, sfx_mixup, p)
 	P_InstaThrust(p.mo, p.mo.angle, FixedHypot(p.rmomx, p.rmomy))
-	
+
 	local linedef = tonumber(mapheaderinfo[gamemap].fh_round2linedef)
 	
 	if linedef ~= nil then
@@ -64,16 +66,6 @@ function gamemode:doRound2(p)
 
 	if p == displayplayer then
 		FangsHeist.doRound2HUD()
-	end
-end
-
-function gamemode:manageRound2Portal()
-	-- yay rounr portal
-	local round = FangsHeist.Net.round_2_mobj
-
-	if round and round.valid then
-		round.spriteroll = $ + FixedAngle(360*FU/120)
-		round.spriteyoffset = 8*sin(round.spriteroll)
 	end
 end
 

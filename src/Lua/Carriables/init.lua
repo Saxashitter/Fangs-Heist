@@ -327,6 +327,7 @@ addHook("ThinkFrame", do
 		end
 
 		if IsCarried(car.mobj) then
+			local flip = car.target.eflags & MFE_VERTICALFLIP
 			local twn = FU
 			local pickPos = car.pickup_position
 			local curPos = {
@@ -334,12 +335,19 @@ addHook("ThinkFrame", do
 				y = car.target.y,
 				z = car.target.z+car.target.height
 			}
+			if flip then
+				curPos.z = car.target.z - car.height
+			end
 			local list = GetCarryList(car.mobj)
 	
 			for _, cry in ipairs(list) do
 				if cry == car then break end
 	
-				curPos.z = $ + cry.height
+				if not flip then
+					curPos.z = $ + cry.height
+				else
+					curPos.z = $ - cry.height
+				end
 			end
 
 			if car.duration > 0 then
@@ -353,6 +361,11 @@ addHook("ThinkFrame", do
 			local z = def.easing(twn, pickPos.z, curPos.z)
 
 			P_MoveOrigin(car.mobj, x, y, z)
+			if flip then
+				car.mobj.eflags = $|MFE_VERTICALFLIP
+			else
+				car.mobj.eflags = $ & ~MFE_VERTICALFLIP
+			end
 
 			def.onGrabThink(car.mobj, car.target)
 		end

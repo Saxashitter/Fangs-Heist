@@ -100,7 +100,7 @@ function module.draw(v, p)
 			continue
 		end
 
-		DrawText(v, pi.pos.x, y, data.str, V_SNAPTORIGHT|V_SNAPTOTOP, "right", nil, true)
+		DrawText(v, pi.pos.x, y, data.str, pi.pos.flags, "left", nil, true)
 		y = $ + 11
 	end
 end

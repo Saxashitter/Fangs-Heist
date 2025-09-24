@@ -39,6 +39,7 @@ function FangsHeist.doHitLag(mo1, mo2)
 	end
 
 	-- TODO: finish it (god im lazy)
+end
 
 function FangsHeist.stopVoicelines(p)
 	local char = FangsHeist.Characters[p.heist.locked_skin]

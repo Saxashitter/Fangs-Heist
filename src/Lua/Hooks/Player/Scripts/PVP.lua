@@ -50,28 +50,6 @@ local function Knockback(target, source)
 	target.momz = zSpd
 end
 
-local function PerfectParry(p, p2)
-	p.mo.state = S_PLAY_STND
-	p.mo.translation = nil
-	
-	p.heist.parry_time = 0
-	p.heist.parry_cooldown = 0
-
-	S_StartSound(p.mo, sfx_s1a6)
-end
-
-local function OkParry(p, p2)
-	p.powers[pw_flashing] = 25
-
-	p.mo.state = S_PLAY_STND
-	p.mo.translation = nil
-	
-	p.heist.parry_time = 0
-	p.heist.parry_cooldown = 0
-
-	S_StartSound(p.mo, sfx_s1ad)
-end
-
 local TIERS = {
 	{sfx_dmga1, sfx_dmgb1},
 	{sfx_dmga2, sfx_dmgb2},
@@ -112,41 +90,6 @@ local function Damage(p, sp)
 
 	FangsHeist.runHook("PlayerHit", p, p2)
 	return true
-end
-
-local function RegisterGuard(atk, vic)
-	if vic then
-		local knockbackSpeed = 20
-
-		if atk.heist.perf_parry_time then
-			knockbackSpeed = 35
-		end
-
-		vic.heist.attack_time = 0
-		local mx, my, mz = L_ReturnThrustXYZ(atk.mo, {
-			x = vic.mo.x,
-			y = vic.mo.y,
-			z = vic.mo.z+vic.mo.height/2
-		}, knockbackSpeed*atk.mo.scale)
-		local angle = R_PointToAngle2(atk.mo.x, atk.mo.y, vic.mo.x, vic.mo.y)
-
-		vic.mo.momx = mx
-		vic.mo.momy = my
-		vic.mo.momz = mz
-		P_MovePlayer(vic)
-
-		FangsHeist.runHook("PlayerParried", atk, vic)
-	end
-
-	FangsHeist.playVoiceline(atk, "parry")
-
-	if atk.heist.perf_parry_time then
-		PerfectParry(atk, vic)
-		return 2
-	end
-
-	OkParry(atk, vic)
-	return 1
 end
 
 local function CanClash(p, sp)
@@ -202,12 +145,6 @@ local function AttemptAttack(p, sp)
 
 	if P_PlayerInPain(sp) then return end
 	if p.heist:getTeam() == sp.heist:getTeam() then return end
-
-	if sp.mo.state == S_FH_GUARD
-	and sp.heist.parry_time then
-		RegisterGuard(sp, p)
-		return true
-	end
 
 	if CanClash(p, sp) then
 		if CanClash(p, sp) == 1 then return end
@@ -273,44 +210,6 @@ local function DoAttack(p)
 	FangsHeist.playVoiceline(p, "attack")
 end
 
-local function DoGuard(p)
-	if FangsHeist.runHook("PlayerParry", p) == true then
-		return
-	end
-
-	if not P_IsObjectOnGround(p.mo) then
-		p.mo.state = S_PLAY_FALL
-		p.pflags = $ & ~FLAGS_RESET
-		p.heist.parry_cooldown = 2*TICRATE
-		p.mo.heist_airdodge = true
-		p.powers[pw_flashing] = 15
-		P_InstaThrust(p.mo, p.mo.angle, 12*p.mo.scale)
-		P_SetObjectMomZ(p.mo, 0)
-		S_StartSound(p.mo, sfx_s3k7c)
-
-		FangsHeist.runHook("PlayerAirDodge", p)
-		return
-	end
-
-	p.mo.state = S_FH_GUARD
-	p.pflags = $ & ~(FLAGS_RESET)
-
-	local tics = FH_PRY_DUR
-	local parry_tics = FH_PRY_TICS
-	local perf_parry_tics = FH_PRY_PRF
-
-	p.mo.tics = tics
-	p.mo.translation = "FH_ParryColor"
-	p.heist.parry_time = parry_tics
-	p.heist.perf_parry_time = perf_parry_tics
-
-	p.heist.parry_cooldown = 2*TICRATE
-
-	S_StartSound(p.mo, sfx_s1a2)
-	S_StartSound(p.mo, sfx_s3k7c)
-	FangsHeist.playVoiceline(p, "parry_attempt")
-end
-
 local function RingSpill(p, dontSpill, p2)
 	if not p.rings then
 		return false
@@ -364,23 +263,6 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 		end
 	end
 
-	if t.state == S_FH_GUARD
-	and t.player.heist.parry_time
-	and canDamage
-	and i
-	and i.valid
-	and i.type ~= MT_PLAYER then
-		RegisterGuard(t.player)
-
-		if i.flags & MF_ENEMY|MF_BOSS then
-			P_DamageMobj(i, t, t)
-		end
-
-		t.player.powers[pw_flashing] = 35
-		FangsHeist.runHook("PlayerParriedEnemy", t.player, i)
-		return false
-	end
-
 	if s and s.valid and s.player and s.player.heist then
 		local team1 = t.player.heist:getTeam()
 		local team2 = s.player.heist:getTeam()
@@ -396,43 +278,6 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 
 	return forced
 end, MT_PLAYER)
-
-local function reflection(mobj,proj)
-	if not FangsHeist.isMode() then return end
-	if not (mobj and mobj.player and mobj.player.heist) then
-		return
-	end
-
-	if not mobj.player.heist:isAlive() then return end
-	if mobj.state ~= S_FH_GUARD then return end
-	if not mobj.player.heist.parry_time then return end
-	if not (proj.flags & MF_MISSILE) then return end
-	if proj.target == mobj then return end
-	if proj.z > mobj.z+mobj.height then return end
-	if mobj.z > proj.z+proj.height then return end
-
-	proj.momx = -$
-	proj.momy = -$
-	proj.momz = -$
-	proj.angle = $ - ANGLE_180
-	proj.target = mobj
-
-	RegisterGuard(mobj.player)
-	FangsHeist.runHook("PlayerParriedEnemy", mobj.player, proj)
-
-	-- Gain profit based on speed of projectile.
-	local PROFIT = FH_PARRYPROFIT
-	local BASE_SPEED = 24*FU
-	local SPEED = R_PointToDist2(mobj.momx, mobj.momy, proj.momx, proj.momy)
-
-	PROFIT = $ * FixedDiv(SPEED, BASE_SPEED)/FU
-	mobj.player.heist:gainProfitMultiplied(PROFIT)
-	
-	return false
-end
-
-addHook("MobjCollide", reflection, MT_PLAYER)
-addHook("MobjMoveCollide", reflection, MT_PLAYER)
 
 addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if not FangsHeist.isMode() then return end
@@ -451,11 +296,10 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 			P_DoPlayerPain(t.player, s, i)
 			returnval = true
 		end
-	else
-		returnval = true
 	end
 
-	if i
+	if not (t.player.powers[pw_shield])
+	and i
 	and i.valid then
 		local speedAdd = 40*FixedDiv(t.player.heist.health, 100*FU)
 		local speed = FixedSqrt(
@@ -491,13 +335,23 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 	if t.health then
 		local health = FH_ATK_HEALTH
 
-		if s
-		and s.player
-		and s.player.heist then
-			health = FangsHeist.runHook("PlayerAttackDamage", s.player, t.player, i) or $ 
+		if i
+		and i.flags & MF_ENEMY then
+			health = 6*FU
 		end
 
-		t.player.heist.health = $ + FH_ATK_HEALTH
+		if i
+		and i.flags & MF_MISSILE then
+			health = 2*FU
+		end
+
+		if i
+		and i.player
+		and i.player.heist then
+			health = FangsHeist.runHook("PlayerAttackDamage", i.player, t.player) or $ 
+		end
+
+		t.player.heist.health = $ + health
 		if t.player == consoleplayer then
 			FangsHeist.doHealthShake(20)
 			P_StartQuake(28*FU, 12)
@@ -564,15 +418,6 @@ end, MT_PLAYER)
 
 return function(p)
 	if not p.heist:isAlive() then
-		if p.mo
-		and p.mo.valid
-		and p.mo.translation == "FH_ParryColor" then
-			p.mo.translation = nil
-		end
-
-		p.heist.parry_time = 0
-		p.heist.perf_parry_time = 0
-
 		return
 	end
 
@@ -585,61 +430,19 @@ return function(p)
 		P_SpawnGhostMobj(p.mo)
 	end
 
-	if p.mo.state == S_FH_GUARD then
-		if P_IsObjectOnGround(p.mo) then
-			p.pflags = $|PF_FULLSTASIS
-		end
-
-		if p.heist.parry_time then
-			p.mo.translation = "FH_ParryColor"
-			p.heist.parry_time = $-1
-		else
-			p.mo.translation = nil
-		end
-
-		p.heist.perf_parry_time = max(0, $-1)
-	else
-		if p.mo.translation == "FH_ParryColor" then
-			p.mo.translation = nil
-		end
-		p.heist.parry_time = 0
-		p.heist.perf_parry_time = 0
-	end
-
 	local press = p.cmd.buttons & ~p.lastbuttons
 
-	if p.mo.state ~= S_FH_GUARD
-	and not P_PlayerInPain(p)
+	if not P_PlayerInPain(p)
 	and not p.heist.exiting then
-		-- Parry
-		if press & BT_FIRENORMAL
-		and p.heist.attack_time == 0
-		and p.heist.attack_cooldown == 0
-		and p.heist.parry_cooldown == 0 then
-			DoGuard(p)
-		end
-
 		-- Attack
 		if press & BT_ATTACK
 		and p.heist.attack_time == 0
-		and p.heist.attack_cooldown == 0
-		and p.mo.state ~= S_FH_GUARD then
+		and p.heist.attack_cooldown == 0 then
 			DoAttack(p)
 		end
 	end
 
 	if not p.heist.exiting then
-		if p.heist.parry_cooldown then
-			p.heist.parry_cooldown = $-1
-	
-			if p.heist.parry_cooldown == 0 then
-				local ghost = P_SpawnGhostMobj(p.mo)
-				ghost.destscale = 4*FU
-				ghost.translation = "FH_ParryColor"
-	
-				S_StartSound(p.mo, sfx_ngskid)
-			end
-		end
 		if p.heist.attack_cooldown then
 			p.heist.attack_cooldown = $-1
 	
@@ -686,7 +489,6 @@ return function(p)
 			end
 		end
 	else
-		p.heist.parry_cooldown = 0
 		p.heist.attack_cooldown = 0
 		p.heist.attack_time = 0
 	end
