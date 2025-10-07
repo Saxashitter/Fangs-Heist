@@ -182,7 +182,7 @@ events["Music"] = {handler = handler_snapany}
 	// Arguments:
 		// song == string
 
-FangsHeist.addHook = function(hooktype, func, typefor)
+function FH:AddHook(hooktype, func, typefor)
 	if events[hooktype] then
 		table.insert(events[hooktype], {
 			func = func,
@@ -194,7 +194,7 @@ FangsHeist.addHook = function(hooktype, func, typefor)
 	end
 end
 
-FangsHeist.runHook = function(hooktype, ...)
+function FH:RunHook(hooktype, ...)
 	if not events[hooktype] then
 		error("\x82WARNING:\x80 Can't run a nonexistant hooktype! (\""..hooktype..'"', 2)
 	end

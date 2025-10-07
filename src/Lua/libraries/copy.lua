@@ -1,4 +1,4 @@
-local function copy(tbl)
+function FH:DeepCopy(tbl)
 	if type(tbl) ~= "table" then
 		return tbl
 	end
@@ -6,10 +6,8 @@ local function copy(tbl)
 	local _tbl = {}
 
 	for k,v in pairs(tbl) do
-		_tbl[k] = copy(v)
+		_tbl[k] = self:DeepCopy(v)
 	end
 
 	return _tbl
 end
-
-return copy

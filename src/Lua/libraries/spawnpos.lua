@@ -1,4 +1,3 @@
-local module = {}
 
 local function SectorCeilingZ(sector, x, y)
 	if not sector then
@@ -28,7 +27,7 @@ local function SectorFloorZ(sector, x, y)
 	return z
 end
 
-module.getMobjSpawnHeight = function(mobjtype, x, y, dz, flip, scale, absolutez)
+function FH:GetMobjSpawnZ(mobjtype, x, y, dz, flip, scale, absolutez)
 	local sector = R_PointInSubsector(x, y).sector
 	local mobjdata = mobjinfo[mobjtype]
 
@@ -43,12 +42,10 @@ module.getMobjSpawnHeight = function(mobjtype, x, y, dz, flip, scale, absolutez)
 	return SectorFloorZ(sector, x, y) + dz
 end
 
-module.getThingSpawnHeight = function(mobjtype, mthing, x, y)
+function FH:GetThingSpawnZ(mobjtype, mthing, x, y)
 	local dz = mthing.z*FU
 	local flip = mobjinfo[mobjtype].flags & MF_SPAWNCEILING or mthing.options & MTF_OBJECTFLIP
 	local absolutez = mthing.options & MTF_ABSOLUTEZ
 
-	return module.getMobjSpawnHeight(mobjtype, x, y, dz, flip, mthing.scale, absolutez);
+	return self:GetMobjSpawnZ(mobjtype, x, y, dz, flip, mthing.scale, absolutez);
 end
-
-return module

@@ -11,6 +11,7 @@
 })]]
 
 rawset(_G, "FH", {})
+rawset(_G, "FH_API", {})
 rawset(_G, "FH_N", {})
 rawset(_G, "FH_H", {})
 

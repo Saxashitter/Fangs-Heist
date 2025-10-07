@@ -46,10 +46,10 @@ local DEFAULT = {
 	info = _NIL,
 }
 
-FangsHeist.Gamemodes = {}
-FangsHeist.GametypeIDs = {}
+FH.Gamemodes = {}
+FH.GametypeIDs = {}
 
-function FangsHeist.addGamemode(gt)
+function FH:AddGamemode(gt)
 	for k,v in pairs(DEFAULT) do
 		if gt[k] == nil
 		or type(gt[k]) ~= type(v) then
@@ -57,11 +57,11 @@ function FangsHeist.addGamemode(gt)
 		end
 	end
 
-	gt.index = #FangsHeist.Gamemodes+1
+	gt.index = #self.Gamemodes+1
 
 	G_AddGametype({
-	    name = "FH: "..gt.name,
-	    identifier = "FANGSHEIST"..gt.id,
+	    name = gt.name,
+	    identifier = "FH_"..gt.id,
 	    typeoflevel = gt.tol,
 	    intermissiontype = int_none,
 	    rules = GTR_FRIENDLYFIRE|GTR_SPAWNINVUL|GTR_DEATHPENALTY|GTR_SPAWNENEMIES,
@@ -70,25 +70,26 @@ function FangsHeist.addGamemode(gt)
 		description = gt.desc
 	})
 
-	gt.gametype = _G["GT_FANGSHEIST"..gt.id]
-	table.insert(FangsHeist.Gamemodes, gt)
-	FangsHeist.GametypeIDs[_G["GT_FANGSHEIST"..gt.id]] = #FangsHeist.Gamemodes
+	gt.gametype = _G["GT_FH_"..gt.id]
+	table.insert(self.Gamemodes, gt)
 
-	return #FangsHeist.Gamemodes
+	self.GametypeIDs[_G["GT_FH_"..gt.id]] = #self.Gamemodes
+
+	return #self.Gamemodes
 end
 
-function FangsHeist.getGamemode()
-	local i = FangsHeist.GametypeIDs[gametype]
+function FH:GetGamemode()
+	local i = self.GametypeIDs[gametype]
 
-	if not FangsHeist.Gamemodes[i] then
-		return FangsHeist.Gamemodes[1]
+	if not self.Gamemodes[i] then
+		return self.Gamemodes[1]
 	end
 
-	return FangsHeist.Gamemodes[i]
+	return self.Gamemodes[i]
 end
 
-FangsHeist.Solo = dofile "Modules/Gamemodes/Solo/def.lua"
-FangsHeist.Duo = dofile "Modules/Gamemodes/Duo/def.lua"
-FangsHeist.Trio = dofile "Modules/Gamemodes/Trio/def.lua"
-FangsHeist.Coop = dofile "Modules/Gamemodes/Co-op/def.lua"
-FangsHeist.Signless = dofile "Modules/Gamemodes/Signless/def.lua"
+FH.SoloGamemode = dofile "gamemodes/Solo/def.lua"
+FH.DuoGamemode = dofile "gamemodes/Duo/def.lua"
+FH.TrioGamemode = dofile "gamemodes/Trio/def.lua"
+FH.CoopGamemode = dofile "gamemodes/Co-op/def.lua"
+FH.SignlessGamemode = dofile "gamemodes/Signless/def.lua"

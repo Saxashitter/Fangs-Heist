@@ -1,4 +1,5 @@
 -- Colors
+-- will port everything over soon
 freeslot("SKINCOLOR_REALLYREALLYBLACK")
 skincolors[SKINCOLOR_REALLYREALLYBLACK] = {
     name = "GUHHH",

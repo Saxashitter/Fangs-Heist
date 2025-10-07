@@ -1,5 +1,3 @@
-local module = {}
-
 local fovvars
 local R_FOV = function(num)
 	if not fovvars then
@@ -42,7 +40,7 @@ local BASEVIDHEIGHT = 200
 -- Return Example:
 -- {x = 0, y = 0, scale = FRACUNIT, onScreen = false}
 
-function module.ObjectTracking(v, p, c, point, reverse, allowspectator)
+function FH_H:WorldToScreen(v, p, c, point, reverse, allowspectator)
 	--local cameraNum = c.pnum - 1
 	local viewx, viewy, viewz, viewangle, aimingangle, viewroll = SG_GetViewVars(v, p, c, allowspectator)
 
@@ -54,7 +52,7 @@ function module.ObjectTracking(v, p, c, point, reverse, allowspectator)
 		onScreen = false
 	}
 
-	if (viewx == nil and viewy == nil and (p.spectator and not allowspectator))
+	if (viewx == nil and viewy == nil and (p.spectator and not allowspectator)) then
 		return result
 	end
 
@@ -154,5 +152,3 @@ function module.ObjectTracking(v, p, c, point, reverse, allowspectator)
 	result.y = $ - ((v.height()/v.dupy()) - BASEVIDHEIGHT)<<(FRACBITS-(splitscreen and 2 or 1))
 	return result
 end
-
-return module
