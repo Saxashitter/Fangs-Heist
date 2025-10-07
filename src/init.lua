@@ -1,4 +1,4 @@
-rawset(_G, "FangsHeist", {
+--[[rawset(_G, "FangsHeist", {
 	Net = {},
 	Objects = {},
 	Save = {},
@@ -8,14 +8,20 @@ rawset(_G, "FangsHeist", {
 	Num = 1,
 	String = "1.0.1",
 	}
-})
+})]]
+
+rawset(_G, "FH", {})
+rawset(_G, "FH_N", {})
+rawset(_G, "FH_H", {})
+
+FH.Version = "2.0.0: Quality of Heist"
+
 /*
 FANG'S HEIST BY TEAM FRACTURE 
 LED BY TEAM DIRECTOR: SAXASHITTER
-
-Official Sequel of Nick's Pizza Time!
 */
-dofile "freeslots"
+
+--[[dofile "freeslots"
 dofile "hooks.lua"
 dofile "constants"
 dofile "characters"
@@ -60,4 +66,15 @@ dofile "Movesets/Amy"
 dofile "Movesets/Fang"
 dofile "Movesets/Metal Sonic"
 
-dofile "Compat/Speed Cap"
+dofile "Compat/Speed Cap"]]
+
+--[[
+	load order:
+	libraries/
+	setup/
+	functions/
+	hooks/
+	characters/
+	gamemodes/
+	hud/
+]]
