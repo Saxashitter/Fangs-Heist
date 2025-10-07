@@ -481,7 +481,9 @@ function REQUEST:draw(selected, v, c, transparency)
 end
 
 function state:enter()
-	READY_TICS = 0
+	if self == consoleplayer then
+		READY_TICS = 0
+	end
 
 	self.heist.team = {}
 

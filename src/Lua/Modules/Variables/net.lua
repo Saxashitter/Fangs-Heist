@@ -12,7 +12,7 @@ return {
 	game_over_winline = "",
 
 	pregame = true,
-	pregame_time = 30*TICRATE,
+	pregame_time = 60*TICRATE,
 	pregame_transparency = 0,
 	pregame_cam = {enabled = false, x=0,y=0,z=0,angle=0,dist=0},
 

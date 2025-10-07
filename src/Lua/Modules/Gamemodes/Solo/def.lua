@@ -5,7 +5,7 @@ local gamemode = {
 	teamlimit = 1,
 	tol = TOL_HEIST|TOL_HEISTROUND2,
 	twoteamsleft = true,
-	exitalwaysopen = false,
+	treasures = false
 }
 local path = "Modules/Gamemodes/Solo/"
 local spawnpos = FangsHeist.require "Modules/Libraries/spawnpos"
@@ -76,6 +76,7 @@ function gamemode:init(map)
 	FangsHeist.Net.escape_hurryup = true
 	FangsHeist.Net.escape_opengoal = 80*TICRATE
 	FangsHeist.Net.escape_on_start = false
+	FangsHeist.Net.two_teams_left_enabled = self.twoteamsleft
 
 	FangsHeist.Net.last_man_standing = false
 	FangsHeist.Net.two_teams_left = false
@@ -151,13 +152,21 @@ function gamemode:load()
 			FangsHeist.Net.round_2 = true
 
 			local pos = {
-				thing.x*FU,
-				thing.y*FU,
-				spawnpos.getThingSpawnHeight(MT_PLAYER, thing, thing.x*FU, thing.y*FU),
-				thing.angle*ANG1
+				x = thing.x*FU,
+				y = thing.y*FU,
+				z = spawnpos.getThingSpawnHeight(MT_PLAYER, thing, thing.x*FU, thing.y*FU) + 24*FU,
+				a = thing.angle*ANG1
 			}
 
-			FangsHeist.Net.round_2_teleport.pos = pos
+			local mobj = P_SpawnMobj(pos.x, pos.y, pos.z, MT_THOK)
+			mobj.angle = pos.a
+			mobj.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_NOBLOCKMAP
+			mobj.state = S_FH_ROUNDPORTAL
+			mobj.destscale = 2*FU
+			mobj.scale = 2*FU
+			mobj.height = 55*FU
+
+			FangsHeist.Net.round_2_teleport = mobj
 		end
 
 		if thing.type == 3843 then
@@ -172,7 +181,8 @@ function gamemode:load()
 			self:spawnRound2Portal(pos)
 		end
 
-		if treasure_things[thing.type] then
+		if treasure_things[thing.type]
+		and self.treasures then
 			table.insert(treasure_spawns, {
 				x = thing.x*FU,
 				y = thing.y*FU,
@@ -202,7 +212,7 @@ function gamemode:load()
 		exit.tics = -1
 		exit.state = S_FH_GOALPORTAL
 		exit.angle = a
-		exit.height = 48*FU
+		exit.height = 55*FU
 		exit.flags = (MF_NOGRAVITY|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOBLOCKMAP)
 		self:manageRing(exit, not self:canExit(), true)
 	
@@ -219,12 +229,28 @@ function gamemode:load()
 	self:spawnSign()
 end
 
+function gamemode:twoTeamsLeft(first_team, second_team)
+	local orig_song = FangsHeist.Net.twoteamsleft_theme
+	local song = FangsHeist.runHook("2TeamsLeft", first_team, second_team)
+		or orig_song
+
+	FangsHeist.Net.twoteamsleft_theme = song
+
+	FangsHeist.Net.two_teams_left = true
+	FangsHeist.Net.time_left = 180*TICRATE
+	FangsHeist.Net.max_time_left = 180*TICRATE
+	FangsHeist.Net.escape_hurryup = false
+
+	FangsHeist.Net.go_go_go = false
+	FangsHeist.doTTLHUD()
+end
+
 function gamemode:update()
 	if FangsHeist.Net.escape then
 		self:manageEscape()
 
 		-- TODO: clean this up
-		if self.twoteamsleft
+		if FangsHeist.Net.two_teams_left_enabled
 		and not FangsHeist.Net.two_teams_left
 		and not self:isHurryUp()
 		and FangsHeist.Net.time_left then
@@ -256,19 +282,7 @@ function gamemode:update()
 			end
 
 			if counted_teams <= 2 then
-				local orig_song = FangsHeist.Net.twoteamsleft_theme
-				local song = FangsHeist.runHook("2TeamsLeft", first_team, second_team)
-					or orig_song
-
-				FangsHeist.Net.twoteamsleft_theme = song
-
-				FangsHeist.Net.two_teams_left = true
-				FangsHeist.Net.time_left = 180*TICRATE
-				FangsHeist.Net.max_time_left = 180*TICRATE
-				FangsHeist.Net.escape_hurryup = false
-
-				FangsHeist.Net.go_go_go = false
-				FangsHeist.doTTLHUD()
+				self:twoTeamsLeft(first_team, second_team)
 			end
 		end
 	end
@@ -347,6 +361,7 @@ function gamemode:music()
 	end
 
 	local p = displayplayer
+	local gamemode = FangsHeist.getGamemode()
 
 	if not FangsHeist.Net.time_left then
 		return "FHTUP", true
@@ -367,8 +382,23 @@ function gamemode:music()
 		return FangsHeist.Net.gogogo_theme, true, volume
 	end
 
-	if (p and p.valid and p.heist and p.heist.reached_second) then
+	if p
+	and p.valid
+	and p.heist
+	and (p.heist.reached_second
+	or (p.heist.round_anim and not p.heist.round_fadeout)) then
 		return FangsHeist.Net.round2_theme, true, volume
+	end
+
+	if p
+	and p.valid
+	and p.heist
+	and (p.heist.round_anim and p.heist.round_fadeout) then
+		volume = ease.linear(
+			FixedDiv(p.heist.round_fadeout, gamemode.round2_fadeout),
+			0,
+			$
+		)
 	end
 
 	return FangsHeist.Net.escape_theme, true, volume
@@ -439,6 +469,10 @@ function gamemode:playerthink(p)
 				p.mo.state = S_PLAY_WALK
 			end
 		end
+	end
+
+	if FangsHeist.Net.escape then
+		self:manageRound2Animation(p)
 	end
 end
 
@@ -545,15 +579,18 @@ function gamemode:manageExiting()
 				continue
 			end
 
+			S_StartSound(p.mo, sfx_s1c3)
+
 			if p.heist:hasSign() then
 				local team = p.heist:getTeam()
 	
 				team.had_sign = true
+				FangsHeist.startIntermission()
 			end
-	
+
 			for i = #p.heist.pickup_list, 1, -1 do
 				local v = p.heist.pickup_list[i]
-	
+
 				FangsHeist.Carriables.RespawnCarriable(v.mobj)
 				table.remove(p.heist.pickup_list, i)
 			end
@@ -606,6 +643,27 @@ function gamemode:startEscape(p)
 		return
 	end
 
+	local counted_teams = 0
+
+	for k, team in ipairs(FangsHeist.Net.teams) do
+		local exiting = 0
+		local count = 0
+
+		for _, p in ipairs(team) do
+			if not (p and p.valid and p.heist) then continue end
+
+			count = $+1
+			if p.heist.spectator then exiting = $+1; continue end
+			if p.heist.exiting then exiting = $+1; continue end
+		end
+		if exiting == count then continue end
+
+		counted_teams = $+1
+	end
+
+	if FangsHeist.Net.two_teams_left_enabled then
+		FangsHeist.Net.two_teams_left_enabled = counted_teams > 2
+	end
 	FangsHeist.Net.escape = true
 	FangsHeist.Net.time_escape_started = leveltime
 

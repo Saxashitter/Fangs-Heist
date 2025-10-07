@@ -58,9 +58,9 @@ states[freeslot "S_FH_CLASH"] = {
 }
 
 states[freeslot "S_FH_BLOCK"] = {
-	sprite = freeslot "SPR_FHSH"
+	sprite = freeslot "SPR_FHSH",
 	frame = A|FF_FULLBRIGHT,
-	tics = -1
+	tics = -1,
 	nextstate = S_FH_BLOCK
 }
 
@@ -191,9 +191,9 @@ for i = 1, 4 do
 	sfxinfo[freeslot("sfx_dmgb"..i)].caption = "Attack"
 end
 
-for i = 1, 2 do
-	sfxinfo[freeslot("sfx_parry"..i)].caption = "Parry"
-end
+sfxinfo[freeslot "sfx_shdon"].caption = "Shield on"
+sfxinfo[freeslot "sfx_shdoff"].caption = "Shield off"
+sfxinfo[freeslot "sfx_shdbrk"].caption = "BREAK!!"
 sfxinfo[freeslot "sfx_fhclsh"].caption = "Clink!"
 
 sfxinfo[freeslot "sfx_gogogo"].caption = "G-G-G-GO! GO! GO!"

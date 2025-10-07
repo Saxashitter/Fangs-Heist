@@ -31,6 +31,7 @@ local DEFAULT = {
 	shouldend = _NIL,
 	start = _NIL,
 	finish = _NIL,
+	profitgain = _NIL,
 	playerspawn = _NIL,
 	playerinit = _NIL,
 	preplayerthink = _NIL,
@@ -90,7 +91,4 @@ FangsHeist.Solo = dofile "Modules/Gamemodes/Solo/def.lua"
 FangsHeist.Duo = dofile "Modules/Gamemodes/Duo/def.lua"
 FangsHeist.Trio = dofile "Modules/Gamemodes/Trio/def.lua"
 FangsHeist.Coop = dofile "Modules/Gamemodes/Co-op/def.lua"
-
--- FangsHeist.Remix = dofile "Modules/Gamemodes/Remix/def.lua"
--- Hey, file snooper! Expect to see Remix mode in a later patch.
--- ...Tag Team? Nah, that's scrapped forever.
+FangsHeist.Signless = dofile "Modules/Gamemodes/Signless/def.lua"

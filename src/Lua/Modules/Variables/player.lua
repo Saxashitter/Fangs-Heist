@@ -11,9 +11,9 @@ return {
 	attack_cooldown = 0,
 	attack_time = 0,
 
-	parry_cooldown = 0,
-	perf_parry_time = 0,
-	parry_time = 0,
+	block_deb = 0,
+	block_dur = FU,
+	blocking = false,
 
 	death_time = 5*TICRATE,
 
@@ -52,6 +52,11 @@ return {
 	pregame_state = "",
 
 	reached_second = false, -- only used in round 2
+	round_tpdelay = 0,
+	round_shootout = 0,
+	round_fadeout = 0,
+	round_debounce = 0,
+	round_anim = false,
 
 	exiting = false
 }

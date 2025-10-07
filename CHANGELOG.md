@@ -21,8 +21,12 @@ So, it may look like I'm making up words, but I genuinely think calling this a "
 	• "2 Teams Left" mechanic added. Aims to end games faster and force a confrontation between the 2 teams.
 	• Added more HUD triggers instead of relying on the player's current state (doRound2HUD function)
 	• Added hit-lag for more responsive combat.
-	• Changed Marvellous Queen and Wario Land portal to rings reminiscent to Sonic Adventure 2.
+	• Changed Marvellous Queen and Wario Land portal to rings reminiscent to Sonic Adventure 2. They are now both the Goal Ring and the Round 2 Ring.
 	• Goal Ring now opens after a certain amount of time.
+	• Touching the Goal Ring with the sign in-hand ends the match.
+	• Added Signless mode. Collect more Profit than the rest of your team to win.
+	• Gave Sonic a Spring Jump by pressing Spin mid-air.
+	• If you play Manual, Amy now aims to where your camera is aiming when using Melee.
 • Zeko
 	• Remade a bunch of THZ2, making the map more polished.
 • El3ctr0h3ll

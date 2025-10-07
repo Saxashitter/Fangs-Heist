@@ -33,6 +33,14 @@ local function GetTeamLeader(team)
 		end
 	end
 end
+
+addHook("ShouldDamage", function()
+	if not FangsHeist.isMode() then return end
+	if FangsHeist.Net.game_over then
+		return false
+	end
+end)
+
 return function()
 	local gamemode = FangsHeist.getGamemode()
 
@@ -48,6 +56,16 @@ return function()
 
 	local t = FangsHeist.Net.game_over_ticker
 	local song = "FH_INT"
+
+	if t == FangsHeist.GAME_HIT then
+		S_StartSound(nil, sfx_nargam)
+		S_StartSound(nil, sfx_s1c3)
+		for mobj in mobjs.iterate() do
+			if not (mobj and mobj.valid) then continue end
+	
+			mobj.flags = $|MF_NOTHINK
+		end
+	end
 
 	if t == FangsHeist.GAME_TICS then
 		S_StartSound(nil, sfx_nartgw)
@@ -95,5 +113,7 @@ return function()
 		COM_BufInsertText(server, ("map %s -gametype %s -f"):format(GetMostVotedMap()))
 	end
 
-	return true
+	if FangsHeist.Net.game_over_ticker >= FangsHeist.GAME_HIT then
+		return true
+	end
 end

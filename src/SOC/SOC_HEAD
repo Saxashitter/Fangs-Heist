@@ -126,7 +126,6 @@ InterScreen = INTERSCR
 FlickyList = Demo
 Lua.FH_Time = 240
 Lua.FH_EscapeTheme = SPRHRO
-Lua.FH_Round2Theme = SPRHRO
 
 Level 34
 Levelname = FD Techno Hill
@@ -141,7 +140,6 @@ InterScreen = INTERSCR
 FlickyList = Demo
 Lua.FH_Time = 300
 Lua.FH_EscapeTheme = KARSPR
-Lua.FH_Round2Theme = KARSPR
 
 Level 35
 Levelname = FD Castle Eggman
@@ -157,7 +155,6 @@ FlickyList = Demo
 Weather = 1
 Lua.FH_Time = 300
 Lua.FH_EscapeTheme = SPRHRO
-Lua.FH_Round2Theme = SPRHRO
 Lua.FH_EscapeLinedef = 358
 
 Level P1

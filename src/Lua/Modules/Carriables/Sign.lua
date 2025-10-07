@@ -26,12 +26,12 @@ local function OnSpawn(sign, _, _, _, angle)
 	board.target = sign
 	board.state = S_SIGNBOARD
 	board.movedir = ANGLE_90
-	sign.boardmo = board
+	sign.tracer = board
 
 	local bust = P_SpawnMobjFromMobj(board, 0, 0, 0, MT_OVERLAY)
 	bust.target = board
 	bust.state = S_EGGMANSIGN
-	sign.bustmo = bust
+	board.tracer = bust
 end
 
 local function CanPickUp(p)
@@ -45,13 +45,13 @@ local function OnCapture(sign, pmo)
 
 	if sign.bustmo and sign.bustmo.valid then
 		if skins[pmo.skin].sprites[SPR2_SIGN].numframes then
-			sign.bustmo.skin = pmo.skin
-			sign.bustmo.color = pmo.player.skincolor
-			sign.bustmo.state = S_PLAY_SIGN
+			sign.tracer.tracer.skin = pmo.skin
+			sign.tracer.tracer.color = pmo.player.skincolor
+			sign.tracer.tracer.state = S_PLAY_SIGN
 		else
-			sign.bustmo.skin = "sonic" -- apparently i can't set a skin to nil? sonic shouldn't have highresscale, atleast not in vanilla sooo
-			sign.bustmo.color = SKINCOLOR_NONE
-			sign.bustmo.state = S_CLEARSIGN
+			sign.tracer.tracer.skin = "sonic" -- apparently i can't set a skin to nil? sonic shouldn't have highresscale, atleast not in vanilla sooo
+			sign.tracer.tracer.color = SKINCOLOR_NONE
+			sign.tracer.tracer.state = S_CLEARSIGN
 		end
 	end
 
@@ -84,21 +84,21 @@ local function PostThink(sign)
 		FADED_OUT_MUSIC = result
 		S_FadeMusic(0, MUSICRATE)
 	end
+
 	if result == false
 	and FADED_OUT_MUSIC then
 		FADED_OUT_MUSIC = result
 		S_FadeMusic(100, MUSICRATE)
 	end
-		
 
 	if not (sign.settings.target and sign.settings.target.player and sign.settings.target.player == consoleplayer) then
-		sign.bustmo.frame = $ & ~FF_TRANS80
-		sign.boardmo.frame = $ & ~FF_TRANS80
+		sign.tracer.frame = $ & ~FF_TRANS80
+		sign.tracer.tracer.frame = $ & ~FF_TRANS80
 		return
 	end
 
-	sign.bustmo.frame = $|FF_TRANS80
-	sign.boardmo.frame = $|FF_TRANS80
+	sign.tracer.frame = $|FF_TRANS80
+	sign.tracer.tracer.frame = $|FF_TRANS80
 end
 
 local function _draw(self, v,p,c, result, trans)

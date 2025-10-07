@@ -72,32 +72,34 @@ addHook("ThinkFrame", do
 	local gamemode = FangsHeist.getGamemode()
 	gamemode:update()
 
-	-- manage music
-	local song
-	local volume
-	local loop
-
-	song, loop, volume = gamemode:music()
-
-	local custom, custom2, custom3 = FangsHeist.runHook("Music", song)
-	if type(custom) == "string" then
-		song = custom
-	end
-	if type(custom2) == "boolean" then
-		loop = custom2
-	end
-	if type(custom3) == "number" then
-		volume = custom3
-	end
-
-	if song
-	and mapmusname ~= song then
-		mapmusname = song
-		S_ChangeMusic(song, loop)
-	end
-	if song
-	and volume ~= nil then
-		S_SetInternalMusicVolume(volume)
+	if not FangsHeist.Net.game_over then
+		-- manage music
+		local song
+		local volume
+		local loop
+	
+		song, loop, volume = gamemode:music()
+	
+		local custom, custom2, custom3 = FangsHeist.runHook("Music", song)
+		if type(custom) == "string" then
+			song = custom
+		end
+		if type(custom2) == "boolean" then
+			loop = custom2
+		end
+		if type(custom3) == "number" then
+			volume = custom3
+		end
+	
+		if song
+		and mapmusname ~= song then
+			mapmusname = song
+			S_ChangeMusic(song, loop)
+		end
+		if song
+		and volume ~= nil then
+			S_SetInternalMusicVolume(volume)
+		end
 	end
 
 	// dialogue.tick()
@@ -106,7 +108,8 @@ end)
 addHook("PostThinkFrame", do
 	if not FangsHeist.isMode() then return end
 	if FangsHeist.Net.pregame
-	or FangsHeist.Net.game_over then
+	or (FangsHeist.Net.game_over
+	and FangsHeist.Net.game_over_ticker >= FangsHeist.GAME_HIT) then
 		return
 	end
 
@@ -116,7 +119,8 @@ end)
 addHook("PreThinkFrame", do
 	if not FangsHeist.isMode() then return end
 	if FangsHeist.Net.pregame
-	or FangsHeist.Net.game_over then
+	or (FangsHeist.Net.game_over
+	and FangsHeist.Net.game_over_ticker >= FangsHeist.GAME_HIT) then
 		return
 	end
 

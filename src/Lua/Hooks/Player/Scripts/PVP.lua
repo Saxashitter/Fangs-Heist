@@ -5,12 +5,14 @@ rawset(_G, "FH_ATK_ZMULT", FU*5)
 rawset(_G, "FH_ATK_HEALTH", FU*20)
 rawset(_G, "FH_ATK_HEALTHDEATH", FU*100)
 
--- Parry Constants
-rawset(_G, "FH_PRY_DUR", 35)
-rawset(_G, "FH_PRY_TICS", 16)
-rawset(_G, "FH_PRY_PRF", 7)
+-- Block Constants
+rawset(_G, "FH_BLK_DEB", 5)
+rawset(_G, "FH_BLK_UNDEB", 10)
+rawset(_G, "FH_BLK_DEPLETION", FU/(5*TICRATE))
+rawset(_G, "FH_BLK_RECOVER", FU/(8*TICRATE))
+rawset(_G, "FH_BLK_DAMAGE", FU/5)
 
--- Hurt Constants
+-- Hurt Constant
 rawset(_G, "FH_HRT_DUR", 35)
 
 local FLAGS_RESET = PF_JUMPED|PF_THOKKED|PF_SPINNING|PF_STARTDASH|PF_BOUNCING|PF_GLIDING
@@ -81,7 +83,7 @@ local function Damage(p, sp)
 	P_MovePlayer(p)
 
 	p.heist.attack_time = 0
-	p.heist.attack_cooldown = 9
+	p.heist.attack_cooldown = min(12, $)
 	p.powers[pw_flashing] = max($, FH_ATK_FLASH_TICS)
 
 	if p == displayplayer then
@@ -120,6 +122,86 @@ local function CanClash(p, sp)
 	end
 
 	return false
+end
+
+local function DoAttack(p)
+	if FangsHeist.runHook("PlayerAttack", p) == true then
+		return
+	end
+
+	if p.heist.instashield
+	and p.heist.instashield.valid then
+		P_RemoveMobj(p.heist.instashield)
+	end
+
+	local shield = P_SpawnMobjFromMobj(p.mo, 0,0,p.mo.height/2, MT_THOK)
+	shield.state = S_FH_WHIFF
+	shield.frame = $|FF_FULLBRIGHT
+	shield.scale = 2*FU
+	shield.destscale = shield.scale
+
+	if p.mo.eflags & MFE_VERTICALFLIP then
+		shield.eflags = $|MFE_VERTICALFLIP
+	else
+		shield.eflags = $ & ~MFE_VERTICALFLIP
+	end
+
+	p.heist.instashield = shield
+
+	p.heist.attack_cooldown = TICRATE
+	p.heist.attack_time = G+1
+
+	S_StartSound(p.mo, sfx_s3k42)
+	FangsHeist.playVoiceline(p, "attack")
+end
+
+local function DoBlock(p)
+	if p.heist.shield
+	and p.heist.shield.valid then
+		P_RemoveMobj(p.heist.shield)
+	end
+
+	local block = P_SpawnMobjFromMobj(p.mo, 0,0,0, MT_THOK)
+	block.state = S_FH_BLOCK
+	block.flags = MF_SCENERY|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOBLOCKMAP|MF_NOGRAVITY
+	block.target = p.mo
+	block.color = p.mo.color
+	block.dispoffset = 1
+	block.alpha = tofixed("0.65")
+
+	p.heist.shield = block
+	p.heist.blocking = true
+	p.heist.block_deb = FH_BLK_DEB
+
+	S_StartSound(p.mo, sfx_shdon)
+end
+
+local function StopBlock(p)
+	if p.heist.shield
+	and p.heist.shield.valid then
+		P_RemoveMobj(p.heist.shield)
+	end
+
+	p.heist.shield = nil
+	p.heist.blocking = false
+	p.heist.block_deb = FH_BLK_UNDEB
+
+	S_StartSound(p.mo, sfx_shdoff)
+end
+
+local function RegisterBlock(p, damage)
+	damage = $ or FH_BLK_DAMAGE
+	if p.heist.block_dur - damage > 0 then
+		p.heist.block_dur = $ - damage
+		return false
+	end
+
+	-- shields broken
+	StopBlock(p)
+	p.heist.block_dur = 0
+	p.heist.block_deb = 5*TICRATE
+	S_StartSound(p.mo, sfx_shdbrk)
+	return true
 end
 
 local function AttemptAttack(p, sp)
@@ -182,33 +264,32 @@ local function AttemptAttack(p, sp)
 		return
 	end
 
+	if sp.heist.blocking then
+		if not RegisterBlock(sp) then
+			P_InstaThrust(p.mo,
+				R_PointToAngle2(p.mo.x, p.mo.y, sp.mo.x, sp.mo.y),
+				FixedMul(-max(12*FU, p.speed), p.mo.scale)
+			)
+			p.mo.momz = $*-1/2
+			p.mo.state = S_PLAY_FALL
+			p.pflags = $ & ~FLAGS_RESET
+
+			S_StartSound(p.mo, sfx_fhclsh)
+			S_StartSound(sp.mo, sfx_fhclsh)
+
+			p.heist.attack_time = 0
+			p.heist.attack_cooldown = max(24, $)
+
+			sp.heist.attack_time = 0
+			sp.heist.attack_cooldown = 5
+
+			return
+		end
+	end
+
 	Damage(p, sp)
 end
 
-local function DoAttack(p)
-	if FangsHeist.runHook("PlayerAttack", p) == true then
-		return
-	end
-
-	if p.mo.heistwhiff
-	and p.mo.heistwhiff.valid then
-		P_RemoveMobj(p.mo.heistwhiff)
-	end
-
-	local shield = P_SpawnMobjFromMobj(p.mo, 0,0,p.mo.height/2, MT_THOK)
-	shield.state = S_FH_WHIFF
-	shield.frame = $|FF_FULLBRIGHT
-	shield.scale = 2*FU
-	shield.destscale = shield.scale
-
-	p.heist.instashield = shield
-
-	p.heist.attack_cooldown = TICRATE
-	p.heist.attack_time = G+1
-
-	S_StartSound(p.mo, sfx_s3k42)
-	FangsHeist.playVoiceline(p, "attack")
-end
 
 local function RingSpill(p, dontSpill, p2)
 	if not p.rings then
@@ -273,6 +354,14 @@ addHook("ShouldDamage", function(t,i,s,dmg,dt)
 	end
 
 	if t.state == S_FH_CLASH then
+		return false
+	end
+
+	if canDamage
+	and t.player.heist.blocking
+	and not RegisterBlock(t.player) then
+		t.player.powers[pw_flashing] = max(TICRATE, $)
+		S_StartSound(t, sfx_fhclsh)
 		return false
 	end
 
@@ -366,37 +455,46 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 end, MT_PLAYER)
 
 FangsHeist.addPlayerScript("thinkframe", function(p)
-	if not p.heist:isAlive() then return end
-	if not p.mo.heist_airdodge then return end
+	local attackValid = p.heist.instashield and p.heist.instashield.valid
+	local shieldValid = p.heist.shield and p.heist.shield.valid
 
-	if P_IsObjectOnGround(p.mo)
-	or P_PlayerInPain(p)
-	or p.powers[pw_flashing] == 0
-	or not p.mo.health then
-		p.mo.heist_airdodge = nil
-	end
-end)
-
-FangsHeist.addPlayerScript("prethinkframe", function(p)
-	if not p.heist:isAlive() then return end
-	if not p.mo.heist_airdodge then return end
-
-	p.cmd.buttons = 0 -- no actions, just things joystick related
-end)
-
-FangsHeist.addPlayerScript("thinkframe", function(p)
-	if not (p.heist.instashield
-	and p.heist.instashield.valid)
-	or not p.heist:isAlive() then
+	if not p.heist:isAlive() then
+		if attackValid then
+			P_RemoveMobj(p.heist.instashield)
+		end
+		if shieldValid then
+			P_RemoveMobj(p.heist.shield)
+		end
 		p.heist.instashield = nil
+		p.heist.shield = nil
+
 		return
 	end
 
-	local shield = p.heist.instashield
-	P_MoveOrigin(shield,
-		p.mo.x,
-		p.mo.y,
-		p.mo.z+p.mo.height/2)
+	if attackValid then
+		local z = p.mo.z + p.mo.height/2
+		if p.mo.eflags & MFE_VERTICALFLIP then
+			p.heist.instashield.eflags = $|MFE_VERTICALFLIP
+			z = $ - p.heist.instashield.height
+		else
+			p.heist.instashield.eflags = $ & ~MFE_VERTICALFLIP
+		end
+			
+		P_MoveOrigin(p.heist.instashield,
+			p.mo.x,
+			p.mo.y,
+			z)
+	end
+	if shieldValid then
+		local scale = ease.linear(p.heist.block_dur, FU/2, FU)
+		local z = FixedMul(p.mo.height/2, FU - scale)
+
+		p.heist.shield.scale = scale
+		P_MoveOrigin(p.heist.shield,
+			p.mo.x,
+			p.mo.y,
+			p.mo.z + z)
+	end
 end)
 
 addHook("MobjMoveBlocked", function(mo)
@@ -425,20 +523,39 @@ return function(p)
 		p.heist.hitlast = nil
 	end
 
-	if p.mo.state == S_FH_STUN then
-		p.pflags = $|PF_FULLSTASIS
-		P_SpawnGhostMobj(p.mo)
+	local press = p.cmd.buttons & ~p.lastbuttons
+	local hold = p.cmd.buttons
+
+	if p.heist.blocking then
+		p.heist.block_dur = max(0, $ - FH_BLK_DEPLETION)
+	else
+		p.heist.block_dur = min(FU, $ + FH_BLK_RECOVER)
 	end
 
-	local press = p.cmd.buttons & ~p.lastbuttons
+	p.heist.block_deb = max(0, $-1)
 
 	if not P_PlayerInPain(p)
 	and not p.heist.exiting then
 		-- Attack
 		if press & BT_ATTACK
 		and p.heist.attack_time == 0
-		and p.heist.attack_cooldown == 0 then
+		and p.heist.attack_cooldown == 0
+		and not p.heist.blocking then
 			DoAttack(p)
+		end
+
+		if press & BT_FIRENORMAL
+		and p.heist.attack_time == 0
+		and p.heist.attack_cooldown == 0
+		and not p.heist.block_deb
+		and not p.heist.blocking then
+			DoBlock(p)
+		end
+
+		if not (hold & BT_FIRENORMAL)
+		and p.heist.blocking
+		and not p.heist.block_deb then
+			StopBlock(p)
 		end
 	end
 

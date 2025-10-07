@@ -8,7 +8,7 @@ local flash
 local enabled
 
 function FangsHeist.doRound2HUD()
-	secondRound = p.heist.reached_second
+	enabled = true
 	visible = 3*TICRATE
 	flash = FU
 end

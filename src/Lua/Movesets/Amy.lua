@@ -120,7 +120,7 @@ addHook("PlayerThink", function(p)
 			thokring.scale = 3*p.mo.scale/2
 			thokring.destscale = 0
 		end
-		if p.amy.twirlframes >= 3*5 then
+		if p.amy.twirlframes >= 3*12 then
 			p.mo.state = S_PLAY_FALL
 		end
 	end
@@ -133,6 +133,21 @@ addHook("PlayerThink", function(p)
 			p.mo.state = S_PLAY_FALL
 		end
 		p.powers[pw_strong] = $ & ~attackFlags
+	end
+
+	if p.mo.state == S_PLAY_MELEE
+	or p.mo.state == S_PLAY_MELEE_LANDING then
+		p.drawangle = p.mo.angle
+	end
+
+	if p.mo.state == S_PLAY_MELEE_LANDING
+	and p.speed >= 36*FRACUNIT
+	and p.cmd.buttons & BT_JUMP
+	and P_IsObjectOnGround(p.mo) then
+		P_SetObjectMomZ(p.mo, 15*p.mo.scale)
+		p.pflags = $|PF_JUMPED|PF_STARTJUMP|PF_THOKKED
+		p.mo.state = S_PLAY_ROLL
+		return true
 	end
 
 	p.powers[pw_strong] = $ & ~STR_SPRING -- not so overpowered arent you now
@@ -160,39 +175,6 @@ addHook("AbilitySpecial", function(p)
 		p.mo.state = S_FH_AMY_TWIRL
 		p.amy.twirlframes = 0
 		return true
-	end
-end)
-
-addHook("PlayerThink", function(p)
-	if not FangsHeist.isMode() then return end
-	if not check(p) then
-		return
-	end
-
-	if not canAttack(p)
-	or not p.amy then
-		return true
-	end
-	
-	if (p.mo.state == S_PLAY_MELEE_LANDING)
-	and (p.speed >= 36*FRACUNIT)
-	and (p.playerstate == PST_LIVE)
-	and not (p.pflags & PF_STASIS)
-	and not (p.pflags & PF_FULLSTASIS)
-	and (p.cmd.buttons & BT_JUMP)
-	and (P_IsObjectOnGround(p.mo) == true)
-		P_SetObjectMomZ(p.mo, 15*p.mo.scale)
-		p.pflags = $|PF_JUMPED|PF_STARTJUMP|PF_THOKKED
-		p.mo.state = S_PLAY_ROLL
-		return true
-	end
-end)
-
-
-addHook("SpinSpecial", function(p)
-	if not FangsHeist.isMode() then return end
-	if not check(p) then
-		return
 	end
 end)
 
@@ -340,7 +322,7 @@ FangsHeist.addHook("PlayerScanAttack", function(p)
 	end
 end)
 
-local AMY_SCALE = tofixed("1.25")
+local AMY_SCALE = tofixed("2.25")
 
 FangsHeist.addHook("PlayerAttackRadius", function(p)
 	if not check(p) then return end

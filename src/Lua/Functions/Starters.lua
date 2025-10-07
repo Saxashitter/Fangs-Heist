@@ -1,4 +1,5 @@
-FangsHeist.GAME_TICS = 2*TICRATE
+FangsHeist.GAME_TICS = 7*TICRATE
+FangsHeist.GAME_HIT = 75
 FangsHeist.RESULTS_TICS = 15*TICRATE
 FangsHeist.BLACKOUT_TICS = 60
 FangsHeist.SWITCH_TICS = FangsHeist.GAME_TICS + FangsHeist.RESULTS_TICS + 15*TICRATE
@@ -49,8 +50,6 @@ function FangsHeist.startIntermission()
 		return
 	end
 
-	S_StartSound(nil, sfx_nargam)
-
 	// map vote for the funny
 	local maps = {}
 	local checked = {}
@@ -93,18 +92,13 @@ function FangsHeist.startIntermission()
 	end
 
 	local i = P_RandomRange(1, #FangsHeist.WINNER_LINES)
-	FangsHeist.Net.game_over_winline = FangsHeist.WINNER_LINES[i]
-
 	local gamemode = FangsHeist.getGamemode()
+
+	FangsHeist.Net.game_over_winline = FangsHeist.WINNER_LINES[i]
 	gamemode:finish()
 
-	S_FadeMusic(0, FixedMul(MUSICRATE, tofixed("0.75")))
-
-	for mobj in mobjs.iterate() do
-		if not (mobj and mobj.valid) then continue end
-
-		mobj.flags = $|MF_NOTHINK
-	end
+	S_ChangeMusic("TEABRE", false)
+	S_StartSound(nil, sfx_lvpass)
 
 	FangsHeist.Net.game_over = true
 end

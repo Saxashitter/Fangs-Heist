@@ -10,12 +10,13 @@ gamemode.desc = "Work together."
 gamemode.id = "COOP"
 gamemode.teamlimit = 1
 gamemode.twoteamsleft = false
+gamemode.treasures = true
 gamemode.preferredhud = {
 	pos = super.preferredhud.pos,
 	profit = {
 		enabled = true,
 		string = function(profit)
-			if not FangsHeist.Net.escape then
+			if not FangsHeist.Net.profit_quota then
 				return string.char(1) .. " " .. profit
 			end
 
@@ -40,63 +41,9 @@ function gamemode:init(map)
 	FangsHeist.Net.escape_opengoal = 0
 end
 
-function gamemode:start()
-	super.start(self)
+function gamemode:load(...)
+	super.load(self, ...)
 
-	FangsHeist.Net.teams = {}
-	local singular_team = FangsHeist.initTeamTable()
-
-	for p in players.iterate do
-		if not p.heist then continue end
-
-		table.insert(singular_team, p)
-	end
-
-	FangsHeist.Net.coop_team = singular_team
-	FangsHeist.initTeam(singular_team)
-end
-
-function gamemode:canExit()
-	if not FangsHeist.Net.escape then return false end
-
-	if (FangsHeist.Net.coop_team.profit or 0) < FangsHeist.Net.profit_quota then
-		return false
-	end
-
-	return true
-end
-
-function gamemode:playerthink(p)
-	super.playerthink(self, p)
-
-	if FangsHeist.Net.pregame then return end
-	if not p.heist:isAlive() then return end
-
-	local team, i = p.heist:getTeam()
-
-	if team == FangsHeist.Net.coop_team then
-		return
-	end
-
-	for k, v in ipairs(team) do
-		if v == p then
-			table.remove(team, k)
-		end
-	end
-
-	if #team == 0 then
-		table.remove(FangsHeist.Net.teams, i)
-	end
-
-	table.insert(FangsHeist.Net.coop_team, p)
-end
-
-function gamemode:startEscape(p)
-	super.startEscape(self, p)
-
-	local team = p.heist:getTeam()
-
-	-- TODO: determine a profit quota
 	local rings = 0
 	local monitors = 0
 	local enemies = 0
@@ -131,6 +78,89 @@ function gamemode:startEscape(p)
 		* leniency / FU
 
 	FangsHeist.Net.profit_quota = profit
+end
+
+function gamemode:start()
+	super.start(self)
+
+	FangsHeist.Net.teams = {}
+	local singular_team = FangsHeist.initTeamTable()
+
+	for p in players.iterate do
+		if not p.heist then continue end
+
+		table.insert(singular_team, p)
+	end
+
+	FangsHeist.Net.coop_team = singular_team
+	FangsHeist.initTeam(singular_team)
+end
+
+function gamemode:update()
+	super.update(self)
+
+	if not FangsHeist.Net.escape then return end
+
+	if FangsHeist.Net.coop_team.profit >= FangsHeist.Net.profit_quota
+	and not FangsHeist.Net.go_go_go then
+		FangsHeist.doGoHUD()
+		S_StartSound(nil, sfx_gogogo)
+		FangsHeist.Net.go_go_go = true
+	end
+end
+
+function gamemode:canExit()
+	if not FangsHeist.Net.escape then return false end
+
+	if not FangsHeist.Net.go_go_go then
+		return false
+	end
+
+	return true
+end
+
+function gamemode:playerthink(p)
+	super.playerthink(self, p)
+
+	if FangsHeist.Net.pregame then return end
+	if not p.heist:isAlive() then return end
+
+	local team, i = p.heist:getTeam()
+
+	if team == FangsHeist.Net.coop_team then
+		return
+	end
+
+	for k, v in ipairs(team) do
+		if v == p then
+			table.remove(team, k)
+		end
+	end
+
+	if #team == 0 then
+		table.remove(FangsHeist.Net.teams, i)
+	end
+
+	table.insert(FangsHeist.Net.coop_team, p)
+
+	local has_team = false
+
+	for k, v in ipairs(FangsHeist.Net.teams) do
+		if v == FangsHeist.Net.coop_team then
+			has_team = true
+			break
+		end
+	end
+
+	if not has_team then
+		FangsHeist.initTeam(FangsHeist.Net.coop_team)
+	end
+end
+
+function gamemode:startEscape(p)
+	FangsHeist.Net.escape_opengoal = 1 -- sshhhhh they wont know
+	super.startEscape(self, p)
+	FangsHeist.Net.escape_opengoal = 0 -- they will never know
 end
 
 return FangsHeist.addGamemode(gamemode)
