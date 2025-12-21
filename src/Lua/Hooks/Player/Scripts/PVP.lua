@@ -156,6 +156,10 @@ local function DoAttack(p)
 end
 
 local function DoBlock(p)
+	if FangsHeist.runHook("PlayerShield", p) then
+		return
+	end
+
 	if p.heist.shield
 	and p.heist.shield.valid then
 		P_RemoveMobj(p.heist.shield)
@@ -174,9 +178,13 @@ local function DoBlock(p)
 	p.heist.block_deb = FH_BLK_DEB
 
 	S_StartSound(p.mo, sfx_shdon)
+	FangsHeist.playVoiceline(p, "shield")
 end
 
-local function StopBlock(p)
+local function StopBlock(p, forced)
+	if FangsHeist.runHook("PlayerUnshield", p, forced) then
+		return
+	end
 	if p.heist.shield
 	and p.heist.shield.valid then
 		P_RemoveMobj(p.heist.shield)
@@ -193,14 +201,17 @@ local function RegisterBlock(p, damage)
 	damage = $ or FH_BLK_DAMAGE
 	if p.heist.block_dur - damage > 0 then
 		p.heist.block_dur = $ - damage
+		FangsHeist.playVoiceline(p, "block")
+		FangsHeist.runHook("PlayerBlock", p, damage)
 		return false
 	end
 
 	-- shields broken
-	StopBlock(p)
+	StopBlock(p, true)
 	p.heist.block_dur = 0
 	p.heist.block_deb = 5*TICRATE
 	S_StartSound(p.mo, sfx_shdbrk)
+	FangsHeist.runHook("PlayerShieldBreak", p, damage)
 	return true
 end
 
@@ -438,6 +449,11 @@ addHook("MobjDamage", function(t,i,s,dmg,dt)
 		and i.player
 		and i.player.heist then
 			health = FangsHeist.runHook("PlayerAttackDamage", i.player, t.player) or $ 
+			local post = FangsHeist.runHook("PostPlayerAttackDamage", i.player, t.player, health)
+
+			if post ~= nil then
+				health = post
+			end
 		end
 
 		t.player.heist.health = $ + health
@@ -555,7 +571,7 @@ return function(p)
 		if not (hold & BT_FIRENORMAL)
 		and p.heist.blocking
 		and not p.heist.block_deb then
-			StopBlock(p)
+			StopBlock(p, false)
 		end
 	end
 

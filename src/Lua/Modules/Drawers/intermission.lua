@@ -10,6 +10,9 @@ local LOSER_WIDTH = 86
 local FLASH_BUILDUP = 24
 local FLASH_TICS = 10
 
+local GAME_WIDTH = 162
+local GAME_HEIGHT = 39
+
 local function RotatePoint(x_original, y_original, angle_fixedpoint)
 	local cos_angle = cos(angle_fixedpoint) -- Use fixed-point cos
 	local sin_angle = sin(angle_fixedpoint) -- Use fixed-point sin
@@ -680,7 +683,10 @@ end
 local function DrawGame(v)
 	local game_scale = tofixed("0.75")
 	local game_big_scale = FixedMul(game_scale, tofixed("1.65"))
-	local game = v.cachePatch("FH_GAME")
+	local game = {}
+	for i = 1, 5 do
+		game[i] = v.cachePatch("FH_GAME"..i)
+	end
 
 	if FangsHeist.Net.game_over_ticker < FangsHeist.GAME_HIT then
 		local tics = FangsHeist.Net.game_over_ticker
@@ -688,34 +694,88 @@ local function DrawGame(v)
 
 		local scale_duration = 17
 		local scale = ease.outcubic(FixedDiv(max(0, min(scale_duration, remain)), scale_duration), game_big_scale, game_scale)
+		local x = 160*FU - GAME_WIDTH*scale/2
+		local up_offset = 10
 	
-		local tween_duration = 35
+		local tween_duration = 26
 		local height = v.height() * FU / v.dupy()
-		local tween = ease.outback(FixedDiv(min(tics, tween_duration), tween_duration), height, 100*FU - game.height*scale/2)
+		for i = 1, #game do
+			local patch = game[i]
+			local tween = ease.outback(
+				FixedDiv(
+					min(
+						max(0, tics - up_offset*(i-1)),
+						tween_duration
+					),
+					tween_duration
+				),
+				height,
+				height/2 - GAME_HEIGHT*scale/2
+			)
+			local y = tween + GAME_HEIGHT*scale - patch.height*scale
 
-		v.drawScaled(160*FU - game.width*scale/2, tween, scale, game, V_SNAPTOTOP)
+			v.drawScaled(x, y, scale, patch, V_SNAPTOTOP)
+			x = $ + patch.width*scale
+		end
 		return
 	end
 
+	local height = v.height() * FU / v.dupy()
+	local remain_offset = 2*TICRATE
+
 	local tics = FangsHeist.Net.game_over_ticker - FangsHeist.GAME_HIT
-	local remain = FangsHeist.GAME_TICS - FangsHeist.Net.game_over_ticker
+	local remain = max(0, FangsHeist.GAME_TICS - (FangsHeist.Net.game_over_ticker + remain_offset))
 
 	local flash_dur = 12
 	local flash_tics = min(tics, flash_dur)
 	local flash_frac = FU-FixedDiv(flash_tics, flash_dur)
 
+	local fade_offset = TICRATE
 	local fade_dur = 10
-	local fade_tics = max(0, fade_dur - remain)
+	local fade_tics = min(
+		fade_dur,
+		max(
+			0,
+			fade_dur - (remain - fade_offset)
+		)
+	)
 	local fade_frac = FixedDiv(fade_tics, fade_dur)
 
 	local scale_duration = 2 * TICRATE
 	local scale = ease.outcubic(FixedDiv(min(tics, scale_duration), scale_duration), game_big_scale, game_scale)
 
-	DrawHeistBackground(v)
-	v.drawScaled(160*FU - game.width*scale/2, 100*FU - game.height*scale/2, scale, game)
+	local bg = v.cachePatch("FH_GAME6")
 
-	DrawFlash(v, flash_frac)
+	DrawHeistBackground(v)
+	v.drawScaled(160*FU - bg.width*scale/2, 100*FU - bg.height*scale/2, scale, bg)
+
 	DrawFade(v, fade_frac)
+	local x = 160*FU - GAME_WIDTH*scale/2
+	for i = 1, #game do
+		local patch = game[i]
+		local tween_duration = 17
+		local tween_offset = 12
+		local tween = ease.incubic(
+			FixedDiv(
+				min(
+					tween_duration,
+					max(
+						0,
+						tween_duration - (remain - tween_offset)
+					)
+				),
+				tween_duration
+			),
+			height/2 - GAME_HEIGHT*scale/2,
+			height
+		)
+
+		local y = tween + GAME_HEIGHT*scale - patch.height*scale
+
+		v.drawScaled(x, y, scale, patch, V_SNAPTOTOP)
+		x = $ + patch.width*scale
+	end
+	DrawFlash(v, flash_frac)
 end
 
 function module.init()

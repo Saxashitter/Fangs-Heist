@@ -10,10 +10,14 @@ local textSlideTics = TICRATE
 
 local topString = "2 teams left..."
 local bottomString = "1 to take it all home!"
+local drawTS = topString
+local drawBS = bottomString
 
-function FangsHeist.doTTLHUD()
+function FangsHeist.doTTLHUD(TS, BS)
 	enabled = true
 	tics = 0
+	drawTS = TS or $
+	drawBS = BS or $
 end
 
 function module.init()
@@ -21,6 +25,8 @@ function module.init()
 	tics = 0
 	leftSide = {}
 	rightSide = {}
+	drawTS = topString
+	drawBS = bottomString
 end
 
 function module.draw(v)
@@ -36,8 +42,8 @@ function module.draw(v)
 		return
 	end
 
-	local bottomStringWidth = FangsHeist.GetStringWidth(v, bottomString, FU, "FHTXT")
-	local topStringWidth = FangsHeist.GetStringWidth(v, topString, FU, "FHTXT")
+	local bottomStringWidth = FangsHeist.GetStringWidth(v, drawBS, FU, "FHTXT")
+	local topStringWidth = FangsHeist.GetStringWidth(v, drawTS, FU, "FHTXT")
 
 	local screenWidth = v.width() * FU / v.dupx()
 	local screenHeight = v.height() * FU / v.dupy()
@@ -45,8 +51,8 @@ function module.draw(v)
 	local topX = ease.linear(textT, -topStringWidth/2, screenWidth/2)
 	local bottomX = ease.linear(textT, screenWidth + bottomStringWidth/2, screenWidth/2)
 
-	FangsHeist.DrawString(v, topX, 8*FU, FU, topString, "FHTXT", "center", V_SNAPTOLEFT, v.getStringColormap(V_REDMAP))
-	FangsHeist.DrawString(v, bottomX, 8*FU + 10*FU, FU, bottomString, "FHTXT", "center", V_SNAPTOLEFT, v.getStringColormap(V_REDMAP))
+	FangsHeist.DrawString(v, topX, 8*FU, FU, drawTS, "FHTXT", "center", V_SNAPTOLEFT, v.getStringColormap(V_REDMAP))
+	FangsHeist.DrawString(v, bottomX, 8*FU + 10*FU, FU, drawBS, "FHTXT", "center", V_SNAPTOLEFT, v.getStringColormap(V_REDMAP))
 end
 
 return module

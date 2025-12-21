@@ -375,7 +375,7 @@ FangsHeist.addHook("PlayerClash", function(p)
 	p.mo.state = S_PLAY_WALK
 end)
 
-FangsHeist.addHook("PlayerParried", function(_, p)
+--[[FangsHeist.addHook("PlayerParried", function(_, p)
 	if not check(p) then return end
 
 	if not P_IsObjectOnGround(p.mo) then
@@ -385,4 +385,4 @@ FangsHeist.addHook("PlayerParried", function(_, p)
 	end
 
 	p.mo.state = S_PLAY_WALK
-end)
+end)]]

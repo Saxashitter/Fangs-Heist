@@ -1,5 +1,52 @@
+local function sac(name, caption)
+	local sfx = freeslot(name)
+
+	sfxinfo[sfx].caption = caption
+
+	return sfx
+end
+
 FangsHeist.makeCharacter("tails", {
-	pregameBackground = "FH_PREGAME_TAILS"
+	pregameBackground = "FH_PREGAME_TAILS",
+	voicelines = {
+		attack = {
+			sac("sfx_talat1", "Grunt"),
+			sac("sfx_talat2", "Grunt"),
+			sac("sfx_talat3", "Grunt"),
+			sac("sfx_talat4", "Grunt"),
+			sac("sfx_talat5", "Grunt")
+		},
+		death = {sac("sfx_taldie", "death.wav")},
+		escape = {sac("sfx_talesc", "Aww... I don't think I like any of this...")},
+		hurt = {
+			sac("sfx_talhr1", "Grunt"),
+			sac("sfx_talhr2", "Grunt"),
+			sac("sfx_talhr3", "Grunt"),
+			sac("sfx_talhr4", "Grunt"),
+			sac("sfx_talhr5", "Grunt"),
+		},
+		block = {
+			sac("sfx_talpy1", "Hahaha! C'mon, you want some more?"),
+			sac("sfx_talpy2", "Oh, you're really bad at this."),
+		},
+		shield = {
+			sac("sfx_talpa1", "C'mon, just hit me!"),
+			sac("sfx_talpa2", "C'mon, you know you can hit me."),
+			sac("sfx_talpa3", "You're really afraid of a little fox?"),
+		},
+		accept = {
+			sac("sfx_talsel", "C'mon, let's go!")
+		},
+		signpost = {
+			sac("sfx_talsg1", "Mine now!"),
+			sac("sfx_talsg2", "Mind if I take this? No? Thanks!"),
+			sac("sfx_talsg3", "Oh, how the powerful have fallen."),
+		},
+		treasure = {
+			sac("sfx_taltr1", "Woah! It's a... It's a thing!"),
+			sac("sfx_taltr2", "Maybe I should go to a pawn shop and sell this..."),
+		}
+	}
 })
 
 local FLY_WINDUP_FRICTION = tofixed("0.896")

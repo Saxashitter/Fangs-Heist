@@ -73,5 +73,3 @@ local function resetPlayer(p)
 	p.climbing = 0
 	p.mo.knuckles.climbtime = 175
 end
-
-FangsHeist.addHook("PlayerAirDodge", resetPlayer)

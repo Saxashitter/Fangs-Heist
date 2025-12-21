@@ -265,6 +265,12 @@ function state:tick()
 		return "infoandteam"
 	end
 
+	if self.heist.buttons & BT_SPIN
+	and not (self.heist.lastbuttons & BT_SPIN) then
+		S_StartSound(nil, sfx_menu1, self)
+		self.heist.voicelines = not $
+	end
+
 	self.heist.cs_switchtime = $+1
 
 	if abs(x) > 0 then
@@ -320,7 +326,7 @@ function state:draw(v, c, transparency)
 		table.insert(strings, "[CUSTOM 1] - Change Skin ("..name..")")
 	end
 
-	table.insert(strings, "test")
+	table.insert(strings, ("[SPIN] - Voicelines: %s"):format(self.heist.voicelines and "On" or "Off"))
 
 	if #strings == 0 then return end
 

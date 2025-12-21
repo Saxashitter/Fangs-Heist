@@ -94,26 +94,31 @@ events["PlayerAttack"] = {}
 	// Arguments:
 		// player == player_t
 
-events["PlayerParry"] = {}
-// PlayerParry:
-	// Runs before the player attempts to parry.
+events["PlayerShield"] = {}
+// PlayerShield:
+	// Runs before the player attempts to shield.
 	// return true: Stop the default behavior.
 	// Arguments:
 		// player == player_t
 		
-events["PlayerParried"] = {}
-// PlayerParry:
-	// Runs when the player parries another player.
+events["PlayerUnshield"] = {}
+// PlayerUnshield:
+	// Runs before the player attempts to stop shielding.
+	// return true: Stop the default behavior.
 	// Arguments:
-		// parrier == player_t
-		// parried == player_t
+		// player == player_t
+		// forced == bool_t
+	// WARNING: If forced is true, and you also return true, this has a chance of messing with the mod.
+		
+events["PlayerBlock"] = {}
+// PlayerBlock:
+	// Runs when the player blocks an attack from a player, or a mobj.
+	// Arguments:
+		// blocker == player_t
+		// damage == fixed
 
-events["PlayerParriedEnemy"] = {}
-// PlayerParry:
-	// Runs when the player parries a enemy or a projectile.
-	// Arguments:
-		// parrier == player_t
-		// parried == mobj_t
+events["PlayerShieldBreak"] = {}
+// TODO: document
 
 events["PlayerClash"] = {}
 // PlayerClash:
@@ -127,13 +132,7 @@ events["PlayerHit"] = {}
 	// Runs when the player hits another player.
 	// Arguments:
 		// attacker == player_t
-		// victim == player_t
-
-events["PlayerAirDodge"] = {}
-// PlayerAirDodge:
-	// Runs when the player air-dodges.
-	// Arguments:
-		// player == player_t
+		// victim == player_t{
 
 events["PlayerScanAttack"] = {}
 // PlayerScanAttack:
@@ -157,6 +156,9 @@ events["PlayerAttackHeight"] = {handler = handler_snapany}
 // TODO: document
 
 events["PlayerAttackDamage"] = {handler = handler_snapany}
+// TODO: document
+
+events["PostPlayerAttackDamage"] = {handler = handler_snapany}
 // TODO: document
 
 events["CreateHitlagMobjStruct"] = {handler = handler_snapany}

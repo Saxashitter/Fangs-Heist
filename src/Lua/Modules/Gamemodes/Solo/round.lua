@@ -98,6 +98,7 @@ function gamemode:manageRound2Animation(p)
 		p.mo.momy = 0
 		p.mo.momz = 0
 		p.mo.flags2 = $|MF2_DONTDRAW
+		p.powers[pw_flashing] = 2*TICRATE
 
 		if p.heist.round_fadeout then
 			p.heist.round_fadeout = $ - 1
@@ -106,6 +107,8 @@ function gamemode:manageRound2Animation(p)
 		end
 
 		if not p.heist.round_tpdelay then
+			local pos = FangsHeist.Net.round_2_teleport
+
 			-- flash spooky
 			local linedef = tonumber(mapheaderinfo[gamemap].fh_round2linedef)
 			if linedef ~= nil then
@@ -113,6 +116,7 @@ function gamemode:manageRound2Animation(p)
 			end
 
 			p.heist.reached_second = true
+			p.mo.angle = pos.angle
 			if p == displayplayer then
 				FangsHeist.doRound2HUD()
 			end
@@ -131,6 +135,7 @@ function gamemode:manageRound2Animation(p)
 		p.mo.momx = 0
 		p.mo.momy = 0
 		p.mo.momz = 0
+		p.powers[pw_flashing] = 2*TICRATE
 		p.mo.flags2 = $|MF2_DONTDRAW
 		
 		p.heist.round_shootout = $ - 1
@@ -138,6 +143,8 @@ function gamemode:manageRound2Animation(p)
 		if not p.heist.round_shootout then
 			P_InstaThrust(p.mo, pos.angle, 35*p.mo.scale)
 			p.mo.flags2 = $ & ~MF2_DONTDRAW
+			p.cmd.buttons = p.heist.buttons
+			p.lastbuttons = p.heist.lastbuttons
 			p.heist.round_anim = false
 			S_StartSound(p.mo, sfx_s1c3)
 			p.pflags = $ & ~(PF_SPINNING|PF_JUMPED|PF_STARTJUMP|PF_STARTDASH|PF_BOUNCING)

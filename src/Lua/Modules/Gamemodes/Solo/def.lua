@@ -229,7 +229,7 @@ function gamemode:load()
 	self:spawnSign()
 end
 
-function gamemode:twoTeamsLeft(first_team, second_team)
+function gamemode:twoTeamsLeft(first_team, second_team, text_1, text_2)
 	local orig_song = FangsHeist.Net.twoteamsleft_theme
 	local song = FangsHeist.runHook("2TeamsLeft", first_team, second_team)
 		or orig_song
@@ -242,7 +242,7 @@ function gamemode:twoTeamsLeft(first_team, second_team)
 	FangsHeist.Net.escape_hurryup = false
 
 	FangsHeist.Net.go_go_go = false
-	FangsHeist.doTTLHUD()
+	FangsHeist.doTTLHUD(text_1, text_2)
 end
 
 function gamemode:update()
@@ -443,6 +443,16 @@ function gamemode:playerinit(p)
 	end
 end
 
+function gamemode:preplayerthink(p)
+	if not p.heist then return end
+	if not p.heist:isAlive() then return end
+	if not p.heist.round_anim then return end
+
+	p.cmd.buttons = 0
+	p.cmd.forwardmove = 0
+	p.cmd.sidemove = 0
+end
+
 function gamemode:playerthink(p)
 	--[[
 	TODO: re-add when v2 comes around as an option
@@ -482,6 +492,22 @@ function gamemode:playerdeath(p, i, s)
 	p.heist.spectator = true
 
 	local counted_teams = 0
+end
+
+function gamemode:onTimeUp()
+	local linedef = tonumber(mapheaderinfo[gamemap].fh_timeuplinedef)
+
+	if linedef ~= nil then
+		P_LinedefExecute(linedef)
+	end
+
+	if not (FangsHeist.Net.eggman and FangsHeist.Net.eggman.valid) then
+		self:spawnEggman("doom")
+	else
+		FangsHeist.Net.eggman.state = S_FH_EGGMAN_DOOMCHASE
+	end
+
+	FangsHeist.runHook("TimeUp")
 end
 
 function gamemode:manageTime()
@@ -538,20 +564,12 @@ function gamemode:manageTime()
 	end
 
 	if not FangsHeist.Net.time_left then
-		local linedef = tonumber(mapheaderinfo[gamemap].fh_timeuplinedef)
-
-		if linedef ~= nil then
-			P_LinedefExecute(linedef)
-		end
-
-		if not (FangsHeist.Net.eggman and FangsHeist.Net.eggman.valid) then
-			self:spawnEggman("doom")
-		else
-			FangsHeist.Net.eggman.state = S_FH_EGGMAN_DOOMCHASE
-		end
-
-		FangsHeist.runHook("TimeUp")
+		self:onTimeUp()
 	end
+end
+
+function gamemode:onSignBank(p)
+	FangsHeist.startIntermission()
 end
 
 function gamemode:manageExiting()
@@ -585,7 +603,7 @@ function gamemode:manageExiting()
 				local team = p.heist:getTeam()
 	
 				team.had_sign = true
-				FangsHeist.startIntermission()
+				self:onSignBank(p)
 			end
 
 			for i = #p.heist.pickup_list, 1, -1 do

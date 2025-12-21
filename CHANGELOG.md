@@ -27,6 +27,10 @@ So, it may look like I'm making up words, but I genuinely think calling this a "
 	• Added Signless mode. Collect more Profit than the rest of your team to win.
 	• Gave Sonic a Spring Jump by pressing Spin mid-air.
 	• If you play Manual, Amy now aims to where your camera is aiming when using Melee.
+	• Added Juggernaut. Work as a team against a player playing as Eggman to secure the sign and take it home. Warning: People will die.
+	• Gave Tails voicelines, courtesy of prowerpower.
+	• Gave Metal Sonic voicelines, using BetterSAM.
+	• Reworked Metal Sonic.
 • Zeko
 	• Remade a bunch of THZ2, making the map more polished.
 • El3ctr0h3ll

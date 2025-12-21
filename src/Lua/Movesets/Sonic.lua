@@ -48,12 +48,12 @@ FangsHeist.makeCharacter("sonic", {
 			sac("sfx_snchr4", "Grunt"),
 			sac("sfx_snchr5", "Grunt"),
 		},
-		parry = {
+		block = {
 			sac("sfx_sncpy1", "Too slow!"),
 			sac("sfx_sncpy2", "Try again!"),
 			sac("sfx_sncpy3", "You thought that was gonna work?"),
 		},
-		parry_attempt = {
+		shield = {
 			sac("sfx_sncpa1", "Come at me!"),
 			sac("sfx_sncpa2", "Try this on for size!"),
 			sac("sfx_sncpa3", "You won't!"),
